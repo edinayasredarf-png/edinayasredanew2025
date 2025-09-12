@@ -6,6 +6,7 @@ import Link from 'next/link';
 const ProductsTeamsSection = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [showControls, setShowControls] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [videoSrc, setVideoSrc] = useState<string>("");
   const [progressMs, setProgressMs] = useState<number>(0);
@@ -169,6 +170,8 @@ const ProductsTeamsSection = () => {
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onLoadedMetadata={() => { if (isPlaying) { void videoRef.current?.play(); } }}
+            onError={() => { setShowControls(true); setIsPlaying(false); }}
+            controls={showControls}
           >
             <source src={videoSrc} type={getVideoType(videoSrc)} />
             Ваш браузер не поддерживает видео тег.
@@ -212,7 +215,7 @@ const ProductsTeamsSection = () => {
             <div className="bg-white  rounded-3xl p-4">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-center md:justify-start gap-4">
-                  <div className={`w-12 h-12 md:w-16 md:h-16 ${slides[activeSlide].iconColor} rounded-lg flex items-center justify-center`}>
+                  <div className={`w-12 h-12 md:w-16 md:h-16 rounded-lg flex items-center justify-center`}>
                     {slides[activeSlide].icon}
                   </div>
                   <h3 className="text-[22px] md:text-[32px] font-normal font-helvetica leading-tight md:leading-loose text-gray-800">
@@ -230,7 +233,7 @@ const ProductsTeamsSection = () => {
                   </div>
                   <Link
                     href={slides[activeSlide].url}
-                    className={`${slides[activeSlide].iconColor || 'bg-[#0077FF]'} rounded-full shrink-0 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:opacity-90 transition`}
+                    className={`bg-[#0077FF] rounded-full shrink-0 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:opacity-90 transition`}
                     aria-label={`Перейти на сайт: ${slides[activeSlide].name}`}
                     target="_blank"
                     rel="noopener noreferrer"
