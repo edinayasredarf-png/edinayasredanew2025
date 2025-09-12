@@ -42,7 +42,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
         <TopBar />
         <section className="max-w-[900px] mx-auto px-5 py-16 text-center">
           <h1 className="text-3xl font-semibold mb-3">Новость не найдена</h1>
-          <Link href="/news/index.html" className="text-[#2777ff] hover:underline">К новостям</Link>
+          <Link href="/news" className="text-[#2777ff] hover:underline">К новостям</Link>
         </section>
       </div>
     );
@@ -79,7 +79,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                     </svg>
                     Назад к новостям
                   </Link>
-                  <Link href="/blog/index.html" className="h-9 px-3 rounded-lg border text-sm flex items-center ml-auto">
+                  <Link href="/blog" className="h-9 px-3 rounded-lg border text-sm flex items-center ml-auto">
                     К статьям
                   </Link>
 

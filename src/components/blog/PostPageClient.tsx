@@ -48,7 +48,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
         <TopBar />
         <section className="max-w-[900px] mx-auto px-5 py-16 text-center">
           <h1 className="text-3xl font-semibold mb-3">Статья не найдена</h1>
-          <Link href="/blog/index.html" className="text-[#2777ff] hover:underline">Назад к статьям</Link>
+          <Link href="/blog" className="text-[#2777ff] hover:underline">Назад к статьям</Link>
         </section>
       </div>
     );
