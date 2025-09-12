@@ -24,7 +24,7 @@ export default function TopBar() {
 
   return (
     <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] border-b border-[#e1e2e5]">
-      <div className="max-w-[1440px] mx-auto px-[34px] h-[62px] flex items-center gap-4">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center gap-2 sm:gap-4">
         <Link href="/" className="w-[46px] h-[46px] rounded-xl overflow-hidden shrink-0 bg-[#2777ff]" aria-label="Logo">
           <img src="/img/logo.svg" alt="logo" className="w-full h-full object-cover" />
         </Link>
@@ -48,25 +48,34 @@ export default function TopBar() {
           </button>
         </div>
 
-        <Link href="/blog/new" className="h-[46px] px-6 inline-flex items-center gap-2 rounded-xl border hover:bg-gray-50 transition text-[#111]">
-          <span>Написать</span>
-          <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#111" strokeWidth="2" strokeLinecap="round"/></svg>
-        </Link>
+        {/* Write button - only show after login */}
+        {isAuthed && (
+          <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl border hover:bg-gray-50 transition text-[#111]">
+            <span className="hidden sm:inline">Написать</span>
+            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#111" strokeWidth="2" strokeLinecap="round"/></svg>
+          </Link>
+        )}
 
         {!isAuthed ? (
-          <Link href="/blog/new" className="h-[46px] px-6 inline-flex items-center rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
-            Войти
+          <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
+            <span className="hidden sm:inline">Войти</span>
+            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </Link>
         ) : (
           <button onClick={() => { auth.logout(); setIsAuthed(false); router.refresh(); }}
-                  className="h-[46px] px-6 inline-flex items-center rounded-xl bg-white border hover:bg-gray-50 transition text-[#111]">
-            Выйти
+                  className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-white border hover:bg-gray-50 transition text-[#111]">
+            <span className="hidden sm:inline">Выйти</span>
+            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
         )}
       </div>
 
       {/* мобильные вкладки */}
-      <div className="md:hidden max-w-[1440px] mx-auto px-[34px] pb-3">
+      <div className="md:hidden max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-3">
         <div className="grid grid-cols-2 gap-2">
           <Link href="/blog" className={`h-9 rounded-lg border text-sm flex items-center justify-center`}>Статьи</Link>
           <Link href="/news" className={`h-9 rounded-lg border text-sm flex items-center justify-center bg-white`}>Новости</Link>

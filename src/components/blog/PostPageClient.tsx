@@ -106,7 +106,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                   {isAuthed && (
                     <div className="ml-auto flex items-center gap-2">
                       <Link
-                        href={`/blog/new/index.html?edit=${encodeURIComponent(post.slug)}&type=post`}
+                        href={`/blog/new?edit=${encodeURIComponent(post.slug)}&type=post`}
                         className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
                       >
                         Редактировать

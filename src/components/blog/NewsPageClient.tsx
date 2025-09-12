@@ -97,7 +97,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                   {isAuthed && (
                     <div className="flex items-center gap-2">
                       <Link
-                        href={`/blog/new/index.html?edit=${encodeURIComponent(news.slug)}&type=news`}
+                        href={`/blog/new?edit=${encodeURIComponent(news.slug)}&type=news`}
                         className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
                       >
                         Редактировать
