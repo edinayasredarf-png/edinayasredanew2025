@@ -84,22 +84,22 @@ export default function WelcomeBonusPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {[
                 {
-                  icon: "/icons/bonus/seminar.svg",
+                  icon: "/img/bonus/seminar.svg",
                   title: "Онбординг и обучение",
                   text: "Сценарии запуска, методички, обучающие сессии для команды.",
                 },
                 {
-                  icon: "/icons/bonus/tuition.svg",
+                  icon: "/img/bonus/tuition.svg",
                   title: "Готовые шаблоны реестров",
                   text: "Стартовые структуры данных и формы для быстрого ввода.",
                 },
                 {
-                  icon: "/icons/bonus/support.svg",
+                  icon: "/img/bonus/support.svg",
                   title: "Техническое сопровождение",
                   text: "Поддержка в течение всего срока подписки.",
                 },
                 {
-                  icon: "/icons/bonus/computer-data-laptop.svg",
+                  icon: "/img/bonus/computer-data-laptop.svg",
                   title: "Миграция данных",
                   text: "Импорт и нормализация до 50 000 записей из ваших Excel/старых реестров с проверкой качества.",
                 },
