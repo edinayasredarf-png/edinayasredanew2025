@@ -79,7 +79,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                     </svg>
                     Назад к новостям
                   </Link>
-                  <Link href="/blog" className="h-9 px-3 rounded-lg border text-sm flex items-center ml-auto">
+                  <Link href="/blog" className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center ml-auto">
                     К статьям
                   </Link>
 
@@ -87,11 +87,11 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/blog/new/index.html?edit=${encodeURIComponent(news.slug)}&type=news`}
-                        className="h-9 px-3 rounded-lg border text-sm flex items-center"
+                        className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
                       >
                         Редактировать
                       </Link>
-                      <button onClick={doDelete} className="h-9 px-3 rounded-lg border text-sm">
+                      <button onClick={doDelete} className="h-9 px-3 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
                         Удалить
                       </button>
                     </div>

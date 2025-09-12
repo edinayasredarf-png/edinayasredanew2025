@@ -96,11 +96,11 @@ export default function PostPageClient({ slug }: { slug: string }) {
                     <div className="ml-auto flex items-center gap-2">
                       <Link
                         href={`/blog/new/index.html?edit=${encodeURIComponent(post.slug)}&type=post`}
-                        className="h-9 px-3 rounded-lg border text-sm flex items-center"
+                        className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
                       >
                         Редактировать
                       </Link>
-                      <button onClick={doDelete} className="h-9 px-3 rounded-lg border text-sm">
+                      <button onClick={doDelete} className="h-9 px-3 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
                         Удалить
                       </button>
                     </div>
