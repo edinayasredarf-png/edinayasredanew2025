@@ -21,6 +21,7 @@ const ProductsTeamsSection = () => {
     {
       name: "Единая Среда",
       tabIcon: "/icons/es-blue.svg",
+      iconColor: "bg-[#0077FF]",
       icon: (
 				<img
 				src="/icons/es-blue.svg"
@@ -39,6 +40,7 @@ const ProductsTeamsSection = () => {
     {
       name: "MyRoots",
       tabIcon: "/icons/myroots.svg",
+      iconColor: "bg-[#0077FF]",
       icon: (
 				<img
 				src="/icons/myroots.svg"
@@ -228,12 +230,12 @@ const ProductsTeamsSection = () => {
                   </div>
                   <Link
                     href={slides[activeSlide].url}
-                    className={`${slides[activeSlide].iconColor} rounded-full w-10 h-10 flex items-center justify-center`}
+                    className={`${slides[activeSlide].iconColor || 'bg-[#0077FF]'} rounded-full shrink-0 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:opacity-90 transition`}
                     aria-label={`Перейти на сайт: ${slides[activeSlide].name}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none">
                       <path d="M5 12H19" stroke="white" strokeWidth="2"/>
                       <path d="M12 5L19 12L12 19" stroke="white" strokeWidth="2"/>
                     </svg>
