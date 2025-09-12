@@ -9,44 +9,56 @@ export default function DocumentsPage() {
 
   // Описания документов
   const docDescriptions: Record<string, string> = {
-    "Выписка из реестра №13314 (1).pdf": "Выписка из реестра №13314.",
-    "Политика_оператора_в_отношении_обработки_персональных_данных.pdf": "Политика оператора в отношении обработки персональных данных.",
-    "Согласие_на_обработку_данных_СФЕРА.pdf": "Согласие на обработку данных СФЕРА.",
-    "Согласие_физ_лица_на_размещение_информации_в_Интернете_СФЕРА.pdf": "Согласие физ. лица на размещение информации в Интернете.",
-    "Политика_использования_файлов_кукис_СФЕРА.pdf": "Политика использования файлов кукис СФЕРА.",
-    "Политика_обработки_персональных_данных_посетителей_сайта.pdf": "Политика обработки персональных данных посетителей сайта.",
-    "Выписка_из_реестра_аккредитованных_организаций (1).pdf": "Выписка из реестра аккредитованных организаций.",
+    "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "Политика использования файлов кукис СФЕРА.",
+    "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "Политика обработки персональных данных посетителей сайта.",
+    "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "Политика оператора в отношении обработки персональных данных.",
+    "rukovodstvo-polzovatelya (1).pdf": "Руководство пользователя (версия 1).",
     "rukovodstvo-polzovatelya.pdf": "Руководство пользователя системы Единая Среда.",
+    "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "Согласие физ. лица на размещение информации в Интернете.",
+    "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "Согласие на обработку данных СФЕРА.",
+    "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf": "Выписка из реестра аккредитованных организаций.",
   };
 
   // Названия для отображения
   const docTitles: Record<string, string> = {
-    "Выписка из реестра №13314 (1).pdf": "Выписка из реестра №13314 (PDF)",
-    "Политика_оператора_в_отношении_обработки_персональных_данных.pdf": "Политика оператора по персональным данным (PDF)",
-    "Согласие_на_обработку_данных_СФЕРА.pdf": "Согласие на обработку данных СФЕРА (PDF)",
-    "Согласие_физ_лица_на_размещение_информации_в_Интернете_СФЕРА.pdf": "Согласие физ. лица на размещение информации (PDF)",
-    "Политика_использования_файлов_кукис_СФЕРА.pdf": "Политика использования файлов кукис (PDF)",
-    "Политика_обработки_персональных_данных_посетителей_сайта.pdf": "Политика обработки данных посетителей сайта (PDF)",
-    "Выписка_из_реестра_аккредитованных_организаций (1).pdf": "Выписка из реестра аккредитованных организаций (PDF)",
+    "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "Политика использования файлов кукис (PDF)",
+    "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "Политика обработки данных посетителей сайта (PDF)",
+    "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "Политика оператора по персональным данным (PDF)",
+    "rukovodstvo-polzovatelya (1).pdf": "Руководство пользователя (версия 1) (PDF)",
     "rukovodstvo-polzovatelya.pdf": "Руководство пользователя (PDF)",
+    "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "Согласие физ. лица на размещение информации (PDF)",
+    "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "Согласие на обработку данных СФЕРА (PDF)",
+    "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf": "Выписка из реестра аккредитованных организаций (PDF)",
   };
 
-  // Массив файлов из папки public/docs
+  // Публичные URL Supabase для документов
+  const docUrls: Record<string, string> = {
+    "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_ispolzovaniya_failov_kukis_SFERA.pdf",
+    "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf",
+    "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf",
+    "rukovodstvo-polzovatelya (1).pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/rukovodstvo-polzovatelya%20(1).pdf",
+    "rukovodstvo-polzovatelya.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/rukovodstvo-polzovatelya.pdf",
+    "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf",
+    "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_na_obrabotku_dannikh_SFERA.pdf",
+    "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Vipiska_iz_reestra_akkreditovannikh_organizatsii%20(1).pdf",
+  };
+
+  // Список документов (имя файла должно соответствовать ключу в docUrls)
   const docFiles = [
-    { file: "Выписка из реестра №13314 (1).pdf", title: "Выписка из реестра №13314 (PDF)" },
-    { file: "Политика_оператора_в_отношении_обработки_персональных_данных.pdf", title: "Политика оператора по персональным данным (PDF)" },
-    { file: "Согласие_на_обработку_данных_СФЕРА.pdf", title: "Согласие на обработку данных СФЕРА (PDF)" },
-    { file: "Согласие_физ_лица_на_размещение_информации_в_Интернете_СФЕРА.pdf", title: "Согласие физ. лица на размещение информации (PDF)" },
-    { file: "Политика_использования_файлов_кукис_СФЕРА.pdf", title: "Политика использования файлов кукис (PDF)" },
-    { file: "Политика_обработки_персональных_данных_посетителей_сайта.pdf", title: "Политика обработки данных посетителей сайта (PDF)" },
-    { file: "Выписка_из_реестра_аккредитованных_организаций (1).pdf", title: "Выписка из реестра аккредитованных организаций (PDF)" },
-    { file: "rukovodstvo-polzovatelya.pdf", title: "Руководство пользователя (PDF)" },
+    { file: "Politika_ispolzovaniya_failov_kukis_SFERA.pdf", title: docTitles["Politika_ispolzovaniya_failov_kukis_SFERA.pdf"] },
+    { file: "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf", title: docTitles["Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf"] },
+    { file: "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf", title: docTitles["Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf"] },
+    { file: "rukovodstvo-polzovatelya (1).pdf", title: docTitles["rukovodstvo-polzovatelya (1).pdf"] },
+    { file: "rukovodstvo-polzovatelya.pdf", title: docTitles["rukovodstvo-polzovatelya.pdf"] },
+    { file: "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf", title: docTitles["Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf"] },
+    { file: "Soglasie_na_obrabotku_dannikh_SFERA.pdf", title: docTitles["Soglasie_na_obrabotku_dannikh_SFERA.pdf"] },
+    { file: "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf", title: docTitles["Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf"] },
   ];
 
   const handleDocClick = (docFile: string) => setActiveDoc(docFile);
 
-  // Безопасно кодируем имя файла для URL (пробелы, скобки и т.д.)
-  const encoded = activeDoc ? encodeURIComponent(activeDoc) : null;
+  // Готовый публичный URL документа
+  const activeUrl = activeDoc ? docUrls[activeDoc] : null;
 
   return (
     <div className="min-h-screen bg-white">
@@ -123,11 +135,11 @@ export default function DocumentsPage() {
             {activeDoc ? docDescriptions[activeDoc] : "Выберите документ в меню слева, чтобы просмотреть его описание и скачать."}
           </div>
 
-          {activeDoc && encoded && (
+          {activeDoc && activeUrl && (
             <>
               <div className="mb-6">
                 <iframe
-                  src={`/docs/${encoded}#toolbar=1&navpanes=0&scrollbar=1`}
+                  src={`${activeUrl}#toolbar=1&navpanes=0&scrollbar=1`}
                   className="w-full min-h-[600px] border border-gray-200 rounded-lg bg-white"
                   title={docTitles[activeDoc]}
                 />
@@ -135,7 +147,7 @@ export default function DocumentsPage() {
 
               <div className="mt-6">
                 <a
-                  href={`/docs/${encoded}`}
+                  href={activeUrl}
                   download
                   className="inline-block px-6 py-3 bg-[#0077FF] text-white rounded-lg font-medium hover:bg-[#0077FF]/90 transition-colors"
                 >
