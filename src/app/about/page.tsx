@@ -521,19 +521,19 @@ export default function AboutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 border-t border-gray-200">
         {/* Единая Среда */}
         <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
-          <div className="flex justify-between items-center mb-6 px-6">
-            <h3 className="text-xl font-medium text-black leading-loose">
+          <Link href="https://edinayasreda.ru/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
+            <h3 className="text-xl font-medium text-black leading-loose group-hover:text-[#0077FF] transition-colors">
               Единая Среда
             </h3>
-            <div className="w-[42px] h-[42px]  rounded-lg flex items-center justify-center">
-            <img
+            <div className="w-[42px] h-[42px] rounded-lg flex items-center justify-center">
+              <img
                 src="/icons/es-blue.svg"
                 alt="Единая Среда"
                 className="w-full max-w-[500px] object-contain"
                 style={{ height: 'auto' }}
               />
             </div>
-          </div>
+          </Link>
 
           <div className="space-y-6 px-6">
             <div>
@@ -572,19 +572,19 @@ export default function AboutPage() {
 
         {/* MyRoots */}
         <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
-          <div className="flex justify-between items-center mb-6 px-6">
-            <h3 className="text-xl font-medium text-black leading-loose">
+          <Link href="https://myroots.pro/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
+            <h3 className="text-xl font-medium text-black leading-loose group-hover:text-[#0077FF] transition-colors">
               MyRoots
             </h3>
-            <div className="w-[42px] h-[42px]  rounded-lg flex items-center justify-center">
-            <img
+            <div className="w-[42px] h-[42px] rounded-lg flex items-center justify-center">
+              <img
                 src="/icons/myroots.svg"
                 alt="MyRoots"
                 className="w-full max-w-[500px] object-contain"
                 style={{ height: 'auto' }}
               />
             </div>
-          </div>
+          </Link>
 
           <div className="space-y-6 px-6">
             <div>
@@ -623,19 +623,19 @@ export default function AboutPage() {
 
         {/* Область Развития */}
         <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
-          <div className="flex justify-between items-center mb-6 px-6">
-            <h3 className="text-xl font-medium text-black leading-loose">
+          <Link href="https://oblastrazvitia.ru/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
+            <h3 className="text-xl font-medium text-black leading-loose group-hover:text-[#0077FF] transition-colors">
               Область Развития
             </h3>
-						<div className="w-[64px] h-[42px]  rounded-lg flex items-center justify-center">
-            <img
+            <div className="w-[64px] h-[42px] rounded-lg flex items-center justify-center">
+              <img
                 src="/icons/oblastrazvitia.svg"
                 alt="Область Развития"
                 className="w-full max-w-[500px] object-contain"
                 style={{ height: 'auto' }}
               />
             </div>
-          </div>
+          </Link>
 
           <div className="space-y-6 px-6">
             <div>
