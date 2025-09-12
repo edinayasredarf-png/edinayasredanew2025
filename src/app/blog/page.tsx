@@ -5,7 +5,7 @@ import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import PostCard from '@/components/blog/PostCard';
-import { BlogPost, ensureDemo, listPosts } from '@/lib/blogStore';
+import { BlogPost, ensureDemo, listPosts, sb_listPosts } from '@/lib/blogStore';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -14,7 +14,12 @@ function BlogHomeInner() {
   const q = (sp.get('q') || '').trim().toLowerCase();
   const tag = sp.get('tag') || '';
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  useEffect(() => { ensureDemo(); setPosts(listPosts()); }, []);
+  useEffect(() => { ensureDemo();
+    (async () => {
+      const fromSb = await sb_listPosts().catch(()=>listPosts());
+      setPosts(fromSb);
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
     let arr = posts;

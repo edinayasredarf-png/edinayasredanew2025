@@ -23,6 +23,14 @@ export default function CoverPicker({ value, onChange }: { value?: string; onCha
       )}
       <div className="absolute bottom-3 right-3 flex gap-2">
         <button onClick={pick} className="px-4 py-2 rounded-xl bg-white border hover:bg-gray-50">Выбрать</button>
+        <button
+          onClick={() => {
+            const url = prompt('Вставьте ссылку на изображение (например https://media.единаясреда.рф/media/blog/cover.jpg)');
+            if (!url) return;
+            onChange(url);
+          }}
+          className="px-4 py-2 rounded-xl bg-white border hover:bg-gray-50"
+        >Вставить ссылку</button>
         {value && <button onClick={()=>onChange(undefined)} className="px-4 py-2 rounded-xl bg-white border hover:bg-gray-50">Удалить</button>}
       </div>
     </div>
