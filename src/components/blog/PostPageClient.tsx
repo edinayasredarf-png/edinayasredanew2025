@@ -92,7 +92,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
               <section className="bg-white rounded-3xl p-6 border">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
                   <Link
                     href="/blog"
                     className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]"

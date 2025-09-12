@@ -80,7 +80,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
               <section className="bg-white rounded-3xl p-6 border">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
                   <Link
                     href="/news"
                     className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]"
@@ -90,23 +90,26 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                     </svg>
                     Назад к новостям
                   </Link>
-                  <Link href="/blog" className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center ml-auto">
-                    К статьям
-                  </Link>
+                  
+                  <div className="flex items-center gap-2 ml-auto">
+                    <Link href="/blog" className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center">
+                      К статьям
+                    </Link>
 
-                  {isAuthed && (
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/blog/new?edit=${encodeURIComponent(news.slug)}&type=news`}
-                        className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
-                      >
-                        Редактировать
-                      </Link>
-                      <button onClick={doDelete} className="h-9 px-3 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
-                        Удалить
-                      </button>
-                    </div>
-                  )}
+                    {isAuthed && (
+                      <>
+                        <Link
+                          href={`/blog/new?edit=${encodeURIComponent(news.slug)}&type=news`}
+                          className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
+                        >
+                          Редактировать
+                        </Link>
+                        <button onClick={doDelete} className="h-9 px-3 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
+                          Удалить
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <h1 className="mt-4 text-4xl md:text-5xl font-medium leading-tight text-[#111]">
