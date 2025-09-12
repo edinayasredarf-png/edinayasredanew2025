@@ -16,7 +16,7 @@ import { sb_upsertPost, sb_upsertNews } from '@/lib/blogStore';
 // ---------- типы блоков ----------
 type Align = 'left'|'center'|'right';
 
-type TextBlock  = { id: string; type: 'text';   align: Align; html: string };
+type TextBlock  = { id: string; type: 'text';   align: Align; text: string };
 type HBlock     = { id: string; type: 'h2'|'h3';align: Align; text: string };
 type ImageBlock = { id: string; type: 'image';  align: Align; src?: string; caption?: string };
 type VideoBlock = { id: string; type: 'video';  align: Align; src?: string; embedHtml?: string };
@@ -38,7 +38,7 @@ function renderBlocks(blocks: Block[]): string {
   const align = (a:Align)=> a==='center' ? ' style="text-align:center"' : a==='right' ? ' style="text-align:right"' : '';
   return blocks.map(b=>{
     switch(b.type){
-      case 'text':  return `<p dir="ltr"${align((b as TextBlock).align)}>${(b as TextBlock).html || ''}</p>`;
+      case 'text':  return `<p dir="ltr"${align((b as TextBlock).align)}>${esc((b as TextBlock).text||'')}</p>`;
       case 'h2':    return `<h2${align((b as HBlock).align)}>${esc((b as HBlock).text||'')}</h2>`;
       case 'h3':    return `<h3${align((b as HBlock).align)}>${esc((b as HBlock).text||'')}</h3>`;
       case 'image': {
@@ -379,7 +379,7 @@ export default function NewPostPage() {
                       <details className="group">
                         <summary className="list-none cursor-pointer h-10 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm">+ Добавить блок</summary>
                         <div className="absolute right-0 sm:right-0 left-0 sm:left-auto mt-2 w-full sm:w-64 rounded-xl border bg-white p-2 shadow-lg z-10">
-                        <button onClick={()=>addBlock({id:uid(),type:'text',align:'left',html:''} as TextBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Текст</button>
+                        <button onClick={()=>addBlock({id:uid(),type:'text',align:'left',text:''} as TextBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Текст</button>
                         <button onClick={()=>addBlock({id:uid(),type:'h2',align:'left',text:''} as HBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Подзаголовок H2</button>
                         <button onClick={()=>addBlock({id:uid(),type:'h3',align:'left',text:''} as HBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Подзаголовок H3</button>
                         <button onClick={()=>addBlock({id:uid(),type:'image',align:'center',src:undefined,caption:''} as ImageBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Изображение</button>
@@ -419,19 +419,11 @@ export default function NewPostPage() {
 
                       {/* Текст */}
                       {b.type==='text' && (
-                        <div
-                          dir="ltr"
-                          style={editableStyle}
-                          contentEditable
-                          className="min-h-[120px] border rounded-lg p-3 outline-none text-[#111] bg-white"
-                          onInput={(e)=>{
-                            const el = e.target as HTMLDivElement;
-                            let html = el.innerHTML;
-                            html = html.replace(/dir=("|')rtl\1/gi, 'dir="ltr"');
-                            html = html.replace(/direction\s*:\s*rtl/gi, 'direction:ltr');
-                            updateAt(i,{ html } as Partial<TextBlock>);
-                          }}
-                          dangerouslySetInnerHTML={{__html: (b as TextBlock).html || ''}}
+                        <input
+                          className="w-full border rounded-lg px-3 py-2 text-[#111] text-lg"
+                          value={(b as TextBlock).text || ''}
+                          onChange={e=>updateAt(i,{ text: e.target.value } as Partial<TextBlock>)}
+                          placeholder="Введите текст"
                         />
                       )}
 
