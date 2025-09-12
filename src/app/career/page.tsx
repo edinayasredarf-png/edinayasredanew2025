@@ -19,9 +19,9 @@ export default function CareerPage() {
                 Присоединяйтесь к команде профессионалов и участвуйте в цифровой революции экологического управления
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                <a 
-                  href="https://hh.ru/employer/123456" 
-                  target="_blank" 
+                <a
+                  href="https://rostov.hh.ru/employer/1186916?hhtmFrom=vacancy"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block"
                 >
@@ -29,14 +29,16 @@ export default function CareerPage() {
                     Посмотреть вакансии на HH.ru
                   </Button>
                 </a>
-                <Button variant="secondary" size="large" className="w-full md:w-auto">
-                  Узнать о компании
-                </Button>
+                <a href="/about" className="inline-block">
+                  <Button variant="secondary" size="large" className="w-full md:w-auto">
+                    Узнать о компании
+                  </Button>
+                </a>
               </div>
             </div>
             <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
               <Image
-                src="/img/heroes.png"
+                src="/img/job/job-hero.svg"
                 alt="Карьера"
                 width={700}
                 height={500}
@@ -48,8 +50,8 @@ export default function CareerPage() {
           </div>
           <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[600px] h-auto pointer-events-none">
             <Image
-              src="/img/heroes.png"
-              alt="Карьера"
+                src="/img/job/job-hero.svg"
+								alt="Карьера"
               width={700}
               height={500}
               className="w-full object-contain"
@@ -69,7 +71,7 @@ export default function CareerPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
-                <Image src="/img/proverka.svg" alt="Инновации" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/innovation_project.svg" alt="Инновации" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-3">Инновационные проекты</h3>
               <p className="text-gray-500">
@@ -79,7 +81,7 @@ export default function CareerPage() {
 
             <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
-                <Image src="/img/support.svg" alt="Развитие" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/professional_rost.svg" alt="Развитие" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-3">Профессиональный рост</h3>
               <p className="text-gray-500">
@@ -89,7 +91,7 @@ export default function CareerPage() {
 
             <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
-                <Image src="/img/pole.svg" alt="Команда" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/team.svg" alt="Команда" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-3">Дружная команда</h3>
               <p className="text-gray-500">
@@ -109,7 +111,7 @@ export default function CareerPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
-                <Image src="/img/proverka.svg" alt="HH.ru" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/actual_vacansy.svg" alt="HH.ru" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-3">Актуальные вакансии</h3>
               <p className="text-gray-500 mb-6">
@@ -121,9 +123,9 @@ export default function CareerPage() {
                 <p>• Менеджеры проектов</p>
                 <p>• Специалисты по ГИС</p>
               </div>
-              <a 
-                href="https://hh.ru/employer/123456" 
-                target="_blank" 
+              <a
+                href="https://rostov.hh.ru/employer/1186916?hhtmFrom=vacancy"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block"
               >
@@ -147,9 +149,9 @@ export default function CareerPage() {
                 <p>• Обучение и развитие</p>
                 <p>• ДМС и социальный пакет</p>
               </div>
-              <a 
-                href="https://hh.ru/employer/123456" 
-                target="_blank" 
+              <a
+                href="https://rostov.hh.ru/employer/1186916?hhtmFrom=vacancy"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block"
               >
@@ -171,7 +173,7 @@ export default function CareerPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
-                <Image src="/img/proverka.svg" alt="Зарплата" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/concuterintional_zp.svg" alt="Зарплата" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-2">Конкурентная зарплата</h3>
               <p className="text-gray-500">Высокий уровень оплаты труда</p>
@@ -179,7 +181,7 @@ export default function CareerPage() {
 
             <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
-                <Image src="/img/support.svg" alt="Обучение" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/study.svg" alt="Обучение" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-2">Обучение и развитие</h3>
               <p className="text-gray-500">Курсы, конференции, сертификации</p>
@@ -187,7 +189,7 @@ export default function CareerPage() {
 
             <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
-                <Image src="/img/pole.svg" alt="Гибкость" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/grafic.svg" alt="Гибкость" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-2">Гибкий график</h3>
               <p className="text-gray-500">Удаленная работа и гибкие часы</p>
@@ -195,7 +197,7 @@ export default function CareerPage() {
 
             <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
               <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
-                <Image src="/img/proverka.svg" alt="Медицина" width={32} height={32} className="object-contain" />
+                <Image src="/img/job/dms.svg" alt="Медицина" width={32} height={32} className="object-contain" />
               </div>
               <h3 className="text-xl font-medium text-black mb-2">ДМС</h3>
               <p className="text-gray-500">Добровольное медицинское страхование</p>
@@ -215,9 +217,9 @@ export default function CareerPage() {
               Перейдите на HH.ru, чтобы увидеть все наши вакансии и откликнуться на интересующие позиции
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="https://hh.ru/employer/123456" 
-                target="_blank" 
+              <a
+                href="https://rostov.hh.ru/employer/1186916?hhtmFrom=vacancy"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block"
               >
@@ -225,13 +227,15 @@ export default function CareerPage() {
                   Перейти на HH.ru
                 </Button>
               </a>
-              <Button variant="secondary" size="large" className="w-full md:w-auto">
-                Связаться с HR
-              </Button>
+              <a href="https://t.me/edinayasreda" target="_blank" rel="noopener noreferrer" className="inline-block">
+                <Button variant="secondary" size="large" className="w-full md:w-auto">
+                  Связаться с HR
+                </Button>
+              </a>
             </div>
           </div>
         </div>
       </section>
     </Layout>
   );
-} 
+}
