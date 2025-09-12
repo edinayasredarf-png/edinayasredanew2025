@@ -11,6 +11,12 @@ const ProductsTeamsSection = () => {
   const [progressMs, setProgressMs] = useState<number>(0);
   const rafRef = useRef<number | null>(null);
 
+  const getVideoType = (src: string): string => {
+    if (src.endsWith('.mp4')) return 'video/mp4';
+    if (src.endsWith('.mov')) return 'video/quicktime';
+    return 'video/mp4';
+  };
+
   const slides = [
     {
       name: "Единая Среда",
@@ -154,6 +160,7 @@ const ProductsTeamsSection = () => {
             loop
             muted
             playsInline
+            preload="metadata"
             className="w-full h-full object-cover opacity-70"
             key={videoSrc}
             ref={videoRef}
@@ -161,7 +168,7 @@ const ProductsTeamsSection = () => {
             onPause={() => setIsPlaying(false)}
             onLoadedMetadata={() => { if (isPlaying) { void videoRef.current?.play(); } }}
           >
-            <source src={videoSrc} type="video/mp4" />
+            <source src={videoSrc} type={getVideoType(videoSrc)} />
             Ваш браузер не поддерживает видео тег.
           </video>
         </div>
