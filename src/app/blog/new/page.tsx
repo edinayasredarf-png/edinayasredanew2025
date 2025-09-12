@@ -252,7 +252,7 @@ export default function NewPostPage() {
   if (!authed) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
-        <div className="max-w-[640px] mx-auto px-5 md:px-8 py-16">
+        <div className="max-w-[640px] mx-auto px-4 md:px-8 py-8 md:py-16">
           <div className="bg-white rounded-2xl p-6 border">
             <h1 className="text-2xl font-semibold mb-4 text-[#111]">Авторизация редактора</h1>
             <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#111]" placeholder="Логин" value={login} onChange={e=>setLogin(e.target.value)} />
@@ -278,25 +278,25 @@ export default function NewPostPage() {
   return (
     <Suspense fallback={<div className="min-h-screen" /> }>
       <div className="bg-[#f2f3f7] min-h-screen" dir="ltr">
-        <div className="max-w-[1000px] mx-auto px-5 md:px-8 py-8">
+        <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-8">
           <div className="flex items-center justify-between mb-6">
             <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Назад
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               {editSlug && editType && (
                 <button onClick={doDelete} className="px-4 py-2 rounded-lg border hover:bg-gray-50 text-[#111]">Удалить</button>
               )}
               <button
                 onClick={()=> setStep(s=> Math.min(s+1,3))}
-                className="px-5 py-2 rounded-lg bg-[#2777ff] text:white">{step<3?'Далее':'Готово'}</button>
+                className="px-5 py-2 rounded-lg bg-[#2777ff] text-white">{step<3?'Далее':'Готово'}</button>
             </div>
           </div>
 
-          <div className="bg:white rounded-2xl p-6 border">
+          <div className="bg-white rounded-2xl p-6 border">
             {/* шаги */}
-            <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
+            <div className="mb-6 flex flex-wrap items-center gap-2 text-sm overflow-x-auto">
               {[0,1,2,3].map(i=>(
                 <button key={i} onClick={()=>setStep(i)}
                   className={`h-8 px-3 rounded-lg border ${step===i?'bg-[#2777ff] text-white border-[#2777ff]':'bg-white text-[#111]'}`}>
@@ -346,12 +346,13 @@ export default function NewPostPage() {
             {/* STEP 2 — блоки */}
             {step===2 && (
               <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <StepTitle>Контент</StepTitle>
-                  <div className="relative">
-                    <details className="group">
-                      <summary className="list-none cursor-pointer h-10 px-3 rounded-lg border text-[#111]">+ Добавить блок</summary>
-                      <div className="absolute right-0 mt-2 w-64 rounded-xl border bg:white p-2 shadow-lg z-10">
+                <div className="sticky top-4 z-20 bg-white p-4 rounded-xl border shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <StepTitle>Контент</StepTitle>
+                    <div className="relative">
+                      <details className="group">
+                        <summary className="list-none cursor-pointer h-10 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm">+ Добавить блок</summary>
+                        <div className="absolute right-0 sm:right-0 left-0 sm:left-auto mt-2 w-full sm:w-64 rounded-xl border bg-white p-2 shadow-lg z-10">
                         <button onClick={()=>addBlock({id:uid(),type:'text',align:'left',html:''} as TextBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Текст</button>
                         <button onClick={()=>addBlock({id:uid(),type:'h2',align:'left',text:''} as HBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Подзаголовок H2</button>
                         <button onClick={()=>addBlock({id:uid(),type:'h3',align:'left',text:''} as HBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Подзаголовок H3</button>
@@ -367,19 +368,20 @@ export default function NewPostPage() {
                     </details>
                   </div>
                 </div>
+                </div>
 
                 {/* список блоков */}
                 <div className="space-y-6">
                   {blocks.map((b, i)=>(
-                    <div key={b.id} className="rounded-xl border p-4 bg:white">
-                      <div className="flex items-center gap-2 mb-3">
+                    <div key={b.id} className="rounded-xl border p-4 bg-white">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
                         <div className="text-sm text-[#52555a]">{b.type.toUpperCase()}</div>
-                        <div className="ml-auto flex items-center gap-2">
+                        <div className="ml-auto flex flex-wrap items-center gap-2">
                           {'align' in b && (
                             <div className="flex gap-1">
                               {(['left','center','right'] as Align[]).map(a=>(
                                 <button key={a} onClick={()=>updateAt(i,{ align:a } as Partial<Block>)}
-                                  className={`h-8 px-3 rounded-lg border ${ (b as any).align===a ? 'bg-[#2777ff] text:white border-[#2777ff]' : 'text-[#111]'}`}>{a==='left'?'Слева':a==='center'?'По центру':'Справа'}</button>
+                                  className={`h-8 px-3 rounded-lg border ${ (b as any).align===a ? 'bg-[#2777ff] text-white border-[#2777ff]' : 'text-[#111]'}`}>{a==='left'?'Слева':a==='center'?'По центру':'Справа'}</button>
                               ))}
                             </div>
                           )}
@@ -454,7 +456,7 @@ export default function NewPostPage() {
                                       images.splice(idx,1);
                                       updateAt(i,{ images } as Partial<GalleryBlock>);
                                     }}
-                                    className="absolute top-2 right-2 bg:white/90 backdrop-blur px-2 py-1 rounded-md border text-xs">Удалить</button>
+                                    className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-md border text-xs">Удалить</button>
                                 </div>
                               ))}
                             </div>

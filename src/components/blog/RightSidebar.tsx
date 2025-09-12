@@ -19,7 +19,7 @@ export default function RightSidebar() {
         <div className="p-5 bg-white rounded-3xl border space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-[#111]">Новости</h3>
-            <Link href="/news" className="h-8 px-3 rounded-lg border text-sm flex items-center">Все</Link>
+            <Link href="/news" className="h-8 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center">Все</Link>
           </div>
           <div className="space-y-4">
             {news.slice(0,6).map(n => (
