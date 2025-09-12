@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @import url('../public_html 2/style.css'); */
+
+@keyframes waving-flag {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+.waving-flag {
+  background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
+  background-size: 200% 200%;
+  animation: waving-flag 1.2s linear infinite alternate;
+}
+
+/* Добавлено: анимация waving-flag по hover на .group */
+.group:hover .flag-animate {
+  background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
+  background-size: 200% 200%;
+  animation: waving-flag 1.2s linear infinite alternate;
+}
