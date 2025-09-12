@@ -23,7 +23,7 @@ const ProductsTeamsSection = () => {
 				style={{ height: 'auto' }}
 			/>
       ),
-      video: "/media/es.mp4",
+      video: "https://единаясреда.рф/media/es.mp4",
       title: "Единая Среда",
       description: "Цифровая платформа для управления муниципальной собственностью ",
       statsLabel: "Сервис номер 1 для оцифровки городов",
@@ -41,7 +41,7 @@ const ProductsTeamsSection = () => {
 				style={{ height: 'auto' }}
 			/>
       ),
-      video: "/media/myroots.mp4",
+      video: "https://единаясреда.рф/media/myroots.mp4",
       title: "MyRoots",
       description: "Сервис для построения генеалогического древа и ухода за местами захоронений",
       stats: "10,000+",
@@ -61,7 +61,7 @@ const ProductsTeamsSection = () => {
 				style={{ height: 'auto' }}
 			/>
       ),
-      video: "/media/oblastrazvitiya.mov",
+      video: "https://единаясреда.рф/media/oblastrazvitiya.mov",
       title: "Область Развития",
       description: "Платформа для развития территорий и привлечения инвестиций в проекты благоустройства",
       stats: "50+",
