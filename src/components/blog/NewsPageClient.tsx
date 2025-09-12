@@ -60,11 +60,22 @@ export default function NewsPageClient({ slug }: { slug: string }) {
     router.push('/news');
   };
 
+  const handleReact = (type: 'heart' | 'fire' | 'smile') => {
+    if (!news) return;
+    react('news', news.id, type);
+    setMine(myReactions(news.id));
+    // Refresh news data to get updated reactions
+    const updatedNews = getNewsBySlug(news.slug);
+    if (updatedNews) {
+      setNews(updatedNews);
+    }
+  };
+
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
       <TopBar />
-      <div className="max-w-[1440px] mx-auto px-[34px] pt-6 pb-16">
-        <div className="flex gap-[15px]">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+        <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav />
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
@@ -117,21 +128,21 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                 <div className="mt-4 flex items-center gap-2 text-sm">
                   <button
                     disabled={mine.includes('heart')}
-                    onClick={() => react('news', news.id, 'heart')}
+                    onClick={() => handleReact('heart')}
                     className="px-3 py-1.5 rounded-lg bg-[#f2f3f7] hover:bg-[#e9eefb] disabled:opacity-50"
                   >
                     ❤ {rx.heart}
                   </button>
                   <button
                     disabled={mine.includes('fire')}
-                    onClick={() => react('news', news.id, 'fire')}
+                    onClick={() => handleReact('fire')}
                     className="px-3 py-1.5 rounded-lg bg-[#f2f3f7] hover:bg-[#e9eefb] disabled:opacity-50"
                   >
                     🔥 {rx.fire}
                   </button>
                   <button
                     disabled={mine.includes('smile')}
-                    onClick={() => react('news', news.id, 'smile')}
+                    onClick={() => handleReact('smile')}
                     className="px-3 py-1.5 rounded-lg bg-[#f2f3f7] hover:bg-[#e9eefb] disabled:opacity-50"
                   >
                     🙂 {rx.smile}

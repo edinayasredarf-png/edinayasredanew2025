@@ -92,6 +92,9 @@ export default function NewPostPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [loadingEdit, setLoadingEdit] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<string>('');
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   useEffect(() => { setAuthed(auth.isAuthed()); }, []);
 
@@ -209,11 +212,21 @@ export default function NewPostPage() {
   // публикация
   const canPublish = useMemo(() => title.trim().length > 2 && (kind === 'news' ? true : blocks.length>0), [title, blocks, kind]);
 
+  const showNotificationToast = (message: string) => {
+    setNotificationMessage(message);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
+
   const publish = () => {
     if (!canPublish) return;
     const now = Date.now();
     const slug = genSlug(title);
     const html = renderBlocks(blocks);
+
+    // Check if scheduled publishing
+    const publishTime = scheduledDate ? new Date(scheduledDate).getTime() : now;
+    const isScheduled = publishTime > now;
 
     if (kind === 'post' || kind === 'lesson' || kind === 'case') {
       const prev = editSlug && editType==='post' ? getPostBySlug(editSlug) : undefined;
@@ -221,24 +234,37 @@ export default function NewPostPage() {
         id: prev?.id || crypto.randomUUID(),
         slug, title, subtitle: (kind==='post'?subtitle:undefined),
         cover, contentHtml: html, tags,
-        createdAt: prev?.createdAt || now, updatedAt: now,
+        createdAt: prev?.createdAt || publishTime, updatedAt: now,
         views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
       };
       // Пишем в Supabase, при ошибке — локально
       sb_upsertPost(p).catch(()=>upsertPost(p));
       clearDraft();
-      window.location.href = `/blog/${p.slug}`;
+      
+      const typeName = kind === 'post' ? 'статья' : kind === 'lesson' ? 'урок' : 'кейс';
+      if (isScheduled) {
+        showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
+      } else {
+        showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} опубликована!`);
+        window.location.href = `/blog/${p.slug}`;
+      }
     } else {
       const prev = editSlug && editType==='news' ? getNewsBySlug(editSlug) : undefined;
       const n: NewsItem = {
         id: prev?.id || crypto.randomUUID(),
         slug, title, cover, contentHtml: html || undefined, tags,
-        createdAt: prev?.createdAt || now, updatedAt: now,
+        createdAt: prev?.createdAt || publishTime, updatedAt: now,
         views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
       };
       sb_upsertNews(n).catch(()=>upsertNews(n));
       clearDraft();
-      window.location.href = `/news/${n.slug}`;
+      
+      if (isScheduled) {
+        showNotificationToast(`Новость запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
+      } else {
+        showNotificationToast('Новость опубликована!');
+        window.location.href = `/news/${n.slug}`;
+      }
     }
   };
 
@@ -589,9 +615,31 @@ export default function NewPostPage() {
                   </div>
                 </div>
 
+                {/* Scheduled Publishing */}
+                <div className="space-y-4">
+                  <StepTitle>Отложенная публикация</StepTitle>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-[#111] mb-2">
+                        Дата и время публикации (необязательно)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
+                        min={new Date().toISOString().slice(0, 16)}
+                        className="w-full border rounded-lg px-3 py-2 text-[#111]"
+                      />
+                      <div className="text-sm text-[#52555a] mt-1">
+                        Оставьте пустым для немедленной публикации
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="pt-2 flex flex-wrap gap-3">
                   <button onClick={publish} disabled={!canPublish}
-                    className={`px-6 py-3 rounded-xl text:white ${canPublish ? 'bg-[#2777ff] hover:bg-[#1f66de]' : 'bg-gray-300 cursor-not-allowed'} transition-colors`}>
+                    className={`px-6 py-3 rounded-xl text-white ${canPublish ? 'bg-[#2777ff] hover:bg-[#1f66de]' : 'bg-gray-300 cursor-not-allowed'} transition-colors`}>
                     Опубликовать
                   </button>
                   <button onClick={()=>{ clearDraft(); setTitle(''); setSubtitle(''); setCover(undefined); setBlocks([]); setTags([]); setStep(0); }}
@@ -604,6 +652,13 @@ export default function NewPostPage() {
           {loadingEdit && <div className="mt-4 text-sm text-[#52555a]">Загрузка…</div>}
         </div>
       </div>
+      
+      {/* Notification Toast */}
+      {showNotification && (
+        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          {notificationMessage}
+        </div>
+      )}
     </Suspense>
   );
 }
