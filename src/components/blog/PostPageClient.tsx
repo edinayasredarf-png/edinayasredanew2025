@@ -15,7 +15,7 @@ import {
   auth,
   deletePostById,
 } from '@/lib/blogStore';
-import { sb_getPostBySlug, sb_listPosts, sb_incViews } from '@/lib/blogStore';
+import { sb_getPostBySlug, sb_listPosts, sb_incViews, sb_deletePostById } from '@/lib/blogStore';
 
 export default function PostPageClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -62,9 +62,13 @@ export default function PostPageClient({ slug }: { slug: string }) {
     alert('Ссылка скопирована');
   };
 
-  const doDelete = () => {
+  const doDelete = async () => {
     if (!confirm('Удалить статью?')) return;
-    deletePostById(post.id);
+    try {
+      await sb_deletePostById(post.id);
+    } catch {
+      deletePostById(post.id);
+    }
     router.push('/blog');
   };
 

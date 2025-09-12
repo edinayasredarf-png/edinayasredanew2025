@@ -14,7 +14,7 @@ import {
   auth,
   deleteNewsById,
 } from '@/lib/blogStore';
-import { sb_getNewsBySlug, sb_incViews } from '@/lib/blogStore';
+import { sb_getNewsBySlug, sb_incViews, sb_deleteNewsById } from '@/lib/blogStore';
 
 export default function NewsPageClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -50,9 +50,13 @@ export default function NewsPageClient({ slug }: { slug: string }) {
 
   const rx = news.reactions || { heart: 0, fire: 0, smile: 0 };
 
-  const doDelete = () => {
+  const doDelete = async () => {
     if (!confirm('Удалить новость?')) return;
-    deleteNewsById(news.id);
+    try {
+      await sb_deleteNewsById(news.id);
+    } catch {
+      deleteNewsById(news.id);
+    }
     router.push('/news');
   };
 
