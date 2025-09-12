@@ -94,7 +94,7 @@ const CasesPage: React.FC = () => {
       {/* Мобильное изображение */}
       <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
         <img
-          src="/img/cases-hero.png"
+          src="/img/cases/cases-hero.svg"
           alt="Иллюстрация кейсов"
           className="w-full max-w-[500px] object-contain"
           style={{ height: 'auto' }}
@@ -104,9 +104,9 @@ const CasesPage: React.FC = () => {
     </div>
 
     {/* Десктопное изображение справа */}
-    <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[600px] h-auto pointer-events-none">
+    <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[450px] h-auto pointer-events-none">
       <img
-        src="/img/cases-hero.png"
+        src="/img/cases/cases-hero.svg"
         alt="Иллюстрация кейсов"
         className="w-full object-contain"
         style={{ height: 'auto' }}
