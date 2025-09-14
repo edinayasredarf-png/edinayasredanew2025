@@ -42,15 +42,16 @@ export default function TopBar() {
 
   return (
     <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] border-b border-[#e1e2e5]">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center gap-2 sm:gap-4">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center justify-between">
         <Link href="/" className="w-[46px] h-[46px] rounded-xl overflow-hidden shrink-0" aria-label="Logo">
           <img src="/icons/es-blue.svg" alt="logo" className="w-full h-full object-contain" />
         </Link>
 
-        <div className="flex-1 flex justify-center hidden md:block">
+        {/* Desktop search - centered */}
+        <div className="hidden md:flex justify-center flex-1">
           <div className="w-full max-w-[761px] h-[46px] relative">
             <div className="absolute inset-0 bg-white rounded-xl border border-[#e1e2e5] flex items-center pl-12 pr-3">
-            <input
+              <input
                 value={q}
                 onChange={(e)=>{ setQ(e.target.value); }}
                 onKeyDown={(e)=>{ if(e.key==='Enter') goSearch(q, contentType); }}

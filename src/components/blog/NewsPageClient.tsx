@@ -27,7 +27,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   useEffect(() => {
     if (!slug) return;
     (async ()=>{
-      const n = await sb_getNewsBySlug(slug).catch(()=>undefined) || getNewsBySlug(slug);
+      const n = await sb_getNewsBySlug(slug);
       setNews(n);
       if (n) {
         await sb_incViews('news', n.slug);
@@ -64,12 +64,12 @@ export default function NewsPageClient({ slug }: { slug: string }) {
     router.push('/news');
   };
 
-  const handleReact = (type: 'heart' | 'fire' | 'smile') => {
+  const handleReact = async (type: 'heart' | 'fire' | 'smile') => {
     if (!news) return;
     react('news', news.id, type);
     setMine(myReactions(news.id));
     // Refresh news data to get updated reactions
-    const updatedNews = getNewsBySlug(news.slug);
+    const updatedNews = await sb_getNewsBySlug(news.slug);
     if (updatedNews) {
       setNews(updatedNews);
     }

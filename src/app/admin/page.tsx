@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { auth, listPosts, listNews, incViews, sb_clearTestNews } from '@/lib/blogStore';
+import { auth, sb_listPosts, sb_listNews, sb_clearTestNews } from '@/lib/blogStore';
 
 interface AnalyticsData {
   totalPosts: number;
@@ -29,13 +29,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (isAuthed) {
-      calculateAnalytics();
+      calculateAnalytics().catch(console.error);
     }
   }, [isAuthed]);
 
-  const calculateAnalytics = () => {
-    const posts = listPosts();
-    const news = listNews();
+  const calculateAnalytics = async () => {
+    const posts = await sb_listPosts();
+    const news = await sb_listNews();
     
     const totalViews = [...posts, ...news].reduce((sum, item) => sum + (item.views || 0), 0);
     const totalReactions = [...posts, ...news].reduce((sum, item) => {

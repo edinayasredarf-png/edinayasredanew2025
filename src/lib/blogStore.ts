@@ -359,47 +359,54 @@ function newsToPayload(n: NewsItem): any {
 
 // -------- SUPABASE ASYNC API (optional) ----------
 export async function sb_listPosts(): Promise<BlogPost[]> {
-  const sb = getSupabase(); if (!sb) return listPosts();
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
   const { data, error } = await sb.from('posts').select('*').order('createdat', { ascending: false });
-  if (error) return listPosts();
+  if (error) throw error;
   return (data || []).map(mapPostRow);
 }
 export async function sb_getPostBySlug(slug: string): Promise<BlogPost | undefined> {
-  const sb = getSupabase(); if (!sb) return getPostBySlug(slug);
-  const { data } = await sb.from('posts').select('*').eq('slug', slug).maybeSingle();
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { data, error } = await sb.from('posts').select('*').eq('slug', slug).maybeSingle();
+  if (error) throw error;
   return data ? mapPostRow(data) : undefined;
 }
 export async function sb_upsertPost(p: BlogPost): Promise<void> {
-  const sb = getSupabase(); if (!sb) return upsertPost(p);
-  await sb.from('posts').upsert(postToPayload(p), { onConflict: 'id' });
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { error } = await sb.from('posts').upsert(postToPayload(p), { onConflict: 'id' });
+  if (error) throw error;
 }
 export async function sb_deletePostById(id: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) return deletePostById(id);
-  await sb.from('posts').delete().eq('id', id);
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { error } = await sb.from('posts').delete().eq('id', id);
+  if (error) throw error;
 }
 
 export async function sb_listNews(): Promise<NewsItem[]> {
-  const sb = getSupabase(); if (!sb) return listNews();
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
   const { data, error } = await sb.from('news').select('*').order('createdat', { ascending: false });
-  if (error) return listNews();
+  if (error) throw error;
   return (data || []).map(mapNewsRow);
 }
 export async function sb_getNewsBySlug(slug: string): Promise<NewsItem | undefined> {
-  const sb = getSupabase(); if (!sb) return getNewsBySlug(slug);
-  const { data } = await sb.from('news').select('*').eq('slug', slug).maybeSingle();
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { data, error } = await sb.from('news').select('*').eq('slug', slug).maybeSingle();
+  if (error) throw error;
   return data ? mapNewsRow(data) : undefined;
 }
 export async function sb_upsertNews(n: NewsItem): Promise<void> {
-  const sb = getSupabase(); if (!sb) return upsertNews(n);
-  await sb.from('news').upsert(newsToPayload(n), { onConflict: 'id' });
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { error } = await sb.from('news').upsert(newsToPayload(n), { onConflict: 'id' });
+  if (error) throw error;
 }
 export async function sb_deleteNewsById(id: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) return deleteNewsById(id);
-  await sb.from('news').delete().eq('id', id);
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { error } = await sb.from('news').delete().eq('id', id);
+  if (error) throw error;
 }
 
 export async function sb_incViews(kind: 'post'|'news', slug: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) return incViews(kind, slug);
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
   const table = kind === 'post' ? 'posts' : 'news';
-  try { await sb.rpc('inc_views', { t_name: table, p_slug: slug }); } catch {}
+  const { error } = await sb.rpc('inc_views', { t_name: table, p_slug: slug });
+  if (error) throw error;
 }

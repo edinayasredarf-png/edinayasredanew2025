@@ -2,13 +2,31 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { listNews, NewsItem } from '@/lib/blogStore';
+import { NewsItem, sb_listNews } from '@/lib/blogStore';
 
 export default function RightSidebar() {
   const [news, setNews] = React.useState<NewsItem[]>([]);
-  React.useEffect(() => {
-    setNews(listNews());
-    const onFocus = () => setNews(listNews());
+  React.  useEffect(() => {
+    // Load news from Supabase
+    (async () => {
+      try {
+        const newsData = await sb_listNews();
+        setNews(newsData);
+      } catch (error) {
+        console.error('Failed to load news:', error);
+        setNews([]);
+      }
+    })();
+    
+    const onFocus = async () => {
+      try {
+        const newsData = await sb_listNews();
+        setNews(newsData);
+      } catch (error) {
+        console.error('Failed to refresh news:', error);
+      }
+    };
+    
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, []);

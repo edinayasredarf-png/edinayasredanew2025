@@ -30,14 +30,14 @@ export default function PostPageClient({ slug }: { slug: string }) {
     if (!slug) return;
     (async () => {
       // пост
-      const p = await sb_getPostBySlug(slug).catch(()=>undefined) || getPostBySlug(slug);
+      const p = await sb_getPostBySlug(slug);
       setPost(p);
       if (p) {
         await sb_incViews('post', p.slug);
         setMine(myReactions(p.id));
       }
       // ещё
-      const lp = await sb_listPosts().catch(()=>listPosts());
+      const lp = await sb_listPosts();
       setMore(lp.filter(x => x.slug !== slug).slice(0, 4));
     })();
   }, [slug]);
@@ -72,12 +72,12 @@ export default function PostPageClient({ slug }: { slug: string }) {
     router.push('/blog');
   };
 
-  const handleReact = (type: 'heart' | 'fire' | 'smile') => {
+  const handleReact = async (type: 'heart' | 'fire' | 'smile') => {
     if (!post) return;
     react('post', post.id, type);
     setMine(myReactions(post.id));
     // Refresh post data to get updated reactions
-    const updatedPost = getPostBySlug(post.slug);
+    const updatedPost = await sb_getPostBySlug(post.slug);
     if (updatedPost) {
       setPost(updatedPost);
     }
