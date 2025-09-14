@@ -47,40 +47,8 @@ export default function TopBar() {
           <img src="/icons/es-blue.svg" alt="logo" className="w-full h-full object-contain" />
         </Link>
 
-        {/* Desktop search - centered */}
-        <div className="hidden md:flex justify-center flex-1">
-          <div className="w-full max-w-[761px] h-[46px] relative">
-            <div className="absolute inset-0 bg-white rounded-xl border border-[#e1e2e5] flex items-center pl-12 pr-3">
-              <input
-                value={q}
-                onChange={(e)=>{ setQ(e.target.value); }}
-                onKeyDown={(e)=>{ if(e.key==='Enter') goSearch(q, contentType); }}
-                placeholder="Поиск по статьям и тегам (например: tag:UI)"
-                className="flex-1 outline-none text-[15px] placeholder:text-[#52555a] text-[#111]"
-              />
-              <div className="flex items-center gap-2">
-                <select
-                  value={contentType}
-                  onChange={e => setContentType(e.target.value as any)}
-                  className="px-3 py-1 text-sm border border-gray-200 rounded-lg bg-white text-[#111] focus:ring-2 focus:ring-[#2777ff] focus:border-transparent"
-                >
-                  <option value="all">Все</option>
-                  <option value="post">Статьи</option>
-                  <option value="news">Новости</option>
-                  <option value="lesson">Уроки</option>
-                  <option value="case">Кейсы</option>
-                </select>
-              </div>
-            </div>
-            <button
-              onClick={()=>goSearch(q, contentType)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-lg flex items-center justify-center hover:bg-[#f2f3f7]">
-              <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] text-[#a4a8b2]">
-                <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+        {/* Spacer for centering buttons */}
+        <div className="flex-1"></div>
 
         {/* Mobile search button */}
         <button
@@ -92,29 +60,31 @@ export default function TopBar() {
           </svg>
         </button>
 
-        {/* Write button - only show after login */}
-        {isAuthed && (
-          <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
-            <span className="hidden sm:inline">Написать</span>
-            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-          </Link>
-        )}
+        {/* Buttons container with proper spacing */}
+        <div className="flex items-center gap-3">
+          {/* Write button - only show after login */}
+          {isAuthed && (
+            <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
+              <span className="hidden sm:inline">Написать</span>
+              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </Link>
+          )}
 
-        {!isAuthed ? (
-          <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
-            <span className="hidden sm:inline">Войти</span>
-            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-        ) : (
-          <div className="relative" ref={profileRef}>
-            <button 
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="h-[46px] w-[46px] rounded-xl bg-white border hover:bg-gray-50 transition text-[#111] flex items-center justify-center"
-            >
-              <img src="/icons/blog/podpiski.svg" alt="Профиль" className="w-5 h-5" />
-            </button>
+          {!isAuthed ? (
+            <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
+              <span className="hidden sm:inline">Войти</span>
+              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+          ) : (
+            <div className="relative" ref={profileRef}>
+              <button 
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="h-[46px] w-[46px] rounded-xl bg-white hover:bg-gray-50 transition text-[#111] flex items-center justify-center"
+              >
+                <img src="/icons/blog/podpiski.svg" alt="Профиль" className="w-5 h-5" />
+              </button>
             
             {showProfileMenu && (
               <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border shadow-lg z-50">
@@ -150,9 +120,9 @@ export default function TopBar() {
                 </div>
               </div>
             )}
+            </div>
+          )}
           </div>
-        )}
-      </div>
 
       {/* мобильные вкладки */}
       <div className="md:hidden max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-3">
