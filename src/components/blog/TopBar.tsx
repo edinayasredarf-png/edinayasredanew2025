@@ -146,9 +146,11 @@ export default function TopBar() {
             }`}
           >
             Новости
-        </Link>
+          </Link>
         </div>
       </div>
+
+    </div>
 
       {/* Mobile Search Modal */}
       <MobileSearch
