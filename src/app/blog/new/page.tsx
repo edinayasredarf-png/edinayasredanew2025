@@ -268,13 +268,8 @@ export default function NewPostPage() {
         createdAt: prev?.createdAt || publishTime, updatedAt: now,
         views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
       };
-      try {
-        await sb_upsertNews(n);
-        console.log('News saved to Supabase');
-      } catch (error) {
-        console.log('Supabase save failed, using local:', error);
-        upsertNews(n);
-      }
+      // Пишем в Supabase, при ошибке — локально
+      sb_upsertNews(n).catch(()=>upsertNews(n));
       clearDraft();
       
       if (isScheduled) {
