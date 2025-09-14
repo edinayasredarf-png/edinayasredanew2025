@@ -269,7 +269,7 @@ export default function NewPostPage() {
         views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
       };
       // Пишем в Supabase, при ошибке — локально
-      sb_upsertNews(n).catch(()=>upsertNews(n));
+      sb_upsertNews(n).catch(() => upsertNews(n));
       clearDraft();
       
       if (isScheduled) {
@@ -465,9 +465,9 @@ export default function NewPostPage() {
               <div className="space-y-8">
                 <div className="sticky top-4 z-20 bg-white p-4 rounded-xl border shadow-sm">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <StepTitle>Контент</StepTitle>
-                    <div className="relative">
-                      <details className="group">
+                  <StepTitle>Контент</StepTitle>
+                  <div className="relative">
+                    <details className="group">
                         <summary className="list-none cursor-pointer h-10 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm">+ Добавить блок</summary>
                         <div className="absolute right-0 sm:right-0 left-0 sm:left-auto mt-2 w-full sm:w-64 rounded-xl border bg-white p-2 shadow-lg z-10">
                         <button onClick={()=>addBlock({id:uid(),type:'text',align:'left',text:''} as TextBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Текст</button>
@@ -484,7 +484,7 @@ export default function NewPostPage() {
                       </div>
                     </details>
                   </div>
-                </div>
+                  </div>
                 </div>
 
                 {/* список блоков */}
