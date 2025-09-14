@@ -1,5 +1,6 @@
 'use client';
 
+// Force cache update for Vercel
 import Link from 'next/link';
 import React, { useRef } from 'react';
 import { auth } from '@/lib/blogStore';
