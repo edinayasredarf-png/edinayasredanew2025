@@ -51,13 +51,6 @@ function BlogHomeInner() {
     return [A, B];
   }, [filtered]);
 
-  const popular = useMemo(() => {
-    return [...posts].sort((a,b)=>{
-      const sa = (a.reactions?.heart||0)+(a.reactions?.fire||0)+(a.reactions?.smile||0);
-      const sb = (b.reactions?.heart||0)+(b.reactions?.fire||0)+(b.reactions?.smile||0);
-      return sb - sa;
-    }).slice(0,4);
-  }, [posts]);
 
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
@@ -72,23 +65,6 @@ function BlogHomeInner() {
                 {cols[1].map(p => <PostCard key={p.id} p={p} />)}
               </div>
 
-              <div className="mt-8 p-5 bg-white rounded-3xl border">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-[#111]">Популярные статьи</h3>
-                  <Link href="/blog" className="text-sm text-[#2777ff]">все</Link>
-                </div>
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {popular.map(p=>(
-                    <a key={p.id} href={`/blog/${p.slug}`} className="rounded-2xl border p-3 hover:border-[#2777ff] transition block">
-                      <div className="w-full aspect-[16/10] bg-[#f2f3f7] rounded-xl overflow-hidden">
-                        <img src={p.cover || 'https://placehold.co/400x225'} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="mt-2 text-sm text-[#52555a]">{new Date(p.createdAt).toLocaleDateString('ru-RU')}</div>
-                      <div className="text-sm font-semibold text-[#111] leading-snug line-clamp-2">{p.title}</div>
-                    </a>
-                  ))}
-                </div>
-              </div>
             </div>
           </main>
           <RightSidebar />
