@@ -139,6 +139,31 @@ export function clearTestNews() {
   return list.length - filtered.length; // возвращаем количество удаленных
 }
 
+export async function sb_clearTestNews(): Promise<number> {
+  const sb = getSupabase(); 
+  if (!sb) return clearTestNews();
+  
+  const testTitles = [
+    'Релиз новой версии АИС «Единая Среда»',
+    'Конкурс айдентики для городского фестиваля'
+  ];
+  
+  try {
+    const { data, error } = await sb.from('news').select('id, title').in('title', testTitles);
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      const ids = data.map(item => item.id);
+      await sb.from('news').delete().in('id', ids);
+      return data.length;
+    }
+    return 0;
+  } catch (error) {
+    console.log('Supabase clear test news failed:', error);
+    return clearTestNews();
+  }
+}
+
 // -------- VIEWS ----------
 export function incViews(kind: 'post'|'news', slug: string) {
   if (kind === 'post') {

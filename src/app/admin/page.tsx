@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { auth, listPosts, listNews, incViews } from '@/lib/blogStore';
+import { auth, listPosts, listNews, incViews, sb_clearTestNews } from '@/lib/blogStore';
 
 interface AnalyticsData {
   totalPosts: number;
@@ -20,6 +20,8 @@ export default function AdminPage() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [login, setLogin] = useState('');
   const [pass, setPass] = useState('');
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   useEffect(() => {
     setIsAuthed(auth.isAuthed());
@@ -78,6 +80,23 @@ export default function AdminPage() {
       recentPosts,
       postsByType
     });
+  };
+
+  const showNotificationToast = (message: string) => {
+    setNotificationMessage(message);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  const clearTestNews = async () => {
+    if (!confirm('Удалить тестовые новости?')) return;
+    try {
+      const deleted = await sb_clearTestNews();
+      showNotificationToast(`Удалено ${deleted} тестовых новостей`);
+      calculateAnalytics(); // Обновляем аналитику
+    } catch (error) {
+      showNotificationToast('Ошибка при удалении тестовых новостей');
+    }
   };
 
   const doLogin = () => {
@@ -141,6 +160,12 @@ export default function AdminPage() {
             >
               Создать материал
             </Link>
+            <button
+              onClick={clearTestNews}
+              className="px-4 py-2 border border-yellow-300 text-yellow-600 rounded-lg hover:bg-yellow-50"
+            >
+              Удалить тестовые новости
+            </button>
             <button
               onClick={() => { auth.logout(); setIsAuthed(false); }}
               className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
@@ -237,6 +262,13 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+      
+      {/* Notification Toast */}
+      {showNotification && (
+        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+          {notificationMessage}
+        </div>
+      )}
     </div>
   );
 }

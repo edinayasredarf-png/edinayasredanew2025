@@ -268,13 +268,21 @@ export default function NewPostPage() {
         createdAt: prev?.createdAt || publishTime, updatedAt: now,
         views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
       };
-      sb_upsertNews(n).catch(()=>upsertNews(n));
+      try {
+        await sb_upsertNews(n);
+        console.log('News saved to Supabase');
+      } catch (error) {
+        console.log('Supabase save failed, using local:', error);
+        upsertNews(n);
+      }
       clearDraft();
       
       if (isScheduled) {
         showNotificationToast(`Новость запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
       } else {
         showNotificationToast('Новость опубликована!');
+        // Обновляем страницы новостей
+        window.dispatchEvent(new CustomEvent('newsUpdated'));
         window.location.href = `/news/${n.slug}`;
       }
     }
