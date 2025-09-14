@@ -7,7 +7,7 @@ import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import Link from 'next/link';
-import { listNews, NewsItem } from '@/lib/blogStore';
+import { listNews, NewsItem, sb_listNews } from '@/lib/blogStore';
 
 export default function NewsPage() {
   return (
@@ -26,7 +26,17 @@ function NewsPageInner() {
 
 function NewsList() {
   const [news, setNews] = useState<NewsItem[]>([]);
-  useEffect(() => { setNews(listNews()); }, []);
+  useEffect(() => { 
+    (async () => {
+      try {
+        const newsData = await sb_listNews();
+        setNews(newsData);
+      } catch (error) {
+        console.log('Supabase news load failed, using local:', error);
+        setNews(listNews());
+      }
+    })();
+  }, []);
 
   return (
     <div className="bg-[#f2f3f7] min-h-screen">

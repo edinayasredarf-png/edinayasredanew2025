@@ -13,6 +13,7 @@ export type BlogPost = {
   cover?: string;        // dataURL
   contentHtml: string;   // уже собранный HTML из блоков
   tags?: string[];
+  kind?: 'post' | 'news' | 'lesson' | 'case';  // тип контента
   createdAt: number;
   updatedAt: number;
   views?: number;
@@ -124,6 +125,18 @@ export function publishScheduledNews(id: string) {
     news.createdAt = Date.now();
     saveNews(list);
   }
+}
+
+// функция для удаления тестовых новостей
+export function clearTestNews() {
+  const list = loadNews();
+  const testTitles = [
+    'Релиз новой версии АИС «Единая Среда»',
+    'Конкурс айдентики для городского фестиваля'
+  ];
+  const filtered = list.filter(n => !testTitles.includes(n.title));
+  saveNews(filtered);
+  return list.length - filtered.length; // возвращаем количество удаленных
 }
 
 // -------- VIEWS ----------

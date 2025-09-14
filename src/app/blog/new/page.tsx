@@ -9,7 +9,7 @@ import {
   genSlug, loadDraft, saveDraft, upsertNews, upsertPost,
   getPostBySlug, getNewsBySlug, deletePostById, deleteNewsById,
   listAllTags, addTag, listScheduledPosts, listScheduledNews,
-  publishScheduledPost, publishScheduledNews
+  publishScheduledPost, publishScheduledNews, clearTestNews
 } from '@/lib/blogStore';
 import { sb_upsertPost, sb_upsertNews } from '@/lib/blogStore';
 // removed useSearchParams to avoid CSR bailout during prerender
@@ -244,7 +244,7 @@ export default function NewPostPage() {
       const p: BlogPost = {
         id: prev?.id || crypto.randomUUID(),
         slug, title, subtitle: (kind==='post'?subtitle:undefined),
-        cover, contentHtml: html, tags,
+        cover, contentHtml: html, tags, kind,
         createdAt: prev?.createdAt || publishTime, updatedAt: now,
         views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
       };
@@ -298,6 +298,15 @@ export default function NewPostPage() {
     }
   };
 
+  const clearTestData = () => {
+    if (!confirm('Удалить тестовые новости?')) return;
+    const deleted = clearTestNews();
+    showNotificationToast(`Удалено ${deleted} тестовых новостей`);
+    // Обновляем списки
+    setScheduledPosts(listScheduledPosts());
+    setScheduledNews(listScheduledNews());
+  };
+
   if (!authed) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
@@ -337,6 +346,12 @@ export default function NewPostPage() {
               {editSlug && editType && (
                 <button onClick={doDelete} className="px-4 py-2 rounded-lg border hover:bg-gray-50 text-[#111]">Удалить</button>
               )}
+              <button
+                onClick={clearTestData}
+                className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Удалить тестовые новости
+              </button>
               <button
                 onClick={()=> setStep(s=> Math.min(s+1,3))}
                 className="px-5 py-2 rounded-lg bg-[#2777ff] text-white">{step<3?'Далее':'Готово'}</button>

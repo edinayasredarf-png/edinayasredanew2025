@@ -7,6 +7,17 @@ export default function PostCard({ p }: { p: BlogPost }) {
   const rx = p.reactions || {heart:0,fire:0,smile:0};
   const total = rx.heart + rx.fire + rx.smile;
 
+  const getKindBadge = (kind?: string) => {
+    switch (kind) {
+      case 'lesson': return { text: 'УРОК', color: 'bg-blue-100 text-blue-800' };
+      case 'case': return { text: 'КЕЙС', color: 'bg-green-100 text-green-800' };
+      case 'news': return { text: 'НОВОСТЬ', color: 'bg-orange-100 text-orange-800' };
+      default: return null;
+    }
+  };
+
+  const kindBadge = getKindBadge(p.kind);
+
   return (
     <article className="w-full max-w-[372px] bg-white rounded-3xl p-4 border">
       <Link href={`/blog/${p.slug}`} className="block">
@@ -15,9 +26,16 @@ export default function PostCard({ p }: { p: BlogPost }) {
         </div>
       </Link>
       <div className="pt-3">
-        <Link href={`/blog/${p.slug}`} className="block">
-          <h3 className="text-[20px] font-semibold text-[#111] leading-snug">{p.title}</h3>
-        </Link>
+        <div className="flex items-start justify-between gap-2">
+          <Link href={`/blog/${p.slug}`} className="block flex-1">
+            <h3 className="text-[20px] font-semibold text-[#111] leading-snug">{p.title}</h3>
+          </Link>
+          {kindBadge && (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${kindBadge.color} flex-shrink-0`}>
+              {kindBadge.text}
+            </span>
+          )}
+        </div>
         {p.subtitle && <p className="mt-2 text-base text-[#52555a] line-clamp-2">{p.subtitle}</p>}
       </div>
 
