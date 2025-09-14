@@ -32,17 +32,17 @@ export default function LeftNav() {
         </div>
 
         <div className="flex gap-3">
-          <a href="https://vk.com/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#a4a8b2] flex items-center justify-center">
-            <img src="/icons/vk.svg" alt="VK" className="w-4 h-4" />
+          <a href="https://vk.com/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
+            <img src="/icons/vk.svg" alt="VK" className="w-4 h-4 brightness-0 invert" />
           </a>
-          <a href="https://t.me/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#a4a8b2] flex items-center justify-center">
-            <img src="/icons/tg.svg" alt="Telegram" className="w-4 h-4" />
+          <a href="https://t.me/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
+            <img src="/icons/tg.svg" alt="Telegram" className="w-4 h-4 brightness-0 invert" />
           </a>
-          <a href="https://dzen.ru/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#a4a8b2] flex items-center justify-center">
-            <img src="/icons/dzen.svg" alt="Дзен" className="w-4 h-4" />
+          <a href="https://dzen.ru/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
+            <img src="/icons/dzen.svg" alt="Дзен" className="w-4 h-4 brightness-0 invert" />
           </a>
-          <a href="https://vk.com/video/@edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#a4a8b2] flex items-center justify-center">
-            <img src="/icons/vkvideo.svg" alt="VK Video" className="w-4 h-4" />
+          <a href="https://vk.com/video/@edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
+            <img src="/icons/vkvideo.svg" alt="VK Video" className="w-4 h-4 brightness-0 invert" />
           </a>
         </div>
 
