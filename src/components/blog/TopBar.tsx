@@ -47,36 +47,38 @@ export default function TopBar() {
           <img src="/icons/es-blue.svg" alt="logo" className="w-full h-full object-contain" />
         </Link>
 
-        <div className="flex-1 h-[46px] relative hidden md:block">
-          <div className="absolute inset-0 bg-white rounded-xl border border-[#e1e2e5] flex items-center pl-12 pr-3">
+        <div className="flex-1 flex justify-center hidden md:block">
+          <div className="w-full max-w-[761px] h-[46px] relative">
+            <div className="absolute inset-0 bg-white rounded-xl border border-[#e1e2e5] flex items-center pl-12 pr-3">
             <input
-              value={q}
-              onChange={(e)=>{ setQ(e.target.value); }}
-              onKeyDown={(e)=>{ if(e.key==='Enter') goSearch(q, contentType); }}
-              placeholder="Поиск по статьям и тегам (например: tag:UI)"
-              className="flex-1 outline-none text-[15px] placeholder:text-[#52555a] text-[#111]"
-            />
-            <div className="flex items-center gap-2">
-              <select
-                value={contentType}
-                onChange={e => setContentType(e.target.value as any)}
-                className="px-3 py-1 text-sm border border-gray-200 rounded-lg bg-white text-[#111] focus:ring-2 focus:ring-[#2777ff] focus:border-transparent"
-              >
-                <option value="all">Все</option>
-                <option value="post">Статьи</option>
-                <option value="news">Новости</option>
-                <option value="lesson">Уроки</option>
-                <option value="case">Кейсы</option>
-              </select>
+                value={q}
+                onChange={(e)=>{ setQ(e.target.value); }}
+                onKeyDown={(e)=>{ if(e.key==='Enter') goSearch(q, contentType); }}
+                placeholder="Поиск по статьям и тегам (например: tag:UI)"
+                className="flex-1 outline-none text-[15px] placeholder:text-[#52555a] text-[#111]"
+              />
+              <div className="flex items-center gap-2">
+                <select
+                  value={contentType}
+                  onChange={e => setContentType(e.target.value as any)}
+                  className="px-3 py-1 text-sm border border-gray-200 rounded-lg bg-white text-[#111] focus:ring-2 focus:ring-[#2777ff] focus:border-transparent"
+                >
+                  <option value="all">Все</option>
+                  <option value="post">Статьи</option>
+                  <option value="news">Новости</option>
+                  <option value="lesson">Уроки</option>
+                  <option value="case">Кейсы</option>
+                </select>
+              </div>
             </div>
+            <button
+              onClick={()=>goSearch(q, contentType)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-lg flex items-center justify-center hover:bg-[#f2f3f7]">
+              <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] text-[#a4a8b2]">
+                <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+              </svg>
+            </button>
           </div>
-          <button
-            onClick={()=>goSearch(q, contentType)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-lg flex items-center justify-center hover:bg-[#f2f3f7]">
-            <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] text-[#a4a8b2]">
-              <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-            </svg>
-          </button>
         </div>
 
         {/* Mobile search button */}
@@ -154,8 +156,26 @@ export default function TopBar() {
       {/* мобильные вкладки */}
       <div className="md:hidden max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-3">
         <div className="grid grid-cols-2 gap-2">
-          <Link href="/blog" className={`h-9 rounded-lg border text-sm flex items-center justify-center`}>Статьи</Link>
-          <Link href="/news" className={`h-9 rounded-lg border text-sm flex items-center justify-center bg-white`}>Новости</Link>
+          <Link 
+            href="/blog" 
+            className={`h-10 rounded-xl text-sm font-medium flex items-center justify-center transition ${
+              pathname === '/blog' 
+                ? 'bg-white border-2 border-[#2777ff] text-[#2777ff] shadow-sm' 
+                : 'bg-transparent border border-[#e1e2e5] text-[#52555a] hover:bg-gray-50'
+            }`}
+          >
+            Статьи
+        </Link>
+          <Link 
+            href="/news" 
+            className={`h-10 rounded-xl text-sm font-medium flex items-center justify-center transition ${
+              pathname === '/news' 
+                ? 'bg-white border-2 border-[#2777ff] text-[#2777ff] shadow-sm' 
+                : 'bg-transparent border border-[#e1e2e5] text-[#52555a] hover:bg-gray-50'
+            }`}
+          >
+            Новости
+        </Link>
         </div>
       </div>
 
