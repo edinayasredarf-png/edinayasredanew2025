@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import React from 'react';
+import React, { useRef } from 'react';
 import { auth } from '@/lib/blogStore';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export default function TopBar() {
   const [isAuthed, setIsAuthed] = React.useState(false);
+  const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -14,6 +16,18 @@ export default function TopBar() {
   const [q, setQ] = React.useState(qFromUrl);
 
   React.useEffect(() => { setIsAuthed(auth.isAuthed()); }, []);
+
+  // Закрытие меню при клике вне его
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   React.useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
 
   const goSearch = (value: string) => {
@@ -48,18 +62,12 @@ export default function TopBar() {
           </button>
         </div>
 
-        {/* Admin and Write buttons - only show after login */}
+        {/* Write button - only show after login */}
         {isAuthed && (
-          <>
-            <Link href="/admin" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl border hover:bg-gray-50 transition text-[#111]">
-              <span className="hidden sm:inline">Админ</span>
-              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none"><path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2z" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </Link>
-            <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl border hover:bg-gray-50 transition text-[#111]">
-              <span className="hidden sm:inline">Написать</span>
-              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#111" strokeWidth="2" strokeLinecap="round"/></svg>
-            </Link>
-          </>
+          <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
+            <span className="hidden sm:inline">Написать</span>
+            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          </Link>
         )}
 
         {!isAuthed ? (
@@ -70,13 +78,49 @@ export default function TopBar() {
             </svg>
           </Link>
         ) : (
-          <button onClick={() => { auth.logout(); setIsAuthed(false); router.refresh(); }}
-                  className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-white border hover:bg-gray-50 transition text-[#111]">
-            <span className="hidden sm:inline">Выйти</span>
-            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <div className="relative" ref={profileRef}>
+            <button 
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="h-[46px] w-[46px] rounded-xl bg-white border hover:bg-gray-50 transition text-[#111] flex items-center justify-center"
+            >
+              <img src="/icons/blog/podpiski.svg" alt="Профиль" className="w-5 h-5" />
+            </button>
+            
+            {showProfileMenu && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border shadow-lg z-50">
+                <div className="p-4 border-b border-gray-100">
+                  <div className="text-sm text-gray-500">Профиль</div>
+                  <div className="text-lg font-semibold text-[#111]">Редактор</div>
+                </div>
+                <div className="py-2">
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>Админ панель</span>
+                  </Link>
+                  <button
+                    onClick={() => { 
+                      auth.logout(); 
+                      setIsAuthed(false); 
+                      setShowProfileMenu(false);
+                      router.refresh(); 
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>Выйти</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
