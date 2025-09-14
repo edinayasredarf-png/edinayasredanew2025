@@ -138,7 +138,7 @@ export default function NewPostPage() {
       if (p) {
         setKind('post'); setTitle(p.title); setSubtitle(p.subtitle||'');
         setCover(p.cover); setTags(p.tags||[]);
-        setBlocks([{ id: uid(), type:'text', align:'left', html: p.contentHtml } as TextBlock]);
+        setBlocks([{ id: uid(), type:'text', align:'left', text: p.contentHtml } as TextBlock]);
         setStep(2);
       }
     } else {
@@ -146,7 +146,7 @@ export default function NewPostPage() {
       if (n) {
         setKind('news'); setTitle(n.title); setSubtitle('');
         setCover(n.cover); setTags(n.tags||[]);
-        setBlocks([{ id: uid(), type:'text', align:'left', html: n.contentHtml || '' } as TextBlock]);
+        setBlocks([{ id: uid(), type:'text', align:'left', text: n.contentHtml || '' } as TextBlock]);
         setStep(2);
       }
     }
