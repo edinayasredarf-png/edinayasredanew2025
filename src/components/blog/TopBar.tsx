@@ -65,18 +65,10 @@ export default function TopBar() {
                 value={q}
                 onChange={(e) => { setQ(e.target.value); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') goSearch(q, contentType); }}
-                onClick={handleSearchClick}
+                onFocus={handleSearchClick}
                 placeholder="Поиск по статьям и тегам"
                 className="flex-1 outline-none text-[15px] placeholder:text-[#52555a] text-[#111]"
               />
-              <button
-                onClick={() => goSearch(q, contentType)}
-                className="w-[42px] h-[42px] rounded-lg flex items-center justify-center hover:bg-[#f2f3f7]"
-              >
-                <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] text-[#a4a8b2]">
-                  <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                </svg>
-              </button>
             </div>
             <button
               className="absolute left-2 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-lg flex items-center justify-center hover:bg-[#f2f3f7]"
@@ -91,7 +83,7 @@ export default function TopBar() {
           {showSearchDropdown && (
             <>
               {/* Backdrop */}
-              <div className="fixed inset-0 bg-black bg-opacity-20 z-40" onClick={() => setShowSearchDropdown(false)} />
+              <div className="fixed inset-0 bg-black bg-opacity-10 z-40" onClick={() => setShowSearchDropdown(false)} />
               
               {/* Dropdown Content */}
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-[#e1e2e5] shadow-lg z-50">
