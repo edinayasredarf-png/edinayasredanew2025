@@ -16,8 +16,13 @@ function BlogHomeInner() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   useEffect(() => { ensureDemo();
     (async () => {
-      const fromSb = await sb_listPosts().catch(()=>listPosts());
-      setPosts(fromSb);
+      try {
+        const fromSb = await sb_listPosts();
+        setPosts(fromSb);
+      } catch (error) {
+        console.error('Failed to load posts from database:', error);
+        setPosts([]);
+      }
     })();
   }, []);
 

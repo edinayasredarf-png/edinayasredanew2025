@@ -32,8 +32,8 @@ function NewsList() {
         const newsData = await sb_listNews();
         setNews(newsData);
       } catch (error) {
-        console.log('Supabase news load failed, using local:', error);
-        setNews(listNews());
+        console.error('Failed to load news from database:', error);
+        setNews([]);
       }
     })();
   }, []);

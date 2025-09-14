@@ -12,8 +12,8 @@ export default function RightSidebar() {
         const newsData = await sb_listNews();
         setNews(newsData);
       } catch (error) {
-        console.log('Supabase news load failed, using local:', error);
-        setNews(listNews());
+        console.error('Failed to load news from database:', error);
+        setNews([]);
       }
     })();
     
@@ -22,7 +22,7 @@ export default function RightSidebar() {
         const newsData = await sb_listNews();
         setNews(newsData);
       } catch (error) {
-        setNews(listNews());
+        console.error('Failed to refresh news from database:', error);
       }
     };
     
@@ -31,7 +31,7 @@ export default function RightSidebar() {
         const newsData = await sb_listNews();
         setNews(newsData);
       } catch (error) {
-        setNews(listNews());
+        console.error('Failed to update news from database:', error);
       }
     };
     

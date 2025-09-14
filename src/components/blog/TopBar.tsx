@@ -4,10 +4,13 @@ import Link from 'next/link';
 import React, { useRef } from 'react';
 import { auth } from '@/lib/blogStore';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import MobileSearch from './MobileSearch';
 
 export default function TopBar() {
   const [isAuthed, setIsAuthed] = React.useState(false);
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const [showMobileSearch, setShowMobileSearch] = React.useState(false);
+  const [contentType, setContentType] = React.useState<'all' | 'post' | 'news' | 'lesson' | 'case'>('all');
   const profileRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -30,9 +33,10 @@ export default function TopBar() {
   }, []);
   React.useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
 
-  const goSearch = (value: string) => {
+  const goSearch = (value: string, type?: string) => {
     const params = new URLSearchParams(sp.toString());
     if (value) params.set('q', value); else params.delete('q');
+    if (type && type !== 'all') params.set('type', type); else params.delete('type');
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -43,24 +47,47 @@ export default function TopBar() {
           <img src="/icons/es-blue.svg" alt="logo" className="w-full h-full object-contain" />
         </Link>
 
-        <div className="flex-1 h-[46px] relative">
+        <div className="flex-1 h-[46px] relative hidden md:block">
           <div className="absolute inset-0 bg-white rounded-xl border border-[#e1e2e5] flex items-center pl-12 pr-3">
             <input
               value={q}
               onChange={(e)=>{ setQ(e.target.value); }}
-              onKeyDown={(e)=>{ if(e.key==='Enter') goSearch(q); }}
+              onKeyDown={(e)=>{ if(e.key==='Enter') goSearch(q, contentType); }}
               placeholder="Поиск по статьям и тегам (например: tag:UI)"
-              className="w-full outline-none text-[15px] placeholder:text-[#52555a] text-[#111]"
+              className="flex-1 outline-none text-[15px] placeholder:text-[#52555a] text-[#111]"
             />
+            <div className="flex items-center gap-2">
+              <select
+                value={contentType}
+                onChange={e => setContentType(e.target.value as any)}
+                className="px-3 py-1 text-sm border border-gray-200 rounded-lg bg-white text-[#111] focus:ring-2 focus:ring-[#2777ff] focus:border-transparent"
+              >
+                <option value="all">Все</option>
+                <option value="post">Статьи</option>
+                <option value="news">Новости</option>
+                <option value="lesson">Уроки</option>
+                <option value="case">Кейсы</option>
+              </select>
+            </div>
           </div>
           <button
-            onClick={()=>goSearch(q)}
+            onClick={()=>goSearch(q, contentType)}
             className="absolute left-2 top-1/2 -translate-y-1/2 w-[42px] h-[42px] rounded-lg flex items-center justify-center hover:bg-[#f2f3f7]">
             <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] text-[#a4a8b2]">
               <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
+
+        {/* Mobile search button */}
+        <button
+          onClick={() => setShowMobileSearch(true)}
+          className="md:hidden w-[46px] h-[46px] rounded-xl bg-white border border-[#e1e2e5] flex items-center justify-center hover:bg-gray-50"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+          </svg>
+        </button>
 
         {/* Write button - only show after login */}
         {isAuthed && (
@@ -131,6 +158,13 @@ export default function TopBar() {
           <Link href="/news" className={`h-9 rounded-lg border text-sm flex items-center justify-center bg-white`}>Новости</Link>
         </div>
       </div>
+
+      {/* Mobile Search Modal */}
+      <MobileSearch
+        isOpen={showMobileSearch}
+        onClose={() => setShowMobileSearch(false)}
+        initialQuery={q}
+      />
     </div>
   );
 }
