@@ -25,8 +25,8 @@ export default function TopBar() {
   return (
     <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] border-b border-[#e1e2e5]">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center gap-2 sm:gap-4">
-        <Link href="/" className="w-[46px] h-[46px] rounded-xl overflow-hidden shrink-0 bg-[#2777ff]" aria-label="Logo">
-          <img src="/img/logo.svg" alt="logo" className="w-full h-full object-cover" />
+        <Link href="/" className="w-[46px] h-[46px] rounded-xl overflow-hidden shrink-0" aria-label="Logo">
+          <img src="/icons/es-blue.svg" alt="logo" className="w-full h-full object-contain" />
         </Link>
 
         <div className="flex-1 h-[46px] relative">
@@ -48,12 +48,18 @@ export default function TopBar() {
           </button>
         </div>
 
-        {/* Write button - only show after login */}
+        {/* Admin and Write buttons - only show after login */}
         {isAuthed && (
-          <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl border hover:bg-gray-50 transition text-[#111]">
-            <span className="hidden sm:inline">Написать</span>
-            <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#111" strokeWidth="2" strokeLinecap="round"/></svg>
-          </Link>
+          <>
+            <Link href="/admin" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl border hover:bg-gray-50 transition text-[#111]">
+              <span className="hidden sm:inline">Админ</span>
+              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none"><path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2z" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </Link>
+            <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl border hover:bg-gray-50 transition text-[#111]">
+              <span className="hidden sm:inline">Написать</span>
+              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#111" strokeWidth="2" strokeLinecap="round"/></svg>
+            </Link>
+          </>
         )}
 
         {!isAuthed ? (

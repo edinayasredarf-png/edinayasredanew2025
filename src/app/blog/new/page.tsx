@@ -9,7 +9,7 @@ import {
   genSlug, loadDraft, saveDraft, upsertNews, upsertPost,
   getPostBySlug, getNewsBySlug, deletePostById, deleteNewsById,
   listAllTags, addTag, listScheduledPosts, listScheduledNews,
-  publishScheduledPost, publishScheduledNews, clearTestNews
+  publishScheduledPost, publishScheduledNews
 } from '@/lib/blogStore';
 import { sb_upsertPost, sb_upsertNews } from '@/lib/blogStore';
 // removed useSearchParams to avoid CSR bailout during prerender
@@ -98,6 +98,7 @@ export default function NewPostPage() {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [scheduledPosts, setScheduledPosts] = useState<BlogPost[]>([]);
   const [scheduledNews, setScheduledNews] = useState<NewsItem[]>([]);
+  const [showScheduled, setShowScheduled] = useState(false);
 
   useEffect(() => { setAuthed(auth.isAuthed()); }, []);
 
@@ -298,14 +299,6 @@ export default function NewPostPage() {
     }
   };
 
-  const clearTestData = () => {
-    if (!confirm('Удалить тестовые новости?')) return;
-    const deleted = clearTestNews();
-    showNotificationToast(`Удалено ${deleted} тестовых новостей`);
-    // Обновляем списки
-    setScheduledPosts(listScheduledPosts());
-    setScheduledNews(listScheduledNews());
-  };
 
   if (!authed) {
     return (
@@ -347,10 +340,10 @@ export default function NewPostPage() {
                 <button onClick={doDelete} className="px-4 py-2 rounded-lg border hover:bg-gray-50 text-[#111]">Удалить</button>
               )}
               <button
-                onClick={clearTestData}
-                className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                onClick={() => setShowScheduled(!showScheduled)}
+                className="px-4 py-2 rounded-lg border border-yellow-300 text-yellow-600 hover:bg-yellow-50"
               >
-                Удалить тестовые новости
+                {showScheduled ? 'Скрыть' : 'Показать'} отложенные ({scheduledPosts.length + scheduledNews.length})
               </button>
               <button
                 onClick={()=> setStep(s=> Math.min(s+1,3))}
@@ -370,7 +363,7 @@ export default function NewPostPage() {
             </div>
 
             {/* Отложенные статьи */}
-            {(scheduledPosts.length > 0 || scheduledNews.length > 0) && (
+            {showScheduled && (scheduledPosts.length > 0 || scheduledNews.length > 0) && (
               <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                 <h3 className="text-lg font-semibold text-yellow-800 mb-3">📅 Отложенные публикации</h3>
                 <div className="space-y-2">
