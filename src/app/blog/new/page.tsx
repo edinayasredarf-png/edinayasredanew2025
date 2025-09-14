@@ -230,7 +230,7 @@ export default function NewPostPage() {
     setTimeout(() => setShowNotification(false), 3000);
   };
 
-  const publish = () => {
+  const publish = async () => {
     if (!canPublish) return;
     const now = Date.now();
     const slug = genSlug(title);
