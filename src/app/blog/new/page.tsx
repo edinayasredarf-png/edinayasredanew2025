@@ -8,7 +8,8 @@ import {
   BlogDraft, BlogPost, NewsItem, auth, clearDraft, fileToDataURL,
   genSlug, loadDraft, saveDraft, upsertNews, upsertPost,
   getPostBySlug, getNewsBySlug, deletePostById, deleteNewsById,
-  listAllTags, addTag
+  listAllTags, addTag, listScheduledPosts, listScheduledNews,
+  publishScheduledPost, publishScheduledNews
 } from '@/lib/blogStore';
 import { sb_upsertPost, sb_upsertNews } from '@/lib/blogStore';
 // removed useSearchParams to avoid CSR bailout during prerender
@@ -95,6 +96,8 @@ export default function NewPostPage() {
   const [scheduledDate, setScheduledDate] = useState<string>('');
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [scheduledPosts, setScheduledPosts] = useState<BlogPost[]>([]);
+  const [scheduledNews, setScheduledNews] = useState<NewsItem[]>([]);
 
   useEffect(() => { setAuthed(auth.isAuthed()); }, []);
 
@@ -149,6 +152,14 @@ export default function NewPostPage() {
     }
     setLoadingEdit(false);
   }, [editSlug, editType]);
+
+  // загрузка отложенных статей
+  useEffect(() => {
+    if (authed) {
+      setScheduledPosts(listScheduledPosts());
+      setScheduledNews(listScheduledNews());
+    }
+  }, [authed]);
 
   const doLogin = () => {
     if (auth.login(login, pass)) setAuthed(true);
@@ -275,6 +286,18 @@ export default function NewPostPage() {
     else { const n = getNewsBySlug(editSlug); if (n) deleteNewsById(n.id); window.location.href = '/news'; }
   };
 
+  const publishScheduled = (id: string, type: 'post' | 'news') => {
+    if (type === 'post') {
+      publishScheduledPost(id);
+      setScheduledPosts(listScheduledPosts());
+      showNotificationToast('Статья опубликована!');
+    } else {
+      publishScheduledNews(id);
+      setScheduledNews(listScheduledNews());
+      showNotificationToast('Новость опубликована!');
+    }
+  };
+
   if (!authed) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
@@ -330,6 +353,63 @@ export default function NewPostPage() {
                 </button>
               ))}
             </div>
+
+            {/* Отложенные статьи */}
+            {(scheduledPosts.length > 0 || scheduledNews.length > 0) && (
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-3">📅 Отложенные публикации</h3>
+                <div className="space-y-2">
+                  {scheduledPosts.map(post => (
+                    <div key={post.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <div>
+                        <div className="font-medium text-[#111]">{post.title}</div>
+                        <div className="text-sm text-gray-500">
+                          Статья • {new Date(post.createdAt).toLocaleString('ru-RU')}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => publishScheduled(post.id, 'post')}
+                          className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
+                        >
+                          Опубликовать
+                        </button>
+                        <Link
+                          href={`/blog/new?edit=${encodeURIComponent(post.slug)}&type=post`}
+                          className="px-3 py-1 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700"
+                        >
+                          Редактировать
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                  {scheduledNews.map(news => (
+                    <div key={news.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <div>
+                        <div className="font-medium text-[#111]">{news.title}</div>
+                        <div className="text-sm text-gray-500">
+                          Новость • {new Date(news.createdAt).toLocaleString('ru-RU')}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => publishScheduled(news.id, 'news')}
+                          className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
+                        >
+                          Опубликовать
+                        </button>
+                        <Link
+                          href={`/blog/new?edit=${encodeURIComponent(news.slug)}&type=news`}
+                          className="px-3 py-1 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700"
+                        >
+                          Редактировать
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* STEP 0 */}
             {step===0 && (

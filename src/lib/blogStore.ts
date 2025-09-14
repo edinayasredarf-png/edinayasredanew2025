@@ -80,6 +80,10 @@ export function addTag(tag: string) {
 export function loadPosts(): BlogPost[] { return read<BlogPost[]>(K_POSTS, []); }
 export function savePosts(list: BlogPost[]) { write(K_POSTS, list); }
 export function listPosts(): BlogPost[] { return [...loadPosts()].sort((a,b)=>b.createdAt - a.createdAt); }
+export function listScheduledPosts(): BlogPost[] { 
+  const now = Date.now();
+  return loadPosts().filter(p => p.createdAt > now).sort((a,b)=>a.createdAt - b.createdAt); 
+}
 export function getPostBySlug(slug: string) { return loadPosts().find(p => p.slug === slug); }
 export function upsertPost(p: BlogPost) {
   const list = loadPosts();
@@ -88,11 +92,23 @@ export function upsertPost(p: BlogPost) {
   savePosts(list);
 }
 export function deletePostById(id: string) { savePosts(loadPosts().filter(p => p.id !== id)); }
+export function publishScheduledPost(id: string) {
+  const list = loadPosts();
+  const post = list.find(p => p.id === id);
+  if (post) {
+    post.createdAt = Date.now();
+    savePosts(list);
+  }
+}
 
 // -------- NEWS ----------
 export function loadNews(): NewsItem[] { return read<NewsItem[]>(K_NEWS, []); }
 export function saveNews(list: NewsItem[]) { write(K_NEWS, list); }
 export function listNews(): NewsItem[] { return [...loadNews()].sort((a,b)=>b.createdAt - a.createdAt); }
+export function listScheduledNews(): NewsItem[] { 
+  const now = Date.now();
+  return loadNews().filter(n => n.createdAt > now).sort((a,b)=>a.createdAt - b.createdAt); 
+}
 export function getNewsBySlug(slug: string) { return loadNews().find(n => n.slug === slug); }
 export function upsertNews(n: NewsItem) {
   const list = loadNews();
@@ -101,6 +117,14 @@ export function upsertNews(n: NewsItem) {
   saveNews(list);
 }
 export function deleteNewsById(id: string) { saveNews(loadNews().filter(n => n.id !== id)); }
+export function publishScheduledNews(id: string) {
+  const list = loadNews();
+  const news = list.find(n => n.id === id);
+  if (news) {
+    news.createdAt = Date.now();
+    saveNews(list);
+  }
+}
 
 // -------- VIEWS ----------
 export function incViews(kind: 'post'|'news', slug: string) {

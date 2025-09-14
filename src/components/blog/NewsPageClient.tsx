@@ -54,9 +54,13 @@ export default function NewsPageClient({ slug }: { slug: string }) {
     if (!confirm('Удалить новость?')) return;
     try {
       await sb_deleteNewsById(news.id);
-    } catch {
+      console.log('News deleted from Supabase');
+    } catch (error) {
+      console.log('Supabase delete failed, using local delete:', error);
       deleteNewsById(news.id);
     }
+    // Force refresh the news state
+    setNews(undefined);
     router.push('/news');
   };
 
