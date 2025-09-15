@@ -77,8 +77,6 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, [isMobileNavOpen, setIsMobileNavOpen]);
 
-  // ------------------------------------------------------------
-
   const handleMenuClick = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu);
   };
@@ -110,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({
     ? 'outline outline-1 outline-[#E3E8F2]'
     : 'outline outline-1 outline-white/25';
 
-  const dropdownMenuCls = `dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${
+  const dropdownMenuCls = `dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w[320px] ${
     isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'
   } rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${
     isLight ? 'border-gray-200' : 'border-white/10'
@@ -118,13 +116,6 @@ const Header: React.FC<HeaderProps> = ({
   const dropdownItemHover = `flex items-center gap-3 py-2 px-3 rounded-xl ${
     isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'
   } transition-colors`;
-
-  const consultBtnCls = `hidden lg:inline-flex items-center justify-center gap-2 px-4 py-[9px] ${
-    isLight ? 'text-[#212121] border-[#00D3E6]' : 'text-white border-[#00D3E6]'
-  } text-base font-medium rounded-xl border hover:bg-[#00d3e6]/10 transition-colors`;
-  const loginBtnCls = `hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 ${
-    isLight ? 'text-[#212121] bg-[#F6F7F9]' : 'text-white bg-[#212121]'
-  } text-base font-medium rounded-xl hover:bg-opacity-80 transition-colors`;
 
   return (
     <>
@@ -172,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({
                 </Button>
               </div>
 
-              {/* Десктоп: 3 кнопки */}
+              {/* Десктоп: 3 кнопки — иконки принудительно ЧЁРНЫЕ */}
               <a
                 href="#"
                 onClick={(e) => {
@@ -181,14 +172,14 @@ const Header: React.FC<HeaderProps> = ({
                 }}
                 className="hidden md:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-[#212121] text-base font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors"
               >
-                <ThemedIcon src="/icons/icon3.svg" size={20} />
+                <ThemedIcon src="/icons/icon3.svg" size={20} color="#212121" />
                 <span>Получить консультацию</span>
               </a>
               <a
                 href="https://edinayasreda.ru/"
                 className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
               >
-                <ThemedIcon src="/icons/icon4.svg" size={20} />
+                <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
                 <span>Вход</span>
               </a>
               <div className="hidden md:block">
@@ -317,14 +308,14 @@ const Header: React.FC<HeaderProps> = ({
                     </svg>
                   </button>
                   {openMenu === 'platform' && (
-                    <div className={dropdownMenuCls}>
-                      <a href="https://edinayasreda.ru/" className={dropdownItemHover}>
+                    <div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
+                      <a href="https://edinayasreda.ru/" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/icon4.svg" size={24} className="mr-1" /> Войти в ЛК
                       </a>
-                      <Link href="#" className={dropdownItemHover}>
+                      <Link href="#" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/CPU.svg" size={24} className="mr-1" /> Тех. характеристики
                       </Link>
-                      <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className={dropdownItemHover}>
+                      <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/Mobile.svg" size={24} className="mr-1" /> Мобильное приложение
                       </a>
                     </div>
@@ -358,16 +349,16 @@ const Header: React.FC<HeaderProps> = ({
                     </svg>
                   </button>
                   {openMenu === 'services' && (
-                    <div className={dropdownMenuCls}>
-                      <Link href="/services/inventory-burials" className={dropdownItemHover}>
+                    <div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
+                      <Link href="/services/inventory-burials" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/Cemetery.svg" size={24} className="mr-1" />
                         Инвентаризация мест захоронений
                       </Link>
-                      <Link href="/services/green-inventory" className={dropdownItemHover}>
+                      <Link href="/services/green-inventory" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/Tree.svg" size={24} className="mr-1" />
                         Инвентаризация зеленых насаждений
                       </Link>
-                      <Link href="/services/forest-management" className={dropdownItemHover}>
+                      <Link href="/services/forest-management" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/Forest.svg" size={24} className="mr-1" />
                         Лесоустройство
                       </Link>
@@ -389,7 +380,7 @@ const Header: React.FC<HeaderProps> = ({
                   )}
                 </li>
 
-                {/* Компания (без «Партнерство») */}
+                {/* Компания */}
                 <li className="relative">
                   <button
                     type="button"
@@ -416,11 +407,11 @@ const Header: React.FC<HeaderProps> = ({
                     </svg>
                   </button>
                   {openMenu === 'company' && (
-                    <div className={dropdownMenuCls}>
-                      <Link href="/about" className={dropdownItemHover}>
+                    <div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
+                      <Link href="/about" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/City.svg" size={24} className="mr-1" /> О компании
                       </Link>
-                      <Link href="/career" className={dropdownItemHover}>
+                      <Link href="/career" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/Job.svg" size={24} className="mr-1" /> Карьера
                       </Link>
                     </div>
@@ -437,10 +428,10 @@ const Header: React.FC<HeaderProps> = ({
                 </li>
                 <li>
                   <Link
-                    href="/documents"
+                    href="/blog"
                     className={`${navLinkBase} ${navText} ${navHover} ${isActive('/documents') ? activeBox : ''}`}
                   >
-                    Документация
+                    Блог
                   </Link>
                 </li>
                 <li>
@@ -459,15 +450,14 @@ const Header: React.FC<HeaderProps> = ({
                     Партнерство
                   </Link>
                 </li>
+
               </ul>
             </div>
-
-            {/* Мобильное меню — УБРАНО из хедера и вынесено в глобальный оверлей ниже */}
           </nav>
         </div>
       </header>
 
-      {/* ====== ГЛОБАЛЬНЫЙ МОБИЛЬНЫЙ ОВЕРЛЕЙ-МЕНЮ (фикс, на весь экран) ====== */}
+      {/* ====== ГЛОБАЛЬНЫЙ МОБИЛЬНЫЙ ОВЕРЛЕЙ-МЕНЮ ====== */}
       {isMobileNavOpen && (
         <div
           className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm"
@@ -479,7 +469,7 @@ const Header: React.FC<HeaderProps> = ({
             className="absolute inset-0 bg-white overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Верхняя панель внутри оверлея */}
+            {/* Верхняя панель */}
             <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 border-b border-black/10">
               <Link href="/" onClick={() => setIsMobileNavOpen(false)} className="flex items-center">
                 <Image src="/img/logo_dark.svg" alt="ES" width={140} height={40} className="w-[140px] h-auto" />
@@ -500,7 +490,7 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Контент меню (тот же порядок, что в прежнем мобильном меню) */}
+            {/* Контент меню */}
             <div className="px-4 sm:px-6 lg:px-8 py-4">
               <ul className="flex flex-col gap-2">
                 <li>
@@ -527,13 +517,13 @@ const Header: React.FC<HeaderProps> = ({
                   {openMobileSubmenu === 'platform' && (
                     <div className="mt-1 ml-3 flex flex-col gap-1">
                       <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
-                        <ThemedIcon src="/icons/icon4.svg" size={20} className="mr-1" /> Войти в ЛК
+                        <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" className="mr-1" /> Войти в ЛК
                       </a>
                       <Link href="#" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
-                        <ThemedIcon src="/icons/CPU.svg" size={20} className="mr-1" /> Тех. характеристики
+                        <ThemedIcon src="/icons/CPU.svg" size={20} color="#212121" className="mr-1" /> Тех. характеристики
                       </Link>
                       <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
-                        <ThemedIcon src="/icons/Mobile.svg" size={20} className="mr-1" /> Мобильное приложение
+                        <ThemedIcon src="/icons/Mobile.svg" size={20} color="#212121" className="mr-1" /> Мобильное приложение
                       </a>
                     </div>
                   )}
@@ -559,7 +549,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5"
                         onClick={() => setIsMobileNavOpen(false)}
                       >
-                        <ThemedIcon src="/icons/Cemetery.svg" size={20} className="mr-1" />
+                        <ThemedIcon src="/icons/Cemetery.svg" size={20} color="#212121" className="mr-1" />
                         Инвентаризация мест захоронений
                       </Link>
                       <Link
@@ -567,7 +557,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5"
                         onClick={() => setIsMobileNavOpen(false)}
                       >
-                        <ThemedIcon src="/icons/Tree.svg" size={20} className="mr-1" />
+                        <ThemedIcon src="/icons/Tree.svg" size={20} color="#212121" className="mr-1" />
                         Инвентаризация зеленых насаждений
                       </Link>
                       <Link
@@ -575,7 +565,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5"
                         onClick={() => setIsMobileNavOpen(false)}
                       >
-                        <ThemedIcon src="/icons/Forest.svg" size={20} className="mr-1" />
+                        <ThemedIcon src="/icons/Forest.svg" size={20} color="#212121" className="mr-1" />
                         Лесоустройство
                       </Link>
 
@@ -584,7 +574,7 @@ const Header: React.FC<HeaderProps> = ({
                         onClick={() => setIsMobileNavOpen(false)}
                         className="mt-2 bg-[#F6F7F9] text-[#212121] hover:bg-black/5 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors"
                       >
-                        <ThemedIcon src="/icons/arrow_right.svg" size={18} />
+                        <ThemedIcon src="/icons/arrow_right.svg" size={18} color="#212121" />
                         Посмотреть все услуги
                       </Link>
                     </div>
@@ -607,10 +597,10 @@ const Header: React.FC<HeaderProps> = ({
                   {openMobileSubmenu === 'company' && (
                     <div className="mt-1 ml-3 flex flex-col gap-1">
                       <Link href="/about" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5" onClick={() => setIsMobileNavOpen(false)}>
-                        <ThemedIcon src="/icons/City.svg" size={20} className="mr-1" /> О компании
+                        <ThemedIcon src="/icons/City.svg" size={20} color="#212121" className="mr-1" /> О компании
                       </Link>
                       <Link href="/career" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5" onClick={() => setIsMobileNavOpen(false)}>
-                        <ThemedIcon src="/icons/Job.svg" size={20} className="mr-1" /> Карьера
+                        <ThemedIcon src="/icons/Job.svg" size={20} color="#212121" className="mr-1" /> Карьера
                       </Link>
                     </div>
                   )}
@@ -627,11 +617,11 @@ const Header: React.FC<HeaderProps> = ({
                 </li>
                 <li>
                   <Link
-                    href="/documents"
+                    href="/blog"
                     onClick={() => setIsMobileNavOpen(false)}
                     className={`block text-[#212121] hover:bg-black/5 ${isActive('/documents') ? 'outline outline-1 outline-[#E3E8F2]' : ''} px-3 py-3 rounded-xl`}
                   >
-                    Документация
+                    Блог
                   </Link>
                 </li>
                 <li>
@@ -652,6 +642,15 @@ const Header: React.FC<HeaderProps> = ({
                     Партнерство
                   </Link>
                 </li>
+								  <li>
+                  <Link
+                    href="/blog"
+                    onClick={() => setIsMobileNavOpen(false)}
+                    className={`block text-[#212121] hover:bg-black/5 ${isActive('/partnership') ? 'outline outline-1 outline-[#E3E8F2]' : ''} px-3 py-3 rounded-xl`}
+                  >
+                    Блог
+                  </Link>
+                </li>
 
                 {/* Кнопки внизу меню */}
                 <li className="mt-2 flex gap-2">
@@ -662,14 +661,14 @@ const Header: React.FC<HeaderProps> = ({
                     }}
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-[#212121] border-[#00D3E6] hover:bg-[#00d3e6]/10"
                   >
-                    <ThemedIcon src="/icons/icon3.svg" size={20} />
+                    <ThemedIcon src="/icons/icon3.svg" size={20} color="#212121" />
                     Консультация
                   </button>
                   <a
                     href="https://edinayasreda.ru/"
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#212121] bg-[#F6F7F9] hover:bg-black/5"
                   >
-                    <ThemedIcon src="/icons/icon4.svg" size={20} />
+                    <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
                     Вход
                   </a>
                 </li>

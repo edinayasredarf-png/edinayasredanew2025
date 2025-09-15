@@ -3,12 +3,21 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 
 type Props = {
-  src: string;          // путь к svg (/icons/Tree.svg)
+  /** Путь к svg (например, /icons/Tree.svg) */
+  src: string;
   alt?: string;
-  size?: number;        // px
+  /** Размер иконки в пикселях */
+  size?: number;
   className?: string;
-  light?: string;       // цвет в «светлой» шапке
-  dark?: string;        // цвет в «тёмной» шапке
+  /** Цвет иконки в «светлой» шапке (роуты /cases/...) */
+  light?: string;
+  /** Цвет иконки в «тёмной» шапке (остальные роуты) */
+  dark?: string;
+  /**
+   * Принудительный цвет. Если указан — перекрывает light/dark.
+   * Можно передать '#000' или 'currentColor'.
+   */
+  color?: string;
 };
 
 const ThemedIcon: React.FC<Props> = ({
@@ -18,12 +27,12 @@ const ThemedIcon: React.FC<Props> = ({
   className = '',
   light = '#212121',
   dark = '#FFFFFF',
+  color,
 }) => {
   const pathname = usePathname();
-  // где нужен белый header — у вас это /cases и вложенные
   const isLight = pathname?.startsWith('/cases');
 
-  const color = isLight ? light : dark;
+  const finalColor = color ?? (isLight ? light : dark);
 
   return (
     <span
@@ -33,7 +42,7 @@ const ThemedIcon: React.FC<Props> = ({
       style={{
         width: size,
         height: size,
-        backgroundColor: color,
+        backgroundColor: finalColor,
         WebkitMaskImage: `url(${src})`,
         maskImage: `url(${src})`,
         WebkitMaskRepeat: 'no-repeat',
