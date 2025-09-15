@@ -31,7 +31,7 @@ const Case12Inner: React.FC = () => {
     application: 'Инвентаризация зелёных насаждений / Нормативы расчёта',
     duration: '2024',
     budget: 'Привлечено 2,7 млн ₽',
-    heroImg: '/img/cases/case12/case12_hero.jpg',
+    heroImg: '/img/cases/case12/case12_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы привлекли более 2,7 млн рублей в бюджет города за счёт инвесторов в качестве компенсации за снос насаждений. Создана прозрачная система расчётов, которая упрощает процесс для всех участников.',
@@ -62,7 +62,7 @@ const Case12Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case12/case12_hero.jpg',
+    src: '/img/cases/case12/case12.png',
     alt: 'Подготовка нормативов расчёта компенсационной стоимости — Углегорск',
   };
 

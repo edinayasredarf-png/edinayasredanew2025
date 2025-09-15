@@ -30,7 +30,7 @@ const Case10Inner: React.FC = () => {
     application: 'Инвентаризация зеленых насаждений',
     duration: '2024',
     budget: 'Привлечено 200 млн ₽',
-    heroImg: '/img/cases/case10/case10_hero.jpg',
+    heroImg: '/img/cases/case10/case10_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы привлекли около 200 млн рублей из федерального бюджета на благоустройство и сэкономили средства муниципального бюджета. Система контроля подрядчика позволила эффективно выполнять работы по озеленению и благоустройству.',
@@ -61,7 +61,7 @@ const Case10Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case10/case10_scan.jpg',
+    src: '/img/cases/case10/case10.png',
     alt: 'Мобильное лазерное сканирование зелёных территорий — Железногорск',
   };
 

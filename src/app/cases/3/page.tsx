@@ -28,7 +28,7 @@ const Case3Inner: React.FC = () => {
     date: '2024',
     location: 'г. Карабиха, Ярославская область',
     application: 'Инвентаризация мест захоронений',
-    heroImg: '/img/cases/case3-1.jpg',
+    heroImg: '/img/cases/case3/case3_hero.png',
     testimonial: {
       text:
         'Благодаря проекту с привлечением волонтеров мы смогли сэкономить более 2 миллионов рублей и создать полную базу данных мест захоронений. Это важный вклад в сохранение исторической памяти нашего города.',
@@ -59,7 +59,7 @@ const Case3Inner: React.FC = () => {
 
   // Вариант 1 — одно фото (задача)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case3-1.jpg',
+    src: '/img/cases/case3/case3.png',
     alt: 'Волонтеры проводят инвентаризацию мест захоронений',
   };
 

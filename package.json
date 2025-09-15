@@ -10,11 +10,14 @@
     "export": "next build"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
     "@supabase/supabase-js": "^2.57.4",
     "next": "15.4.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "swiper": "^11.2.10"
+    "swiper": "^11.2.10",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

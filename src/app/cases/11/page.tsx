@@ -30,7 +30,7 @@ const Case11Inner: React.FC = () => {
     application: 'Инвентаризация зеленых насаждений',
     duration: '2024',
     budget: 'Привлечено 200 млн ₽',
-    heroImg: '/img/cases/case11/case11_hero.jpg',
+    heroImg: '/img/cases/case11/case11_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы привлекли около 200 млн рублей из федерального бюджета и сэкономили средства муниципального бюджета. Настроенная система и работа волонтёров позволили эффективно вести учёт насаждений и контролировать подрядчиков.',
@@ -61,7 +61,7 @@ const Case11Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case11/case11_hero.jpg',
+    src: '/img/cases/case11/case11.png',
     alt: 'Волонтёры проводят инвентаризацию насаждений — Ярославль',
   };
 

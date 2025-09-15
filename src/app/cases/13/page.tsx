@@ -30,7 +30,7 @@ const Case13Inner: React.FC = () => {
     application: 'Инвентаризация зелёных насаждений / Проект реконструкции ООПТ',
     duration: '2024',
     area: '55,54 га',
-    heroImg: '/img/cases/simferopol-case-1.jpg',
+    heroImg: '/img/cases/case13/case13_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы создали комплексный план реконструкции дендрологического парка площадью 55,54 га с сохранением уникального семенного фонда. Разработана дорожная карта развития и привлечены средства инвесторов.',
@@ -61,7 +61,7 @@ const Case13Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/simferopol-case-1.jpg',
+    src: '/img/cases/case13/case13.png',
     alt: 'Экологический и ландшафтный анализ территории парка — Симферополь',
   };
 

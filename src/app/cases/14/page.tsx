@@ -29,7 +29,7 @@ const Case14Inner: React.FC = () => {
     location: 'г. Краснодар, Краснодарский край',
     application: 'Инвентаризация зеленых насаждений',
     duration: '2024',
-    heroImg: '/img/cases/krasnodar-safety-case-1.jpg',
+    heroImg: '/img/cases/case9/case9_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы создали полную базу данных по всем деревьям и кустарникам в детских учреждениях, выявили аварийные деревья и предотвратили потенциальные несчастные случаи. Безопасность детей и персонала значительно повышена.',
@@ -60,7 +60,7 @@ const Case14Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/krasnodar-safety-case-1.jpg',
+    src: '/img/cases/case9/case9.png',
     alt: 'Визуальный осмотр насаждений на территории детского учреждения — Краснодар',
   };
 

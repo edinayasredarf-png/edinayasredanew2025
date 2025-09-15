@@ -28,7 +28,7 @@ const Case7Inner: React.FC = () => {
     date: '2024',
     location: 'с.п. Ряженское, Ростовская область',
     application: 'Инвентаризация мест захоронений',
-    heroImg: '/img/cases/case7-1.jpg',
+    heroImg: '/img/cases/case7/case7_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы полностью выполнили требования федерального законодательства и создали единую цифровую базу данных всех 14 кладбищ. Это значительно упростило управление и обеспечило соответствие всем нормативным актам.',
@@ -59,7 +59,7 @@ const Case7Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case7-1.jpg',
+    src: '/img/cases/case7/case7.png',
     alt: 'Полевые работы по инвентаризации — с.п. Ряженское',
   };
 

@@ -28,7 +28,7 @@ const Case6Inner: React.FC = () => {
     date: '2024',
     location: 'г. Суворов, Тульская область',
     application: 'Инвентаризация мест захоронений',
-    heroImg: '/img/cases/case6-1.jpg',
+    heroImg: '/img/cases/case6/case6_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы получили полный цифровой реестр захоронений на 6 га кладбищ с бонусным покрытием дополнительной территории. Это значительно упростило управление и планирование.',
@@ -59,7 +59,7 @@ const Case6Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case6-1.jpg',
+    src: '/img/cases/case6/case6.png',
     alt: 'Инвентаризация кладбищ — полевые работы в г. Суворов',
   };
 

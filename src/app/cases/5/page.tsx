@@ -28,7 +28,7 @@ const Case5Inner: React.FC = () => {
     date: '2024',
     location: 'г. Киров, Калужская область',
     application: 'Инвентаризация мест захоронений',
-    heroImg: '/img/cases/case5-1.jpg',
+    heroImg: '/img/cases/case5/case5_hero.png',
     testimonial: {
       text:
         'Благодаря использованию АИС «Единая Среда» мы смогли провести инвентаризацию шести кладбищ собственными силами, что позволило значительно сэкономить бюджетные средства и создать точный цифровой реестр захоронений.',
@@ -59,7 +59,7 @@ const Case5Inner: React.FC = () => {
 
   // Одно основное изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case5-1.jpg',
+    src: '/img/cases/case5/case5.png',
     alt: 'Полевые работы по инвентаризации — г. Киров',
   };
 

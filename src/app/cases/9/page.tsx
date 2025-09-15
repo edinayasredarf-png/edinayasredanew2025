@@ -30,7 +30,7 @@ const Case9Inner: React.FC = () => {
     application: 'Инвентаризация зеленых насаждений',
     duration: '12 месяцев',
     budget: 'Экономия 800 000 ₽',
-    heroImg: '/img/cases/krasnodar-case-1.jpg',
+    heroImg: '/img/cases/case9/case9_hero.png',
     testimonial: {
       text:
         'Благодаря проекту мы получили актуальные данные по всем территориям города и организовали оперативное управление хозяйством. Система позволила рационально расходовать бюджетные средства и планировать работы на ревизионный период.',
@@ -61,7 +61,7 @@ const Case9Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/krasnodar-case-1.jpg',
+    src: '/img/cases/case9/case9.png',
     alt: 'Оцифровка зеленых зон — Краснодар',
   };
 

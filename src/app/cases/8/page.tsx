@@ -28,7 +28,7 @@ const Case8Inner: React.FC = () => {
     date: '2024',
     location: 'Тавдинский городской округ, Свердловская область',
     application: 'Инвентаризация мест захоронений',
-    heroImg: '/img/cases/case8-1.jpg',
+    heroImg: '/img/cases/case8/case8_hero.png',
     budget: 'Экономия 450 000 ₽',
     testimonial: {
       text:
@@ -60,7 +60,7 @@ const Case8Inner: React.FC = () => {
 
   // Одно изображение (секция «Задача»)
   const singleImage: GalleryItem = {
-    src: '/img/cases/case8-1.jpg',
+    src: '/img/cases/case8/case8.png',
     alt: 'Полевые работы по инвентаризации — Тавдинский ГО',
   };
 
