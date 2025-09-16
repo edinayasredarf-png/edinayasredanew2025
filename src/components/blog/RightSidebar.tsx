@@ -1,20 +1,19 @@
-// src/components/blog/RightSidebar.tsx
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { sb_listNews, NewsItem } from '@/lib/blogStore';
 
-/** ---------- Мини-карусель без стрелок ---------- */
+/* ================== Карусель без стрелок ================== */
 type Banner = { src: string; href: string; alt?: string };
 
 function AdsCarousel() {
-  // фиксированный порядок и ссылки (1–2 -> главная, 3 -> услуги)
+  // Фиксированный порядок и постоянные ссылки
   const banners = React.useMemo<Banner[]>(
     () => [
-      { src: '/img/ads/banner1.png', href: '/', alt: 'Реклама 1' },
-      { src: '/img/ads/banner2.png', href: '/', alt: 'Реклама 2' },
-      { src: '/img/ads/banner3.png', href: '/services', alt: 'Реклама 3' },
+      { src: '/img/ads/banner1.png', href: '/',          alt: 'Реклама 1' },
+      { src: '/img/ads/banner2.png', href: '/',          alt: 'Реклама 2' },
+      { src: '/img/ads/banner3.png', href: '/services',  alt: 'Реклама 3' },
     ],
     []
   );
@@ -22,11 +21,13 @@ function AdsCarousel() {
   const [index, setIndex] = React.useState(0);
   const [dragging, setDragging] = React.useState(false);
   const [dragPx, setDragPx] = React.useState(0);
+
   const wrapRef = React.useRef<HTMLDivElement>(null);
   const startX = React.useRef(0);
+  const wasDragged = React.useRef(false);
 
   const clamp = (i: number) => (i + banners.length) % banners.length;
-  const goTo = (i: number) => setIndex(clamp(i));
+  const goTo  = (i: number) => setIndex(clamp(i));
 
   // Автопереключение раз в минуту (пауза во время перетаскивания)
   React.useEffect(() => {
@@ -34,69 +35,87 @@ function AdsCarousel() {
       if (!dragging) setIndex((i) => clamp(i + 1));
     }, 60_000);
     return () => clearInterval(t);
-  }, [dragging, banners.length]);
+  }, [dragging]);
 
-  // drag / swipe
-  const begin = (x: number) => { setDragging(true); startX.current = x; setDragPx(0); };
-  const move  = (x: number) => { if (!dragging) return; setDragPx(x - startX.current); };
-  const end   = () => {
+  // Перетаскивание мышью
+  const onMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    startX.current = e.clientX;
+    setDragging(true);
+    setDragPx(0);
+    wasDragged.current = false;
+
+    const handleMove = (ev: MouseEvent) => {
+      const d = ev.clientX - startX.current;
+      if (Math.abs(d) > 3) wasDragged.current = true;
+      setDragPx(d);
+    };
+    const handleUp = () => {
+      finishDrag();
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+  };
+
+  // Перетаскивание на тач-экранах
+  const onTouchStart = (e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+    setDragging(true);
+    setDragPx(0);
+    wasDragged.current = false;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    const d = e.touches[0].clientX - startX.current;
+    if (Math.abs(d) > 3) wasDragged.current = true;
+    setDragPx(d);
+  };
+  const onTouchEnd = () => finishDrag();
+
+  const finishDrag = () => {
     const w = wrapRef.current?.clientWidth || 1;
-    const thr = w * 0.15;
+    const THR = Math.max(40, w * 0.15); // порог
     const d = dragPx;
     setDragging(false);
     setDragPx(0);
-    if (d > thr) setIndex((i) => clamp(i - 1));
-    else if (d < -thr) setIndex((i) => clamp(i + 1));
+    if (d > THR) setIndex((i) => clamp(i - 1));
+    else if (d < -THR) setIndex((i) => clamp(i + 1));
   };
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    begin(e.clientX);
-    const onMove = (ev: MouseEvent) => move(ev.clientX);
-    const onUp = () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-      end();
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  };
-  const onTouchStart = (e: React.TouchEvent) => begin(e.touches[0].clientX);
-  const onTouchMove  = (e: React.TouchEvent) => move(e.touches[0].clientX);
-  const onTouchEnd   = () => end();
-
-  // позиция трека (проценты от ширины трека)
-  const w = wrapRef.current?.clientWidth || 1;
-  const dragPercent = (dragPx / w) * 100;
+  // Ширина обёртки нужна для расчёта transform
+  const w = wrapRef.current?.clientWidth || 0;
   const trackStyle: React.CSSProperties = {
-    width: `${banners.length * 100}%`,
-    transform: `translateX(calc(${-index * (100 / banners.length)}% + ${dragPercent / banners.length}%))`,
-    transition: dragging ? 'none' : 'transform 300ms ease',
     display: 'flex',
+    transform: `translateX(${dragPx - index * w}px)`,
+    transition: dragging ? 'none' : 'transform 350ms ease',
+    willChange: 'transform',
   };
 
   return (
-    <div className="rounded-3xl overflow-hidden border select-none">
+    <div className="rounded-3xl overflow-hidden border">
       <div
         ref={wrapRef}
-        className="relative w-full h-[424px] bg-white"
+        className="relative w-full h-[424px] bg-white select-none overflow-hidden"
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* трек */}
+        {/* Трек со слайдами */}
         <div style={trackStyle}>
           {banners.map((b, i) => (
             <a
               key={i}
               href={b.href}
-              className="block w-full shrink-0 h-[424px] relative"
-              onClick={(e) => { if (Math.abs(dragPx) > 5) e.preventDefault(); }}
+              className="block min-w-full h-[424px] relative"
+              // блокируем клик, если был drag — иначе по свайпу переходила бы ссылка
+              onClick={(e) => { if (wasDragged.current) e.preventDefault(); }}
             >
               <img
                 src={b.src}
-                alt={b.alt || `Banner ${i + 1}`}
+                alt={b.alt || `Баннер ${i + 1}`}
                 className="w-full h-full object-cover"
                 draggable={false}
               />
@@ -104,16 +123,15 @@ function AdsCarousel() {
           ))}
         </div>
 
-        {/* точки-навигация */}
+        {/* Точки навигации */}
         <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-2">
           {banners.map((_, i) => (
             <button
               key={i}
               aria-label={`Перейти к баннеру ${i + 1}`}
               onClick={() => goTo(i)}
-              className={`w-2.5 h-2.5 rounded-full transition ${
-                i === index ? 'bg-[#2777ff]' : 'bg-black/30 hover:bg-black/50'
-              }`}
+              className={`w-2.5 h-2.5 rounded-full transition
+                ${i === index ? 'bg-[#2777ff]' : 'bg-black/30 hover:bg-black/50'}`}
             />
           ))}
         </div>
@@ -122,7 +140,7 @@ function AdsCarousel() {
   );
 }
 
-/** ---------------- Правый сайдбар: новости + реклама ---------------- */
+/* ================== Правый сайдбар ================== */
 export default function RightSidebar() {
   const [news, setNews] = React.useState<NewsItem[]>([]);
 
@@ -158,24 +176,34 @@ export default function RightSidebar() {
         <div className="p-5 bg-white rounded-3xl border space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-[#111]">Новости</h3>
-            <Link href="/news" className="h-8 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center">
+            <Link
+              href="/news"
+              className="h-8 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
+            >
               Все
             </Link>
           </div>
           <div className="space-y-4">
-            {news.slice(0,6).map(n => (
+            {news.slice(0, 6).map((n) => (
               <div key={n.id} className="space-y-1">
-                <div className="text-sm text-[#52555a]">{new Date(n.createdAt).toLocaleDateString('ru-RU')}</div>
-                <Link href={`/news/${n.slug}`} className="text-base text-[#111] leading-snug hover:underline">
+                <div className="text-sm text-[#52555a]">
+                  {new Date(n.createdAt).toLocaleDateString('ru-RU')}
+                </div>
+                <Link
+                  href={`/news/${n.slug}`}
+                  className="text-base text-[#111] leading-snug hover:underline"
+                >
                   {n.title}
                 </Link>
               </div>
             ))}
-            {!news.length && <div className="text-sm text-[#52555a]">Еще нет новостей</div>}
+            {!news.length && (
+              <div className="text-sm text-[#52555a]">Еще нет новостей</div>
+            )}
           </div>
         </div>
 
-        {/* Реклама — без стрелок, свайп/drag + точки + автопереключение */}
+        {/* Рекламный блок с свайпом и точками */}
         <AdsCarousel />
       </div>
     </aside>
