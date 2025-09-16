@@ -4,32 +4,20 @@ import React from 'react';
 import Link from 'next/link';
 import { NewsItem, sb_listNews } from '@/lib/blogStore';
 
+// Слайды рекламного блока (файлы лежат в /public/img/ads)
+const ADS: { src: string; href: string; alt: string }[] = [
+  { src: '/img/ads/banner1.png', href: '/',          alt: 'Баннер 1 — переход на главную' },
+  { src: '/img/ads/banner2.png', href: '/',          alt: 'Баннер 2 — переход на главную' },
+  { src: '/img/ads/banner3.png', href: '/services',  alt: 'Баннер 3 — переход к услугам' },
+];
+
 export default function RightSidebar() {
   const [news, setNews] = React.useState<NewsItem[]>([]);
+  const [adIndex, setAdIndex] = React.useState(0);
 
-  // Баннеры + ссылки
-  const BANNERS: { src: string; href: string; alt: string }[] = [
-    {
-      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/blog/ads/banner1.png',
-      href: '/',
-      alt: 'Промо — на главную 1',
-    },
-    {
-      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/blog/ads/banner2.png',
-      href: '/',
-      alt: 'Промо — на главную 2',
-    },
-    {
-      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/blog/ads/banner3.png',
-      href: '/services',
-      alt: 'Промо — услуги',
-    },
-  ];
-  const ROTATE_MS = 60_000;
-  const [bannerIndex, setBannerIndex] = React.useState(0);
-
+  // Грузим новости из БД
   React.useEffect(() => {
-    (async () => {
+    const load = async () => {
       try {
         const newsData = await sb_listNews();
         setNews(newsData);
@@ -37,40 +25,35 @@ export default function RightSidebar() {
         console.error('Failed to load news from database:', e);
         setNews([]);
       }
-    })();
+    };
+    load();
 
-    const onFocus = async () => {
-      try {
-        const newsData = await sb_listNews();
-        setNews(newsData);
-      } catch (e) {
-        console.error('Failed to refresh news from database:', e);
-      }
-    };
-    const onNewsUpdate = async () => {
-      try {
-        const newsData = await sb_listNews();
-        setNews(newsData);
-      } catch (e) {
-        console.error('Failed to update news from database:', e);
-      }
-    };
+    const onFocus = () => load();
+    const onNewsUpdate = () => load();
 
     window.addEventListener('focus', onFocus);
-    window.addEventListener('newsUpdated', onNewsUpdate as EventListener);
+    window.addEventListener('newsUpdated' as any, onNewsUpdate);
     return () => {
       window.removeEventListener('focus', onFocus);
-      window.removeEventListener('newsUpdated', onNewsUpdate as EventListener);
+      window.removeEventListener('newsUpdated' as any, onNewsUpdate);
     };
   }, []);
 
+  // Прелоад изображений баннеров
   React.useEffect(() => {
-    if (BANNERS.length <= 1) return;
+    ADS.forEach(a => {
+      const img = new Image();
+      img.src = a.src;
+    });
+  }, []);
+
+  // Смена слайда раз в минуту
+  React.useEffect(() => {
     const id = setInterval(() => {
-      setBannerIndex((i) => (i + 1) % BANNERS.length);
-    }, ROTATE_MS);
+      setAdIndex((i) => (i + 1) % ADS.length);
+    }, 60_000);
     return () => clearInterval(id);
-  }, [BANNERS.length]);
+  }, []);
 
   return (
     <aside className="w-[287px] shrink-0 hidden xl:block">
@@ -86,7 +69,6 @@ export default function RightSidebar() {
               Все
             </Link>
           </div>
-
           <div className="space-y-4">
             {news.slice(0, 6).map((n) => (
               <div key={n.id} className="space-y-1">
@@ -107,31 +89,25 @@ export default function RightSidebar() {
           </div>
         </div>
 
-        {/* Рекламный баннер с кликабельными слайдами */}
-        <div className="rounded-3xl overflow-hidden border">
-          <div className="relative w-full aspect-[286/424]">
-            {BANNERS.map((b, idx) => (
-              <Link
-                key={b.src}
-                href={b.href}
-                className={[
-                  'absolute inset-0 block transition-opacity duration-700 ease-in-out',
-                  bannerIndex === idx ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
-                ].join(' ')}
-                aria-label={b.alt}
-                prefetch={false}
-              >
-                <img
-                  src={b.src}
-                  alt={b.alt}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              </Link>
-            ))}
-          </div>
+        {/* Рекламный блок с кросс-фейдом */}
+        <div className="relative rounded-3xl overflow-hidden border h-[424px]">
+          {ADS.map((ad, i) => (
+            <Link
+              key={i}
+              href={ad.href}
+              aria-label={ad.alt}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                i === adIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <img
+                src={ad.src}
+                alt={ad.alt}
+                className="w-full h-full object-cover"
+                draggable={false}
+              />
+            </Link>
+          ))}
         </div>
       </div>
     </aside>
