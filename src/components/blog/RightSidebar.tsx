@@ -10,17 +10,17 @@ export default function RightSidebar() {
   // Баннеры + ссылки
   const BANNERS: { src: string; href: string; alt: string }[] = [
     {
-      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/media/blog/banner1.png',
+      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/blog/ads/banner1.png',
       href: '/',
       alt: 'Промо — на главную 1',
     },
     {
-      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/media/blog/banner2.png',
+      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/blog/ads/banner2.png',
       href: '/',
       alt: 'Промо — на главную 2',
     },
     {
-      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/media/blog/banner3.png',
+      src: 'https://media.xn--80aaahjck7aeeme6a9b8a.xn--p1ai/blog/ads/banner3.png',
       href: '/services',
       alt: 'Промо — услуги',
     },
