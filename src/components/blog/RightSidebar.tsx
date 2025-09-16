@@ -4,18 +4,23 @@ import React from 'react';
 import Link from 'next/link';
 import { NewsItem, sb_listNews } from '@/lib/blogStore';
 
-// Слайды рекламного блока (файлы лежат в /public/img/ads)
-const ADS: { src: string; href: string; alt: string }[] = [
-  { src: '/img/ads/banner1.png', href: '/',          alt: 'Баннер 1 — переход на главную' },
-  { src: '/img/ads/banner2.png', href: '/',          alt: 'Баннер 2 — переход на главную' },
-  { src: '/img/ads/banner3.png', href: '/services',  alt: 'Баннер 3 — переход к услугам' },
-];
+// Фиксированный набор баннеров в заданном порядке.
+// Первые два — на главную, третий — на /services.
+// v=3 для пробития кэша на проде.
+type Ad = { src: string; href: string; alt: string };
+const ADS: readonly Ad[] = Object.freeze([
+  { src: '/img/ads/banner1.png?v=3', href: '/',         alt: 'Баннер 1 — главная' },
+  { src: '/img/ads/banner2.png?v=3', href: '/',         alt: 'Баннер 2 — главная' },
+  { src: '/img/ads/banner3.png?v=3', href: '/services', alt: 'Баннер 3 — услуги' },
+]);
 
 export default function RightSidebar() {
   const [news, setNews] = React.useState<NewsItem[]>([]);
   const [adIndex, setAdIndex] = React.useState(0);
+  const [fadeIn, setFadeIn] = React.useState(true);
+  const intervalRef = React.useRef<number | null>(null);
 
-  // Грузим новости из БД
+  // Загрузка новостей из БД + обновления по событию/фокусу
   React.useEffect(() => {
     const load = async () => {
       try {
@@ -32,33 +37,36 @@ export default function RightSidebar() {
     const onNewsUpdate = () => load();
 
     window.addEventListener('focus', onFocus);
-    window.addEventListener('newsUpdated' as any, onNewsUpdate);
+    window.addEventListener('newsUpdated', onNewsUpdate as EventListener);
     return () => {
       window.removeEventListener('focus', onFocus);
-      window.removeEventListener('newsUpdated' as any, onNewsUpdate);
+      window.removeEventListener('newsUpdated', onNewsUpdate as EventListener);
     };
   }, []);
 
-  // Прелоад изображений баннеров
+  // Ротация баннеров — стабильно 0→1→2→…
   React.useEffect(() => {
-    ADS.forEach(a => {
-      const img = new Image();
-      img.src = a.src;
-    });
+    // каждые 60 сек, с лёгким кроссфейдом
+    intervalRef.current = window.setInterval(() => {
+      setFadeIn(false);
+      window.setTimeout(() => {
+        setAdIndex((prev) => (prev + 1) % ADS.length);
+        setFadeIn(true);
+      }, 160); // короткая фаза исчезновения
+    }, 60_000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, []);
 
-  // Смена слайда раз в минуту
-  React.useEffect(() => {
-    const id = setInterval(() => {
-      setAdIndex((i) => (i + 1) % ADS.length);
-    }, 60_000);
-    return () => clearInterval(id);
-  }, []);
+  const currentAd = ADS[adIndex];
 
   return (
     <aside className="w-[287px] shrink-0 hidden xl:block">
       <div className="sticky top-[86px] space-y-4">
-        {/* Новости */}
         <div className="p-5 bg-white rounded-3xl border space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-[#111]">Новости</h3>
@@ -89,25 +97,17 @@ export default function RightSidebar() {
           </div>
         </div>
 
-        {/* Рекламный блок с кросс-фейдом */}
-        <div className="relative rounded-3xl overflow-hidden border h-[424px]">
-          {ADS.map((ad, i) => (
-            <Link
-              key={i}
-              href={ad.href}
-              aria-label={ad.alt}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                i === adIndex ? 'opacity-100' : 'opacity-0'
+        {/* Рекламный блок — один баннер, который сменяется раз в минуту */}
+        <div className="rounded-3xl overflow-hidden border">
+          <Link href={currentAd.href} prefetch={false} aria-label={currentAd.alt}>
+            <img
+              src={currentAd.src}
+              alt={currentAd.alt}
+              className={`w-full h-auto transition-opacity duration-300 ${
+                fadeIn ? 'opacity-100' : 'opacity-0'
               }`}
-            >
-              <img
-                src={ad.src}
-                alt={ad.alt}
-                className="w-full h-full object-cover"
-                draggable={false}
-              />
-            </Link>
-          ))}
+            />
+          </Link>
         </div>
       </div>
     </aside>
