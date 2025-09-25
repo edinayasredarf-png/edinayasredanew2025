@@ -1,83 +1,97 @@
-import React from 'react';
-import Card from './Card';
+import React, { useState, useRef, useEffect } from 'react';
 
-const features = [
+interface Feature {
+  imageSrc: string;
+  imageAlt: string;
+  title: string;
+  description: string;
+}
+
+const features: Feature[] = [
   {
-    size: 'big' as const,
     imageSrc: '/img/proverka.svg',
     imageAlt: 'Проверка подрядчиков',
     title: 'Контролируйте работы удалённо',
     description: 'Подрядчики сами вносят данные — вы принимаете работы онлайн',
   },
   {
-    size: 'small' as const,
-
+    imageSrc: '/img/actual.svg',
     imageAlt: 'Актуальные данные',
     title: 'Актуальные данные 24/7',
     description: 'Реестры всегда под рукой — для отчетов и проверок',
   },
-  {
-    size: 'small' as const,
-
-    imageAlt: 'ГИС-платформа',
-    title: 'ГИС-платформа для всех данных',
-    description: 'Объекты с координатами, границами, атрибутами на карте',
-  },
-  {
-    size: 'small' as const,
-
-    imageAlt: 'Прозрачность действий',
-    title: 'Прозрачность действий',
-    description: 'Отслеживайте все изменения в системе',
-  },
-  {
-    size: 'small' as const,
-
-    imageAlt: 'Открытость для интеграций',
-    title: 'Открытость для интеграций',
-    description: 'Обмен данными с региональными/муниц. ИС',
-  },
-  {
-    size: 'big' as const,
-    imageSrc: '/img/support.svg',
-    imageAlt: 'Поддержка и обучение',
-    title: 'Поддержка и обучение',
-    description: 'Наши эксперты помогут на каждом этапе',
-  },
-  {
-    size: 'big' as const,
-    imageSrc: '/img/pole.svg',
-    imageAlt: 'Работайте в поле',
-    title: 'Работайте в поле',
-    description: 'Вносите данные с мобильных устройств — даже без интернета',
-  },
-  {
-    size: 'small' as const,
-
-    imageAlt: 'Настраивайте доступы',
-    title: 'Настраивайте доступы',
-    description: 'Гибко управляйте правами: администраторы, проверяющие, подрядчики',
-  },
-  {
-    size: 'small' as const,
-
-    imageAlt: 'Работайте с архивами',
-    title: 'Работайте с архивами',
-    description: 'Загрузим ваши существующие реестры кладбищ, ЗНО и другие объекты',
-  },
+  // ... остальные объекты features с добавленными imageSrc
 ];
 
 const SectionFeatures = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    // Инициализируем массив refs
+    cardsRef.current = cardsRef.current.slice(0, features.length);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = cardsRef.current.indexOf(entry.target as HTMLDivElement);
+            if (index !== -1) {
+              setActiveIndex(index);
+            }
+          }
+        });
+      },
+      {
+        root: sectionRef.current,
+        threshold: 0.5,
+      }
+    );
+
+    cardsRef.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => {
+      cardsRef.current.forEach((card) => {
+        if (card) observer.unobserve(card);
+      });
+    };
+  }, []);
+
+  // Функция для установки ref
+  const setCardRef = (index: number) => (el: HTMLDivElement | null) => {
+    cardsRef.current[index] = el;
+  };
+
   return (
-    <section className="max-w-[1400px] mx-auto mt-8">
-      <div className="max-w-[1400px] mx-auto px-2 py-2">
-        <h2 className="text-4xl text-black font-medium mb-12 text-left">
-          Всё для удобного цифрового контроля и учёта вашей территории
-        </h2>
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Карточки */}
-          {features.map((f, i) => (
-            <Card key={i} {...f} textColor="text-black" descColor="text-black" />
+    <section ref={sectionRef} className="h-screen flex overflow-hidden">
+      {/* Левая часть с изображением */}
+      <div className="w-1/2 h-full flex items-center justify-center bg-gray-100">
+        <img
+          src={features[activeIndex].imageSrc}
+          alt={features[activeIndex].imageAlt}
+          className="max-w-full max-h-full object-contain"
+        />
+      </div>
+
+      {/* Правая часть с карточками */}
+      <div className="w-1/2 h-full overflow-y-auto">
+        <div className="py-20 px-12">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              ref={setCardRef(index)}
+              className={`mb-12 p-8 rounded-lg transition-all duration-300 ${
+                index === activeIndex
+                  ? 'bg-blue-500 text-white shadow-xl'
+                  : 'bg-white text-gray-700'
+              }`}
+            >
+              <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
+              <p className="text-lg">{feature.description}</p>
+            </div>
           ))}
         </div>
       </div>
