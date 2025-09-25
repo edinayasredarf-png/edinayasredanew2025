@@ -7,10 +7,10 @@ import { motion, useReducedMotion } from 'framer-motion';
 type Logo = { src: string; alt: string; href: string };
 
 const colA: Logo[] = [
-  { src: '/img/logos/FASIE.svg',     alt: 'Фонд содействия инновациям',            href: 'https://www.fasie.ru/' },
+  { src: '/img/logos/fasie.svg',     alt: 'Фонд содействия инновациям',            href: 'https://www.fasie.ru/' },
   { src: '/img/logos/frii_logo.svg', alt: 'Фонд развития интернет-инициатив',     href: 'https://www.iidf.ru/' },
   { src: '/img/logos/mincifry.svg',  alt: 'МинЦифры',                               href: 'https://digital.gov.ru/' },
-	{ src: '/img/logos/FASIE.svg',     alt: 'Фонд содействия инновациям',            href: 'https://www.fasie.ru/' },
+	{ src: '/img/logos/fasie.svg',     alt: 'Фонд содействия инновациям',            href: 'https://www.fasie.ru/' },
   { src: '/img/logos/frii_logo.svg', alt: 'Фонд развития интернет-инициатив',     href: 'https://www.iidf.ru/' },
   { src: '/img/logos/mincifry.svg',  alt: 'МинЦифры',                               href: 'https://digital.gov.ru/' },
 ];
