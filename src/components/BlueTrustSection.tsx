@@ -27,7 +27,7 @@ const BlueTrustWithScreen: React.FC<{
   sideBgRight?: string;   // опциональный фоновый столбец справа (на всю высоту)
 }> = ({
   cards = DEFAULT_CARDS,
-  screenSrc = '/img/spec.png',
+  screenSrc = '/img/spec.webp',
   sideBgLeft,
   sideBgRight,
 }) => {
@@ -38,7 +38,7 @@ const BlueTrustWithScreen: React.FC<{
         {sideBgLeft && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-0 z-0 hidden sm:block w-[26%] min-w-[180px] max-w-[360px]"
+            className="pointer-events-none absolute inset-y-0 left-0 z-0 hidden sm:block w-[26%] min-w-[180px] max-w-[320px]"
           >
             <img src={sideBgLeft} alt="" className="h-full w-full object-cover opacity-50" />
           </div>

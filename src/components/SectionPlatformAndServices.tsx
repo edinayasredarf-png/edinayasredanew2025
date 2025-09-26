@@ -111,7 +111,7 @@ const RevealPanel: React.FC<{
       initial={false}
       animate={{ y: isOpen ? 0 : closedY }}
       transition={panelTransition}
-      className="hidden md:block absolute inset-x-0 bottom-0 z-30 h-[75%] rounded-t-2xl overflow-hidden bg-white"
+      className="hidden md:block absolute inset-x-0 bottom-0 z-30 h-[76%] rounded-t-2xl overflow-hidden bg-white"
       style={{ willChange: "transform" }}
     >
       <div className="relative h-auto w-auto p-1">
@@ -230,7 +230,7 @@ const SectionPlatformAndServices: React.FC = () => {
           {/* Параллакс-изображение справа-середины (desktop) */}
           <ParallaxFloatImage
             containerRef={leftRef}
-            src="/img/float-ui.png"
+            src="/img/float_ui.webp"
             isHover={openPreview}
             baseOpacity={0.55}
             hoverOpacity={0.8}
@@ -248,7 +248,7 @@ const SectionPlatformAndServices: React.FC = () => {
 
           {/* Белая панель 80% (только desktop) */}
           <RevealPanel
-            src="/img/platform-shot.png"
+            src="/img/platform_shot.webp"
             isOpen={openPreview}
             onConsult={openConsult}
             handleSize={24}

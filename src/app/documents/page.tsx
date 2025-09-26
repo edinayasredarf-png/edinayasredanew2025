@@ -12,7 +12,6 @@ export default function DocumentsPage() {
     "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "Политика использования файлов кукис СФЕРА.",
     "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "Политика обработки персональных данных посетителей сайта.",
     "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "Политика оператора в отношении обработки персональных данных.",
-    "rukovodstvo-polzovatelya (1).pdf": "Руководство пользователя (версия 1).",
     "rukovodstvo-polzovatelya.pdf": "Руководство пользователя системы Единая Среда.",
     "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "Согласие физ. лица на размещение информации в Интернете.",
     "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "Согласие на обработку данных СФЕРА.",
@@ -24,7 +23,6 @@ export default function DocumentsPage() {
     "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "Политика использования файлов кукис (PDF)",
     "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "Политика обработки данных посетителей сайта (PDF)",
     "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "Политика оператора по персональным данным (PDF)",
-    "rukovodstvo-polzovatelya (1).pdf": "Руководство пользователя (версия 1) (PDF)",
     "rukovodstvo-polzovatelya.pdf": "Руководство пользователя (PDF)",
     "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "Согласие физ. лица на размещение информации (PDF)",
     "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "Согласие на обработку данных СФЕРА (PDF)",
@@ -36,7 +34,6 @@ export default function DocumentsPage() {
     "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_ispolzovaniya_failov_kukis_SFERA.pdf",
     "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf",
     "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf",
-    "rukovodstvo-polzovatelya (1).pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/rukovodstvo-polzovatelya%20(1).pdf",
     "rukovodstvo-polzovatelya.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/rukovodstvo-polzovatelya.pdf",
     "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf",
     "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_na_obrabotku_dannikh_SFERA.pdf",
@@ -48,7 +45,6 @@ export default function DocumentsPage() {
     { file: "Politika_ispolzovaniya_failov_kukis_SFERA.pdf", title: docTitles["Politika_ispolzovaniya_failov_kukis_SFERA.pdf"] },
     { file: "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf", title: docTitles["Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf"] },
     { file: "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf", title: docTitles["Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf"] },
-    { file: "rukovodstvo-polzovatelya (1).pdf", title: docTitles["rukovodstvo-polzovatelya (1).pdf"] },
     { file: "rukovodstvo-polzovatelya.pdf", title: docTitles["rukovodstvo-polzovatelya.pdf"] },
     { file: "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf", title: docTitles["Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf"] },
     { file: "Soglasie_na_obrabotku_dannikh_SFERA.pdf", title: docTitles["Soglasie_na_obrabotku_dannikh_SFERA.pdf"] },
@@ -88,7 +84,7 @@ export default function DocumentsPage() {
           </div>
 
           <div className="mb-6">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">Документы проекта</h3>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">Документы проекта для «SaaS» решений</h3>
             <div className="space-y-2">
               {docFiles.map((doc) => (
                 <button
@@ -123,12 +119,12 @@ export default function DocumentsPage() {
             <span className="text-gray-600">Документация</span>
             <span>/</span>
             <span className="text-gray-700">
-              {activeDoc ? docTitles[activeDoc] : "Документы проекта"}
+              {activeDoc ? docTitles[activeDoc] : "Документы проекта для «SaaS» решений"}
             </span>
           </nav>
 
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
-            {activeDoc ? docTitles[activeDoc] : "Документы проекта"}
+            {activeDoc ? docTitles[activeDoc] : "Документы проекта для «SaaS» решений"}
           </h1>
 
           <div className="text-gray-700 leading-relaxed mb-6">

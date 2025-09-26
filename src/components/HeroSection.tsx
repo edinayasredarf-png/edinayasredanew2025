@@ -30,7 +30,7 @@ const HeroSection: React.FC = () => {
           {/* Правая часть: изображение (только для мобильных, на десктопе абсолютное) */}
           <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
             <Image
-              src="/img/heroes.png"
+              src="/img/heroes_1.webp"
               alt="Абстрактная иллюстрация цифрового управления"
               width={700}
               height={500}
