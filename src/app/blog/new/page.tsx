@@ -4,15 +4,19 @@ export const dynamic = 'force-dynamic';
 import React, { useEffect, useMemo, useState, CSSProperties, Suspense } from 'react';
 import Link from 'next/link';
 import CoverPicker from '@/components/blog/CoverPicker';
+
+// ⚠️ Важно: импортируем dynamic под другим именем, чтобы не конфликтовало с export const dynamic
+import nextDynamic from 'next/dynamic';
+const TipTapEditor = nextDynamic(() => import('@/components/blog/TipTapEditor'), { ssr: false });
+
 import {
   BlogDraft, BlogPost, NewsItem, auth, clearDraft, fileToDataURL,
   genSlug, loadDraft, saveDraft, upsertNews, upsertPost,
   getPostBySlug, getNewsBySlug, deletePostById, deleteNewsById,
   listAllTags, addTag, listScheduledPosts, listScheduledNews,
-  publishScheduledPost, publishScheduledNews
+  publishScheduledPost, publishScheduledNews,
+  sb_getPostBySlug, sb_getNewsBySlug, sb_upsertPost, sb_upsertNews
 } from '@/lib/blogStore';
-import { sb_upsertPost, sb_upsertNews } from '@/lib/blogStore';
-// removed useSearchParams to avoid CSR bailout during prerender
 
 // ---------- типы блоков ----------
 type Align = 'left'|'center'|'right';
@@ -37,9 +41,13 @@ const uid = () => crypto.randomUUID();
 function renderBlocks(blocks: Block[]): string {
   const esc = (s:string)=>s.replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const align = (a:Align)=> a==='center' ? ' style="text-align:center"' : a==='right' ? ' style="text-align:right"' : '';
+
   return blocks.map(b=>{
     switch(b.type){
-      case 'text':  return `<p dir="ltr"${align((b as TextBlock).align)}>${esc((b as TextBlock).text||'')}</p>`;
+      // ⬇️ ТЕКСТОВЫЙ БЛОК ТЕПЕРЬ СЧИТАЕМ ГОТОВЫМ HTML (из TipTap).
+      // НИЧЕГО НЕ ЭКРАНИРУЕМ, так как TipTap уже отдал очищенный HTML (у нас DOMPurify в компоненте).
+      case 'text':  return `<div dir="ltr"${align((b as TextBlock).align)}>${(b as TextBlock).text || ''}</div>`;
+
       case 'h2':    return `<h2${align((b as HBlock).align)}>${esc((b as HBlock).text||'')}</h2>`;
       case 'h3':    return `<h3${align((b as HBlock).align)}>${esc((b as HBlock).text||'')}</h3>`;
       case 'image': {
@@ -55,7 +63,6 @@ function renderBlocks(blocks: Block[]): string {
       case 'gallery': {
         const gb = b as GalleryBlock;
         const imgs = gb.images.map(src=>`<img src="${src}" alt="" loading="lazy" />`).join('');
-        // js-gallery — хук для лайтбокса на странице статьи
         return `<div class="js-gallery" data-align="${gb.align||'left'}">${imgs}</div>`;
       }
       case 'ul':    return `<ul>${(b as ListBlock).items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`;
@@ -134,24 +141,29 @@ export default function NewPostPage() {
   useEffect(() => {
     if (!editSlug || !editType) return;
     setLoadingEdit(true);
-    if (editType === 'post') {
-      const p = getPostBySlug(editSlug);
-      if (p) {
-        setKind('post'); setTitle(p.title); setSubtitle(p.subtitle||'');
-        setCover(p.cover); setTags(p.tags||[]);
-        setBlocks([{ id: uid(), type:'text', align:'left', text: p.contentHtml } as TextBlock]);
-        setStep(2);
+    (async () => {
+      try {
+        if (editType === 'post') {
+          const p = await sb_getPostBySlug(editSlug).catch(() => undefined) || getPostBySlug(editSlug);
+          if (p) {
+            setKind('post'); setTitle(p.title); setSubtitle(p.subtitle||'');
+            setCover(p.cover); setTags(p.tags||[]);
+            setBlocks([{ id: uid(), type:'text', align:'left', text: p.contentHtml } as TextBlock]);
+            setStep(2);
+          }
+        } else {
+          const n = await sb_getNewsBySlug(editSlug).catch(() => undefined) || getNewsBySlug(editSlug);
+          if (n) {
+            setKind('news'); setTitle(n.title); setSubtitle('');
+            setCover(n.cover); setTags(n.tags||[]);
+            setBlocks([{ id: uid(), type:'text', align:'left', text: n.contentHtml || '' } as TextBlock]);
+            setStep(2);
+          }
+        }
+      } finally {
+        setLoadingEdit(false);
       }
-    } else {
-      const n = getNewsBySlug(editSlug);
-      if (n) {
-        setKind('news'); setTitle(n.title); setSubtitle('');
-        setCover(n.cover); setTags(n.tags||[]);
-        setBlocks([{ id: uid(), type:'text', align:'left', text: n.contentHtml || '' } as TextBlock]);
-        setStep(2);
-      }
-    }
-    setLoadingEdit(false);
+    })();
   }, [editSlug, editType]);
 
   // загрузка отложенных статей
@@ -167,14 +179,14 @@ export default function NewPostPage() {
     else alert('Неверный логин/пароль');
   };
 
-  // помощники по блокам
+  // помощники по блокам (часть может быть не использована, но оставим для совместимости)
   const addBlock = (b: Block) => setBlocks(v => [...v, b]);
   const moveUp = (i:number) => setBlocks(v => (i<=0? v : [ ...v.slice(0,i-1), v[i], v[i-1], ...v.slice(i+1) ]));
   const moveDown = (i:number) => setBlocks(v => (i>=v.length-1? v : [ ...v.slice(0,i), v[i+1], v[i], ...v.slice(i+2) ]));
   const removeAt = (i:number) => setBlocks(v => v.filter((_,idx)=>idx!==i));
   const updateAt = (i:number, b:Partial<Block>) => setBlocks(v => v.map((x,idx)=> idx===i ? ({...x, ...b} as Block) : x));
 
-  // медиа
+  // медиа (оставлено для совместимости со старыми блоками, сейчас не используется)
   const pickImageFile = async (i:number, multiple=false) => {
     const input = document.createElement('input');
     input.type='file'; input.accept='image/*'; if (multiple) input.multiple = true;
@@ -233,15 +245,23 @@ export default function NewPostPage() {
   const publish = async () => {
     if (!canPublish) return;
     const now = Date.now();
-    const slug = genSlug(title);
-    const html = renderBlocks(blocks);
+    // Если редактируем — сохраняем исходный slug
+    const prevPost = editSlug && editType==='post' ? getPostBySlug(editSlug) : undefined;
+    const prevNews = editSlug && editType==='news' ? getNewsBySlug(editSlug) : undefined;
+    const slug = (prevPost?.slug || prevNews?.slug) || genSlug(title);
+
+    // CORE: получаем HTML из единственного текстового блока (TipTap)
+    const html =
+      blocks.length && (blocks[0] as TextBlock).type === 'text'
+        ? (blocks[0] as TextBlock).text
+        : renderBlocks(blocks);
 
     // Check if scheduled publishing
     const publishTime = scheduledDate ? new Date(scheduledDate).getTime() : now;
     const isScheduled = publishTime > now;
 
     if (kind === 'post' || kind === 'lesson' || kind === 'case') {
-      const prev = editSlug && editType==='post' ? getPostBySlug(editSlug) : undefined;
+      const prev = prevPost;
       const p: BlogPost = {
         id: prev?.id || crypto.randomUUID(),
         slug, title, subtitle: (kind==='post'?subtitle:undefined),
@@ -252,7 +272,7 @@ export default function NewPostPage() {
       // Пишем в Supabase, при ошибке — локально
       sb_upsertPost(p).catch(()=>upsertPost(p));
       clearDraft();
-      
+
       const typeName = kind === 'post' ? 'статья' : kind === 'lesson' ? 'урок' : 'кейс';
       if (isScheduled) {
         showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
@@ -261,7 +281,7 @@ export default function NewPostPage() {
         window.location.href = `/blog/${p.slug}`;
       }
     } else {
-      const prev = editSlug && editType==='news' ? getNewsBySlug(editSlug) : undefined;
+      const prev = prevNews;
       const n: NewsItem = {
         id: prev?.id || crypto.randomUUID(),
         slug, title, cover, contentHtml: html || undefined, tags,
@@ -271,7 +291,7 @@ export default function NewPostPage() {
       // Пишем в Supabase, при ошибке — локально
       sb_upsertNews(n).catch(() => upsertNews(n));
       clearDraft();
-      
+
       if (isScheduled) {
         showNotificationToast(`Новость запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
       } else {
@@ -301,7 +321,6 @@ export default function NewPostPage() {
       showNotificationToast('Новость опубликована!');
     }
   };
-
 
   if (!authed) {
     return (
@@ -460,205 +479,23 @@ export default function NewPostPage() {
               </div>
             )}
 
-            {/* STEP 2 — блоки */}
+            {/* STEP 2 — контент (TipTap) */}
             {step===2 && (
               <div className="space-y-8">
-                <div className="sticky top-4 z-20 bg-white p-4 rounded-xl border shadow-sm">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <StepTitle>Контент</StepTitle>
-                  <div className="relative">
-                    <details className="group">
-                        <summary className="list-none cursor-pointer h-10 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm">+ Добавить блок</summary>
-                        <div className="absolute right-0 sm:right-0 left-0 sm:left-auto mt-2 w-full sm:w-64 rounded-xl border bg-white p-2 shadow-lg z-10">
-                        <button onClick={()=>addBlock({id:uid(),type:'text',align:'left',text:''} as TextBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Текст</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'h2',align:'left',text:''} as HBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Подзаголовок H2</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'h3',align:'left',text:''} as HBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Подзаголовок H3</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'image',align:'center',src:undefined,caption:''} as ImageBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Изображение</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'gallery',align:'center',images:[]} as GalleryBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Галерея (несколько фото)</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'video',align:'center'} as VideoBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Видео (YouTube/VK/файл)</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'ul',items:['Пункт']} as ListBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Маркированный список</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'ol',items:['Пункт']} as ListBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Нумерованный список</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'quote',text:''} as QuoteBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Цитата</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'poll',question:'Вопрос',options:['A','B']} as PollBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Опрос</button>
-                        <button onClick={()=>addBlock({id:uid(),type:'hr'} as HrBlock)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-[#111]">Разделитель</button>
-                      </div>
-                    </details>
-                  </div>
-                  </div>
-                </div>
+                <StepTitle>Контент</StepTitle>
 
-                {/* список блоков */}
-                <div className="space-y-6">
-                  {blocks.map((b, i)=>(
-                    <div key={b.id} className="rounded-xl border p-4 bg-white">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
-                        <div className="text-sm text-[#52555a]">{b.type.toUpperCase()}</div>
-                        <div className="ml-auto flex flex-wrap items-center gap-2">
-                          {'align' in b && (
-                            <div className="flex gap-1">
-                              {(['left','center','right'] as Align[]).map(a=>(
-                                <button key={a} onClick={()=>updateAt(i,{ align:a } as Partial<Block>)}
-                                  className={`h-8 px-3 rounded-lg border ${ (b as any).align===a ? 'bg-[#2777ff] text-white border-[#2777ff]' : 'text-[#111]'}`}>{a==='left'?'Слева':a==='center'?'По центру':'Справа'}</button>
-                              ))}
-                            </div>
-                          )}
-                          <button onClick={()=>moveUp(i)} className="h-8 px-3 rounded-lg border text-[#111]">↑</button>
-                          <button onClick={()=>moveDown(i)} className="h-8 px-3 rounded-lg border text-[#111]">↓</button>
-                          <button onClick={()=>removeAt(i)} className="h-8 px-3 rounded-lg border text-[#111]">Удалить</button>
-                        </div>
-                      </div>
-
-                      {/* Текст */}
-                      {b.type==='text' && (
-                        <input
-                          className="w-full border rounded-lg px-3 py-2 text-[#111] text-lg"
-                          value={(b as TextBlock).text || ''}
-                          onChange={e=>updateAt(i,{ text: e.target.value } as Partial<TextBlock>)}
-                          placeholder="Введите текст"
-                        />
-                      )}
-
-                      {/* H2/H3 */}
-                      {(b.type==='h2'||b.type==='h3') && (
-                        <input
-                          className={`w-full border rounded-lg px-3 py-2 text-[#111] ${b.type==='h2'?'text-2xl':'text-xl'}`}
-                          value={(b as HBlock).text || ''}
-                          onChange={e=>updateAt(i,{ text: e.target.value } as Partial<HBlock>)}
-                          placeholder={b.type==='h2'?'Подзаголовок H2':'Подзаголовок H3'}
-                        />
-                      )}
-
-                      {/* Изображение */}
-                      {b.type==='image' && (
-                        <div className="space-y-3">
-                          {(b as ImageBlock).src ? (
-                            <img src={(b as ImageBlock).src} className="rounded-xl w-full max-h-[560px] object-contain" />
-                          ) : (
-                            <div className="h-40 rounded-lg bg-[#f6f7f9] flex items-center justify-center text-[#111]">Нет изображения</div>
-                          )}
-                          <div className="flex gap-2">
-                            <button onClick={()=>pickImageFile(i)} className="px-3 py-2 rounded-lg border text-[#111]">Загрузить</button>
-                            {(b as ImageBlock).src && (
-                              <button onClick={()=>updateAt(i,{ src:undefined } as Partial<ImageBlock>)} className="px-3 py-2 rounded-lg border text-[#111]">Удалить</button>
-                            )}
-                          </div>
-                          <input
-                            className="w-full border rounded-lg px-3 py-2 text-[#111]"
-                            placeholder="Подпись к изображению"
-                            value={(b as ImageBlock).caption || ''}
-                            onChange={e=>updateAt(i,{ caption: e.target.value } as Partial<ImageBlock>)}
-                          />
-                        </div>
-                      )}
-
-                      {/* Галерея */}
-                      {b.type==='gallery' && (
-                        <div className="space-y-3">
-                          {(b as GalleryBlock).images.length ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {(b as GalleryBlock).images.map((src,idx)=>(
-                                <div key={idx} className="relative">
-                                  <img src={src} className="w-full rounded-xl object-cover" />
-                                  <button
-                                    onClick={()=>{
-                                      const images=[...(b as GalleryBlock).images];
-                                      images.splice(idx,1);
-                                      updateAt(i,{ images } as Partial<GalleryBlock>);
-                                    }}
-                                    className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-md border text-xs">Удалить</button>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="h-40 rounded-lg bg-[#f6f7f9] flex items-center justify-center text-[#111]">Добавьте изображения</div>
-                          )}
-                          <div className="flex gap-2">
-                            <button onClick={()=>pickImageFile(i,true)} className="px-3 py-2 rounded-lg border text-[#111]">Добавить изображения</button>
-                            {(b as GalleryBlock).images.length>1 && <div className="text-sm text-[#52555a]">На странице будет сетка + лайтбокс</div>}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Видео */}
-                      {b.type==='video' && (
-                        <div className="space-y-3">
-                          {(b as VideoBlock).embedHtml ? (
-                            <div className="aspect-video rounded-lg overflow-hidden" dangerouslySetInnerHTML={{__html:(b as VideoBlock).embedHtml!}} />
-                          ) : (b as VideoBlock).src ? (
-                            <video src={(b as VideoBlock).src} controls className="w-full rounded-lg" />
-                          ) : (
-                            <div className="h-40 rounded-lg bg-[#f6f7f9] flex items-center justify-center text-[#111]">Нет видео</div>
-                          )}
-                          <div className="flex flex-wrap gap-2">
-                            <button onClick={()=>pickVideoFile(i)} className="px-3 py-2 rounded-lg border text-[#111]">Загрузить файл</button>
-                            <button onClick={()=>{
-                              const url = prompt('Вставьте ссылку на YouTube или VK (например https://vk.com/video-123_456)');
-                              if (!url) return;
-                              const html = fromVideoUrl(url);
-                              if (!html) return alert('Не похоже на ссылку YouTube или VK');
-                              updateAt(i,{ embedHtml: html, src: undefined } as Partial<VideoBlock>);
-                            }} className="px-3 py-2 rounded-lg border text-[#111]">Вставить ссылку</button>
-                            {(b as VideoBlock).embedHtml && <button onClick={()=>updateAt(i,{ embedHtml: undefined } as Partial<VideoBlock>)} className="px-3 py-2 rounded-lg border text-[#111]">Убрать ссылку</button>}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Списки */}
-                      {(b.type==='ul'||b.type==='ol') && (
-                        <div className="space-y-2">
-                          {(b as ListBlock).items.map((it: string, idx: number)=>(
-                            <div key={idx} className="flex gap-2">
-                              <input className="flex-1 border rounded-lg px-3 py-2 text-[#111]" value={it}
-                                onChange={e=>{
-                                  const items = [...(b as ListBlock).items]; items[idx]=e.target.value; updateAt(i,{ items } as Partial<ListBlock>);
-                                }} />
-                              <button onClick={()=>{
-                                const items = [...(b as ListBlock).items]; items.splice(idx,1); updateAt(i,{ items } as Partial<ListBlock>);
-                              }} className="px-3 py-2 rounded-lg border text-[#111]">–</button>
-                            </div>
-                          ))}
-                          <button onClick={()=>{
-                            const items = [...(b as ListBlock).items, 'Новый пункт']; updateAt(i,{ items } as Partial<ListBlock>);
-                          }} className="px-3 py-2 rounded-lg border text-[#111]">+ Пункт</button>
-                        </div>
-                      )}
-
-                      {/* Цитата */}
-                      {b.type==='quote' && (
-                        <textarea className="w-full border rounded-lg px-3 py-2 text-[#111]" rows={3}
-                          value={(b as QuoteBlock).text||''} onChange={e=>updateAt(i,{ text:e.target.value } as Partial<QuoteBlock>)} placeholder="Текст цитаты"/>
-                      )}
-
-                      {/* Опрос (визуальный) */}
-                      {b.type==='poll' && (
-                        <div className="space-y-2">
-                          <input className="w-full border rounded-lg px-3 py-2 text-[#111]" value={(b as PollBlock).question}
-                            onChange={e=>updateAt(i,{ question:e.target.value } as Partial<PollBlock>)} placeholder="Вопрос"/>
-                          {(b as PollBlock).options.map((op:string,idx:number)=>(
-                            <div key={idx} className="flex gap-2">
-                              <input className="flex-1 border rounded-lg px-3 py-2 text-[#111]" value={op}
-                                onChange={e=>{
-                                  const options=[...(b as PollBlock).options]; options[idx]=e.target.value; updateAt(i,{ options } as Partial<PollBlock>);
-                                }}/>
-                              <button onClick={()=>{
-                                const options=[...(b as PollBlock).options]; options.splice(idx,1); updateAt(i,{ options } as Partial<PollBlock>);
-                              }} className="px-3 py-2 rounded-lg border text-[#111]">–</button>
-                            </div>
-                          ))}
-                          <button onClick={()=>{
-                            const options=[...(b as PollBlock).options,'Вариант']; updateAt(i,{ options } as Partial<PollBlock>);
-                          }} className="px-3 py-2 rounded-lg border text-[#111]">+ Вариант</button>
-                        </div>
-                      )}
-
-                      {/* Разделитель */}
-                      {b.type==='hr' && <div className="text-center text-[#52555a]">Разделитель</div>}
-                    </div>
-                  ))}
-                  {blocks.length===0 && (
-                    <div className="rounded-xl border p-6 text-center text-[#111]">Добавьте первый блок</div>
-                  )}
-                </div>
+                <TipTapEditor
+                  initialHtml={
+                    // Если уже есть один текстовый блок — берём из него
+                    (blocks.length && (blocks[0] as TextBlock).type === 'text')
+                      ? (blocks[0] as TextBlock).text
+                      : ''
+                  }
+                  onChange={(html: string) => {
+                    // Храним весь контент как один «text»-блок с готовым HTML
+                    setBlocks([{ id: uid(), type:'text', align:'left', text: html } as TextBlock]);
+                  }}
+                />
               </div>
             )}
 
@@ -735,7 +572,7 @@ export default function NewPostPage() {
           {loadingEdit && <div className="mt-4 text-sm text-[#52555a]">Загрузка…</div>}
         </div>
       </div>
-      
+
       {/* Notification Toast */}
       {showNotification && (
         <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">

@@ -18,9 +18,6 @@ export default function NewsPage() {
 }
 
 function NewsPageInner() {
-  const sp = useSearchParams();
-  const slug = (sp.get('s') || '').trim();
-  if (slug) return <NewsPageClient slug={slug} />;
   return <NewsList />;
 }
 

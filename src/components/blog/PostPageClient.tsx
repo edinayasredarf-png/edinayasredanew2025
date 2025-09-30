@@ -76,7 +76,6 @@ export default function PostPageClient({ slug }: { slug: string }) {
     if (!post) return;
     react('post', post.id, type);
     setMine(myReactions(post.id));
-    // Refresh post data to get updated reactions
     const updatedPost = await sb_getPostBySlug(post.slug);
     if (updatedPost) {
       setPost(updatedPost);
@@ -183,9 +182,9 @@ export default function PostPageClient({ slug }: { slug: string }) {
                   <h3 className="text-2xl text-[#111]">Читайте ещё</h3>
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {more.map(m => (
-                      <a
+                      <Link
                         key={m.id}
-                        href={`/b/index.html?s=${encodeURIComponent(m.slug)}`}
+                        href={`/blog/${m.slug}`}
                         className="bg-white rounded-3xl p-4 border hover:border-[#2777ff] transition block"
                       >
                         <div className="w-full aspect-[16/10] rounded-2xl bg-[#F6F7F9] overflow-hidden border">
@@ -201,7 +200,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                         <div className="text-[16px] font-semibold text-[#111] leading-snug">
                           {m.title}
                         </div>
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </section>
