@@ -4,7 +4,8 @@ import Layout from '@/components/Layout';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useModal } from '@/components/ModalProvider';
-import { cases } from '@/data/cases';
+import { cases, type Case } from '@/data/cases';
+import { sb_listPosts, type BlogPost } from '@/lib/blogStore';
 
 const CasesPage: React.FC = () => {
   const [selectedIndustry, setSelectedIndustry] = useState('Все отрасли');
@@ -37,7 +38,51 @@ const CasesPage: React.FC = () => {
     'Волонтерство',
   ];
 
-  const filteredCases = cases.filter(caseItem => {
+  const [dynamicCases, setDynamicCases] = useState<Case[]>([]);
+  const [slugMap, setSlugMap] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const posts = await sb_listPosts();
+        const onlyCases = (posts || []).filter(p => (p.kind === 'case'));
+        const startId = 100000; // чтобы не конфликтовать со статическими id
+        const map: Record<number, string> = {};
+        const dyn: Case[] = onlyCases.map((p, idx) => {
+          const id = startId + idx;
+          map[id] = p.slug;
+          // Быстрое извлечение краткого описания из subtitle или HTML
+          const extract = (html?: string) => {
+            if (!html) return '';
+            return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+          };
+          return {
+            id,
+            location: '',
+            title: p.title,
+            description: p.subtitle || extract(p.contentHtml),
+            industry: 'Все отрасли',
+            application: 'Кейс',
+            services: [],
+            image: p.cover || '/img/cases/case1.jpg',
+            company: '',
+            contact: '',
+            budget: '',
+            duration: '',
+            results: [],
+          } as Case;
+        });
+        setDynamicCases(dyn);
+        setSlugMap(map);
+      } catch {
+        setDynamicCases([]);
+      }
+    })();
+  }, []);
+
+  const allCases = [...dynamicCases, ...cases];
+
+  const filteredCases = allCases.filter(caseItem => {
     const industryMatch = selectedIndustry === 'Все отрасли' || caseItem.industry === selectedIndustry;
     const applicationMatch = selectedApplication === 'Все типы' || caseItem.application === selectedApplication;
     return industryMatch && applicationMatch;
@@ -234,19 +279,22 @@ const CasesPage: React.FC = () => {
                   '/img/cases/case9.png'
                 ];
 
+                const isDynamic = caseItem.id >= 100000;
+                const href = isDynamic ? `/blog/${slugMap[caseItem.id]}` : `/cases/${caseItem.id}`;
+                const dynImg = isDynamic ? (dynamicCases.find(c=>c.id===caseItem.id)?.image) : undefined;
                 return (
                   <Link
                     key={caseItem.id}
-                    href={`/cases/${caseItem.id}`}
+                    href={href}
                     className={`group ${isWide ? 'md:col-span-2 lg:col-span-2 xl:col-span-2' : ''}`}
                   >
-                                    <div className="bg-white rounded-2xl p-2 flex h-full transition-all duration-300 outline outline-[0.5px] outline-transparent hover:outline-[#0077FF]">
+                                    <div className="bg-white rounded-2xl p-2 flex h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]">
                   <div className={`bg-[#F6F7F9] rounded-xl p-4 flex flex-col ${isWide ? 'md:flex-row' : ''} h-full items-stretch relative overflow-hidden min-h-[450px] ${isWide ? 'md:min-h-[380px]' : ''}`}>
                     {/* Изображение */}
                     <div className={`w-full mb-4 ${isWide ? 'md:w-1/2 md:flex md:justify-center md:items-center md:ml-4 md:order-2' : ''}`}>
                       <div className={`relative w-full h-auto rounded-xl flex items-center justify-center overflow-hidden ${isWide ? 'md:w-full md:h-auto' : ''}`}>
                         <img
-                          src={caseImages[caseItem.id - 1] || caseImages[0]}
+                          src={(dynImg) || (caseImages[caseItem.id - 1] || caseImages[0]) || '/img/cases/case1.png'}
                           alt={caseItem.title}
                           className="w-full h-full object-cover"
                         />
@@ -266,12 +314,14 @@ const CasesPage: React.FC = () => {
                         <p className={`text-sm text-gray-600 mb-4 line-clamp-2 ${isWide ? 'md:text-base md:line-clamp-3' : ''}`}>
                           {caseItem.description}
                         </p>
+                        {!!caseItem.location && (
                         <div className="flex items-center gap-1 mb-3">
                           <svg className="w-4 h-4 text-[#0077FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           </svg>
                           <span className="text-sm text-gray-600">{caseItem.location}</span>
                         </div>
+                        )}
 
                       </div>
                       <div className="mt-auto">

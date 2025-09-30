@@ -35,7 +35,7 @@ const SectionExpertise = () => (
         {/* Left Big Card */}
         <a
           href="/about"
-          className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#0077FF]"
+          className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]"
         >
           <div className="relative z-10 flex flex-col flex-grow h-full w-full">
             <h3 className="text-3xl md:text-4xl lg:text-[40px] font-bold text-black leading-tight">
@@ -55,7 +55,7 @@ const SectionExpertise = () => (
         <div className="flex flex-col gap-5 h-full">
           {/* Top Card */}
           <div
-            className="group bg-white rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center gap-8 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#0077FF] flex-grow"
+            className="group bg-white rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center gap-8 transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF] flex-grow"
           >
             <div className="order-2 md:order-1 w-full md:w-auto">
               <h4 className="text-2xl font-normal text-black leading-snug mb-4 md:mb-0">
@@ -71,7 +71,7 @@ const SectionExpertise = () => (
             {smallCards.map((card, idx) => (
               <div
                 key={idx}
-                className="group bg-white rounded-3xl p-5 flex flex-col gap-4 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#0077FF]"
+                className="group bg-white rounded-3xl p-5 flex flex-col gap-4 transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]"
               >
                 <div className="w-16 h-16 bg-[#F6F7F9] rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-[#0077FF]/10">
                   {card.icon}

@@ -184,6 +184,7 @@ function Btn({
     <button
       type="button"
       title={title}
+      onMouseDown={(e) => { e.preventDefault(); }}
       onClick={onClick}
       className={`inline-flex items-center justify-center h-10 px-3 rounded-lg text-[#111] hover:bg-gray-100 ${active ? 'bg-gray-200' : ''}`}
     >

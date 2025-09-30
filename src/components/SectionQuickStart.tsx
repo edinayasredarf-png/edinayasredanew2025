@@ -61,7 +61,7 @@ const QuickStartCard = ({ title, description, button, href, image, imageAlt, ima
   return (
     <a
       href={href}
-      className="group bg-white rounded-3xl p-2.5 flex h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#0077FF]"
+      className="group bg-white rounded-3xl p-2.5 flex h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]"
       target={href?.startsWith('http') ? '_blank' : undefined}
       rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
       onClick={handleClick}

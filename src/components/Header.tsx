@@ -126,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({
         }`}
         aria-hidden={!showSticky}
       >
-        <div className="bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-black/10">
+        <div className="bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-[#E5E7EB]">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             {/* Лого */}
             <Link href="/" className="flex items-center">
@@ -271,7 +271,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Навигация (десктоп) */}
-          <nav className={`border-t ${isLight ? 'border-black/10' : 'border-white/30'} border-t-[1px] relative z-50`}>
+          <nav className={`border-t ${isLight ? 'border-[#E5E7EB]' : 'border-white/30'} border-t-[1px] relative z-50`}>
             <div className="w-full lg:flex hidden flex-row items-center justify-between lg:h-[70px]">
               <ul className="flex flex-row items-center gap-3 w-full">
                 <li>
@@ -363,7 +363,7 @@ const Header: React.FC<HeaderProps> = ({
                         Лесоустройство
                       </Link>
 
-                      <div className="mt-3 pt-3 border-t border-black/10">
+                      <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
                         <Link
                           href="/services"
                           className={`w-full inline-flex ${
@@ -470,7 +470,7 @@ const Header: React.FC<HeaderProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Верхняя панель */}
-            <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 border-b border-black/10">
+            <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 border-b border-[#E5E7EB]">
               <Link href="/" onClick={() => setIsMobileNavOpen(false)} className="flex items-center">
                 <Image src="/img/logo_dark.svg" alt="ES" width={140} height={40} className="w-[140px] h-auto" />
               </Link>
