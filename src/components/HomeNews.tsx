@@ -93,7 +93,7 @@ export default function HomeNews() {
             {/* Последний слайд: кнопка Все новости, такой же размер и скругления, в конце списка */}
             <SwiperSlide>
               <Link href="/news" className="bg-[#0077FF] rounded-3xl p-8 h-full min-h-[200px] flex items-center justify-center text-white text-xl font-medium hover:bg-[#0063d4]">
-                Открывать все новости
+                Открыть все новости
               </Link>
             </SwiperSlide>
           </Swiper>
@@ -114,7 +114,7 @@ export default function HomeNews() {
           </div>
         </div>
 
-        
+
       </div>
     </section>
   );
