@@ -16,6 +16,7 @@ export default function DocumentsPage() {
     "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "Согласие физ. лица на размещение информации в Интернете.",
     "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "Согласие на обработку данных СФЕРА.",
     "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf": "Выписка из реестра аккредитованных организаций.",
+		"Saas-ES.pdf": "Уведомление о Saas-решении",
   };
 
   // Названия для отображения
@@ -27,6 +28,8 @@ export default function DocumentsPage() {
     "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "Согласие физ. лица на размещение информации (PDF)",
     "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "Согласие на обработку данных СФЕРА (PDF)",
     "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf": "Выписка из реестра аккредитованных организаций (PDF)",
+		"Saas-ES.pdf": "Уведомление о Saas-решении",
+
   };
 
   // Публичные URL Supabase для документов
@@ -38,6 +41,7 @@ export default function DocumentsPage() {
     "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf",
     "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_na_obrabotku_dannikh_SFERA.pdf",
     "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Vipiska_iz_reestra_akkreditovannikh_organizatsii%20(1).pdf",
+		"Saas-ES.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Saas-ES.pdf",
   };
 
   // Список документов (имя файла должно соответствовать ключу в docUrls)
@@ -49,6 +53,7 @@ export default function DocumentsPage() {
     { file: "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf", title: docTitles["Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf"] },
     { file: "Soglasie_na_obrabotku_dannikh_SFERA.pdf", title: docTitles["Soglasie_na_obrabotku_dannikh_SFERA.pdf"] },
     { file: "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf", title: docTitles["Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf"] },
+		{ file: "Saas-ES.pdf", title: docTitles["Saas-ES.pdf"] },
   ];
 
   const handleDocClick = (docFile: string) => setActiveDoc(docFile);

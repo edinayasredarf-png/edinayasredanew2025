@@ -13,42 +13,92 @@ const DEFAULT_CARDS: Card[] = [
   { title: 'Настраивайте доступы',           subtitle: 'Гибко управляйте правами: администраторы, проверяющие, подрядчики', image: '/img/card5.webp' },
 ];
 
-const usePrefersReducedMotion = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// --- CONFIG ---
+const DRAG_TOUCH_THRESHOLD = 24;
+const DRAG_MOUSE_THRESHOLD = 36;
+const WHEEL_COOLDOWN_MS = 240;
+const WHEEL_MIN_DELTA_PX = 28;
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+const pxFromWheel = (e: WheelEvent) => (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY);
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => setReduced(mq.matches);
+    onChange();
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, []);
+  return reduced;
+}
+
+function usePreloadNeighbors(items: Card[], index: number) {
+  useEffect(() => {
+    const preload = (src?: string) => {
+      if (!src) return;
+      const img = new Image();
+      img.src = src;
+      // @ts-ignore
+      img.decode?.().catch(() => {});
+    };
+    preload(items[index + 1]?.image);
+    preload(items[index - 1]?.image);
+  }, [items, index]);
+}
 
 const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ items = DEFAULT_CARDS, initial = 0 }) => {
   const [index, setIndex] = useState(clamp(initial, 0, items.length - 1));
-  const trackRef = useRef<HTMLDivElement | null>(null);
   const prefersReduced = usePrefersReducedMotion();
+  const trackRef = useRef<HTMLDivElement | null>(null);
 
-  // --- Keyboard: ← / → ---
+  const go = (next: number) => setIndex(clamp(next, 0, items.length - 1));
+  usePreloadNeighbors(items, index);
+
+  // hash -> index (#f1..#fN)
+  useEffect(() => {
+    const m = window.location.hash.match(/^#f(\d{1,3})$/i);
+    if (m) {
+      const idx = clamp(parseInt(m[1], 10) - 1, 0, items.length - 1);
+      if (!Number.isNaN(idx)) setIndex(idx);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    window.history?.replaceState?.(null, '', `#f${index + 1}`);
+  }, [index]);
+
+  // keyboard
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') setIndex((i) => clamp(i + 1, 0, items.length - 1));
-      if (e.key === 'ArrowLeft')  setIndex((i) => clamp(i - 1, 0, items.length - 1));
+      if (e.key === 'ArrowRight') go(index + 1);
+      if (e.key === 'ArrowLeft')  go(index - 1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [items.length]);
+  }, [index]);
 
-  // --- Wheel to step cards (vertical → horizontal intent) ---
+  // wheel
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
+    let locked = false;
     const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; // respect real horizontal scrolling
-      if (e.deltaY > 8)  { setIndex((i) => clamp(i + 1, 0, items.length - 1)); e.preventDefault(); }
-      if (e.deltaY < -8) { setIndex((i) => clamp(i - 1, 0, items.length - 1)); e.preventDefault(); }
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      const dy = pxFromWheel(e);
+      if (Math.abs(dy) < WHEEL_MIN_DELTA_PX || locked) return;
+      e.preventDefault();
+      locked = true;
+      go(dy > 0 ? index + 1 : index - 1);
+      const t = window.setTimeout(() => { locked = false; window.clearTimeout(t); }, WHEEL_COOLDOWN_MS);
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel as any);
-  }, [items.length]);
+  }, [index]);
 
-  // --- Touch swipe (mobile) ---
+  // touch swipe
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -56,10 +106,9 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
     const onTouchStart = (e: TouchEvent) => { const t = e.touches[0]; startX = t.clientX; startY = t.clientY; active = true; };
     const onTouchMove  = (e: TouchEvent) => {
       if (!active) return;
-      const t = e.touches[0]; const dx = t.clientX - startX; const dy = t.clientY - startY;
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 24) {
-        if (dx < 0) setIndex((i) => clamp(i + 1, 0, items.length - 1));
-        else        setIndex((i) => clamp(i - 1, 0, items.length - 1));
+      const t = e.touches[0], dx = t.clientX - startX, dy = t.clientY - startY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > DRAG_TOUCH_THRESHOLD) {
+        go(dx < 0 ? index + 1 : index - 1);
         active = false;
       }
     };
@@ -72,51 +121,38 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       el.removeEventListener('touchmove',  onTouchMove as any);
       el.removeEventListener('touchend',   onTouchEnd as any);
     };
-  }, [items.length]);
+  }, [index]);
 
-  // --- Mouse swipe (desktop via Pointer Events) ---
+  // mouse swipe (Pointer Events)
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
-
-    let startX = 0, startY = 0, dragging = false, moved = false;
-    let pointerId: number | null = null;
+    let startX = 0, startY = 0, dragging = false, pointerId: number | null = null;
 
     const setDraggingClass = (on: boolean) => {
-      if (!el) return;
-      if (on) el.classList.add('cursor-grabbing', 'select-none');
-      else    el.classList.remove('cursor-grabbing', 'select-none');
+      el.classList.toggle('cursor-grabbing', on);
+      el.classList.toggle('select-none', on);
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return; // only left click
+      if (e.button !== 0) return;
       pointerId = e.pointerId;
       (e.target as Element).setPointerCapture?.(pointerId);
-      startX = e.clientX; startY = e.clientY;
-      dragging = true; moved = false;
-      setDraggingClass(true);
+      startX = e.clientX; startY = e.clientY; dragging = true; setDraggingClass(true);
     };
-
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      if (!moved && Math.abs(dx) + Math.abs(dy) > 6) moved = true;
-      // горизонтальный жест
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 36) {
-        if (dx < 0) setIndex((i) => clamp(i + 1, 0, items.length - 1));
-        else        setIndex((i) => clamp(i - 1, 0, items.length - 1));
-        // сбрасываем жест, чтобы за одно перетаскивание был один шаг
-        dragging = false;
-        setDraggingClass(false);
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > DRAG_MOUSE_THRESHOLD) {
+        go(dx < 0 ? index + 1 : index - 1);
+        dragging = false; setDraggingClass(false);
+        if (pointerId != null) (e.target as Element).releasePointerCapture?.(pointerId);
         pointerId = null;
       }
     };
-
     const end = (e: PointerEvent) => {
       if (pointerId != null) (e.target as Element).releasePointerCapture?.(pointerId);
-      dragging = false; pointerId = null;
-      setDraggingClass(false);
+      dragging = false; pointerId = null; setDraggingClass(false);
     };
 
     el.addEventListener('pointerdown', onPointerDown, { passive: true });
@@ -124,10 +160,7 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
     el.addEventListener('pointerleave', end);
-
-    // курсор «рука» по умолчанию
     el.classList.add('cursor-grab');
-
     return () => {
       el.removeEventListener('pointerdown', onPointerDown as any);
       el.removeEventListener('pointermove', onPointerMove as any);
@@ -136,32 +169,32 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       el.removeEventListener('pointerleave', end as any);
       el.classList.remove('cursor-grab', 'cursor-grabbing', 'select-none');
     };
-  }, [items.length]);
+  }, [index]);
 
-  const go = (next: number) => setIndex(clamp(next, 0, items.length - 1));
+  // safety: if items length changes
+  useEffect(() => setIndex((i) => clamp(i, 0, items.length - 1)), [items.length]);
 
   return (
-    <section className="relative w-full bg-[#F6F7F9] py-10 md:py-14">
+    <section className="relative w-full bg-[#F6F7F9] py-10 md:py-14" role="region" aria-label="Карусель возможностей">
       <div className="mx-auto w-[92vw] max-w-[1120px]">
         <header className="text-center px-4">
           <h2 className="text-black font-bold leading-[1.1] text-[30px] md:text-[44px]">
             Все возможности в одном месте
           </h2>
           <p className="mt-2 text-black/60 text-base md:text-xl">
-					Управляйте городскими данными, контролем работ и отчетностью — онлайн и без лишних движений.
-
-</p>
+            Управляйте городскими данными, контролем работ и отчётностью — без лишних движений.
+          </p>
         </header>
 
         {/* карточка */}
-        <div className="relative mt-6 md:mt-8" ref={trackRef}>
+        <div className="relative mt-6 md:mt-8" ref={trackRef} aria-roledescription="carousel" aria-label="Свайпайте или используйте колёсико и стрелки">
           <AnimatePresence mode="wait" initial={false}>
             <motion.article
               key={index}
               initial={prefersReduced ? { opacity: 0 } : { opacity: 0, x: 24 }}
               animate={prefersReduced ? { opacity: 1 } : { opacity: 1, x: 0 }}
               exit={prefersReduced ? { opacity: 0 } : { opacity: 0, x: -24 }}
-              transition={{ type: prefersReduced ? 'tween' : 'spring', stiffness: 180, damping: 24, mass: 0.7, duration: prefersReduced ? 0.18 : undefined }}
+              transition={{ type: prefersReduced ? 'tween' : 'spring', stiffness: 220, damping: 26, mass: 0.7, duration: prefersReduced ? 0.18 : undefined }}
               className="relative w-full rounded-3xl bg-white border border-[#E7ECF4] overflow-hidden"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 md:[aspect-ratio:2/1]" style={{ minHeight: 320 }}>
@@ -175,7 +208,6 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-end justify-center px-2 pt-2 pb-4 md:px-2 md:pt-2 md:pb-6">
                   <img
                     src={items[index].image}
@@ -188,9 +220,10 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
               </div>
             </motion.article>
           </AnimatePresence>
+          <span className="sr-only" aria-live="polite">Слайд {index + 1} из {items.length}: {items[index].title}</span>
         </div>
 
-        {/* индикаторы-точки */}
+        {/* индикаторы-точки — как раньше */}
         <div className="mt-4 flex items-center justify-center gap-2">
           {items.map((_, i) => (
             <button
