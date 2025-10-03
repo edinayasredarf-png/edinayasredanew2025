@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Card = { title: string; subtitle: string; image: string };
@@ -13,19 +13,20 @@ const DEFAULT_CARDS: Card[] = [
   { title: 'Настраивайте доступы',           subtitle: 'Гибко управляйте правами: администраторы, проверяющие, подрядчики', image: '/img/card5.webp' },
 ];
 
-// --- CONFIG ---
 const DRAG_TOUCH_THRESHOLD = 24;
 const DRAG_MOUSE_THRESHOLD = 36;
-const WHEEL_COOLDOWN_MS = 240;
-const WHEEL_MIN_DELTA_PX = 28;
+const WHEEL_COOLDOWN_MS   = 240;
+const WHEEL_MIN_DELTA_PX  = 28;
+const AUTOPLAY_INTERVAL_MS = 10000;
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
-const pxFromWheel = (e: WheelEvent) => (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY);
+const pxFromWheel = (e: WheelEvent) =>
+  e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
-    if (!window.matchMedia) return;
+    if (typeof window === 'undefined' || !window.matchMedia) return;
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const onChange = () => setReduced(mq.matches);
     onChange();
@@ -44,43 +45,98 @@ function usePreloadNeighbors(items: Card[], index: number) {
       // @ts-ignore
       img.decode?.().catch(() => {});
     };
-    preload(items[index + 1]?.image);
-    preload(items[index - 1]?.image);
+    if (!items.length) return;
+    preload(items[(index + 1) % items.length]?.image);
+    preload(items[(index - 1 + items.length) % items.length]?.image);
   }, [items, index]);
 }
 
-const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ items = DEFAULT_CARDS, initial = 0 }) => {
-  const [index, setIndex] = useState(clamp(initial, 0, items.length - 1));
-  const prefersReduced = usePrefersReducedMotion();
-  const trackRef = useRef<HTMLDivElement | null>(null);
+export interface FeaturesCarouselProps {
+  items?: Card[];
+  initial?: number;
+  autoplay?: boolean;
+  intervalMs?: number;
+  onChange?: (nextIndex: number) => void;
+  renderCTA?: (item: Card) => React.ReactNode;
+}
 
-  const go = (next: number) => setIndex(clamp(next, 0, items.length - 1));
+const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
+  items = DEFAULT_CARDS,
+  initial = 0,
+  autoplay = true,
+  intervalMs = AUTOPLAY_INTERVAL_MS,
+  onChange,
+  renderCTA,
+}) => {
+  const len = items.length || 1;
+  const [index, setIndex] = useState(clamp(initial, 0, len - 1));
+  const prefersReduced = usePrefersReducedMotion();
+
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [hovering, setHovering] = useState(false);
+  const [inView, setInView] = useState(true);
+  const lastInteractTs = useRef(0);
+  const [progress, setProgress] = useState(0);
+
+  const go = useCallback((next: number) => {
+    const normalized = ((next % len) + len) % len;
+    setIndex(normalized);
+    onChange?.(normalized);
+  }, [len, onChange]);
+
+  const next = useCallback(() => {
+    go(index + 1);
+    lastInteractTs.current = Date.now();
+  }, [go, index]);
+
+  const prev = useCallback(() => {
+    go(index - 1);
+    lastInteractTs.current = Date.now();
+  }, [go, index]);
+
+  const onNextRef = useRef(() => {});
+  const onPrevRef = useRef(() => {});
+  onNextRef.current = next;
+  onPrevRef.current = prev;
+
   usePreloadNeighbors(items, index);
 
-  // hash -> index (#f1..#fN)
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const m = window.location.hash.match(/^#f(\d{1,3})$/i);
     if (m) {
-      const idx = clamp(parseInt(m[1], 10) - 1, 0, items.length - 1);
+      const idx = clamp(parseInt(m[1], 10) - 1, 0, len - 1);
       if (!Number.isNaN(idx)) setIndex(idx);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
-    window.history?.replaceState?.(null, '', `#f${index + 1}`);
+    if (typeof window === 'undefined') return;
+    const target = `#f${index + 1}`;
+    if (window.location.hash !== target) {
+      window.history?.replaceState?.(null, '', target);
+    }
   }, [index]);
 
-  // keyboard
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') go(index + 1);
-      if (e.key === 'ArrowLeft')  go(index - 1);
+      if (document.activeElement !== trackRef.current) return;
+      if (e.key === 'ArrowRight') onNextRef.current();
+      if (e.key === 'ArrowLeft')  onPrevRef.current();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [index]);
+  }, []);
 
-  // wheel
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -91,14 +147,13 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       if (Math.abs(dy) < WHEEL_MIN_DELTA_PX || locked) return;
       e.preventDefault();
       locked = true;
-      go(dy > 0 ? index + 1 : index - 1);
+      dy > 0 ? onNextRef.current() : onPrevRef.current();
       const t = window.setTimeout(() => { locked = false; window.clearTimeout(t); }, WHEEL_COOLDOWN_MS);
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel as any);
-  }, [index]);
+  }, []);
 
-  // touch swipe
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -108,7 +163,8 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       if (!active) return;
       const t = e.touches[0], dx = t.clientX - startX, dy = t.clientY - startY;
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > DRAG_TOUCH_THRESHOLD) {
-        go(dx < 0 ? index + 1 : index - 1);
+        dx < 0 ? onNextRef.current() : onPrevRef.current();
+        lastInteractTs.current = Date.now();
         active = false;
       }
     };
@@ -121,19 +177,16 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       el.removeEventListener('touchmove',  onTouchMove as any);
       el.removeEventListener('touchend',   onTouchEnd as any);
     };
-  }, [index]);
+  }, []);
 
-  // mouse swipe (Pointer Events)
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
     let startX = 0, startY = 0, dragging = false, pointerId: number | null = null;
-
     const setDraggingClass = (on: boolean) => {
       el.classList.toggle('cursor-grabbing', on);
       el.classList.toggle('select-none', on);
     };
-
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
       pointerId = e.pointerId;
@@ -144,7 +197,8 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       if (!dragging) return;
       const dx = e.clientX - startX, dy = e.clientY - startY;
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > DRAG_MOUSE_THRESHOLD) {
-        go(dx < 0 ? index + 1 : index - 1);
+        dx < 0 ? onNextRef.current() : onPrevRef.current();
+        lastInteractTs.current = Date.now();
         dragging = false; setDraggingClass(false);
         if (pointerId != null) (e.target as Element).releasePointerCapture?.(pointerId);
         pointerId = null;
@@ -154,7 +208,6 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       if (pointerId != null) (e.target as Element).releasePointerCapture?.(pointerId);
       dragging = false; pointerId = null; setDraggingClass(false);
     };
-
     el.addEventListener('pointerdown', onPointerDown, { passive: true });
     el.addEventListener('pointermove', onPointerMove, { passive: true });
     el.addEventListener('pointerup', end);
@@ -169,13 +222,71 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
       el.removeEventListener('pointerleave', end as any);
       el.classList.remove('cursor-grab', 'cursor-grabbing', 'select-none');
     };
-  }, [index]);
+  }, []);
 
-  // safety: if items length changes
-  useEffect(() => setIndex((i) => clamp(i, 0, items.length - 1)), [items.length]);
+  useEffect(() => {
+    if (!autoplay || prefersReduced) return;
+    let timer: number | null = null;
+    let startedAt = 0;
+    let raf = 0;
+
+    const baseInterval = Math.max(1500, intervalMs);
+
+    const start = () => {
+      if (hovering || document.hidden || !inView) return;
+      startedAt = Date.now();
+      timer = window.setInterval(() => {
+        if (Date.now() - lastInteractTs.current < 400) return;
+        onNextRef.current();
+        startedAt = Date.now();
+        setProgress(0);
+      }, baseInterval);
+    };
+    const stop = () => { if (timer) { window.clearInterval(timer); timer = null; } };
+
+    const tick = () => {
+      if (timer && !hovering && !document.hidden && inView) {
+        const t = Math.min(1, (Date.now() - startedAt) / baseInterval);
+        setProgress(t);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    start();
+    raf = requestAnimationFrame(tick);
+
+    const onVis = () => { stop(); setProgress(0); start(); };
+    window.addEventListener('visibilitychange', onVis);
+    window.addEventListener('focus', onVis);
+    window.addEventListener('blur', stop);
+
+    return () => {
+      stop();
+      cancelAnimationFrame(raf);
+      window.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('focus', onVis);
+      window.removeEventListener('blur', stop);
+    };
+  }, [autoplay, prefersReduced, intervalMs, hovering, inView]);
+
+  useEffect(() => setIndex((i) => ((i % len) + len) % len), [len]);
+
+  const cardInitial = prefersReduced ? { opacity: 0 } : { opacity: 0, x: 24 };
+  const cardAnimate = prefersReduced ? { opacity: 1 } : { opacity: 1, x: 0.5 };
+  const cardExit    = prefersReduced ? { opacity: 0 } : { opacity: 0, x: -24 };
+
+  const textInitial = prefersReduced ? { opacity: 0 } : { opacity: 0, y: 10 };
+  const textAnimate = prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 };
+  const imgInitial  = prefersReduced ? { opacity: 0 } : { opacity: 0, y: 18 };
+  const imgAnimate  = prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 };
 
   return (
-    <section className="relative w-full bg-[#F6F7F9] py-10 md:py-14" role="region" aria-label="Карусель возможностей">
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-[#F6F7F9] py-10 md:py-14"
+      role="region"
+      aria-label="Карусель возможностей"
+    >
       <div className="mx-auto w-[92vw] max-w-[1120px]">
         <header className="text-center px-4">
           <h2 className="text-black font-bold leading-[1.1] text-[30px] md:text-[44px]">
@@ -186,19 +297,56 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
           </p>
         </header>
 
-        {/* карточка */}
-        <div className="relative mt-6 md:mt-8" ref={trackRef} aria-roledescription="carousel" aria-label="Свайпайте или используйте колёсико и стрелки">
+        {/* карточка + стрелки */}
+        <div
+          className="relative mt-6 md:mt-8 outline-none [touch-action:pan-y] rounded-xl"
+          ref={trackRef}
+          tabIndex={0}
+          aria-roledescription="carousel"
+          aria-label="Свайпайте или используйте колёсико и стрелки"
+          aria-live="off"
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+        >
+          {/* Стрелки вынесены ЗА границы карточки */}
+          <button
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] border border-[#E7ECF4]  hover:bg-[#005fcc] focus-visible:ring-2 focus-visible:ring-black/40"
+            aria-label="Предыдущий слайд"
+            onClick={() => onPrevRef.current()}
+          >
+            ‹
+          </button>
+          <button
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -right-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] border border-[#E7ECF4]  hover:bg-[#005fcc] focus-visible:ring-2 focus-visible:ring-black/40"
+            aria-label="Следующий слайд"
+            onClick={() => onNextRef.current()}
+          >
+            ›
+          </button>
+
           <AnimatePresence mode="wait" initial={false}>
             <motion.article
               key={index}
-              initial={prefersReduced ? { opacity: 0 } : { opacity: 0, x: 24 }}
-              animate={prefersReduced ? { opacity: 1 } : { opacity: 1, x: 0 }}
-              exit={prefersReduced ? { opacity: 0 } : { opacity: 0, x: -24 }}
-              transition={{ type: prefersReduced ? 'tween' : 'spring', stiffness: 220, damping: 26, mass: 0.7, duration: prefersReduced ? 0.18 : undefined }}
-              className="relative w-full rounded-3xl bg-white border border-[#E7ECF4] overflow-hidden"
+              initial={cardInitial}
+              animate={cardAnimate}
+              exit={cardExit}
+              transition={{
+                type: prefersReduced ? 'tween' : 'spring',
+                stiffness: 220,
+                damping: 26,
+                mass: 0.7,
+                duration: prefersReduced ? 0.18 : undefined,
+              }}
+              className="relative w-full rounded-3xl bg-white border border-[#E7ECF4] overflow-hidden will-change-transform"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 md:[aspect-ratio:2/1]" style={{ minHeight: 320 }}>
-                <div className="flex items-center">
+                {/* TEXT */}
+                <motion.div
+                  className="flex items-center"
+                  initial={textInitial}
+                  animate={textAnimate}
+                  transition={{ type: prefersReduced ? 'tween' : 'spring', stiffness: 280, damping: 28, mass: 0.6, delay: prefersReduced ? 0 : 0.04 }}
+                >
                   <div className="px-6 py-8 md:px-10 md:py-10">
                     <h3 className="text-black font-semibold leading-[1.15] text-[22px] sm:text-[26px] md:text-[32px]">
                       {items[index].title}
@@ -206,31 +354,55 @@ const FeaturesCarousel: React.FC<{ items?: Card[]; initial?: number }> = ({ item
                     <p className="mt-4 text-black/70 leading-snug text-[15px] sm:text-[16px] md:text-[18px]">
                       {items[index].subtitle}
                     </p>
+
+                    {renderCTA ? (
+                      <div className="mt-6">{renderCTA(items[index])}</div>
+                    ) : null}
                   </div>
-                </div>
-                <div className="flex items-end justify-center px-2 pt-2 pb-4 md:px-2 md:pt-2 md:pb-6">
-                  <img
-                    src={items[index].image}
-                    alt=""
-                    loading="lazy"
-                    draggable={false}
-                    className="w-full h-full object-contain object-bottom pointer-events-none select-none"
-                  />
-                </div>
+                </motion.div>
+
+                {/* IMAGE */}
+                <motion.div
+                  className="flex items-end justify-center px-2 pt-2 pb-0 md:px-2 md:pt-2 md:pb-0"
+                  initial={imgInitial}
+                  animate={imgAnimate}
+                  transition={{ type: prefersReduced ? 'tween' : 'spring', stiffness: 40, damping: 10, mass: 0.7, delay: prefersReduced ? 0 : 0.06 }}
+                >
+                  <div className="w-full h-full md:aspect-[4/3] flex items-end">
+                    <img
+                      src={items[index].image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      draggable={false}
+                      className="w-full h-full object-contain object-bottom pointer-events-none select-none will-change-transform"
+                    />
+                  </div>
+                </motion.div>
               </div>
+
+
             </motion.article>
           </AnimatePresence>
-          <span className="sr-only" aria-live="polite">Слайд {index + 1} из {items.length}: {items[index].title}</span>
+
+          {/* live-объявление для скринридеров */}
+          <span className="sr-only" aria-live="polite" aria-atomic="true">
+            Слайд {index + 1} из {len}: {items[index].title}
+          </span>
         </div>
 
-        {/* индикаторы-точки — как раньше */}
+        {/* индикаторы-точки */}
         <div className="mt-4 flex items-center justify-center gap-2">
           {items.map((_, i) => (
             <button
               key={i}
               aria-label={`К карточке ${i + 1}`}
-              className={`h-2.5 rounded-full transition-[width,opacity] ${i === index ? 'w-6 bg-black' : 'w-2.5 bg-black/25'}`}
-              onClick={() => go(i)}
+              aria-current={i === index ? 'true' : undefined}
+              className={`h-2.5 rounded-full transition-[width,opacity] focus-visible:ring-2 focus-visible:ring-[black/40] ${
+                i === index ? 'w-6 bg-[#0077FF]' : 'w-2.5 bg-black/25'
+              }`}
+              onClick={() => { setIndex(i); lastInteractTs.current = Date.now(); setProgress(0); }}
             />
           ))}
         </div>
