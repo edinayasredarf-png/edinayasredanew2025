@@ -37,7 +37,6 @@ export default function HomePage() {
       <SectionQuickStart />
       <HomeNews />
       <HomePosts />
-      <SectionBlog />
       <SectionExpertise />
       <SectionSubscribeChannels />
     </Layout>

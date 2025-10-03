@@ -30,8 +30,9 @@ export default function HomePosts() {
             Блог
           </h2>
           <p className="text-lg text-gray-400 max-w-md md:text-right mt-4 md:mt-0">
-            Последние статьи нашей команды
-          </p>
+					Новости и статьи о цифровизации и эффективном управлении территориями
+
+</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
