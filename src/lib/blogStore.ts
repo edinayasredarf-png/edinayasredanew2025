@@ -33,6 +33,21 @@ export type NewsItem = {
   reactions?: { heart: number; fire: number; smile: number };
 };
 
+// -------- CASES (separate table) ----------
+export type CaseItem = {
+  id: string;            // uuid
+  slug: string;
+  title: string;
+  subtitle?: string;
+  cover?: string;
+  contentHtml: string;
+  tags?: string[] | any;
+  createdAt: number;
+  updatedAt: number;
+  views?: number;
+  reactions?: { heart: number; fire: number; smile: number } | any;
+};
+
 export type BlogDraft = {
   kind?: 'post' | 'news' | 'lesson' | 'case';
   title?: string;
@@ -304,6 +319,7 @@ function mapPostRow(row: any): BlogPost {
     cover: row.cover ?? undefined,
     contentHtml: row.contenthtml ?? row.contentHtml, // на случай уже правильного нейминга
     tags: row.tags ?? [],
+    kind: row.kind ?? undefined,
     createdAt: row.createdat ?? row.createdAt,
     updatedAt: row.updatedat ?? row.updatedAt,
     views: row.views ?? 0,
@@ -326,6 +342,22 @@ function mapNewsRow(row: any): NewsItem {
   };
 }
 
+function mapCaseRow(row: any): CaseItem {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    subtitle: row.subtitle ?? undefined,
+    cover: row.cover ?? undefined,
+    contentHtml: row.contenthtml ?? row.contentHtml,
+    tags: row.tags ?? [],
+    createdAt: row.createdat ?? row.createdAt,
+    updatedAt: row.updatedat ?? row.updatedAt,
+    views: row.views ?? 0,
+    reactions: row.reactions ?? { heart:0, fire:0, smile:0 },
+  };
+}
+
 function postToPayload(p: BlogPost): any {
   return {
     id: p.id,
@@ -335,6 +367,7 @@ function postToPayload(p: BlogPost): any {
     cover: p.cover ?? null,
     contenthtml: p.contentHtml,
     tags: p.tags ?? [],
+    kind: p.kind ?? 'post',
     createdat: p.createdAt,
     updatedat: p.updatedAt,
     views: p.views ?? 0,
@@ -354,6 +387,22 @@ function newsToPayload(n: NewsItem): any {
     updatedat: n.updatedAt ?? null,
     views: n.views ?? 0,
     reactions: n.reactions ?? { heart:0, fire:0, smile:0 },
+  };
+}
+
+function caseToPayload(c: CaseItem): any {
+  return {
+    id: c.id,
+    slug: c.slug,
+    title: c.title,
+    subtitle: c.subtitle ?? null,
+    cover: c.cover ?? null,
+    contenthtml: c.contentHtml,
+    tags: c.tags ?? [],
+    createdat: c.createdAt,
+    updatedat: c.updatedAt,
+    views: c.views ?? 0,
+    reactions: c.reactions ?? { heart:0, fire:0, smile:0 },
   };
 }
 
@@ -401,6 +450,32 @@ export async function sb_upsertNews(n: NewsItem): Promise<void> {
 export async function sb_deleteNewsById(id: string): Promise<void> {
   const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
   const { error } = await sb.from('news').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function sb_listCases(): Promise<CaseItem[]> {
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { data, error } = await sb.from('cases').select('*').order('createdat', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(mapCaseRow);
+}
+
+export async function sb_getCaseBySlug(slug: string): Promise<CaseItem | undefined> {
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { data, error } = await sb.from('cases').select('*').eq('slug', slug).maybeSingle();
+  if (error) throw error;
+  return data ? mapCaseRow(data) : undefined;
+}
+
+export async function sb_upsertCase(c: CaseItem): Promise<void> {
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { error } = await sb.from('cases').upsert(caseToPayload(c), { onConflict: 'slug' });
+  if (error) throw error;
+}
+
+export async function sb_deleteCaseById(id: string): Promise<void> {
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const { error } = await sb.from('cases').delete().eq('id', id);
   if (error) throw error;
 }
 

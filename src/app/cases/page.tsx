@@ -70,6 +70,7 @@ const CasesPage: React.FC = () => {
             budget: '',
             duration: '',
             results: [],
+            description_html: p.contentHtml
           } as Case;
         });
         setDynamicCases(dyn);
@@ -280,7 +281,7 @@ const CasesPage: React.FC = () => {
                 ];
 
                 const isDynamic = caseItem.id >= 100000;
-                const href = isDynamic ? `/blog/${slugMap[caseItem.id]}` : `/cases/${caseItem.id}`;
+                const href = `/cases/${caseItem.id}`;
                 const dynImg = isDynamic ? (dynamicCases.find(c=>c.id===caseItem.id)?.image) : undefined;
                 return (
                   <Link

@@ -12,7 +12,8 @@ export default function HomePosts() {
     (async () => {
       try {
         const all = await sb_listPosts();
-        setPosts(all.slice(0, 3));
+        // Исключаем кейсы из блока «Последние статьи» на главной
+        setPosts(all.filter(p => (p.kind || 'post') !== 'case').slice(0, 3));
       } catch (e) {
         setPosts([]);
       }

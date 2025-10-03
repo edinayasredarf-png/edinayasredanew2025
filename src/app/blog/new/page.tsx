@@ -15,7 +15,8 @@ import {
   getPostBySlug, getNewsBySlug, deletePostById, deleteNewsById,
   listAllTags, addTag, listScheduledPosts, listScheduledNews,
   publishScheduledPost, publishScheduledNews,
-  sb_getPostBySlug, sb_getNewsBySlug, sb_upsertPost, sb_upsertNews
+  sb_getPostBySlug, sb_getNewsBySlug, sb_upsertPost, sb_upsertNews,
+  sb_getCaseBySlug, sb_upsertCase, sb_deleteCaseById
 } from '@/lib/blogStore';
 
 // ---------- типы блоков ----------
@@ -85,7 +86,7 @@ function StepTitle({children}:{children:React.ReactNode}) {
 
 export default function NewPostPage() {
   const [editSlug, setEditSlug] = useState('');
-  const [editType, setEditType] = useState<'post'|'news'|null>(null);
+  const [editType, setEditType] = useState<'post'|'news'|'lesson'|'case'|null>(null);
 
   const [authed, setAuthed] = useState(false);
   const [login, setLogin] = useState(''); const [pass, setPass] = useState('');
@@ -115,7 +116,11 @@ export default function NewPostPage() {
     const sp = new URLSearchParams(window.location.search);
     setEditSlug(sp.get('edit') || '');
     const t = sp.get('type');
-    setEditType(t === 'post' || t === 'news' ? (t as 'post'|'news') : null);
+    setEditType(
+      t === 'post' || t === 'news' || t === 'lesson' || t === 'case'
+        ? (t as 'post'|'news'|'lesson'|'case')
+        : null
+    );
   }, []);
 
   // загрузка черновика
@@ -143,12 +148,20 @@ export default function NewPostPage() {
     setLoadingEdit(true);
     (async () => {
       try {
-        if (editType === 'post') {
+        if (editType === 'post' || editType === 'lesson') {
           const p = await sb_getPostBySlug(editSlug).catch(() => undefined) || getPostBySlug(editSlug);
           if (p) {
-            setKind('post'); setTitle(p.title); setSubtitle(p.subtitle||'');
+            setKind((p.kind as any) || 'post'); setTitle(p.title); setSubtitle(p.subtitle||'');
             setCover(p.cover); setTags(p.tags||[]);
             setBlocks([{ id: uid(), type:'text', align:'left', text: p.contentHtml } as TextBlock]);
+            setStep(2);
+          }
+        } else if (editType === 'case') {
+          const c = await sb_getCaseBySlug(editSlug);
+          if (c) {
+            setKind('case'); setTitle(c.title); setSubtitle(c.subtitle||'');
+            setCover(c.cover); setTags((c.tags as any) || []);
+            setBlocks([{ id: uid(), type:'text', align:'left', text: c.contentHtml } as TextBlock]);
             setStep(2);
           }
         } else {
@@ -260,7 +273,7 @@ export default function NewPostPage() {
     const publishTime = scheduledDate ? new Date(scheduledDate).getTime() : now;
     const isScheduled = publishTime > now;
 
-    if (kind === 'post' || kind === 'lesson' || kind === 'case') {
+    if (kind === 'post' || kind === 'lesson') {
       const prev = prevPost;
       const p: BlogPost = {
         id: prev?.id || crypto.randomUUID(),
@@ -273,12 +286,35 @@ export default function NewPostPage() {
       sb_upsertPost(p).catch(()=>upsertPost(p));
       clearDraft();
 
-      const typeName = kind === 'post' ? 'статья' : kind === 'lesson' ? 'урок' : 'кейс';
+      const typeName = kind === 'post' ? 'статья' : 'урок';
       if (isScheduled) {
         showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
       } else {
         showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} опубликована!`);
         window.location.href = `/blog/${p.slug}`;
+      }
+    } else if (kind === 'case') {
+      // Сохраняем кейс в отдельную таблицу cases
+      const id = crypto.randomUUID();
+      await sb_upsertCase({
+        id,
+        slug,
+        title,
+        subtitle,
+        cover,
+        contentHtml: html,
+        tags,
+        createdAt: now,
+        updatedAt: now,
+        views: 0,
+        reactions: { heart:0, fire:0, smile:0 }
+      });
+      clearDraft();
+      if (isScheduled) {
+        showNotificationToast(`Кейс запланирован на ${new Date(publishTime).toLocaleString('ru-RU')}`);
+      } else {
+        showNotificationToast('Кейс опубликован!');
+        window.location.href = `/cases2`;
       }
     } else {
       const prev = prevNews;
@@ -306,8 +342,18 @@ export default function NewPostPage() {
   const doDelete = () => {
     if (!editSlug || !editType) return;
     if (!confirm('Точно удалить?')) return;
-    if (editType==='post') { const p = getPostBySlug(editSlug); if (p) deletePostById(p.id); window.location.href = '/blog'; }
-    else { const n = getNewsBySlug(editSlug); if (n) deleteNewsById(n.id); window.location.href = '/news'; }
+    if (editType==='post' || editType==='lesson') {
+      const p = getPostBySlug(editSlug); if (p) deletePostById(p.id); window.location.href = '/blog';
+    } else if (editType==='case') {
+      // удаляем по slug из таблицы cases
+      (async () => {
+        const c = await sb_getCaseBySlug(editSlug);
+        if (c) await sb_deleteCaseById(c.id);
+        window.location.href = '/cases2';
+      })();
+    } else {
+      const n = getNewsBySlug(editSlug); if (n) deleteNewsById(n.id); window.location.href = '/news';
+    }
   };
 
   const publishScheduled = (id: string, type: 'post' | 'news') => {

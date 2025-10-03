@@ -29,7 +29,8 @@ function BlogHomeInner() {
   useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
 
   const filtered = useMemo(() => {
-    let arr = posts;
+    // Исключаем кейсы из ленты блога
+    let arr = posts.filter(p => (p.kind || 'post') !== 'case');
     if (tag) arr = arr.filter(p => (p.tags||[]).some(t => t.toLowerCase() === tag.toLowerCase()));
     if (q) {
       const isTagQuery = q.startsWith('tag:');

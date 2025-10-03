@@ -160,6 +160,12 @@ export default function AdminPage() {
             >
               Создать материал
             </Link>
+            <Link
+              href="/cases"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Управление кейсами
+            </Link>
             <button
               onClick={clearTestNews}
               className="px-4 py-2 border border-yellow-300 text-yellow-600 rounded-lg hover:bg-yellow-50"
@@ -254,8 +260,14 @@ export default function AdminPage() {
                     {new Date(post.createdAt).toLocaleDateString('ru-RU')}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="flex items-center gap-3">
                   <p className="font-medium text-[#111]">{post.views} просмотров</p>
+                  <Link
+                    href={`/blog/new?edit=${encodeURIComponent(post.title)}&type=post`}
+                    className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                  >
+                    Редактировать
+                  </Link>
                 </div>
               </div>
             ))}

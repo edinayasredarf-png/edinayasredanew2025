@@ -38,7 +38,8 @@ export default function PostPageClient({ slug }: { slug: string }) {
       }
       // ещё
       const lp = await sb_listPosts();
-      setMore(lp.filter(x => x.slug !== slug).slice(0, 4));
+      // Не показываем кейсы в блоке «Читайте ещё» для статей
+      setMore(lp.filter(x => x.slug !== slug && (x.kind || 'post') !== 'case').slice(0, 4));
     })();
   }, [slug]);
 
