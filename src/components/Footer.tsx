@@ -36,7 +36,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li><a href="https://edinayasreda.ru/" className="text-base text-black hover:text-azure">Единая Среда</a></li>
               <li><a href="https://myroots.pro/" className="text-base text-black hover:text-azure">My Roots</a></li>
-              <li><a href="https://oblastrazvitiya.ru/" className="text-base text-black hover:text-azure">Область Развития</a></li>
+              <li><a href="https://oblastrazvitiya.ru/" className="text-base text-black hover:text-azure">НКО «Область Развития»</a></li>
             </ul>
           </div>
 

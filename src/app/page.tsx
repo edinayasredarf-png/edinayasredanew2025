@@ -17,8 +17,6 @@ import SectionQuickStart from '../components/SectionQuickStart';
 import SectionBlog from '../components/SectionBlog';
 import SectionExpertise from '../components/SectionExpertise';
 import SectionSubscribeChannels from '../components/SectionSubscribeChannels';
-import HomeNews from '@/components/HomeNews';
-import HomePosts from '@/components/HomePosts';
 
 
 
@@ -35,8 +33,7 @@ export default function HomePage() {
       <SectionAllObjects />
       <SectionMigration />
       <SectionQuickStart />
-      <HomeNews />
-      <HomePosts />
+      <SectionBlog />
       <SectionExpertise />
       <SectionSubscribeChannels />
     </Layout>

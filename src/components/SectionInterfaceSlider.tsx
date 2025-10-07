@@ -97,7 +97,7 @@ const SectionInterfaceDemoSplit70: React.FC = () => {
       {/* Заголовок */}
       <div className="max-w-3xl mb-8">
         <h2 className="font-medium text-3xl md:text-4xl leading-tight">Понятный интерфейс</h2>
-        <p className="mt-3 text-black/80 text-lg md:text-xl">Управляйте территориями, объектами и инфраструктурой — всё в одной цифровой платформе.</p>
+        <p className="mt-3 text-black/80 text-lg md:text-xl">Управляйте территориями, объектами и инфраструктурой — всё на одной цифровой платформе.</p>
       </div>
 
       {/* 70/30; фикс высота только на десктопе, на планшете — авто */}
