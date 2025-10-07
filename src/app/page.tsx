@@ -14,7 +14,9 @@ import SectionPublicPrivate from '../components/SectionPublicPrivate';
 import SectionAllObjects from '../components/SectionAllObjects';
 import SectionMigration from '../components/SectionMigration';
 import SectionQuickStart from '../components/SectionQuickStart';
-import SectionBlog from '../components/SectionBlog';
+import HomePosts from '../components/HomePosts';
+import HomeNews from '../components/HomeNews';
+
 import SectionExpertise from '../components/SectionExpertise';
 import SectionSubscribeChannels from '../components/SectionSubscribeChannels';
 
@@ -30,10 +32,11 @@ export default function HomePage() {
 <PartnersWall/>
       <SectionInterfaceSlider />
       <SectionPublicPrivate />
+			<HomeNews />
       <SectionAllObjects />
       <SectionMigration />
       <SectionQuickStart />
-      <SectionBlog />
+      <HomePosts />
       <SectionExpertise />
       <SectionSubscribeChannels />
     </Layout>

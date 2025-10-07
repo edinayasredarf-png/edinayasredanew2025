@@ -34,7 +34,7 @@ const SectionAllObjects = () => (
       {/* Заголовок */}
       <div className="w-full flex flex-col items-center">
         <h2 className="text-center font-medium text-black text-lg md:text-2xl lg:text-4xl leading-tight">
-          Учитывайте все объекты в одной системе
+          Все объекты в одной системе
         </h2>
       </div>
       {/* Список */}
@@ -53,4 +53,4 @@ const SectionAllObjects = () => (
   </section>
 );
 
-export default SectionAllObjects; 
+export default SectionAllObjects;

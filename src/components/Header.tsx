@@ -312,9 +312,7 @@ const Header: React.FC<HeaderProps> = ({
                       <a href="https://edinayasreda.ru/" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/icon4.svg" size={24} className="mr-1" /> Войти в ЛК
                       </a>
-                      <Link href="#" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
-                        <ThemedIcon src="/icons/CPU.svg" size={24} className="mr-1" /> Тех. характеристики
-                      </Link>
+
                       <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/Mobile.svg" size={24} className="mr-1" /> Мобильное приложение
                       </a>
@@ -519,9 +517,7 @@ const Header: React.FC<HeaderProps> = ({
                       <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
                         <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" className="mr-1" /> Войти в ЛК
                       </a>
-                      <Link href="#" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
-                        <ThemedIcon src="/icons/CPU.svg" size={20} color="#212121" className="mr-1" /> Тех. характеристики
-                      </Link>
+
                       <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
                         <ThemedIcon src="/icons/Mobile.svg" size={20} color="#212121" className="mr-1" /> Мобильное приложение
                       </a>
