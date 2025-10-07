@@ -1,11 +1,9 @@
-'use client';
+"use client";
 import React, { ReactNode, useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import Image from 'next/image';
 import Link from 'next/link';
-import { GlobalLoadingProvider } from '@/components/GlobalLoading';
-import TopProgress from '@/components/TopProgress';
 
 interface LayoutProps {
   children: ReactNode;
@@ -46,7 +44,7 @@ const CookieBanner: React.FC = () => {
   );
 };
 
-export default function Layout({ children }: LayoutProps) {
+const Layout = ({ children }: LayoutProps) => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [openMobileSubmenu, setOpenMobileSubmenu] = useState<string | null>(null);
   const handleMobileSubmenu = (menu: string) => {
@@ -54,10 +52,9 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <GlobalLoadingProvider>
-      <TopProgress />
-      <div className="bg-[#F6F7FB] pt-2 px-2 min-h-screen flex flex-col">
+    <div className="bg-[#F6F7FB] pt-2 px-2 min-h-screen flex flex-col">
         <Header isMobileNavOpen={isMobileNavOpen} setIsMobileNavOpen={setIsMobileNavOpen} />
+        {/* Overlay и мобильное меню вне Header */}
         {isMobileNavOpen && (
           <>
             <div className="relative z-50 w-full bg-black/95 rounded-b-2xl flex flex-col p-4 pt-2 shadow-2xl border border-white/10 animate-slide-down">
@@ -101,7 +98,7 @@ export default function Layout({ children }: LayoutProps) {
                   {openMobileSubmenu === 'services' && (
                     <ul className="pl-4 flex flex-col gap-1 mt-1">
                       <li><Link href="/services/inventory-burials" className="flex items-center gap-2 py-2 px-2 rounded hover:bg-white/10 transition-colors" onClick={() => setIsMobileNavOpen(false)}><Image src="/icons/document.svg" width={20} height={20} alt="" />Инвентаризация мест захоронений</Link></li>
-                      <li><Link href="/services/green-inventory" className="flex items-center gap-2 py-2 px-2 rounded hover:bg-white/10 transition-colров" onClick={() => setIsMobileNavOpen(false)}><Image src="/icons/document.svg" width={20} height={20} alt="" />Инвентаризация зеленых насаждений</Link></li>
+                      <li><Link href="/services/green-inventory" className="flex items-center gap-2 py-2 px-2 rounded hover:bg-white/10 transition-colors" onClick={() => setIsMobileNavOpen(false)}><Image src="/icons/document.svg" width={20} height={20} alt="" />Инвентаризация зеленых насаждений</Link></li>
                       <li><Link href="/services/forest-management" className="flex items-center gap-2 py-2 px-2 rounded hover:bg-white/10 transition-colors" onClick={() => setIsMobileNavOpen(false)}><Image src="/icons/document.svg" width={20} height={20} alt="" />Лесоустройство</Link></li>
                     </ul>
                   )}
@@ -153,6 +150,7 @@ export default function Layout({ children }: LayoutProps) {
         <Footer />
         <CookieBanner />
       </div>
-    </GlobalLoadingProvider>
   );
-}
+};
+
+export default Layout;
