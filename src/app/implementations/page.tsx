@@ -308,7 +308,7 @@ function SupportLogos() {
               }}
             >
               <Image src="/img/logos/asi.svg" alt="АСИ" width={120} height={24} className="h-6 w-auto shrink-0" />
-              <Image src="/img/logos/fasie.svg" alt="ФСИ" width={120} height={24} className="h-6 w-auto shrink-0" />
+              <Image src="/img/logos/fasie1.svg" alt="ФСИ" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/frii_logo.svg" alt="ФРИИ" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/mincifry.svg" alt="Минцифры" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/minstroy.svg" alt="Минстрой" width={120} height={24} className="h-6 w-auto shrink-0" />
@@ -325,7 +325,7 @@ function SupportLogos() {
               aria-hidden="true"
             >
               <Image src="/img/logos/asi.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
-              <Image src="/img/logos/fasie.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
+              <Image src="/img/logos/fasie1.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/frii_logo.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/mincifry.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/minstroy.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
@@ -366,7 +366,7 @@ function SupportLogos() {
         </span>
         <div className="flex flex-nowrap items-center gap-8 overflow-hidden">
           <Image src="/img/logos/asi.svg" alt="АСИ" width={130} height={28} className="h-7 w-auto shrink-0" />
-          <Image src="/img/logos/fasie.svg" alt="ФСИ" width={130} height={28} className="h-7 w-auto shrink-0" />
+          <Image src="/img/logos/fasie1.svg" alt="ФСИ" width={130} height={28} className="h-7 w-auto shrink-0" />
           <Image src="/img/logos/frii_logo.svg" alt="ФРИИ" width={130} height={28} className="h-7 w-auto shrink-0" />
           <Image src="/img/logos/mincifry.svg" alt="Минцифры" width={130} height={28} className="h-7 w-auto shrink-0" />
           <Image src="/img/logos/minstroy.svg" alt="Минстрой" width={130} height={28} className="h-7 w-auto shrink-0" />
