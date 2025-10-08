@@ -325,7 +325,7 @@ function SupportLogos() {
               aria-hidden="true"
             >
               <Image src="/img/logos/asi.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
-              <Image src="/img/logos/fasie.SVG" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
+              <Image src="/img/logos/fasie.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/frii_logo.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/mincifry.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
               <Image src="/img/logos/minstroy.svg" alt="" width={120} height={24} className="h-6 w-auto shrink-0" />
