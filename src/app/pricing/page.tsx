@@ -71,7 +71,7 @@ export default function PricingPage() {
                   Платформа для цифрового управления территориями, автоматизации процессов и аналитики для организаций любого масштаба.
                 </p>
                 <div className="flex flex-col gap-2 w-full mt-auto">
-                  <div className="text-2xl font-regular text-black text-center">100 000 ₽</div>
+                  <div className="text-2xl font-regular text-black text-center">400 000 ₽</div>
                   <div className="text-base text-gray-500 text-center">за пользователя</div>
                   <button
                     onClick={openKP}

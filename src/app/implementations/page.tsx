@@ -547,115 +547,73 @@ export default function ImplementationsPage() {
       </Section>
 
       {/* Как это работает — карточки с изображениями, без клика */}
-      <Section id="how" className="py-12">
-        <Container>
-          <div className="rounded-[32px] bg-[#F3F6F9] p-5 md:rounded-[40px] md:p-8 lg:p-10">
-            <h2 className="text-left text-[34px] font-extrabold leading-[1] text-[#464545] sm:text-[48px] md:text-[64px]">
-              Как это работает
-            </h2>
+			<Section id="how" className="py-12">
+  <Container>
+    <div className="rounded-[32px] bg-[#F3F6F9] p-5 md:rounded-[40px] md:p-8 lg:p-10">
+      <h2 className="text-left text-[34px] font-extrabold leading-[1] text-[#464545] sm:text-[48px] md:text-[64px]">
+        Как это работает
+      </h2>
 
-            {(() => {
-              const STEPS = [
-                { text: "Быстрое внедрение системы, всего за один день", img: "/icons/how1.svg", alt: "Внедрение" },
-                { text: "Включение в контракт АИС \"Единая среда\"", img: "/icons/how2.svg", alt: "Включение в контракт" },
-                { text: "Внесение данных Подрядчиком в систему.", img: "/icons/how3.svg", alt: "Внесение данных" },
-                { text: "Контроль добросовестности исполнения контракта.", img: "/icons/how4.svg", alt: "Контроль" },
-                {
-                  text: "При выявлении некачественного исполнения — организация претензионных работ",
-                  img: "/icons/how5.svg",
-                  alt: "Претензионные работы",
-                },
-                {
-                  text: "Устранение нарушений Подрядчиком с фиксацией добросовестности",
-                  img: "/icons/how6.svg",
-                  alt: "Устранение нарушений",
-                },
-              ];
+      {(() => {
+        const STEPS = [
+          {
+            text: "1. Быстрое внедрение системы, всего за один день",
+            img: "/icons/how1.svg",
+            alt: "Внедрение",
+          },
+          {
+            text: '2. Включение в контракт АИС "Единая среда"',
+            img: "/icons/how2.svg",
+            alt: "Включение в контракт",
+          },
+          {
+            text: "3. Внесение данных подрядчиком по ТЗ в систему.",
+            img: "/icons/how3.svg",
+            alt: "Внесение данных",
+          },
+          {
+            text: "4. Удаленный контроль добросовестности исполнения контракта.",
+            img: "/icons/how4.svg",
+            alt: "Контроль",
+          },
+        ];
 
-              const TopImage = ({ src, alt }: { src: string; alt: string }) => (
-                <div className="rounded-[20px] bg-[#F3F6F9] p-3 md:p-4">
-                  <div className="flex h-[96px] items-center justify-center overflow-hidden rounded-[12px] md:h-[110px]">
-                    <Image
-                      src={src}
-                      alt={alt}
-                      width={320}
-                      height={220}
-                      className="h-full w-auto object-contain"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      quality={90}
-                    />
-                  </div>
-                </div>
-              );
-
-              return (
-                <>
-                  {/* 3×2 карточки */}
-                  <div className="mt-6 grid gap-4 sm:gap-5 md:mt-8 md:grid-cols-3">
-                    {STEPS.map((s, idx) => (
-                      <article key={idx} className="rounded-[22px] bg-white p-4 sm:p-5 md:rounded-[28px] md:p-6">
-                        <TopImage src={s.img} alt={s.alt} />
-                        <p className="mt-4 text-[16px] font-extrabold leading-snug text-[#2E2E2E] md:text-[18px]">
-                          {s.text}
-                        </p>
-                      </article>
-                    ))}
-                  </div>
-
-                  {/* Нижняя длинная карточка */}
-                  <div className="mt-6 grid gap-4 sm:gap-5 md:mt-8">
-                    <article className="rounded-[22px] bg-white p-4 sm:p-5 md:rounded-[28px] md:p-6">
-                      {/* < md — обычная карточка */}
-                      <div className="md:hidden">
-                        <div className="rounded-[20px] bg-[#F3F6F9] p-3 md:p-4">
-                          <div className="flex h-[96px] items-center justify-center overflow-hidden rounded-[12px] md:h-[110px]">
-                            <Image
-                              src="/icons/how7.svg"
-                              alt="Результат"
-                              width={320}
-                              height={220}
-                              className="h-full w-auto object-contain"
-                              sizes="(max-width: 768px) 100vw"
-                              quality={90}
-                            />
-                          </div>
-                        </div>
-                        <p className="mt-4 text-[16px] font-extrabold leading-snug text-[#2E2E2E] md:text-[18px]">
-                          Качественное исполнение контракта в срок и полное соблюдение технического задания.
-                        </p>
-                      </div>
-
-                      {/* ≥ md — текст слева + серый блок с изображением справа */}
-                      <div className="hidden items-start gap-6 md:flex">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[18px] font-extrabold leading-snug text-[#2E2E2E]">
-                            Качественное исполнение контракта в срок и полное соблюдение технического задания.
-                          </p>
-                        </div>
-                        <div className="w-[320px] shrink-0">
-                          <div className="rounded-[20px] bg-[#F3F6F9] p-4">
-                            <div className="flex h-[110px] items-center justify-center overflow-hidden rounded-[12px]">
-                              <Image
-                                src="/icons/how7.svg"
-                                alt="Результат"
-                                width={360}
-                                height={240}
-                                className="h-full w-auto object-contain"
-                                sizes="320px"
-                                quality={90}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  </div>
-                </>
-              );
-            })()}
+        const TopImage = ({ src, alt }: { src: string; alt: string }) => (
+          <div className="rounded-[20px] bg-[#F3F6F9] p-3 md:p-4">
+            <div className="flex h-[96px] items-center justify-center overflow-hidden rounded-[12px] md:h-[110px]">
+              <Image
+                src={src}
+                alt={alt}
+                width={320}
+                height={220}
+                className="h-full w-auto object-contain"
+                sizes="(max-width: 768px) 100vw, 25vw"
+                quality={90}
+              />
+            </div>
           </div>
-        </Container>
-      </Section>
+        );
+
+        return (
+          <div className="mt-6 grid gap-4 sm:gap-5 md:mt-8 md:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((s, idx) => (
+              <article
+                key={idx}
+                className="rounded-[22px] bg-white p-4 sm:p-5 md:rounded-[28px] md:p-6"
+              >
+                <TopImage src={s.img} alt={s.alt} />
+                <p className="mt-4 text-[16px] font-extrabold leading-snug text-[#2E2E2E] md:text-[18px]">
+                  {s.text}
+                </p>
+              </article>
+            ))}
+          </div>
+        );
+      })()}
+    </div>
+  </Container>
+</Section>
+
 
       {/* Ситуации (3 большие изображения, без открытия по клику) */}
       <Section id="cases" className="bg-[#F3F6F9] py-14">
