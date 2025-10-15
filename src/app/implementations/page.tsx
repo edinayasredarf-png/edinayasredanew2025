@@ -534,7 +534,7 @@ export default function ImplementationsPage() {
         <Container>
           <h1 className="text-center text-[34px] font-extrabold leading-tight text-[#2D2D2D] md:text-[54px]">
             Единая среда — эффективный инструмент{" "}
-            <span className="text-[#2777ff]">управления и контроля подрядчиков</span>
+            <span className="text-[#2777ff]">управления и контроля подрядчиков для муниципалитетов</span>
           </h1>
         </Container>
       </Section>
@@ -562,17 +562,17 @@ export default function ImplementationsPage() {
             alt: "Внедрение",
           },
           {
-            text: '2. Включение в контракт АИС "Единая среда"',
+            text: '2. Включение в ТЗ муниципального контракта и внесение данных в АИС  «Единая Среда»',
             img: "/icons/how2.svg",
             alt: "Включение в контракт",
           },
           {
-            text: "3. Внесение данных подрядчиком по ТЗ в систему.",
+            text: "3. Внесение данных подрядчиком по Техническому заданию в систему.",
             img: "/icons/how3.svg",
             alt: "Внесение данных",
           },
           {
-            text: "4. Удаленный контроль добросовестности исполнения контракта.",
+            text: "4. Удаленный контроль добросовестности исполнения контракта Подрядчиком",
             img: "/icons/how4.svg",
             alt: "Контроль",
           },
