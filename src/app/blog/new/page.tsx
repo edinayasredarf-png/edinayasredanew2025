@@ -7,7 +7,7 @@ import CoverPicker from '@/components/blog/CoverPicker';
 
 // ⚠️ Важно: импортируем dynamic под другим именем, чтобы не конфликтовало с export const dynamic
 import nextDynamic from 'next/dynamic';
-const TeletypeEditor = nextDynamic(() => import('@/components/blog/TeletypeEditor'), { ssr: false });
+const TipTapEditor = nextDynamic(() => import('@/components/blog/TipTapEditor'), { ssr: false });
 
 import {
   BlogDraft, BlogPost, NewsItem, auth, clearDraft, fileToDataURL,
@@ -530,7 +530,7 @@ export default function NewPostPage() {
               <div className="space-y-8">
                 <StepTitle>Контент</StepTitle>
 
-                <TeletypeEditor
+                <TipTapEditor
                   initialHtml={
                     // Если уже есть один текстовый блок — берём из него
                     (blocks.length && (blocks[0] as TextBlock).type === 'text')
