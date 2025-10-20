@@ -15,13 +15,7 @@ const channels = [
     buttonText: 'Подписаться',
     buttonHref: 'https://t.me/edinayasredarf',
   },
-  {
-    title: 'Telegram-канал Статов Live',
-    description: 'Авторские мысли и опыт основателя сервиса.',
-    icon: '/icons/tg.svg',
-    buttonText: 'Подписаться',
-    buttonHref: 'https://t.me/statovlive',
-  },
+
   {
     title: 'Сообщество ВКонтакте',
     description: 'Присоединяйтесь, чтобы обсуждать кейсы, делиться опытом и задавать вопросы.',

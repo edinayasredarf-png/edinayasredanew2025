@@ -71,14 +71,14 @@ export default function ContactsPage() {
               </div>
 
 
-              {/* Address */}
+              {/* Address
               <div className="mb-12">
                 <h3 className="text-xl font-semibold text-black mb-6">Адрес</h3>
                 <div>
                   <p className="text-xl text-black">г. Ростов-на-Дону, ул. Комарова, 28/2</p>
                   <p className="text-lg text-gray-600 mt-2">Офис 403, 4 этаж</p>
                 </div>
-              </div>
+              </div>*/}
 
               {/* Action Buttons */}
               <div className="flex flex-col space-y-4">
@@ -97,12 +97,7 @@ export default function ContactsPage() {
               </div>
             </div>
 
-                        {/* Map */}
-            <div className="relative">
-                              <div id="yandex-map" className="bg-[#F6F7F9] rounded-3xl h-[500px] overflow-hidden">
-                {/* Карта будет загружена через useEffect */}
-              </div>
-            </div>
+
           </div>
         </div>
       </section>
