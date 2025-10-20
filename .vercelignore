@@ -1,0 +1,7 @@
+out/
+.next/
+*.log
+**/*.map
+external_media/
+optimized_media/
+
