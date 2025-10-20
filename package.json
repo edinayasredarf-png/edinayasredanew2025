@@ -37,6 +37,7 @@
     "@tiptap/pm": "^3.6.2",
     "@tiptap/react": "^3.6.2",
     "@tiptap/starter-kit": "^3.6.2",
+    "@vercel/speed-insights": "^1.2.0",
     "dompurify": "^3.2.7",
     "framer-motion": "^12.23.13",
     "highlight.js": "^11.11.1",

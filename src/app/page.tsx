@@ -19,12 +19,14 @@ import HomeNews from '../components/HomeNews';
 
 import SectionExpertise from '../components/SectionExpertise';
 import SectionSubscribeChannels from '../components/SectionSubscribeChannels';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 
 
 export default function HomePage() {
   return (
     <Layout>
+			<SpeedInsights/>
       <HeroSection />
 			<SectionPlatformAndServices />
 			<SplitStyleCards/>
