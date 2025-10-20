@@ -402,7 +402,7 @@ export default function AboutPage() {
 	const historyItems = [
 		{
 			year: "2011",
-			description: "Создание компании Экострой"
+			description: "Создание команды специалистов"
 		},
 		{
 			year: "2013",
