@@ -49,3 +49,6 @@ public/docs/*.pdf
 *.tmp
 *.temp
 node_modules/
+
+# Build outputs
+out/
