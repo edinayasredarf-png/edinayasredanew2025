@@ -52,6 +52,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <head>
+        <meta name="yandex-verification" content="ce00463607f5bc70" />
         <Script
           id="ym-loader"
           strategy="afterInteractive"
