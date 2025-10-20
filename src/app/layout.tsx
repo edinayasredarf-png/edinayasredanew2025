@@ -16,8 +16,23 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://edinayasreda.ru'),
-  title: 'Единая среда — цифровая платформа для управления территориями',
-  description: 'Единая среда — современная платформа для учёта, управления и мониторинга территорий и объектов. Всё для цифровизации и контроля.',
+  title: 'Единая среда — цифровая платформа для управления территориями | Единая среда РФ',
+  description: 'Единая среда РФ — современная цифровая платформа для учёта, управления и мониторинга территорий и объектов. Цифровизация территорий, управление лесами, инвентаризация объектов.',
+  keywords: [
+    'единая среда',
+    'единая среда рф', 
+    'единаясреда.рф',
+    'цифровая платформа',
+    'управление территориями',
+    'цифровизация территорий',
+    'управление лесами',
+    'инвентаризация объектов',
+    'мониторинг территорий',
+    'учёт территорий',
+    'цифровые технологии',
+    'ГИС платформа',
+    'территориальное планирование'
+  ],
   alternates: {
     canonical: '/',
   },
@@ -41,6 +56,16 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    yandex: 'ce00463607f5bc70',
   },
 };
 
@@ -53,6 +78,38 @@ export default function RootLayout({
     <html lang="ru">
       <head>
         <meta name="yandex-verification" content="ce00463607f5bc70" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Единая среда",
+              "alternateName": ["Единая среда РФ", "ЕдинаяСреда.рф"],
+              "url": "https://edinayasreda.ru",
+              "logo": "https://edinayasreda.ru/img/logo.png",
+              "description": "Цифровая платформа для управления территориями и объектами",
+              "foundingDate": "2024",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "RU"
+              },
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer service",
+                "url": "https://edinayasreda.ru/contacts"
+              },
+              "sameAs": [
+                "https://edinayasreda.ru"
+              ],
+              "offers": {
+                "@type": "Offer",
+                "name": "Цифровая платформа для управления территориями",
+                "description": "Современные решения для учёта, управления и мониторинга территорий и объектов"
+              }
+            })
+          }}
+        />
         <Script
           id="ym-loader"
           strategy="afterInteractive"

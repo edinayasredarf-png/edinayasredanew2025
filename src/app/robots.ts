@@ -1,20 +1,12 @@
-import type { MetadataRoute } from 'next';
-
-export const dynamic = 'force-static';
+import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const base = 'https://edinayasreda.ru';
   return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: ['/api/', '/admin', '/_next/'],
-      },
-    ],
-    sitemap: `${base}/sitemap.xml`,
-    host: base,
-  };
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/admin', '/blog/new', '/editor-demo'],
+    },
+    sitemap: 'https://edinayasreda.ru/sitemap.xml',
+  }
 }
-
-
