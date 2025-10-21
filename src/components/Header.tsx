@@ -13,6 +13,9 @@ interface HeaderProps {
   onConsultClick?: () => void;
   isMobileNavOpen: boolean;
   setIsMobileNavOpen: (open: boolean) => void;
+  isAuthenticated?: boolean;
+  onAuthClick?: () => void;
+  onSignOut?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -20,6 +23,9 @@ const Header: React.FC<HeaderProps> = ({
   onConsultClick,
   isMobileNavOpen,
   setIsMobileNavOpen,
+  isAuthenticated = false,
+  onAuthClick,
+  onSignOut,
 }) => {
   const pathname = usePathname();
   const { openRegister, openConsult } = useModal();
@@ -175,18 +181,32 @@ const Header: React.FC<HeaderProps> = ({
                 <ThemedIcon src="/icons/icon3.svg" size={20} color="#212121" />
                 <span>Получить консультацию</span>
               </a>
-              <a
-                href="https://edinayasreda.ru/"
-                className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
-              >
-                <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
-                <span>Вход</span>
-              </a>
-              <div className="hidden md:block">
-                <Button onClick={onRegisterClick ?? openRegister} variant="primary">
-                  Регистрация
-                </Button>
-              </div>
+              {!isAuthenticated ? (
+                <button
+                  onClick={onAuthClick}
+                  className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
+                >
+                  <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
+                  <span>Вход</span>
+                </button>
+              ) : (
+                <div className="hidden md:flex items-center gap-2">
+                  <span className="text-[#212121] text-sm">Добро пожаловать!</span>
+                  <button
+                    onClick={onSignOut}
+                    className="px-3 py-1 text-sm text-[#212121] bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
+                  >
+                    Выйти
+                  </button>
+                </div>
+              )}
+              {!isAuthenticated && (
+                <div className="hidden md:block">
+                  <Button onClick={onAuthClick} variant="primary">
+                    Регистрация
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -660,26 +680,38 @@ const Header: React.FC<HeaderProps> = ({
                     <ThemedIcon src="/icons/icon3.svg" size={20} color="#212121" />
                     Консультация
                   </button>
-                  <a
-                    href="https://edinayasreda.ru/"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#212121] bg-[#F6F7F9] hover:bg-black/5"
-                  >
-                    <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
-                    Вход
-                  </a>
+                  {!isAuthenticated ? (
+                    <button
+                      onClick={onAuthClick}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#212121] bg-[#F6F7F9] hover:bg-black/5"
+                    >
+                      <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
+                      Вход
+                    </button>
+                  ) : (
+                    <button
+                      onClick={onSignOut}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white bg-red-600 hover:bg-red-700"
+                    >
+                      <ThemedIcon src="/icons/icon4.svg" size={20} color="#ffffff" />
+                      Выйти
+                    </button>
+                  )}
                 </li>
-                <li>
-                  <Button
-                    onClick={() => {
-                      setIsMobileNavOpen(false);
-                      (onRegisterClick ?? openRegister)();
-                    }}
-                    variant="primary"
-                    className="w-full mt-2"
-                  >
-                    Регистрация
-                  </Button>
-                </li>
+                {!isAuthenticated && (
+                  <li>
+                    <Button
+                      onClick={() => {
+                        setIsMobileNavOpen(false);
+                        onAuthClick?.();
+                      }}
+                      variant="primary"
+                      className="w-full mt-2"
+                    >
+                      Регистрация
+                    </Button>
+                  </li>
+                )}
               </ul>
             </div>
           </div>

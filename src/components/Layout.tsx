@@ -4,6 +4,8 @@ import Header from './Header';
 import Footer from './Footer';
 import Image from 'next/image';
 import Link from 'next/link';
+import AuthModal from './auth/AuthModal';
+import { authStore } from '@/lib/authStore';
 
 interface LayoutProps {
   children: ReactNode;
@@ -47,13 +49,39 @@ const CookieBanner: React.FC = () => {
 const Layout = ({ children }: LayoutProps) => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [openMobileSubmenu, setOpenMobileSubmenu] = useState<string | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const handleMobileSubmenu = (menu: string) => {
     setOpenMobileSubmenu(openMobileSubmenu === menu ? null : menu);
   };
 
+  // Подписываемся на изменения состояния аутентификации
+  useEffect(() => {
+    const unsubscribe = authStore.subscribe(() => {
+      setIsAuthenticated(authStore.isAuthenticated());
+    });
+    
+    // Устанавливаем начальное состояние
+    setIsAuthenticated(authStore.isAuthenticated());
+    
+    return unsubscribe;
+  }, []);
+
+  const handleAuthSuccess = () => {
+    setIsAuthModalOpen(false);
+    setIsAuthenticated(true);
+  };
+
   return (
     <div className="bg-[#F6F7FB] pt-2 px-2 min-h-screen flex flex-col">
-        <Header isMobileNavOpen={isMobileNavOpen} setIsMobileNavOpen={setIsMobileNavOpen} />
+        <Header 
+          isMobileNavOpen={isMobileNavOpen} 
+          setIsMobileNavOpen={setIsMobileNavOpen}
+          isAuthenticated={isAuthenticated}
+          onAuthClick={() => setIsAuthModalOpen(true)}
+          onSignOut={() => authStore.signOut()}
+        />
         {/* Overlay и мобильное меню вне Header */}
         {isMobileNavOpen && (
           <>
@@ -130,8 +158,35 @@ const Layout = ({ children }: LayoutProps) => {
                 </li>
               </ul>
               <div className="flex flex-col gap-3 w-full mt-6">
-                <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#0077FF] hover:bg-opacity-80 open-register-modal">Регистрация</button>
-                <a href="https://edinayasreda.ru/" className="inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-black hover:bg-opacity-80 transition-colors">Вход</a>
+                {!isAuthenticated ? (
+                  <>
+                    <button 
+                      type="button" 
+                      onClick={() => setIsAuthModalOpen(true)}
+                      className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#0077FF] hover:bg-opacity-80"
+                    >
+                      Регистрация
+                    </button>
+                    <button 
+                      onClick={() => setIsAuthModalOpen(true)}
+                      className="inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-black hover:bg-opacity-80 transition-colors"
+                    >
+                      Вход
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-white text-sm text-center">
+                      Добро пожаловать, {authStore.getCurrentProfile()?.full_name || 'Пользователь'}!
+                    </div>
+                    <button 
+                      onClick={() => authStore.signOut()}
+                      className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-red-600 hover:bg-red-700 transition-colors"
+                    >
+                      Выйти
+                    </button>
+                  </div>
+                )}
                 <a href="#" className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-base font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 open-consult-modal">Получить консультацию</a>
               </div>
               <div className="flex items-center gap-6 mt-8">
@@ -149,6 +204,13 @@ const Layout = ({ children }: LayoutProps) => {
         </main>
         <Footer />
         <CookieBanner />
+        
+        {/* Auth Modal */}
+        <AuthModal 
+          isOpen={isAuthModalOpen} 
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={handleAuthSuccess}
+        />
       </div>
   );
 };
