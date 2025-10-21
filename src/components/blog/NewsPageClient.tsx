@@ -20,9 +20,18 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   const router = useRouter();
   const [news, setNews] = useState<NewsItem | undefined>();
   const [mine, setMine] = useState<string[]>([]);
-  const [isAuthed, setIsAuthed] = useState(false);
+  const [isEditor, setIsEditor] = useState(false);
 
-  useEffect(() => { setIsAuthed(auth.isAuthed()); }, []);
+  useEffect(() => {
+    const unsubscribe = authStore.subscribe(() => {
+      setIsEditor(authStore.canWriteArticles());
+    });
+    
+    // Устанавливаем начальное состояние
+    setIsEditor(authStore.canWriteArticles());
+    
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     const handleNewsUpdate = () => {
@@ -109,7 +118,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                       К статьям
                     </Link>
 
-                    {isAuthed && (
+                    {isEditor && (
                       <>
                         <Link
                           href={`/blog/new?edit=${encodeURIComponent(news.slug)}&type=news`}

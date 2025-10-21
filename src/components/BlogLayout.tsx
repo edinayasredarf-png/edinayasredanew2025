@@ -1,7 +1,6 @@
 'use client';
 
 import React, { ReactNode, useState, useEffect } from 'react';
-import Header from './Header';
 import Footer from './Footer';
 import AuthModal from './auth/AuthModal';
 import { authStore } from '@/lib/authStore';
@@ -42,16 +41,8 @@ export default function BlogLayout({ children }: BlogLayoutProps) {
   };
 
   return (
-    <div className="bg-[#F6F7FB] pt-2 px-2 min-h-screen flex flex-col">
-      <Header 
-        isMobileNavOpen={false} 
-        setIsMobileNavOpen={() => {}}
-        isAuthenticated={isAuthenticated}
-        onAuthClick={() => setIsAuthModalOpen(true)}
-        onSignOut={() => authStore.signOut()}
-      />
-      
-      <main className="flex-1 w-full mx-auto relative -mt-[20px] z-10">
+    <div className="bg-[#F6F7FB] min-h-screen flex flex-col">
+      <main className="flex-1 w-full mx-auto relative z-10">
         {children}
       </main>
       

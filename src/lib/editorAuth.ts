@@ -2,7 +2,7 @@
 
 import { auth } from './blogStore';
 
-const LOGIN = 'proeco';
+const LOGIN = 'proeco09@yandex.ru';
 const PASS = 'ecostroy2013';
 
 export const editorAuth = {

@@ -25,17 +25,22 @@ export default function PostPageClient({ slug }: { slug: string }) {
   const [post, setPost] = useState<BlogPost | undefined>();
   const [more, setMore] = useState<BlogPost[]>([]);
   const [mine, setMine] = useState<string[]>([]);
-  const [isAuthed, setIsAuthed] = useState(false);
+  const [isEditor, setIsEditor] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { setIsAuthed(auth.isAuthed()); }, []);
-
   useEffect(() => {
     const unsubscribe = authStore.subscribe(() => {
-      setIsAuthed(authStore.isAuthenticated());
+      setIsEditor(authStore.canWriteArticles());
+      setIsAuthenticated(authStore.isAuthenticated());
     });
+    
+    // Устанавливаем начальное состояние
+    setIsEditor(authStore.canWriteArticles());
+    setIsAuthenticated(authStore.isAuthenticated());
+    
     return unsubscribe;
   }, []);
 
@@ -115,7 +120,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
   const handleFavorite = async () => {
     if (!post) return;
     
-    if (!isAuthed) {
+    if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
@@ -133,7 +138,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
   };
 
   const handleComment = () => {
-    if (!isAuthed) {
+    if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
@@ -160,7 +165,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                     Назад к статьям
                   </Link>
 
-                  {isAuthed && (
+                  {isEditor && (
                     <div className="ml-auto flex items-center gap-2">
                       <Link
                         href={`/blog/new?edit=${encodeURIComponent(post.slug)}&type=post`}

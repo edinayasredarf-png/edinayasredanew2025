@@ -74,7 +74,7 @@ function write<T>(key: string, data: T) { localStorage.setItem(key, JSON.stringi
 // -------- AUTH ----------
 export const auth = {
   login(user: string, pass: string) {
-    const ok = user === 'proeco' && pass === 'ecostroy2013';
+    const ok = user === 'proeco09@yandex.ru' && pass === 'ecostroy2013';
     if (ok) write(K_AUTH, { authed: true });
     return ok;
   },
@@ -285,7 +285,7 @@ export function ensureDemo() {
       id: crypto.randomUUID(),
       slug: 'dobro-pozhalovat',
       title: 'Добро пожаловать в блог',
-      subtitle: 'Лента + новости + редактор. Авторизация: proeco / ecostroy2013',
+      subtitle: 'Лента + новости + редактор. Авторизация: proeco09@yandex.ru / ecostroy2013',
       contentHtml: '<p>Это демо-пост. Добавьте свой материал через «Написать».</p>',
       cover: undefined, tags: ['Графический дизайн'],
       createdAt: now, updatedAt: now, views: 172, reactions: { heart:3, fire:1, smile:0 }

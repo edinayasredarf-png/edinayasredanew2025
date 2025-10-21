@@ -9,6 +9,7 @@ import MobileSearch from './MobileSearch';
 
 export default function TopBar() {
   const [isAuthed, setIsAuthed] = React.useState(false);
+  const [isEditor, setIsEditor] = React.useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -25,11 +26,13 @@ export default function TopBar() {
 
   useEffect(() => {
     const unsubscribe = authStore.subscribe(() => {
-      setIsAuthed(authStore.canWriteArticles());
+      setIsAuthed(authStore.isAuthenticated());
+      setIsEditor(authStore.canWriteArticles());
     });
     
     // Устанавливаем начальное состояние
-    setIsAuthed(authStore.canWriteArticles());
+    setIsAuthed(authStore.isAuthenticated());
+    setIsEditor(authStore.canWriteArticles());
     
     return unsubscribe;
   }, []);
@@ -140,7 +143,7 @@ export default function TopBar() {
             </svg>
           </button>
 
-          {isAuthed ? (
+          {isEditor ? (
             <Link
               href="/blog/new"
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
@@ -148,7 +151,7 @@ export default function TopBar() {
             >
               <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             </Link>
-          ) : (
+          ) : !isAuthed ? (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
@@ -158,6 +161,16 @@ export default function TopBar() {
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
+          ) : (
+            <Link
+              href="/profile"
+              className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
+              aria-label="Профиль"
+            >
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
           )}
 
           <div className="relative" ref={profileRef}>
@@ -175,22 +188,36 @@ export default function TopBar() {
               <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border shadow-lg z-50">
                 <div className="p-4 border-b border-gray-100">
                   <div className="text-sm text-gray-500">Профиль</div>
-                  <div className="text-lg font-semibold text-[#111]">{isAuthed ? 'Редактор' : 'Гость'}</div>
+                  <div className="text-lg font-semibold text-[#111]">
+                    {isEditor ? 'Редактор' : isAuthed ? 'Пользователь' : 'Гость'}
+                  </div>
                 </div>
                 <div className="py-2">
                   {isAuthed ? (
-                    <button
-                      onClick={() => {
-                        authStore.signOut();
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
-                    >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span>Выйти</span>
-                    </button>
+                    <>
+                      <Link
+                        href="/profile"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span>Личный кабинет</span>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          authStore.signOut();
+                          setShowProfileMenu(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span>Выйти</span>
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => {
@@ -213,7 +240,7 @@ export default function TopBar() {
 
         {/* ПРАВЫЕ КНОПКИ (desktop) */}
         <div className="hidden md:flex items-center gap-3 ml-4">
-          {isAuthed && (
+          {isEditor && (
             <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
               <span className="hidden sm:inline">Написать</span>
               <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -245,9 +272,21 @@ export default function TopBar() {
                 <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border shadow-lg z-50">
                   <div className="p-4 border-b border-gray-100">
                     <div className="text-sm text-gray-500">Профиль</div>
-                    <div className="text-lg font-semibold text-[#111]">Редактор</div>
+                    <div className="text-lg font-semibold text-[#111]">
+                      {isEditor ? 'Редактор' : 'Пользователь'}
+                    </div>
                   </div>
                   <div className="py-2">
+                    <Link
+                      href="/profile"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>Личный кабинет</span>
+                    </Link>
                     <button
                       onClick={() => {
                         authStore.signOut();

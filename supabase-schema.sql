@@ -174,3 +174,12 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_role ON user_profiles(role);
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+-- Insert default editor profile (you'll need to replace the UUID with actual user ID from auth.users)
+-- This should be done after the user is created in auth.users
+-- INSERT INTO user_profiles (id, email, full_name, role) 
+-- VALUES ('USER_UUID_HERE', 'proeco09@yandex.ru', 'Редактор', 'admin')
+-- ON CONFLICT (id) DO UPDATE SET 
+--   email = EXCLUDED.email,
+--   full_name = EXCLUDED.full_name,
+--   role = EXCLUDED.role;
