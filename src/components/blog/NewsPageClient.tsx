@@ -15,6 +15,7 @@ import {
   sb_getNewsBySlug,
   sb_incViews,
   sb_deleteNewsById,
+  sb_react,
 } from '@/lib/blogStore';
 
 export default function NewsPageClient({ slug }: { slug: string }) {
@@ -24,6 +25,24 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => { setIsAuthed(auth.isAuthed()); }, []);
+
+  useEffect(() => {
+    const handleNewsUpdate = () => {
+      // Перезагружаем данные при обновлении новостей
+      if (slug) {
+        (async () => {
+          const n = await sb_getNewsBySlug(slug);
+          setNews(n);
+          if (n) {
+            setMine(myReactions(n.id));
+          }
+        })();
+      }
+    };
+
+    window.addEventListener('newsUpdated', handleNewsUpdate);
+    return () => window.removeEventListener('newsUpdated', handleNewsUpdate);
+  }, [slug]);
 
   useEffect(() => {
     if (!slug) return;
@@ -67,12 +86,19 @@ export default function NewsPageClient({ slug }: { slug: string }) {
 
   const handleReact = async (type: 'heart' | 'fire' | 'smile') => {
     if (!news) return;
-    react('news', news.id, type);
-    setMine(myReactions(news.id));
-    // Refresh news data to get updated reactions
-    const updatedNews = await sb_getNewsBySlug(news.slug);
-    if (updatedNews) {
-      setNews(updatedNews);
+    try {
+      await sb_react('news', news.id, type);
+      setMine(myReactions(news.id));
+      // Refresh news data to get updated reactions
+      const updatedNews = await sb_getNewsBySlug(news.slug);
+      if (updatedNews) {
+        setNews(updatedNews);
+      }
+    } catch (error) {
+      console.error('Failed to react:', error);
+      // Fallback to local reaction
+      react('news', news.id, type);
+      setMine(myReactions(news.id));
     }
   };
 

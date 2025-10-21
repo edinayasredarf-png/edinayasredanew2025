@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import React from 'react';
-import { BlogPost, react } from '@/lib/blogStore';
+import { BlogPost, react, sb_react } from '@/lib/blogStore';
 
 export default function PostCard({ p }: { p: BlogPost }) {
   const rx = p.reactions || {heart:0,fire:0,smile:0};
@@ -48,9 +48,9 @@ export default function PostCard({ p }: { p: BlogPost }) {
       )}
 
       <div className="mt-4 flex items-center gap-3 text-sm text-[#52555a]">
-        <button onClick={()=>react('post', p.id, 'heart')} className="flex items-center gap-1 bg-[#f2f3f7] px-2 py-1 rounded-lg hover:bg-[#e9eefb]"><span>❤</span><span>{rx.heart}</span></button>
-        <button onClick={()=>react('post', p.id, 'fire')} className="flex items-center gap-1 bg-[#f2f3f7] px-2 py-1 rounded-lg hover:bg-[#e9eefb]"><span>🔥</span><span>{rx.fire}</span></button>
-        <button onClick={()=>react('post', p.id, 'smile')} className="flex items-center gap-1 bg-[#f2f3f7] px-2 py-1 rounded-lg hover:bg-[#e9eefb]"><span>🙂</span><span>{rx.smile}</span></button>
+        <button onClick={()=>sb_react('post', p.id, 'heart').catch(()=>react('post', p.id, 'heart'))} className="flex items-center gap-1 bg-[#f2f3f7] px-2 py-1 rounded-lg hover:bg-[#e9eefb]"><span>❤</span><span>{rx.heart}</span></button>
+        <button onClick={()=>sb_react('post', p.id, 'fire').catch(()=>react('post', p.id, 'fire'))} className="flex items-center gap-1 bg-[#f2f3f7] px-2 py-1 rounded-lg hover:bg-[#e9eefb]"><span>🔥</span><span>{rx.fire}</span></button>
+        <button onClick={()=>sb_react('post', p.id, 'smile').catch(()=>react('post', p.id, 'smile'))} className="flex items-center gap-1 bg-[#f2f3f7] px-2 py-1 rounded-lg hover:bg-[#e9eefb]"><span>🙂</span><span>{rx.smile}</span></button>
         <div className="ml-auto flex items-center gap-1">
           <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z" stroke="#a4a8b2" strokeWidth="2" fill="none"/><circle cx="12" cy="12" r="3" fill="#a4a8b2"/></svg>
           <span>{p.views || 0}</span>

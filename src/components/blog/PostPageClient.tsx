@@ -15,7 +15,7 @@ import {
   auth,
   deletePostById,
 } from '@/lib/blogStore';
-import { sb_getPostBySlug, sb_listPosts, sb_incViews, sb_deletePostById } from '@/lib/blogStore';
+import { sb_getPostBySlug, sb_listPosts, sb_incViews, sb_deletePostById, sb_react } from '@/lib/blogStore';
 
 export default function PostPageClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -25,6 +25,24 @@ export default function PostPageClient({ slug }: { slug: string }) {
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => { setIsAuthed(auth.isAuthed()); }, []);
+
+  useEffect(() => {
+    const handleBlogUpdate = () => {
+      // Перезагружаем данные при обновлении блога
+      if (slug) {
+        (async () => {
+          const p = await sb_getPostBySlug(slug);
+          setPost(p);
+          if (p) {
+            setMine(myReactions(p.id));
+          }
+        })();
+      }
+    };
+
+    window.addEventListener('blogUpdated', handleBlogUpdate);
+    return () => window.removeEventListener('blogUpdated', handleBlogUpdate);
+  }, [slug]);
 
   useEffect(() => {
     if (!slug) return;
@@ -75,11 +93,18 @@ export default function PostPageClient({ slug }: { slug: string }) {
 
   const handleReact = async (type: 'heart' | 'fire' | 'smile') => {
     if (!post) return;
-    react('post', post.id, type);
-    setMine(myReactions(post.id));
-    const updatedPost = await sb_getPostBySlug(post.slug);
-    if (updatedPost) {
-      setPost(updatedPost);
+    try {
+      await sb_react('post', post.id, type);
+      setMine(myReactions(post.id));
+      const updatedPost = await sb_getPostBySlug(post.slug);
+      if (updatedPost) {
+        setPost(updatedPost);
+      }
+    } catch (error) {
+      console.error('Failed to react:', error);
+      // Fallback to local reaction
+      react('post', post.id, type);
+      setMine(myReactions(post.id));
     }
   };
 

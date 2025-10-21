@@ -291,6 +291,8 @@ export default function NewPostPage() {
         showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
       } else {
         showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} опубликована!`);
+        // Force refresh blog pages
+        window.dispatchEvent(new CustomEvent('blogUpdated'));
         window.location.href = `/blog/${p.slug}`;
       }
     } else if (kind === 'case') {

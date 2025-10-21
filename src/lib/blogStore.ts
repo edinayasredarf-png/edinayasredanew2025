@@ -485,3 +485,33 @@ export async function sb_incViews(kind: 'post'|'news', slug: string): Promise<vo
   const { error } = await sb.rpc('inc_views', { t_name: table, p_slug: slug });
   if (error) throw error;
 }
+
+// -------- REACTIONS WITH SUPABASE SYNC ----------
+export async function sb_react(kind: 'post'|'news', id: string, type: Rx): Promise<void> {
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const table = kind === 'post' ? 'posts' : 'news';
+  
+  // Получаем текущие реакции
+  const { data, error: fetchError } = await sb.from(table).select('reactions').eq('id', id).single();
+  if (fetchError) throw fetchError;
+  
+  const currentReactions = data?.reactions || { heart: 0, fire: 0, smile: 0 };
+  const newReactions = { ...currentReactions, [type]: (currentReactions[type] || 0) + 1 };
+  
+  // Обновляем реакции в базе
+  const { error: updateError } = await sb.from(table).update({ reactions: newReactions }).eq('id', id);
+  if (updateError) throw updateError;
+  
+  // Также обновляем локально для быстрого отклика
+  react(kind, id, type);
+}
+
+export async function sb_getReactions(kind: 'post'|'news', id: string): Promise<{ heart: number; fire: number; smile: number }> {
+  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
+  const table = kind === 'post' ? 'posts' : 'news';
+  
+  const { data, error } = await sb.from(table).select('reactions').eq('id', id).single();
+  if (error) throw error;
+  
+  return data?.reactions || { heart: 0, fire: 0, smile: 0 };
+}
