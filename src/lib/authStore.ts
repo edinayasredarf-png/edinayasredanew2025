@@ -69,6 +69,13 @@ export class AuthStore {
         return;
       }
 
+      // Check if this is the editor email and update role if needed
+      if (this.user.email === 'proeco09@yandex.ru' && data && data.role !== 'admin') {
+        console.log('Updating editor role for:', this.user.email);
+        await this.updateEditorRole();
+        return;
+      }
+
       this.profile = data || {
         id: this.user.id,
         email: this.user.email || '',
@@ -117,6 +124,28 @@ export class AuthStore {
     }
   }
 
+  private async updateEditorRole() {
+    if (!this.user) return;
+
+    const sb = getSupabase();
+    if (!sb) return;
+
+    try {
+      const { data, error } = await sb
+        .from('user_profiles')
+        .update({ role: 'admin' })
+        .eq('id', this.user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      this.profile = data;
+      console.log('Editor role updated successfully');
+    } catch (error) {
+      console.error('Error updating editor role:', error);
+    }
+  }
+
   private notifyListeners() {
     this.listeners.forEach(listener => listener());
   }
@@ -139,7 +168,13 @@ export class AuthStore {
   }
 
   canWriteArticles(): boolean {
-    return this.hasRole('author') || this.hasRole('admin');
+    const canWrite = this.hasRole('author') || this.hasRole('admin');
+    console.log('canWriteArticles check:', {
+      profile: this.profile,
+      role: this.profile?.role,
+      canWrite
+    });
+    return canWrite;
   }
 
   isAdmin(): boolean {

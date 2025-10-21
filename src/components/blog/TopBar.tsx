@@ -26,13 +26,19 @@ export default function TopBar() {
 
   useEffect(() => {
     const unsubscribe = authStore.subscribe(() => {
-      setIsAuthed(authStore.isAuthenticated());
-      setIsEditor(authStore.canWriteArticles());
+      const isAuth = authStore.isAuthenticated();
+      const isEdit = authStore.canWriteArticles();
+      console.log('TopBar auth state update:', { isAuth, isEdit });
+      setIsAuthed(isAuth);
+      setIsEditor(isEdit);
     });
     
     // Устанавливаем начальное состояние
-    setIsAuthed(authStore.isAuthenticated());
-    setIsEditor(authStore.canWriteArticles());
+    const isAuth = authStore.isAuthenticated();
+    const isEdit = authStore.canWriteArticles();
+    console.log('TopBar initial auth state:', { isAuth, isEdit });
+    setIsAuthed(isAuth);
+    setIsEditor(isEdit);
     
     return unsubscribe;
   }, []);
