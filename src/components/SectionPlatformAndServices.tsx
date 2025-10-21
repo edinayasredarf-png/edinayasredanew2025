@@ -1,3 +1,4 @@
+"use client";
 import React, { useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform, spring } from "framer-motion";
 import { useModal } from "./ModalProvider";
