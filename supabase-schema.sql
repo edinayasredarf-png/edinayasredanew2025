@@ -61,14 +61,24 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'tags' AND data_type = 'ARRAY') THEN
+        -- Remove default value first
+        ALTER TABLE posts ALTER COLUMN tags DROP DEFAULT;
+        -- Convert type
         ALTER TABLE posts ALTER COLUMN tags TYPE JSONB USING to_jsonb(tags);
+        -- Set new default
+        ALTER TABLE posts ALTER COLUMN tags SET DEFAULT '[]'::JSONB;
     END IF;
 END $$;
 
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'news' AND column_name = 'tags' AND data_type = 'ARRAY') THEN
+        -- Remove default value first
+        ALTER TABLE news ALTER COLUMN tags DROP DEFAULT;
+        -- Convert type
         ALTER TABLE news ALTER COLUMN tags TYPE JSONB USING to_jsonb(tags);
+        -- Set new default
+        ALTER TABLE news ALTER COLUMN tags SET DEFAULT '[]'::JSONB;
     END IF;
 END $$;
 
