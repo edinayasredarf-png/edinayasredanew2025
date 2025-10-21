@@ -78,7 +78,7 @@ export default function ProfilePage() {
               title: post.title,
               slug: post.slug,
               cover: post.cover,
-              created_at: post.created_at,
+              created_at: new Date(post.createdAt).toISOString(),
             } : null;
           }).filter(Boolean) as FavoritePost[];
 
