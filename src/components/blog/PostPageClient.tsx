@@ -10,12 +10,11 @@ import {
   BlogPost,
   getPostBySlug,
   listPosts,
-  react,
   myReactions,
   auth,
   deletePostById,
 } from '@/lib/blogStore';
-import { sb_getPostBySlug, sb_listPosts, sb_incViews, sb_deletePostById, sb_react } from '@/lib/blogStore';
+import { sb_getPostBySlug, sb_listPosts, sb_incViews, sb_deletePostById } from '@/lib/blogStore';
 
 export default function PostPageClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -73,7 +72,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
     );
   }
 
-  const rx = post.reactions || { heart: 0, fire: 0, smile: 0 };
+  const views = post.views || 0;
 
   const share = () => {
     const url = location.href;
@@ -91,22 +90,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
     router.push('/blog');
   };
 
-  const handleReact = async (type: 'heart' | 'fire' | 'smile') => {
-    if (!post) return;
-    try {
-      await sb_react('post', post.id, type);
-      setMine(myReactions(post.id));
-      const updatedPost = await sb_getPostBySlug(post.slug);
-      if (updatedPost) {
-        setPost(updatedPost);
-      }
-    } catch (error) {
-      console.error('Failed to react:', error);
-      // Fallback to local reaction
-      react('post', post.id, type);
-      setMine(myReactions(post.id));
-    }
-  };
+  // Reactions removed
 
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
@@ -159,29 +143,20 @@ export default function PostPageClient({ slug }: { slug: string }) {
                   </div>
                 )}
 
-                <div className="mt-4 flex items-center gap-2 text-sm">
-                  <button
-                    disabled={mine.includes('heart')}
-                    onClick={() => handleReact('heart')}
-                    className="px-3 py-1.5 rounded-lg bg-[#f2f3f7] hover:bg-[#e9eefb] disabled:opacity-50"
-                  >
-                    ❤ {rx.heart}
+                <div className="mt-4 flex items-center gap-3 text-sm text-[#6b7280]">
+                  {/* Comment icon */}
+                  <button className="p-2 rounded-lg hover:bg-[#f2f3f7]" title="Оставить комментарий" onClick={()=>document.getElementById('comments')?.scrollIntoView({behavior:'smooth'})}>
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/></svg>
                   </button>
-                  <button
-                    disabled={mine.includes('fire')}
-                    onClick={() => handleReact('fire')}
-                    className="px-3 py-1.5 rounded-lg bg-[#f2f3f7] hover:bg-[#e9eefb] disabled:opacity-50"
-                  >
-                    🔥 {rx.fire}
+                  {/* Favorite icon */}
+                  <button className="p-2 rounded-lg hover:bg-[#f2f3f7]" title="Добавить в избранное">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 3h14a2 2 0 0 1 2 2v16l-9-4-9 4V5a2 2 0 0 1 2-2Z"/></svg>
                   </button>
-                  <button
-                    disabled={mine.includes('smile')}
-                    onClick={() => handleReact('smile')}
-                    className="px-3 py-1.5 rounded-lg bg-[#f2f3f7] hover:bg-[#e9eefb] disabled:opacity-50"
-                  >
-                    🙂 {rx.smile}
-                  </button>
-                  <div className="ml-auto text-[#52555a]">👁 {post.views || 0}</div>
+                  {/* Views */}
+                  <div className="ml-auto flex items-center gap-1">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z" stroke="#a4a8b2" strokeWidth="2" fill="none"/><circle cx="12" cy="12" r="3" fill="#a4a8b2"/></svg>
+                    <span>{views}</span>
+                  </div>
                   <button onClick={share} className="px-3 py-1.5 rounded-lg border hover:bg-gray-50 text-[#111]">
                     Поделиться
                   </button>
