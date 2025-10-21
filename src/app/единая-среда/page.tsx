@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+'use client';
 import Layout from '@/components/Layout';
 import HeroSection from '@/components/HeroSection';
 import SectionPlatformAndServices from '@/components/SectionPlatformAndServices';
@@ -13,34 +13,6 @@ import SectionQuickStart from '@/components/SectionQuickStart';
 import SectionExpertise from '@/components/SectionExpertise';
 import SectionSubscribeChannels from '@/components/SectionSubscribeChannels';
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
-export const metadata: Metadata = {
-  title: 'Единая среда — цифровая платформа для управления территориями | ЕдинаяСреда.рф',
-  description: 'Единая среда РФ — современная цифровая платформа для учёта, управления и мониторинга территорий и объектов. Цифровизация территорий, управление лесами, инвентаризация объектов.',
-  keywords: [
-    'единая среда',
-    'единая среда рф', 
-    'единаясреда.рф',
-    'цифровая платформа',
-    'управление территориями',
-    'цифровизация территорий',
-    'управление лесами',
-    'инвентаризация объектов',
-    'мониторинг территорий',
-    'учёт территорий',
-    'цифровые технологии',
-    'ГИС платформа',
-    'территориальное планирование'
-  ],
-  alternates: {
-    canonical: '/единая-среда',
-  },
-  openGraph: {
-    title: 'Единая среда — цифровая платформа для управления территориями',
-    description: 'Цифровизация учёта, управления и мониторинга территорий и объектов.',
-    url: '/единая-среда',
-  },
-};
 
 export default function EdinayaSredaPage() {
   return (
