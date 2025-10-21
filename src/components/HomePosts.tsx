@@ -42,17 +42,24 @@ export default function HomePosts() {
               href={`/blog/${p.slug}`}
               className="group bg-white rounded-3xl p-2.5 flex flex-col h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]"
             >
-              <div className="rounded-2xl w-full h-auto object-cover mb-4 overflow-hidden">
-                <Image
-                  src={p.cover || '/img/blog1.svg'}
-                  alt={p.title}
-                  width={400}
-                  height={220}
-                  className="w-full h-auto object-cover"
-                />
+              <div className="relative rounded-2xl w-full overflow-hidden mb-4">
+                {/* Обложка в формате 16:9 */}
+                <div className="relative w-full aspect-[16/9]">
+                  <Image
+                    src={p.cover || '/img/blog1.svg'}
+                    alt={p.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                {/* Дата справа вверху */}
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                  <p className="text-gray-700 text-sm font-medium">
+                    {new Date(p.createdAt).toLocaleDateString('ru-RU')}
+                  </p>
+                </div>
               </div>
               <div className="px-4 pb-4 flex flex-col flex-grow">
-                <p className="text-gray-500 text-base mb-2">{new Date(p.createdAt).toLocaleDateString('ru-RU')}</p>
                 <h3 className="text-xl font-bold text-black mb-6 flex-grow">{p.title}</h3>
                 <span className="inline-flex items-center justify-center self-start px-6 py-3 bg-[#F6F7F9] text-black text-lg font-medium rounded-xl border border-transparent group-hover:outline-1 group-hover:outline-[#0077FF]">
                   Подробнее
