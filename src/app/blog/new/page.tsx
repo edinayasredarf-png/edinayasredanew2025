@@ -16,7 +16,8 @@ import {
   listAllTags, addTag, listScheduledPosts, listScheduledNews,
   publishScheduledPost, publishScheduledNews,
   sb_getPostBySlug, sb_getNewsBySlug, sb_upsertPost, sb_upsertNews,
-  sb_getCaseBySlug, sb_upsertCase, sb_deleteCaseById
+  sb_getCaseBySlug, sb_upsertCase, sb_deleteCaseById,
+  sb_deletePostById, sb_deleteNewsById
 } from '@/lib/blogStore';
 
 // ---------- типы блоков ----------
