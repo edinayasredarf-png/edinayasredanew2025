@@ -42,10 +42,35 @@ CREATE TABLE IF NOT EXISTS favorites (
 );
 
 -- Update existing tables to ensure proper structure
-ALTER TABLE IF EXISTS posts ALTER COLUMN reactions TYPE JSONB USING reactions::JSONB;
-ALTER TABLE IF EXISTS news ALTER COLUMN reactions TYPE JSONB USING reactions::JSONB;
-ALTER TABLE IF EXISTS posts ALTER COLUMN tags TYPE JSONB USING tags::JSONB;
-ALTER TABLE IF EXISTS news ALTER COLUMN tags TYPE JSONB USING tags::JSONB;
+-- Handle reactions column
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'reactions') THEN
+        ALTER TABLE posts ALTER COLUMN reactions TYPE JSONB USING reactions::JSONB;
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'news' AND column_name = 'reactions') THEN
+        ALTER TABLE news ALTER COLUMN reactions TYPE JSONB USING reactions::JSONB;
+    END IF;
+END $$;
+
+-- Handle tags column - convert text[] to jsonb
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'tags' AND data_type = 'ARRAY') THEN
+        ALTER TABLE posts ALTER COLUMN tags TYPE JSONB USING to_jsonb(tags);
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'news' AND column_name = 'tags' AND data_type = 'ARRAY') THEN
+        ALTER TABLE news ALTER COLUMN tags TYPE JSONB USING to_jsonb(tags);
+    END IF;
+END $$;
 
 -- Set default values for reactions
 UPDATE posts SET reactions = '{"heart":0,"fire":0,"smile":0}'::JSONB WHERE reactions IS NULL;
@@ -110,12 +135,12 @@ CREATE OR REPLACE FUNCTION update_replies_count()
 RETURNS TRIGGER AS $$
 BEGIN
   IF TG_OP = 'INSERT' AND NEW.parent_id IS NOT NULL THEN
-    UPDATE comments 
-    SET replies_count = replies_count + 1 
+    UPDATE comments
+    SET replies_count = replies_count + 1
     WHERE id = NEW.parent_id;
   ELSIF TG_OP = 'DELETE' AND OLD.parent_id IS NOT NULL THEN
-    UPDATE comments 
-    SET replies_count = GREATEST(replies_count - 1, 0) 
+    UPDATE comments
+    SET replies_count = GREATEST(replies_count - 1, 0)
     WHERE id = OLD.parent_id;
   END IF;
   RETURN COALESCE(NEW, OLD);
