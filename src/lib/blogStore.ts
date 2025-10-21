@@ -490,19 +490,22 @@ export async function sb_incViews(kind: 'post'|'news', slug: string): Promise<vo
 export async function sb_react(kind: 'post'|'news', id: string, type: Rx): Promise<void> {
   const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
   const table = kind === 'post' ? 'posts' : 'news';
-  
-  // Получаем текущие реакции
-  const { data, error: fetchError } = await sb.from(table).select('reactions').eq('id', id).single();
-  if (fetchError) throw fetchError;
-  
-  const currentReactions = data?.reactions || { heart: 0, fire: 0, smile: 0 };
-  const newReactions = { ...currentReactions, [type]: (currentReactions[type] || 0) + 1 };
-  
-  // Обновляем реакции в базе
-  const { error: updateError } = await sb.from(table).update({ reactions: newReactions }).eq('id', id);
-  if (updateError) throw updateError;
-  
-  // Также обновляем локально для быстрого отклика
+
+  // 1) Пытаемся выполнить атомарное обновление через RPC (предпочтительно)
+  try {
+    const { error: rpcError } = await sb.rpc('inc_reaction', { t_name: table, p_id: id, p_type: type });
+    if (rpcError) throw rpcError;
+  } catch (_rpcErr) {
+    // 2) Фоллбэк: читаем + обновляем поле reactions обычным апдейтом
+    const { data, error: fetchError } = await sb.from(table).select('reactions').eq('id', id).single();
+    if (fetchError) throw fetchError;
+    const currentReactions = data?.reactions || { heart: 0, fire: 0, smile: 0 };
+    const newReactions = { ...currentReactions, [type]: (currentReactions[type] || 0) + 1 };
+    const { error: updateError } = await sb.from(table).update({ reactions: newReactions }).eq('id', id);
+    if (updateError) throw updateError;
+  }
+
+  // Также обновляем локально для мгновенного UI-отклика
   react(kind, id, type);
 }
 
