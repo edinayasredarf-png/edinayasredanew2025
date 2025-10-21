@@ -71,6 +71,8 @@ export async function sb_createComment(
   const { data: { user } } = await sb.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
+  console.log('Creating comment with:', { postId, postType, content, parentId, userId: user.id });
+
   const { data, error } = await sb
     .from('comments')
     .insert({
@@ -86,7 +88,10 @@ export async function sb_createComment(
     `)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Comment creation error:', error);
+    throw error;
+  }
 
   return {
     id: data.id,

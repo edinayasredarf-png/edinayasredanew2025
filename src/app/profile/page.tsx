@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { authStore, UserProfile } from '@/lib/authStore';
 import { sb_getUserFavorites } from '@/lib/commentsStore';
 import { sb_listPosts } from '@/lib/blogStore';
-import Layout from '@/components/Layout';
+import ProfileLayout from '@/components/ProfileLayout';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -137,7 +137,7 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
-      </Layout>
+      </ProfileLayout>
     );
   }
 
@@ -150,12 +150,12 @@ export default function ProfilePage() {
             <p className="text-gray-600">Загрузка профиля...</p>
           </div>
         </div>
-      </Layout>
+      </ProfileLayout>
     );
   }
 
   return (
-    <Layout>
+    <ProfileLayout>
       <div className="min-h-screen bg-[#F6F7FB] py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
@@ -372,6 +372,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </Layout>
+    </ProfileLayout>
   );
 }
