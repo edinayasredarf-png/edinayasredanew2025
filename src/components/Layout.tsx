@@ -88,9 +88,6 @@ const Layout = ({ children }: LayoutProps) => {
         <Header 
           isMobileNavOpen={isMobileNavOpen} 
           setIsMobileNavOpen={setIsMobileNavOpen}
-          isAuthenticated={isAuthenticated}
-          onAuthClick={() => setIsAuthModalOpen(true)}
-          onSignOut={() => authStore.signOut()}
         />
         {/* Overlay и мобильное меню вне Header */}
         {isMobileNavOpen && (
@@ -168,42 +165,8 @@ const Layout = ({ children }: LayoutProps) => {
                 </li>
               </ul>
               <div className="flex flex-col gap-3 w-full mt-6">
-                {!isAuthenticated ? (
-                  <>
-                    <button 
-                      type="button" 
-                      onClick={() => setIsAuthModalOpen(true)}
-                      className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#0077FF] hover:bg-opacity-80"
-                    >
-                      Регистрация
-                    </button>
-                    <button 
-                      onClick={() => setIsAuthModalOpen(true)}
-                      className="inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-black hover:bg-opacity-80 transition-colors"
-                    >
-                      Вход
-                    </button>
-                  </>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <div className="text-white text-sm text-center">
-                      Добро пожаловать, {authStore.getCurrentProfile()?.full_name || 'Пользователь'}!
-                    </div>
-                    <Link
-                      href="/profile"
-                      onClick={() => setIsMobileNavOpen(false)}
-                      className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-blue-600 hover:bg-blue-700 transition-colors"
-                    >
-                      Личный кабинет
-                    </Link>
-                    <button 
-                      onClick={() => authStore.signOut()}
-                      className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-red-600 hover:bg-red-700 transition-colors"
-                    >
-                      Выйти
-                    </button>
-                  </div>
-                )}
+                <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#0077FF] hover:bg-opacity-80 open-register-modal">Регистрация</button>
+                <a href="https://edinayasreda.ru/" className="inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-black hover:bg-opacity-80 transition-colors">Вход</a>
                 <a href="#" className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-base font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 open-consult-modal">Получить консультацию</a>
               </div>
               <div className="flex items-center gap-6 mt-8">

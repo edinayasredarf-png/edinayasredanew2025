@@ -5,6 +5,7 @@ import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import PostCard from '@/components/blog/PostCard';
+import BlogLayout from '@/components/BlogLayout';
 import { BlogPost, ensureDemo, sb_listPosts } from '@/lib/blogStore';
 import { sb_getUserFavorites } from '@/lib/commentsStore';
 import { authStore } from '@/lib/authStore';
@@ -96,37 +97,39 @@ function BlogHomeInner() {
 
 
   return (
-    <div className="bg-[#f2f3f7] min-h-screen">
-      <TopBar />
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
-        <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
-          <LeftNav activeTab={activeTab} onTabChange={setActiveTab} />
-          <main className="flex-1 flex justify-center">
-            <div className="w-full max-w-[761px]">
-              {activeTab === 'favorites' && !isAuthenticated ? (
-                <div className="text-center py-12">
-                  <div className="text-gray-500 text-lg mb-4">
-                    Для просмотра избранного необходимо войти в систему
+    <BlogLayout>
+      <div className="bg-[#f2f3f7] min-h-screen">
+        <TopBar />
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+          <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
+            <LeftNav activeTab={activeTab} onTabChange={setActiveTab} />
+            <main className="flex-1 flex justify-center">
+              <div className="w-full max-w-[761px]">
+                {activeTab === 'favorites' && !isAuthenticated ? (
+                  <div className="text-center py-12">
+                    <div className="text-gray-500 text-lg mb-4">
+                      Для просмотра избранного необходимо войти в систему
+                    </div>
+                    <button 
+                      onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Войти
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Войти
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
-                  {cols[0].map(p => <PostCard key={p.id} p={p} />)}
-                  {cols[1].map(p => <PostCard key={p.id} p={p} />)}
-                </div>
-              )}
-            </div>
-          </main>
-          <RightSidebar />
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
+                    {cols[0].map(p => <PostCard key={p.id} p={p} />)}
+                    {cols[1].map(p => <PostCard key={p.id} p={p} />)}
+                  </div>
+                )}
+              </div>
+            </main>
+            <RightSidebar />
+          </div>
         </div>
       </div>
-    </div>
+    </BlogLayout>
   );
 }
 

@@ -181,7 +181,7 @@ const Header: React.FC<HeaderProps> = ({
                 <ThemedIcon src="/icons/icon3.svg" size={20} color="#212121" />
                 <span>Получить консультацию</span>
               </a>
-              {!isAuthenticated ? (
+              {!isAuthenticated && onAuthClick ? (
                 <button
                   onClick={onAuthClick}
                   className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
@@ -189,6 +189,14 @@ const Header: React.FC<HeaderProps> = ({
                   <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
                   <span>Вход</span>
                 </button>
+              ) : !isAuthenticated ? (
+                <a
+                  href="https://edinayasreda.ru/"
+                  className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
+                >
+                  <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
+                  <span>Вход</span>
+                </a>
               ) : (
                 <div className="hidden md:flex items-center gap-2">
                   <Link
@@ -205,13 +213,19 @@ const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
               )}
-              {!isAuthenticated && (
+              {!isAuthenticated && onAuthClick ? (
                 <div className="hidden md:block">
                   <Button onClick={onAuthClick} variant="primary">
                     Регистрация
                   </Button>
                 </div>
-              )}
+              ) : !isAuthenticated ? (
+                <div className="hidden md:block">
+                  <Button onClick={onRegisterClick ?? openRegister} variant="primary" className="open-register-modal">
+                    Регистрация
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -282,37 +296,16 @@ const Header: React.FC<HeaderProps> = ({
                 <ThemedIcon src="/icons/icon3.svg" size={24} alt="" />
                 <span>Получить консультацию</span>
               </a>
-              {!isAuthenticated ? (
-                <button
-                  onClick={onAuthClick}
-                  className={isLight
-                    ? 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors'
-                    : 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#212121] hover:bg-opacity-80 transition-colors'}
-                >
-                  <ThemedIcon src="/icons/icon4.svg" size={24} alt="" />
-                  <span>Вход</span>
-                </button>
-              ) : (
-                <div className="hidden lg:flex items-center gap-2">
-                  <Link
-                    href="/profile"
-                    className="px-3 py-1 text-sm text-white bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
-                  >
-                    Личный кабинет
-                  </Link>
-                  <button
-                    onClick={onSignOut}
-                    className="px-3 py-1 text-sm text-white bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
-                  >
-                    Выйти
-                  </button>
-                </div>
-              )}
-              {!isAuthenticated && (
-                <Button onClick={onAuthClick} variant="primary">
-                  Регистрация
-                </Button>
-              )}
+              <a href="https://edinayasreda.ru/" className={isLight
+                ? 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors'
+                : 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#212121] hover:bg-opacity-80 transition-colors'}
+              >
+                <ThemedIcon src="/icons/icon4.svg" size={24} alt="" />
+                <span>Вход</span>
+              </a>
+              <Button onClick={onRegisterClick ?? openRegister} variant="primary" className="open-register-modal">
+                Регистрация
+              </Button>
             </div>
           </div>
 
@@ -355,12 +348,9 @@ const Header: React.FC<HeaderProps> = ({
                   </button>
                   {openMenu === 'platform' && (
                     <div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
-                      <button
-                        onClick={onAuthClick}
-                        className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors w-full text-left`}
-                      >
+                      <a href="https://edinayasreda.ru/" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/icon4.svg" size={24} className="mr-1" /> Войти в ЛК
-                      </button>
+                      </a>
 
                       <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
                         <ThemedIcon src="/icons/Mobile.svg" size={24} className="mr-1" /> Мобильное приложение
@@ -563,12 +553,9 @@ const Header: React.FC<HeaderProps> = ({
                   </button>
                   {openMobileSubmenu === 'platform' && (
                     <div className="mt-1 ml-3 flex flex-col gap-1">
-                      <button
-                        onClick={onAuthClick}
-                        className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5 w-full text-left"
-                      >
+                      <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
                         <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" className="mr-1" /> Войти в ЛК
-                      </button>
+                      </a>
 
                       <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
                         <ThemedIcon src="/icons/Mobile.svg" size={20} color="#212121" className="mr-1" /> Мобильное приложение
@@ -712,38 +699,26 @@ const Header: React.FC<HeaderProps> = ({
                     <ThemedIcon src="/icons/icon3.svg" size={20} color="#212121" />
                     Консультация
                   </button>
-                  {!isAuthenticated ? (
-                    <button
-                      onClick={onAuthClick}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#212121] bg-[#F6F7F9] hover:bg-black/5"
-                    >
-                      <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
-                      Вход
-                    </button>
-                  ) : (
-                    <button
-                      onClick={onSignOut}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white bg-red-600 hover:bg-red-700"
-                    >
-                      <ThemedIcon src="/icons/icon4.svg" size={20} color="#ffffff" />
-                      Выйти
-                    </button>
-                  )}
+                  <a
+                    href="https://edinayasreda.ru/"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#212121] bg-[#F6F7F9] hover:bg-black/5"
+                  >
+                    <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
+                    Вход
+                  </a>
                 </li>
-                {!isAuthenticated && (
-                  <li>
-                    <Button
-                      onClick={() => {
-                        setIsMobileNavOpen(false);
-                        onAuthClick?.();
-                      }}
-                      variant="primary"
-                      className="w-full mt-2"
-                    >
-                      Регистрация
-                    </Button>
-                  </li>
-                )}
+                <li>
+                  <Button
+                    onClick={() => {
+                      setIsMobileNavOpen(false);
+                      (onRegisterClick ?? openRegister)();
+                    }}
+                    variant="primary"
+                    className="w-full mt-2"
+                  >
+                    Регистрация
+                  </Button>
+                </li>
               </ul>
             </div>
           </div>
