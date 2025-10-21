@@ -79,7 +79,7 @@ export default function AdminPanel() {
         recentPosts: sortedPosts.slice(0, 5),
         recentComments: sortedComments.slice(0, 5)
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading admin data:', error);
       setStatus(`Ошибка загрузки данных: ${error.message}`);
     } finally {
