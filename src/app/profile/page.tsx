@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { authStore, UserProfile } from '@/lib/authStore';
-import { sb_listFavorites } from '@/lib/commentsStore';
+import { sb_getUserFavorites } from '@/lib/commentsStore';
 import { sb_listPosts } from '@/lib/blogStore';
 import Layout from '@/components/Layout';
 import Image from 'next/image';
@@ -68,7 +68,7 @@ export default function ProfilePage() {
     if (isAuthenticated) {
       (async () => {
         try {
-          const favorites = await sb_listFavorites();
+          const favorites = await sb_getUserFavorites();
           const posts = await sb_listPosts();
           
           const favoritePostsData = favorites.map(fav => {

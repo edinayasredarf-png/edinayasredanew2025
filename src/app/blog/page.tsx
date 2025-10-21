@@ -6,7 +6,7 @@ import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import PostCard from '@/components/blog/PostCard';
 import { BlogPost, ensureDemo, sb_listPosts } from '@/lib/blogStore';
-import { sb_listFavorites } from '@/lib/commentsStore';
+import { sb_getUserFavorites } from '@/lib/commentsStore';
 import { authStore } from '@/lib/authStore';
 import { useSearchParams } from 'next/navigation';
 
@@ -47,7 +47,7 @@ function BlogHomeInner() {
     if (activeTab === 'favorites' && isAuthenticated) {
       (async () => {
         try {
-          const favorites = await sb_listFavorites();
+          const favorites = await sb_getUserFavorites();
           setFavoritePostIds(favorites.map(f => f.post_id));
         } catch (error) {
           console.error('Failed to load favorites:', error);
