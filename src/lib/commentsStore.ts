@@ -97,12 +97,47 @@ export async function sb_createComment(
   parentId?: string
 ): Promise<Comment> {
   const sb = getSupabase();
-  if (!sb) throw new Error('Supabase not initialized');
+  if (!sb) {
+    console.error('Supabase client not initialized');
+    throw new Error('Supabase not initialized');
+  }
 
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) throw new Error('Not authenticated');
+  const { data: { user }, error: userError } = await sb.auth.getUser();
+  if (userError) {
+    console.error('Error getting user:', userError);
+    throw new Error('Failed to get user: ' + userError.message);
+  }
+  if (!user) {
+    console.error('No authenticated user');
+    throw new Error('Not authenticated');
+  }
 
   console.log('Creating comment with:', { postId, postType, content, parentId, userId: user.id });
+
+  // Check if user profile exists
+  const { data: profile, error: profileError } = await sb
+    .from('user_profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError && profileError.code !== 'PGRST116') {
+    console.error('Error checking user profile:', profileError);
+    // Create profile if it doesn't exist
+    const { error: createProfileError } = await sb
+      .from('user_profiles')
+      .insert({
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Пользователь',
+        avatar_url: user.user_metadata?.avatar_url,
+        role: user.email === 'proeco09@yandex.ru' ? 'admin' : 'user'
+      });
+    
+    if (createProfileError) {
+      console.error('Error creating user profile:', createProfileError);
+    }
+  }
 
   const { data, error } = await sb
     .from('comments')
@@ -121,8 +156,16 @@ export async function sb_createComment(
 
   if (error) {
     console.error('Comment creation error:', error);
+    console.error('Error details:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
     throw error;
   }
+
+  console.log('Comment created successfully:', data);
 
   return {
     id: data.id,

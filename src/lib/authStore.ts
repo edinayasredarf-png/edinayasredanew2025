@@ -39,6 +39,7 @@ export class AuthStore {
 
     // Listen for auth changes
     sb.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       this.user = session?.user || null;
       if (this.user) {
         await this.loadProfile();
@@ -52,12 +53,26 @@ export class AuthStore {
     if (typeof window !== 'undefined') {
       document.addEventListener('visibilitychange', async () => {
         if (!document.hidden) {
+          console.log('Page became visible, refreshing session...');
           const { data: { session } } = await sb.auth.getSession();
           if (session?.user && !this.user) {
+            console.log('Session refreshed, user found:', session.user.id);
             this.user = session.user;
             await this.loadProfile();
             this.notifyListeners();
           }
+        }
+      });
+
+      // Also listen for focus events
+      window.addEventListener('focus', async () => {
+        console.log('Window focused, checking session...');
+        const { data: { session } } = await sb.auth.getSession();
+        if (session?.user && !this.user) {
+          console.log('Session found on focus:', session.user.id);
+          this.user = session.user;
+          await this.loadProfile();
+          this.notifyListeners();
         }
       });
     }
