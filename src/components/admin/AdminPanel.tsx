@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { authStore } from '@/lib/authStore';
 import { sb_listPosts } from '@/lib/blogStore';
-import { sb_listComments } from '@/lib/commentsStore';
+import { sb_listAllComments } from '@/lib/commentsStore';
 
 interface AdminStats {
   totalPosts: number;
@@ -35,7 +35,7 @@ export default function AdminPanel() {
       const posts = await sb_listPosts();
       
       // Загружаем комментарии
-      const comments = await sb_listComments();
+      const comments = await sb_listAllComments();
       
       // TODO: Загрузить заявки на роль редактора (когда будет таблица)
       

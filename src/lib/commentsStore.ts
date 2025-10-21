@@ -26,9 +26,38 @@ export type Favorite = {
 };
 
 // Comments API
-export async function sb_listComments(postId: string, postType: 'post' | 'news'): Promise<Comment[]> {
+export async function sb_listAllComments(): Promise<Comment[]> {
   const sb = getSupabase();
   if (!sb) throw new Error('Supabase not initialized');
+
+  const { data, error } = await sb
+    .from('comments')
+    .select(`
+      *,
+      author:user_profiles!comments_author_id_fkey(full_name, avatar_url)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+
+  return data.map(row => ({
+    id: row.id,
+    post_id: row.post_id,
+    post_type: row.post_type,
+    parent_id: row.parent_id,
+    author_id: row.author_id,
+    author_name: row.author?.full_name || 'Аноним',
+    author_avatar: row.author?.avatar_url,
+    content: row.content,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    replies_count: row.replies_count || 0,
+    is_deleted: row.is_deleted,
+  }));
+}
+
+export async function sb_listComments(postId: string, postType: 'post' | 'news'): Promise<Comment[]> {
 
   const { data, error } = await sb
     .from('comments')
