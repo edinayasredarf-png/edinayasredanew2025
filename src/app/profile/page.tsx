@@ -120,7 +120,7 @@ export default function ProfilePage() {
 
   if (!isAuthenticated) {
     return (
-      <Layout>
+      <ProfileLayout>
         <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
