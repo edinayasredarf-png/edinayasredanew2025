@@ -43,7 +43,7 @@ export default function TestCommentsPage() {
     try {
       setStatus('Проверяем авторизацию...');
       const isAuth = authStore.isAuthenticated();
-      const profile = authStore.getProfile();
+      const profile = authStore.getCurrentProfile();
       
       if (!isAuth || !profile) {
         setStatus('❌ Пользователь не авторизован');
