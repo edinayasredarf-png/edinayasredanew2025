@@ -58,6 +58,8 @@ export async function sb_listAllComments(): Promise<Comment[]> {
 }
 
 export async function sb_listComments(postId: string, postType: 'post' | 'news'): Promise<Comment[]> {
+  const sb = getSupabase();
+  if (!sb) throw new Error('Supabase not initialized');
 
   const { data, error } = await sb
     .from('comments')
