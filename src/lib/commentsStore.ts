@@ -148,10 +148,7 @@ export async function sb_createComment(
       author_id: user.id,
       content,
     })
-    .select(`
-      *,
-      author:user_profiles!comments_author_id_fkey(full_name, avatar_url)
-    `)
+    .select('*')
     .single();
 
   if (error) {
@@ -167,14 +164,21 @@ export async function sb_createComment(
 
   console.log('Comment created successfully:', data);
 
+  // Получаем данные автора отдельно
+  const { data: authorData } = await sb
+    .from('user_profiles')
+    .select('full_name, avatar_url')
+    .eq('id', user.id)
+    .single();
+
   return {
     id: data.id,
     post_id: data.post_id,
     post_type: data.post_type,
     parent_id: data.parent_id,
     author_id: data.author_id,
-    author_name: data.author?.full_name || 'Аноним',
-    author_avatar: data.author?.avatar_url,
+    author_name: authorData?.full_name || user.email?.split('@')[0] || 'Аноним',
+    author_avatar: authorData?.avatar_url,
     content: data.content,
     created_at: data.created_at,
     updated_at: data.updated_at,
