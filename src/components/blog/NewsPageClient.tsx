@@ -15,6 +15,7 @@ import {
   sb_incViews,
   sb_deleteNewsById,
 } from '@/lib/blogStore';
+import { authStore } from '@/lib/authStore';
 
 export default function NewsPageClient({ slug }: { slug: string }) {
   const router = useRouter();
