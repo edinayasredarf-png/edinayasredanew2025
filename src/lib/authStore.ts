@@ -48,6 +48,20 @@ export class AuthStore {
       this.notifyListeners();
     });
 
+    // Listen for page visibility changes to refresh session
+    if (typeof window !== 'undefined') {
+      document.addEventListener('visibilitychange', async () => {
+        if (!document.hidden) {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session?.user && !this.user) {
+            this.user = session.user;
+            await this.loadProfile();
+            this.notifyListeners();
+          }
+        }
+      });
+    }
+
     this.notifyListeners();
   }
 

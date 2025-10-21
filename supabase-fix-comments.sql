@@ -4,7 +4,7 @@
 -- Ensure comments table exists with correct structure
 CREATE TABLE IF NOT EXISTS comments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  post_id UUID NOT NULL,
+  post_id TEXT NOT NULL,
   post_type TEXT NOT NULL CHECK (post_type IN ('post', 'news')),
   parent_id UUID REFERENCES comments(id),
   author_id UUID REFERENCES auth.users(id) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 CREATE TABLE IF NOT EXISTS favorites (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) NOT NULL,
-  post_id UUID NOT NULL,
+  post_id TEXT NOT NULL,
   post_type TEXT NOT NULL CHECK (post_type IN ('post', 'news')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(user_id, post_id, post_type)

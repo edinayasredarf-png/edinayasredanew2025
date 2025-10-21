@@ -15,9 +15,10 @@ function BlogHomeInner() {
   const sp = useSearchParams();
   const qFromUrl = sp.get('q') || '';
   const tag = sp.get('tag') || '';
+  const tabFromUrl = sp.get('tab') as 'feed' | 'subscriptions' | 'favorites' || 'feed';
   const [q, setQ] = useState(qFromUrl);
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>(tabFromUrl);
   const [favoritePostIds, setFavoritePostIds] = useState<string[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -59,6 +60,7 @@ function BlogHomeInner() {
   }, [activeTab, isAuthenticated]);
 
   useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
+  useEffect(() => { setActiveTab(tabFromUrl); }, [tabFromUrl]);
 
   const filtered = useMemo(() => {
     // Исключаем кейсы из ленты блога
