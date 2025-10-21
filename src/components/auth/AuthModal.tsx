@@ -37,7 +37,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     }
   };
 
-  const handleProviderAuth = async (provider: 'google' | 'vk') => {
+  const handleProviderAuth = async (provider: 'google') => {
     setLoading(true);
     setError('');
 
