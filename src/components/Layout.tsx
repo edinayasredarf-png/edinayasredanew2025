@@ -68,6 +68,16 @@ const Layout = ({ children }: LayoutProps) => {
     return unsubscribe;
   }, []);
 
+  // Обработчик события для открытия модального окна аутентификации
+  useEffect(() => {
+    const handleOpenAuthModal = () => {
+      setIsAuthModalOpen(true);
+    };
+
+    window.addEventListener('openAuthModal', handleOpenAuthModal);
+    return () => window.removeEventListener('openAuthModal', handleOpenAuthModal);
+  }, []);
+
   const handleAuthSuccess = () => {
     setIsAuthModalOpen(false);
     setIsAuthenticated(true);

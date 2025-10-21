@@ -6,6 +6,8 @@ import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import PostCard from '@/components/blog/PostCard';
 import { BlogPost, ensureDemo, sb_listPosts } from '@/lib/blogStore';
+import { sb_listFavorites } from '@/lib/commentsStore';
+import { authStore } from '@/lib/authStore';
 import { useSearchParams } from 'next/navigation';
 
 function BlogHomeInner() {
@@ -14,7 +16,12 @@ function BlogHomeInner() {
   const tag = sp.get('tag') || '';
   const [q, setQ] = useState(qFromUrl);
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  useEffect(() => { ensureDemo();
+  const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>('feed');
+  const [favoritePostIds, setFavoritePostIds] = useState<string[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => { 
+    ensureDemo();
     (async () => {
       try {
         const fromSb = await sb_listPosts();
@@ -26,11 +33,44 @@ function BlogHomeInner() {
     })();
   }, []);
 
+  // Подписываемся на изменения аутентификации
+  useEffect(() => {
+    const unsubscribe = authStore.subscribe(() => {
+      setIsAuthenticated(authStore.isAuthenticated());
+    });
+    setIsAuthenticated(authStore.isAuthenticated());
+    return unsubscribe;
+  }, []);
+
+  // Загружаем избранное при смене вкладки
+  useEffect(() => {
+    if (activeTab === 'favorites' && isAuthenticated) {
+      (async () => {
+        try {
+          const favorites = await sb_listFavorites();
+          setFavoritePostIds(favorites.map(f => f.post_id));
+        } catch (error) {
+          console.error('Failed to load favorites:', error);
+          setFavoritePostIds([]);
+        }
+      })();
+    }
+  }, [activeTab, isAuthenticated]);
+
   useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
 
   const filtered = useMemo(() => {
     // Исключаем кейсы из ленты блога
     let arr = posts.filter(p => (p.kind || 'post') !== 'case');
+    
+    // Фильтрация по активной вкладке
+    if (activeTab === 'favorites') {
+      if (!isAuthenticated) {
+        return []; // Показываем пустой список, если не авторизован
+      }
+      arr = arr.filter(p => favoritePostIds.includes(p.id));
+    }
+    
     if (tag) arr = arr.filter(p => (p.tags||[]).some(t => t.toLowerCase() === tag.toLowerCase()));
     if (q) {
       const isTagQuery = q.startsWith('tag:');
@@ -46,7 +86,7 @@ function BlogHomeInner() {
       }
     }
     return arr;
-  }, [posts, q, tag]);
+  }, [posts, q, tag, activeTab, favoritePostIds, isAuthenticated]);
 
   const cols = useMemo(() => {
     const A: BlogPost[] = [], B: BlogPost[] = [];
@@ -60,15 +100,27 @@ function BlogHomeInner() {
       <TopBar />
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
-          <LeftNav />
+          <LeftNav activeTab={activeTab} onTabChange={setActiveTab} />
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
-                {cols[0].map(p => <PostCard key={p.id} p={p} />)}
-                {cols[1].map(p => <PostCard key={p.id} p={p} />)}
-              </div>
-
+              {activeTab === 'favorites' && !isAuthenticated ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-500 text-lg mb-4">
+                    Для просмотра избранного необходимо войти в систему
+                  </div>
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Войти
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
+                  {cols[0].map(p => <PostCard key={p.id} p={p} />)}
+                  {cols[1].map(p => <PostCard key={p.id} p={p} />)}
+                </div>
+              )}
             </div>
           </main>
           <RightSidebar />

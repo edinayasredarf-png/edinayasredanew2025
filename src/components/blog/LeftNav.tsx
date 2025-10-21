@@ -2,9 +2,19 @@
 import React from 'react';
 import Link from 'next/link';
 
-function Item({ active, label, icon }: { active?: boolean; label: string; icon: string; }) {
+interface ItemProps {
+  active?: boolean;
+  label: string;
+  icon: string;
+  onClick?: () => void;
+}
+
+function Item({ active, label, icon, onClick }: ItemProps) {
   return (
-    <div className={`w-full p-2 rounded-2xl inline-flex items-center gap-3 ${active ? 'bg-white border' : ''}`}>
+    <div 
+      className={`w-full p-2 rounded-2xl inline-flex items-center gap-3 cursor-pointer hover:bg-white/50 transition-colors ${active ? 'bg-white border' : ''}`}
+      onClick={onClick}
+    >
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${active ? 'bg-[#f2f3f7]' : 'bg-white border'}`}>
         <img src={icon} alt={label} className="w-5 h-5" />
       </div>
@@ -13,14 +23,34 @@ function Item({ active, label, icon }: { active?: boolean; label: string; icon: 
   );
 }
 
-export default function LeftNav() {
+interface LeftNavProps {
+  activeTab?: 'feed' | 'subscriptions' | 'favorites';
+  onTabChange?: (tab: 'feed' | 'subscriptions' | 'favorites') => void;
+}
+
+export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProps) {
   return (
     <aside className="w-[294px] shrink-0 hidden xl:block">
       <div className="sticky top-[86px] space-y-6">
         <nav className="space-y-3">
-          <Item active label="Лента" icon="/icons/blog/lenta.svg" />
-          <Item label="Подписки" icon="/icons/blog/podpiski.svg" />
-          <Item label="Избранное" icon="/icons/blog/izbrannoe.svg" />
+          <Item 
+            active={activeTab === 'feed'} 
+            label="Лента" 
+            icon="/icons/blog/lenta.svg" 
+            onClick={() => onTabChange?.('feed')}
+          />
+          <Item 
+            active={activeTab === 'subscriptions'} 
+            label="Подписки" 
+            icon="/icons/blog/podpiski.svg" 
+            onClick={() => onTabChange?.('subscriptions')}
+          />
+          <Item 
+            active={activeTab === 'favorites'} 
+            label="Избранное" 
+            icon="/icons/blog/izbrannoe.svg" 
+            onClick={() => onTabChange?.('favorites')}
+          />
         </nav>
 
         <div className="space-y-3 text-sm text-[#52555a]">
