@@ -15,6 +15,10 @@ import {
   deletePostById,
 } from '@/lib/blogStore';
 import { sb_getPostBySlug, sb_listPosts, sb_incViews, sb_deletePostById } from '@/lib/blogStore';
+import { authStore } from '@/lib/authStore';
+import { sb_isFavorite, sb_toggleFavorite } from '@/lib/commentsStore';
+import CommentSection from '@/components/blog/CommentSection';
+import AuthModal from '@/components/auth/AuthModal';
 
 export default function PostPageClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -22,8 +26,18 @@ export default function PostPageClient({ slug }: { slug: string }) {
   const [more, setMore] = useState<BlogPost[]>([]);
   const [mine, setMine] = useState<string[]>([]);
   const [isAuthed, setIsAuthed] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => { setIsAuthed(auth.isAuthed()); }, []);
+
+  useEffect(() => {
+    const unsubscribe = authStore.subscribe(() => {
+      setIsAuthed(authStore.isAuthenticated());
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     const handleBlogUpdate = () => {
@@ -52,6 +66,14 @@ export default function PostPageClient({ slug }: { slug: string }) {
       if (p) {
         await sb_incViews('post', p.slug);
         setMine(myReactions(p.id));
+        
+        // Check if post is in favorites
+        try {
+          const favorite = await sb_isFavorite(p.id, 'post');
+          setIsFavorite(favorite);
+        } catch (error) {
+          console.error('Failed to check favorite status:', error);
+        }
       }
       // ещё
       const lp = await sb_listPosts();
@@ -90,7 +112,33 @@ export default function PostPageClient({ slug }: { slug: string }) {
     router.push('/blog');
   };
 
-  // Reactions removed
+  const handleFavorite = async () => {
+    if (!post) return;
+    
+    if (!isAuthed) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const newFavoriteStatus = await sb_toggleFavorite(post.id, 'post');
+      setIsFavorite(newFavoriteStatus);
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      alert('Ошибка при изменении избранного');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleComment = () => {
+    if (!isAuthed) {
+      setShowAuthModal(true);
+      return;
+    }
+    document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
@@ -145,12 +193,25 @@ export default function PostPageClient({ slug }: { slug: string }) {
 
                 <div className="mt-4 flex items-center gap-3 text-sm text-[#6b7280]">
                   {/* Comment icon */}
-                  <button className="p-2 rounded-lg hover:bg-[#f2f3f7]" title="Оставить комментарий" onClick={()=>document.getElementById('comments')?.scrollIntoView({behavior:'smooth'})}>
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/></svg>
+                  <button 
+                    className="p-2 rounded-lg hover:bg-[#f2f3f7]" 
+                    title="Оставить комментарий" 
+                    onClick={handleComment}
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/>
+                    </svg>
                   </button>
                   {/* Favorite icon */}
-                  <button className="p-2 rounded-lg hover:bg-[#f2f3f7]" title="Добавить в избранное">
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 3h14a2 2 0 0 1 2 2v16l-9-4-9 4V5a2 2 0 0 1 2-2Z"/></svg>
+                  <button 
+                    className={`p-2 rounded-lg hover:bg-[#f2f3f7] ${isFavorite ? 'text-red-500' : ''}`}
+                    title={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
+                    onClick={handleFavorite}
+                    disabled={loading}
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                      <path d="M5 3h14a2 2 0 0 1 2 2v16l-9-4-9 4V5a2 2 0 0 1 2-2Z"/>
+                    </svg>
                   </button>
                   {/* Views */}
                   <div className="ml-auto flex items-center gap-1">
@@ -206,11 +267,26 @@ export default function PostPageClient({ slug }: { slug: string }) {
                   </div>
                 </section>
               )}
+
+              {/* Comments Section */}
+              <CommentSection postId={post.id} postType="post" />
             </div>
           </main>
           <RightSidebar />
         </div>
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          setShowAuthModal(false);
+          // Reload favorite status
+          if (post) {
+            sb_isFavorite(post.id, 'post').then(setIsFavorite).catch(console.error);
+          }
+        }}
+      />
     </div>
   );
 }
