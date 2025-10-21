@@ -43,14 +43,14 @@ export default function TestCommentsPage() {
     try {
       setStatus('Проверяем авторизацию...');
       const isAuth = authStore.isAuthenticated();
-      const user = authStore.getUser();
+      const profile = authStore.getProfile();
       
-      if (!isAuth || !user) {
+      if (!isAuth || !profile) {
         setStatus('❌ Пользователь не авторизован');
         return;
       }
 
-      setStatus(`✅ Пользователь авторизован: ${user.email}`);
+      setStatus(`✅ Пользователь авторизован: ${profile.email} (${profile.role})`);
     } catch (error: any) {
       setStatus(`❌ Ошибка авторизации: ${error.message}`);
     }
