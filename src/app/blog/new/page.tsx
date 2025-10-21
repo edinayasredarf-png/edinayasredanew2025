@@ -259,8 +259,10 @@ export default function NewPostPage() {
     if (!canPublish) return;
     const now = Date.now();
     // Если редактируем — сохраняем исходный slug
-    const prevPost = editSlug && editType==='post' ? getPostBySlug(editSlug) : undefined;
-    const prevNews = editSlug && editType==='news' ? getNewsBySlug(editSlug) : undefined;
+    const prevPost = editSlug && editType==='post' ? 
+      (await sb_getPostBySlug(editSlug).catch(() => undefined)) || getPostBySlug(editSlug) : undefined;
+    const prevNews = editSlug && editType==='news' ? 
+      (await sb_getNewsBySlug(editSlug).catch(() => undefined)) || getNewsBySlug(editSlug) : undefined;
     const slug = (prevPost?.slug || prevNews?.slug) || genSlug(title);
 
     // CORE: получаем HTML из единственного текстового блока (TipTap)
@@ -273,88 +275,133 @@ export default function NewPostPage() {
     const publishTime = scheduledDate ? new Date(scheduledDate).getTime() : now;
     const isScheduled = publishTime > now;
 
-    if (kind === 'post' || kind === 'lesson') {
-      const prev = prevPost;
-      const p: BlogPost = {
-        id: prev?.id || crypto.randomUUID(),
-        slug, title, subtitle: (kind==='post'?subtitle:undefined),
-        cover, contentHtml: html, tags, kind,
-        createdAt: prev?.createdAt || publishTime, updatedAt: now,
-        views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
-      };
-      // Пишем в Supabase, при ошибке — локально
-      sb_upsertPost(p).catch(()=>upsertPost(p));
-      clearDraft();
+    try {
+      if (kind === 'post' || kind === 'lesson') {
+        const prev = prevPost;
+        const p: BlogPost = {
+          id: prev?.id || crypto.randomUUID(),
+          slug, title, subtitle: (kind==='post'?subtitle:undefined),
+          cover, contentHtml: html, tags, kind,
+          createdAt: prev?.createdAt || publishTime, updatedAt: now,
+          views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
+        };
+        
+        // Пытаемся сохранить в Supabase
+        try {
+          await sb_upsertPost(p);
+          console.log('Post saved to Supabase successfully');
+        } catch (error) {
+          console.error('Supabase save failed, using local fallback:', error);
+          upsertPost(p);
+        }
+        
+        clearDraft();
 
-      const typeName = kind === 'post' ? 'статья' : 'урок';
-      if (isScheduled) {
-        showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
+        const typeName = kind === 'post' ? 'статья' : 'урок';
+        if (isScheduled) {
+          showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
+        } else {
+          showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} опубликована!`);
+          // Force refresh blog pages
+          window.dispatchEvent(new CustomEvent('blogUpdated'));
+          window.location.href = `/blog/${p.slug}`;
+        }
+      } else if (kind === 'case') {
+        // Сохраняем кейс в отдельную таблицу cases
+        const id = crypto.randomUUID();
+        await sb_upsertCase({
+          id,
+          slug,
+          title,
+          subtitle,
+          cover,
+          contentHtml: html,
+          tags,
+          createdAt: now,
+          updatedAt: now,
+          views: 0,
+          reactions: { heart:0, fire:0, smile:0 }
+        });
+        clearDraft();
+        if (isScheduled) {
+          showNotificationToast(`Кейс запланирован на ${new Date(publishTime).toLocaleString('ru-RU')}`);
+        } else {
+          showNotificationToast('Кейс опубликован!');
+          window.location.href = `/cases2`;
+        }
       } else {
-        showNotificationToast(`${typeName.charAt(0).toUpperCase() + typeName.slice(1)} опубликована!`);
-        // Force refresh blog pages
-        window.dispatchEvent(new CustomEvent('blogUpdated'));
-        window.location.href = `/blog/${p.slug}`;
-      }
-    } else if (kind === 'case') {
-      // Сохраняем кейс в отдельную таблицу cases
-      const id = crypto.randomUUID();
-      await sb_upsertCase({
-        id,
-        slug,
-        title,
-        subtitle,
-        cover,
-        contentHtml: html,
-        tags,
-        createdAt: now,
-        updatedAt: now,
-        views: 0,
-        reactions: { heart:0, fire:0, smile:0 }
-      });
-      clearDraft();
-      if (isScheduled) {
-        showNotificationToast(`Кейс запланирован на ${new Date(publishTime).toLocaleString('ru-RU')}`);
-      } else {
-        showNotificationToast('Кейс опубликован!');
-        window.location.href = `/cases2`;
-      }
-    } else {
-      const prev = prevNews;
-      const n: NewsItem = {
-        id: prev?.id || crypto.randomUUID(),
-        slug, title, cover, contentHtml: html || undefined, tags,
-        createdAt: prev?.createdAt || publishTime, updatedAt: now,
-        views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
-      };
-      // Пишем в Supabase, при ошибке — локально
-      sb_upsertNews(n).catch(() => upsertNews(n));
-      clearDraft();
+        const prev = prevNews;
+        const n: NewsItem = {
+          id: prev?.id || crypto.randomUUID(),
+          slug, title, cover, contentHtml: html || undefined, tags,
+          createdAt: prev?.createdAt || publishTime, updatedAt: now,
+          views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
+        };
+        
+        // Пытаемся сохранить в Supabase
+        try {
+          await sb_upsertNews(n);
+          console.log('News saved to Supabase successfully');
+        } catch (error) {
+          console.error('Supabase save failed, using local fallback:', error);
+          upsertNews(n);
+        }
+        
+        clearDraft();
 
-      if (isScheduled) {
-        showNotificationToast(`Новость запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
-      } else {
-        showNotificationToast('Новость опубликована!');
-        // Обновляем страницы новостей
-        window.dispatchEvent(new CustomEvent('newsUpdated'));
-        window.location.href = `/news/${n.slug}`;
+        if (isScheduled) {
+          showNotificationToast(`Новость запланирована на ${new Date(publishTime).toLocaleString('ru-RU')}`);
+        } else {
+          showNotificationToast('Новость опубликована!');
+          // Обновляем страницы новостей
+          window.dispatchEvent(new CustomEvent('newsUpdated'));
+          window.location.href = `/news/${n.slug}`;
+        }
       }
+    } catch (error) {
+      console.error('Publish failed:', error);
+      showNotificationToast('Ошибка при сохранении. Проверьте консоль.');
     }
   };
 
-  const doDelete = () => {
+  const doDelete = async () => {
     if (!editSlug || !editType) return;
     if (!confirm('Точно удалить?')) return;
-    if (editType==='post' || editType==='lesson') {
-      const p = getPostBySlug(editSlug); if (p) deletePostById(p.id); window.location.href = '/blog';
-    } else if (editType==='case') {
-      // удаляем по slug из таблицы cases
-      (async () => {
+    
+    try {
+      if (editType==='post' || editType==='lesson') {
+        const p = await sb_getPostBySlug(editSlug).catch(() => undefined) || getPostBySlug(editSlug);
+        if (p) {
+          try {
+            await sb_deletePostById(p.id);
+            console.log('Post deleted from Supabase successfully');
+          } catch (error) {
+            console.error('Supabase delete failed, using local fallback:', error);
+            deletePostById(p.id);
+          }
+        }
+        window.location.href = '/blog';
+      } else if (editType==='case') {
+        // удаляем по slug из таблицы cases
         const c = await sb_getCaseBySlug(editSlug);
         if (c) await sb_deleteCaseById(c.id);
         window.location.href = '/cases2';
-      })();
-    } else {
-      const n = getNewsBySlug(editSlug); if (n) deleteNewsById(n.id); window.location.href = '/news';
+      } else {
+        const n = await sb_getNewsBySlug(editSlug).catch(() => undefined) || getNewsBySlug(editSlug);
+        if (n) {
+          try {
+            await sb_deleteNewsById(n.id);
+            console.log('News deleted from Supabase successfully');
+          } catch (error) {
+            console.error('Supabase delete failed, using local fallback:', error);
+            deleteNewsById(n.id);
+          }
+        }
+        window.location.href = '/news';
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Ошибка при удалении. Проверьте консоль.');
     }
   };
 
