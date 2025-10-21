@@ -23,6 +23,7 @@ export default function AdminPanel() {
   });
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
     // Check if user is authorized to access admin panel
@@ -44,24 +45,43 @@ export default function AdminPanel() {
   const loadAdminData = async () => {
     try {
       setLoading(true);
+      console.log('Loading admin data...');
       
       // Загружаем посты
+      console.log('Loading posts...');
       const posts = await sb_listPosts();
+      console.log('Posts loaded:', posts.length);
       
       // Загружаем комментарии
+      console.log('Loading comments...');
       const comments = await sb_listAllComments();
+      console.log('Comments loaded:', comments.length);
       
-      // TODO: Загрузить заявки на роль редактора (когда будет таблица)
+      // Сортируем посты по дате создания
+      const sortedPosts = posts.sort((a, b) => b.createdAt - a.createdAt);
+      
+      // Сортируем комментарии по дате создания
+      const sortedComments = comments.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      console.log('Setting stats:', {
+        totalPosts: posts.length,
+        totalComments: comments.length,
+        recentPosts: sortedPosts.slice(0, 5),
+        recentComments: sortedComments.slice(0, 5)
+      });
       
       setStats({
         totalPosts: posts.length,
         totalComments: comments.length,
         pendingApplications: 0, // Пока нет таблицы заявок
-        recentPosts: posts.slice(0, 5),
-        recentComments: comments.slice(0, 5)
+        recentPosts: sortedPosts.slice(0, 5),
+        recentComments: sortedComments.slice(0, 5)
       });
     } catch (error) {
       console.error('Error loading admin data:', error);
+      setStatus(`Ошибка загрузки данных: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -98,6 +118,11 @@ export default function AdminPanel() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Админ-панель</h1>
           <p className="mt-2 text-gray-600">Управление контентом и пользователями</p>
+          {status && (
+            <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+              <p className="text-blue-800">{status}</p>
+            </div>
+          )}
         </div>
 
         {/* Статистика */}

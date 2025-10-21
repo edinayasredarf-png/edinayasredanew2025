@@ -86,7 +86,7 @@ BEGIN
     NEW.email,
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'avatar_url',
-    CASE 
+    CASE
       WHEN NEW.email = 'proeco09@yandex.ru' THEN 'admin'
       ELSE 'user'
     END
