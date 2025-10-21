@@ -53,6 +53,17 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   }, [slug]);
 
   useEffect(() => {
+    const handleOpenAuthModal = () => {
+      // NewsPageClient doesn't have its own auth modal, 
+      // but we can trigger the global one
+      window.dispatchEvent(new CustomEvent('openAuthModal'));
+    };
+
+    window.addEventListener('openAuthModal', handleOpenAuthModal);
+    return () => window.removeEventListener('openAuthModal', handleOpenAuthModal);
+  }, []);
+
+  useEffect(() => {
     if (!slug) return;
     (async ()=>{
       const n = await sb_getNewsBySlug(slug);

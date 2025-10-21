@@ -75,12 +75,45 @@ export class AuthStore {
         full_name: this.user.user_metadata?.full_name || '',
         avatar_url: this.user.user_metadata?.avatar_url || '',
         organization: '',
-        role: 'user',
+        role: this.user.email === 'proeco09@yandex.ru' ? 'admin' : 'user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
+
+      // If profile doesn't exist, create it
+      if (!data && error?.code === 'PGRST116') {
+        await this.createProfile();
+      }
     } catch (error) {
       console.error('Profile load error:', error);
+    }
+  }
+
+  private async createProfile() {
+    if (!this.user) return;
+
+    const sb = getSupabase();
+    if (!sb) return;
+
+    try {
+      const isEditor = this.user.email === 'proeco09@yandex.ru';
+      
+      const { data, error } = await sb
+        .from('user_profiles')
+        .insert({
+          id: this.user.id,
+          email: this.user.email || '',
+          full_name: this.user.user_metadata?.full_name || this.user.email?.split('@')[0] || 'Пользователь',
+          role: isEditor ? 'admin' : 'user',
+          avatar_url: this.user.user_metadata?.avatar_url,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      this.profile = data;
+    } catch (error) {
+      console.error('Error creating profile:', error);
     }
   }
 

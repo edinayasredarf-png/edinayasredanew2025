@@ -63,6 +63,15 @@ export default function PostPageClient({ slug }: { slug: string }) {
   }, [slug]);
 
   useEffect(() => {
+    const handleOpenAuthModal = () => {
+      setShowAuthModal(true);
+    };
+
+    window.addEventListener('openAuthModal', handleOpenAuthModal);
+    return () => window.removeEventListener('openAuthModal', handleOpenAuthModal);
+  }, []);
+
+  useEffect(() => {
     if (!slug) return;
     (async () => {
       // пост
