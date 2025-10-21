@@ -150,7 +150,7 @@ export class AuthStore {
     return data;
   }
 
-  async signInWithProvider(provider: 'google' | 'yandex' | 'vk') {
+  async signInWithProvider(provider: 'google' | 'vk') {
     const sb = getSupabase();
     if (!sb) throw new Error('Supabase not initialized');
 
