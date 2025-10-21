@@ -189,6 +189,13 @@ const Layout = ({ children }: LayoutProps) => {
                     <div className="text-white text-sm text-center">
                       Добро пожаловать, {authStore.getCurrentProfile()?.full_name || 'Пользователь'}!
                     </div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsMobileNavOpen(false)}
+                      className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-blue-600 hover:bg-blue-700 transition-colors"
+                    >
+                      Личный кабинет
+                    </Link>
                     <button 
                       onClick={() => authStore.signOut()}
                       className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-red-600 hover:bg-red-700 transition-colors"

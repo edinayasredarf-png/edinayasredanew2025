@@ -191,7 +191,12 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               ) : (
                 <div className="hidden md:flex items-center gap-2">
-                  <span className="text-[#212121] text-sm">Добро пожаловать!</span>
+                  <Link
+                    href="/profile"
+                    className="px-3 py-1 text-sm text-[#212121] bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                  >
+                    Личный кабинет
+                  </Link>
                   <button
                     onClick={onSignOut}
                     className="px-3 py-1 text-sm text-[#212121] bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
