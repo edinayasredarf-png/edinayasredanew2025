@@ -1,7 +1,7 @@
 // Файл: lib/config.ts
 
 export const SITE_CONFIG = {
-  url: 'https://единаясреда.рф',
+  url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/',
   name: 'Единая среда',
 
   contact: {
