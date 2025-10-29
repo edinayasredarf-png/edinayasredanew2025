@@ -69,8 +69,6 @@
 .article-content { direction: ltr; color: #111; }
 /* app/globals.css */
 
-/* app/globals.css */
-
 /* ========================================
    НАВИГАЦИОННЫЕ ЦЕПОЧКИ (BREADCRUMBS)
    ======================================== */
@@ -78,7 +76,6 @@
 	 .breadcrumbs-wrapper {
 		position: relative;
 		z-index: 20;
-		/* Без фона - breadcrumbs накладываются поверх hero */
 	}
 
 	/* Ссылки в breadcrumbs */
@@ -86,6 +83,8 @@
 		text-decoration: none;
 		position: relative;
 		transition: all 0.2s ease;
+		display: inline-flex;
+		align-items: center;
 	}
 
 	.breadcrumbs-wrapper a:hover {
@@ -102,26 +101,69 @@
 	/* Текущая страница */
 	.breadcrumbs-wrapper span {
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+		display: inline-block;
 	}
 
-	/* Адаптив для мобильных */
-	@media (max-width: 640px) {
+	/* Улучшение читаемости на темном фоне */
+	.breadcrumbs-wrapper a,
+	.breadcrumbs-wrapper span {
+		text-shadow:
+			0 1px 2px rgba(0, 0, 0, 0.5),
+			0 0 4px rgba(0, 0, 0, 0.3);
+	}
+
+	/* Адаптив для планшетов */
+	@media (max-width: 768px) {
 		.breadcrumbs-wrapper {
 			padding: 0;
 		}
 
 		.breadcrumbs-wrapper ol {
-			font-size: 12px;
 			gap: 6px;
+		}
+	}
+
+	/* Адаптив для мобильных */
+	@media (max-width: 640px) {
+		.breadcrumbs-wrapper ol {
+			font-size: 11px;
+			gap: 4px;
+			padding: 8px 0;
 		}
 
 		.breadcrumbs-wrapper svg {
 			width: 12px;
 			height: 12px;
 		}
+
+		/* Убираем лишние отступы на мобильных */
+		.breadcrumbs-wrapper .max-w-\[1480px\] {
+			padding-left: 12px;
+			padding-right: 12px;
+		}
 	}
 
-	/* Улучшение читаемости на темном фоне */
+	/* Адаптив для очень маленьких экранов */
+	@media (max-width: 375px) {
+		.breadcrumbs-wrapper ol {
+			font-size: 10px;
+			gap: 3px;
+		}
+
+		.breadcrumbs-wrapper svg {
+			width: 10px;
+			height: 10px;
+		}
+	}
+
+	/* Улучшение для больших экранов */
+	@media (min-width: 1280px) {
+		.breadcrumbs-wrapper ol {
+			font-size: 14px;
+		}
+	}
+
+	/* Тёмная тема (если понадобится) */
 	@media (prefers-color-scheme: dark) {
 		.breadcrumbs-wrapper a {
 			color: rgba(255, 255, 255, 0.8);

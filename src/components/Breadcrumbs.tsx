@@ -31,6 +31,13 @@ const DEFAULT_LABELS: Record<string, string> = {
   'forest-management': 'Лесоустройство',
 }
 
+// Сокращённые названия для мобильных
+const MOBILE_LABELS: Record<string, string> = {
+  'inventory-burials': 'Инвентаризация кладбищ',
+  'green-inventory': 'Учёт насаждений',
+  'forest-management': 'Лесоустройство',
+}
+
 export default function Breadcrumbs({ items, customLabels }: BreadcrumbsProps) {
   const pathname = usePathname()
 
@@ -79,6 +86,12 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
     }))
   }
 
+  // Функция для получения сокращённого названия
+  const getMobileLabel = (label: string, href: string): string => {
+    const segment = href.split('/').pop() || ''
+    return MOBILE_LABELS[segment] || label
+  }
+
   return (
     <>
       {/* JSON-LD разметка для поисковиков */}
@@ -89,14 +102,15 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
 
       {/* Визуальные хлебные крошки */}
       <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8 ">
+        <div className="max-w-[1480px] mx-auto px-3 sm:px-5 md:px-8">
           <ol
-            className="flex flex-wrap items-center gap-2 text-sm"
+            className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-3"
             itemScope
             itemType="https://schema.org/BreadcrumbList"
           >
             {items.map((item, index) => {
               const isLast = index === items.length - 1
+              const isFirst = index === 0
 
               return (
                 <li
@@ -104,20 +118,39 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
                   itemProp="itemListElement"
                   itemScope
                   itemType="https://schema.org/ListItem"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1.5 sm:gap-2"
                 >
                   {!isLast ? (
                     <>
                       <Link
                         href={item.href}
                         itemProp="item"
-                        className="text-white/70 hover:text-white transition-colors text-sm font-normal"
+                        className="text-white/70 hover:text-white transition-colors text-xs sm:text-sm font-normal whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px] sm:max-w-[150px] md:max-w-none"
+                        title={item.label}
                       >
-                        <span itemProp="name">{item.label}</span>
+                        {/* Десктоп: полное название */}
+                        <span itemProp="name" className="hidden md:inline">
+                          {item.label}
+                        </span>
+                        {/* Мобильные: сокращённое название или иконка для "Главная" */}
+                        <span className="md:hidden">
+                          {isFirst ? (
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                          ) : (
+                            getMobileLabel(item.label, item.href)
+                          )}
+                        </span>
                       </Link>
                       <meta itemProp="position" content={String(index + 1)} />
                       <svg
-                        className="w-3.5 h-3.5 text-white/50"
+                        className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/50 flex-shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -129,9 +162,13 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
                     <>
                       <span
                         itemProp="name"
-                        className="text-white text-sm font-medium"
+                        className="text-white text-xs sm:text-sm font-medium max-w-[150px] sm:max-w-[200px] md:max-w-none whitespace-nowrap overflow-hidden text-ellipsis"
+                        title={item.label}
                       >
-                        {item.label}
+                        {/* Десктоп: полное название */}
+                        <span className="hidden md:inline">{item.label}</span>
+                        {/* Мобильные: сокращённое название */}
+                        <span className="md:hidden">{getMobileLabel(item.label, item.href)}</span>
                       </span>
                       <meta itemProp="position" content={String(index + 1)} />
                       <link itemProp="item" href={`https://единаясреда.рф${item.href}`} />
