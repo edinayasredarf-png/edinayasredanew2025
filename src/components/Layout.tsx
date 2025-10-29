@@ -11,6 +11,60 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+// ========================================
+// ✅ КОМПОНЕНТ ДЛЯ УДАЛЕНИЯ ЯКОРЯ #f1
+// ========================================
+const HashCleaner: React.FC = () => {
+  useEffect(() => {
+    console.log('🔍 HashCleaner запущен');
+    console.log('📍 Текущий URL:', window.location.href);
+    console.log('📍 Hash:', window.location.hash);
+    console.log('📍 Pathname:', window.location.pathname);
+
+    const cleanHash = () => {
+      const hash = window.location.hash;
+      const pathname = window.location.pathname;
+
+      // Удаляем ЛЮБОЙ якорь на главной странице
+      if (hash && pathname === '/') {
+        console.log('🧹 Удаляем якорь:', hash);
+        window.history.replaceState(null, '', pathname);
+        console.log('✅ Якорь удалён');
+        console.log('📍 Новый URL:', window.location.href);
+      }
+    };
+
+    // Очищаем сразу при загрузке
+    cleanHash();
+
+    // Следим за изменениями
+    const handleChange = () => {
+      console.log('🔄 Обнаружено изменение URL');
+      cleanHash();
+    };
+
+    window.addEventListener('hashchange', handleChange);
+    window.addEventListener('popstate', handleChange);
+
+    // Дополнительная проверка через задержку
+    const timer = setTimeout(() => {
+      console.log('⏰ Повторная проверка через 100ms');
+      cleanHash();
+    }, 100);
+
+    return () => {
+      window.removeEventListener('hashchange', handleChange);
+      window.removeEventListener('popstate', handleChange);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  return null;
+};
+
+// ========================================
+// COOKIE BANNER
+// ========================================
 const CookieBanner: React.FC = () => {
   const [visible, setVisible] = useState(false);
 
@@ -46,12 +100,15 @@ const CookieBanner: React.FC = () => {
   );
 };
 
+// ========================================
+// ГЛАВНЫЙ LAYOUT КОМПОНЕНТ
+// ========================================
 const Layout = ({ children }: LayoutProps) => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [openMobileSubmenu, setOpenMobileSubmenu] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   const handleMobileSubmenu = (menu: string) => {
     setOpenMobileSubmenu(openMobileSubmenu === menu ? null : menu);
   };
@@ -61,10 +118,10 @@ const Layout = ({ children }: LayoutProps) => {
     const unsubscribe = authStore.subscribe(() => {
       setIsAuthenticated(authStore.isAuthenticated());
     });
-    
+
     // Устанавливаем начальное состояние
     setIsAuthenticated(authStore.isAuthenticated());
-    
+
     return unsubscribe;
   }, []);
 
@@ -85,10 +142,14 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="bg-[#F6F7FB] pt-2 px-2 min-h-screen flex flex-col">
-        <Header 
-          isMobileNavOpen={isMobileNavOpen} 
+        {/* ✅ ДОБАВЛЕН КОМПОНЕНТ ДЛЯ ОЧИСТКИ ЯКОРЕЙ */}
+        <HashCleaner />
+
+        <Header
+          isMobileNavOpen={isMobileNavOpen}
           setIsMobileNavOpen={setIsMobileNavOpen}
         />
+
         {/* Overlay и мобильное меню вне Header */}
         {isMobileNavOpen && (
           <>
@@ -179,15 +240,17 @@ const Layout = ({ children }: LayoutProps) => {
             </div>
           </>
         )}
+
         <main className="flex-1 w-full mx-auto relative -mt-[20px] z-10">
           {children}
         </main>
+
         <Footer />
         <CookieBanner />
-        
+
         {/* Auth Modal */}
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
+        <AuthModal
+          isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           onSuccess={handleAuthSuccess}
         />
