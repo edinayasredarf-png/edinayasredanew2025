@@ -73,13 +73,20 @@
    НАВИГАЦИОННЫЕ ЦЕПОЧКИ (BREADCRUMBS)
    ======================================== */
 
-	 .breadcrumbs-wrapper {
-		position: relative;
+	 .breadcrumbs-nav {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
 		z-index: 20;
+		/* Убираем любой background и padding */
+		background: transparent;
+		padding: 0;
+		margin: 0;
 	}
 
 	/* Ссылки в breadcrumbs */
-	.breadcrumbs-wrapper a {
+	.breadcrumbs-nav a {
 		text-decoration: none;
 		position: relative;
 		transition: all 0.2s ease;
@@ -87,70 +94,58 @@
 		align-items: center;
 	}
 
-	.breadcrumbs-wrapper a:hover {
+	.breadcrumbs-nav a:hover {
 		text-decoration: none;
 		text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 	}
 
 	/* Разделители */
-	.breadcrumbs-wrapper svg {
+	.breadcrumbs-nav svg {
 		flex-shrink: 0;
 		opacity: 0.5;
 	}
 
 	/* Текущая страница */
-	.breadcrumbs-wrapper span {
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	.breadcrumbs-nav span {
 		display: inline-block;
 	}
 
 	/* Улучшение читаемости на темном фоне */
-	.breadcrumbs-wrapper a,
-	.breadcrumbs-wrapper span {
+	.breadcrumbs-nav a,
+	.breadcrumbs-nav span {
 		text-shadow:
-			0 1px 2px rgba(0, 0, 0, 0.5),
-			0 0 4px rgba(0, 0, 0, 0.3);
+			0 1px 3px rgba(0, 0, 0, 0.8),
+			0 0 6px rgba(0, 0, 0, 0.5);
 	}
 
 	/* Адаптив для планшетов */
 	@media (max-width: 768px) {
-		.breadcrumbs-wrapper {
+		.breadcrumbs-nav {
 			padding: 0;
-		}
-
-		.breadcrumbs-wrapper ol {
-			gap: 6px;
 		}
 	}
 
 	/* Адаптив для мобильных */
 	@media (max-width: 640px) {
-		.breadcrumbs-wrapper ol {
+		.breadcrumbs-nav ol {
 			font-size: 11px;
-			gap: 4px;
-			padding: 8px 0;
+			gap: 4px !important;
 		}
 
-		.breadcrumbs-wrapper svg {
+		.breadcrumbs-nav svg {
 			width: 12px;
 			height: 12px;
-		}
-
-		/* Убираем лишние отступы на мобильных */
-		.breadcrumbs-wrapper .max-w-\[1480px\] {
-			padding-left: 12px;
-			padding-right: 12px;
 		}
 	}
 
 	/* Адаптив для очень маленьких экранов */
 	@media (max-width: 375px) {
-		.breadcrumbs-wrapper ol {
+		.breadcrumbs-nav ol {
 			font-size: 10px;
-			gap: 3px;
+			gap: 3px !important;
 		}
 
-		.breadcrumbs-wrapper svg {
+		.breadcrumbs-nav svg {
 			width: 10px;
 			height: 10px;
 		}
@@ -158,18 +153,7 @@
 
 	/* Улучшение для больших экранов */
 	@media (min-width: 1280px) {
-		.breadcrumbs-wrapper ol {
+		.breadcrumbs-nav ol {
 			font-size: 14px;
-		}
-	}
-
-	/* Тёмная тема (если понадобится) */
-	@media (prefers-color-scheme: dark) {
-		.breadcrumbs-wrapper a {
-			color: rgba(255, 255, 255, 0.8);
-		}
-
-		.breadcrumbs-wrapper a:hover {
-			color: rgba(255, 255, 255, 1);
 		}
 	}

@@ -101,10 +101,11 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
       />
 
       {/* Визуальные хлебные крошки */}
-      <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper">
-        <div className="max-w-[1480px] mx-auto px-3 sm:px-5 md:px-8">
+      <nav aria-label="Навигационная цепочка" className="breadcrumbs-nav">
+        {/* ✅ Используем те же отступы что и в hero (container) */}
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <ol
-            className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-3"
+            className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm pt-4 pb-2"
             itemScope
             itemType="https://schema.org/BreadcrumbList"
           >
