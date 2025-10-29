@@ -1,50 +1,60 @@
-"use client";
-import React from 'react';
-import Layout from '../components/Layout';
-import HeroSection from '../components/HeroSection';
-import SectionFeatures from '../components/SectionFeatures';
-import BlueTrustSection from '../components/BlueTrustSection';
-import PartnersWall from '../components/PartnersWall';
+// app/page.tsx
 
-import SectionPlatformAndServices from '../components/SectionPlatformAndServices';
-import SplitStyleCards from '../components/SplitStyleCards';
-import SectionBestSolution from '../components/SectionBestSolution';
-import SectionInterfaceSlider from '../components/SectionInterfaceSlider';
-import SectionPublicPrivate from '../components/SectionPublicPrivate';
-import SectionAllObjects from '../components/SectionAllObjects';
-import SectionMigration from '../components/SectionMigration';
-import SectionQuickStart from '../components/SectionQuickStart';
-import HomePosts from '../components/HomePosts';
-import HomeNews from '../components/HomeNews';
+import { Metadata } from 'next';
+import HomePage from './HomePage';
 
-import SectionExpertise from '../components/SectionExpertise';
-import SectionSubscribeChannels from '../components/SectionSubscribeChannels';
-import { SpeedInsights } from "@vercel/speed-insights/next";
+// ========================================
+// SEO МЕТАДАННЫЕ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ
+// ========================================
+export const metadata: Metadata = {
+  title: 'Единая среда — цифровая платформа управления территориями | единаясреда.рф',
+  description: 'Единая среда (единаясреда.рф) — российская платформа для цифрового управления муниципальными территориями. Учёт кладбищ, зелёных насаждений, торговых точек, ЛЭП, МАФов. Контроль подрядчиков и аналитика. Более 15 лет на рынке. Включена в реестр отечественного ПО.',
+  keywords: 'единая среда, единаясреда, единаясреда.рф, единая среда рф, платформа управления территориями, цифровизация городов, учёт кладбищ, инвентаризация зелёных насаждений, цифровое лесоустройство, контроль МАФов, управление ЛЭП',
 
+  alternates: {
+    canonical: '/',
+  },
 
+  openGraph: {
+    title: 'Единая среда — цифровая платформа управления территориями',
+    description: 'Российская платформа для цифрового управления муниципальными территориями. Учёт объектов городской инфраструктуры, контроль подрядчиков, аналитика.',
+    url: 'https://единаясреда.рф',
+    siteName: 'Единая среда',
+    type: 'website',
+    locale: 'ru_RU',
+    images: [
+      {
+        url: 'https://единаясреда.рф/img/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Единая среда — цифровая платформа',
+      },
+    ],
+  },
 
-export default function HomePage() {
-  return (
-    <Layout>
-			<SpeedInsights/>
-      <HeroSection />
-			<SectionPlatformAndServices />
-			<SplitStyleCards/>
-			<BlueTrustSection/>
-<PartnersWall/>
-      <SectionInterfaceSlider />
-      <SectionPublicPrivate />
-			<HomeNews />
-      <SectionAllObjects />
-      <SectionMigration />
-      <SectionQuickStart />
-      <HomePosts />
-      <SectionExpertise />
-      <SectionSubscribeChannels />
-    </Layout>
-  );
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Единая среда — цифровая платформа управления территориями',
+    description: 'Российская платформа для цифрового управления муниципальными территориями.',
+    images: ['https://единаясреда.рф/img/og-image.jpg'],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+};
+
+// ========================================
+// SERVER COMPONENT (обёртка для SEO)
+// ========================================
+export default function Page() {
+  return <HomePage />;
 }
-
-
-
-
