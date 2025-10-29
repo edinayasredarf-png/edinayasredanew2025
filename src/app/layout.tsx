@@ -1,68 +1,71 @@
+// Файл: app/layout.tsx
+
 import type { Metadata } from "next";
 import { Raleway, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ModalProvider } from "@/components/ModalProvider";
 import Script from "next/script";
+import { SITE_CONFIG } from "@/lib/config";
 
+// ========================================
+// ОПТИМИЗАЦИЯ ШРИФТОВ
+// ========================================
 const raleway = Raleway({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  preload: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
+// ========================================
+// SEO МЕТАДАННЫЕ
+// ========================================
 export const metadata: Metadata = {
-  metadataBase: new URL('https://edinayasreda.ru'),
-  title: 'Единая среда — цифровая мультиплатформа управления территориями и объектами | ЕдинаяСреда.рф',
-  description: 'Цифровое управление территориями для муниципалитетов и городских служб. Учёт кладбищ, зелёных насаждений, торговых точек, ЛЭП, МАФов и многих других объектов городской среды. Контроль подрядчиков, аналитические дашборды, формирование отчётов.',
-  keywords: [
-    'единая среда',
-    'единая среда рф', 
-    'единаясреда.рф',
-    'единая среда платформа',
-    'единая среда цифровая',
-    'единая среда управление территориями',
-    'цифровая платформа',
-    'управление территориями',
-    'цифровизация территорий',
-    'управление лесами',
-    'инвентаризация объектов',
-    'мониторинг территорий',
-    'учёт территорий',
-    'цифровые технологии',
-    'ГИС платформа',
-    'ГИС система',
-    'территориальное планирование',
-    'цифровизация лесов',
-    'лесное хозяйство',
-    'природные ресурсы',
-    'экологический мониторинг',
-    'земельный кадастр',
-    'территориальная информация'
-  ],
+  metadataBase: new URL(SITE_CONFIG.url),
+
+  title: {
+    default: 'Единая среда — цифровая платформа управления территориями',
+    template: '%s | Единая среда',
+  },
+
+  description: 'Цифровое управление территориями для муниципалитетов. Учёт кладбищ, зелёных насаждений, торговых точек, ЛЭП, МАФов. Контроль подрядчиков и аналитика.',
+
   alternates: {
     canonical: '/',
   },
+
   openGraph: {
     type: 'website',
-    url: '/',
-    siteName: 'Единая среда',
-    title: 'Единая среда — цифровая мультиплатформа управления территориями и объектами | ЕдинаяСреда.рф',
-    description: 'Цифровое управление территориями для муниципалитетов и городских служб. Учёт кладбищ, зелёных насаждений, торговых точек, ЛЭП, МАФов и многих других объектов городской среды.',
+    url: SITE_CONFIG.url,
+    siteName: SITE_CONFIG.name,
+    title: 'Единая среда — цифровая платформа управления территориями',
+    description: 'Цифровое управление территориями для муниципалитетов. Учёт объектов городской среды, контроль подрядчиков, аналитические дашборды.',
     images: [
-      { url: '/img/logo.png', width: 1200, height: 630, alt: 'Единая среда' },
+      {
+        url: `${SITE_CONFIG.url}/img/og-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: 'Единая среда — цифровая платформа',
+        type: 'image/jpeg',
+      },
     ],
     locale: 'ru_RU',
   },
+
   twitter: {
     card: 'summary_large_image',
-    title: 'Единая среда — цифровая мультиплатформа управления территориями и объектами | ЕдинаяСреда.рф',
-    description: 'Цифровое управление территориями для муниципалитетов и городских служб. Учёт объектов городской среды, контроль подрядчиков, аналитические дашборды.',
-    images: ['/img/logo.png'],
+    title: 'Единая среда — цифровая платформа управления территориями',
+    description: 'Цифровое управление территориями для муниципалитетов. Учёт объектов городской среды и аналитика.',
+    images: [`${SITE_CONFIG.url}/img/og-image.jpg`],
   },
+
   robots: {
     index: true,
     follow: true,
@@ -74,11 +77,24 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+
   verification: {
-    yandex: 'ce00463607f5bc70',
+    google: SITE_CONFIG.verification.google,
+    yandex: SITE_CONFIG.verification.yandex,
+  },
+
+  other: {
+    'application-name': SITE_CONFIG.name,
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'format-detection': 'telephone=no',
+    'mobile-web-app-capable': 'yes',
   },
 };
 
+// ========================================
+// LAYOUT КОМПОНЕНТ
+// ========================================
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,56 +103,82 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <head>
-        <meta name="yandex-verification" content="ce00463607f5bc70" />
+        {/* ========================================
+            JSON-LD: Organization
+            ======================================== */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "Единая среда",
-              "alternateName": ["Единая среда РФ", "ЕдинаяСреда.рф", "Единая среда платформа"],
-              "url": "https://edinayasreda.ru",
-              "logo": "https://edinayasreda.ru/img/logo.png",
-              "description": "Цифровое управление территориями для муниципалитетов и городских служб. Учёт кладбищ, зелёных насаждений, торговых точек, ЛЭП, МАФов и многих других объектов городской среды.",
+              "name": SITE_CONFIG.name,
+              "alternateName": ["Единая среда РФ", "ЕдинаяСреда.рф"],
+              "url": SITE_CONFIG.url,
+              "logo": {
+                "@type": "ImageObject",
+                "url": `${SITE_CONFIG.url}/img/logo.png`,
+                "width": "200",
+                "height": "60"
+              },
+              "image": `${SITE_CONFIG.url}/img/og-image.jpg`,
+              "description": "Цифровое управление территориями для муниципалитетов и городских служб. Учёт объектов городской среды, контроль подрядчиков, аналитика.",
               "foundingDate": "2024",
               "address": {
                 "@type": "PostalAddress",
                 "addressCountry": "RU"
               },
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "contactType": "customer service",
-                "url": "https://edinayasreda.ru/contacts"
-              },
-              "sameAs": [
-                "https://edinayasreda.ru"
+              "contactPoint": [
+                {
+                  "@type": "ContactPoint",
+                  "contactType": "customer service",
+                  "telephone": SITE_CONFIG.contact.phone,
+                  "email": SITE_CONFIG.contact.email,
+                  "url": `${SITE_CONFIG.url}/contacts`,
+                  "availableLanguage": ["Russian"],
+                  "areaServed": "RU"
+                }
               ],
+              "sameAs": Object.values(SITE_CONFIG.social).filter(Boolean),
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Web",
               "offers": {
-                "@type": "Offer",
-                "name": "Единая среда — цифровая мультиплатформа управления территориями и объектами",
-                "description": "Цифровое управление территориями для муниципалитетов и городских служб. Учёт объектов городской среды, контроль подрядчиков, аналитические дашборды."
-              },
-              "knowsAbout": [
-                "цифровое управление территориями",
-                "учёт объектов городской среды", 
-                "контроль подрядчиков",
-                "аналитические дашборды",
-                "формирование отчётов",
-                "мультиплатформа",
-                "муниципальные услуги",
-                "городские службы",
-                "кладбища и захоронения",
-                "зелёные насаждения",
-                "торговые точки",
-                "ЛЭП и коммуникации",
-                "МАФы"
-              ]
+                "@type": "AggregateOffer",
+                "priceCurrency": "RUB",
+                "availability": "https://schema.org/InStock"
+              }
             })
           }}
         />
+
+        {/* ========================================
+            JSON-LD: WebSite
+            ======================================== */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": SITE_CONFIG.name,
+              "url": SITE_CONFIG.url,
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                  "@type": "EntryPoint",
+                  "urlTemplate": `${SITE_CONFIG.url}/search?q={search_term_string}`
+                },
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+
+        {/* ========================================
+            ЯНДЕКС.МЕТРИКА
+            ======================================== */}
         <Script
-          id="ym-loader"
+          id="yandex-metrika"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
@@ -149,19 +191,55 @@ export default function RootLayout({
                 k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
               })(window, document,'script','https://mc.yandex.ru/metrika/tag.js', 'ym');
 
-              ym(89202191, 'init', {webvisor:true, clickmap:true, accurateTrackBounce:true, trackLinks:true});
+              ym(${SITE_CONFIG.analytics.yandex}, 'init', {
+                clickmap:true,
+                trackLinks:true,
+                accurateTrackBounce:true,
+                webvisor:true,
+                ecommerce:"dataLayer"
+              });
+            `,
+          }}
+        />
+
+        {/* ========================================
+            GOOGLE ANALYTICS (GA4)
+            ✅ Ваш ID: G-6HGCDX1CZC
+            ======================================== */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${SITE_CONFIG.analytics.google}`}
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${SITE_CONFIG.analytics.google}', {
+                page_path: window.location.pathname,
+              });
             `,
           }}
         />
       </head>
+
       <body
         className={`${raleway.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Яндекс.Метрика noscript */}
         <noscript>
           <div>
-            <img src="https://mc.yandex.ru/watch/89202191" style={{ position: 'absolute', left: '-9999px' }} alt="" />
+            <img
+              src={`https://mc.yandex.ru/watch/${SITE_CONFIG.analytics.yandex}`}
+              style={{ position: 'absolute', left: '-9999px' }}
+              alt=""
+            />
           </div>
         </noscript>
+
         <ModalProvider>
           {children}
         </ModalProvider>
