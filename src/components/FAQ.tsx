@@ -135,7 +135,7 @@ export default function FAQ({
           {/* Правая колонка: Контактная карточка */}
           {showContactCard && (
             <aside className="lg:pl-6">
-              <div className="rounded-3xl border border-[#E5E7EB] p-7 md:p-9 flex flex-col justify-between min-h-[280px] bg-gradient-to-br from-white to-gray-50">
+              <div className="rounded-3xl border border-[#E5E7EB] p-7 md:p-9 flex flex-col justify-between min-h-[280px] ">
                 <div>
                   <h3 className={`text-[clamp(20px,3vw,24px)] ${headingBase} ${headingColor}`}>
                     {contactCardTitle}
@@ -147,7 +147,7 @@ export default function FAQ({
                 <div className="mt-8">
                   <button
                     onClick={openConsult}
-                    className="inline-flex px-5 py-3.5 rounded-xl text-base font-medium text-[#0077FF] bg-[#F2F2F2] hover:bg-[#EBEBEB] transition"
+                    className="inline-flex  rounded-xl text-base font-medium text-[#0077FF]  hover:text-[#0761C8] transition"
                   >
                     {contactButtonText}
                   </button>
