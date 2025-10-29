@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { Raleway, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ModalProvider } from "@/components/ModalProvider";
+import { HashCleaner } from "@/components/HashCleaner";
+
 import Script from "next/script";
 import { SITE_CONFIG } from "@/lib/config";
 
@@ -239,7 +241,7 @@ export default function RootLayout({
             />
           </div>
         </noscript>
-
+				<HashCleaner />
         <ModalProvider>
           {children}
         </ModalProvider>
