@@ -89,7 +89,7 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
 
       {/* Визуальные хлебные крошки */}
       <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8 py-3">
+        <div className="max-w-[1480px] mx-auto px-5 md:px-8 ">
           <ol
             className="flex flex-wrap items-center gap-2 text-sm"
             itemScope
