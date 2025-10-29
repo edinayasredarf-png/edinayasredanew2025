@@ -248,8 +248,12 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         )}
 
-        {/* ✅ НАВИГАЦИОННЫЕ ЦЕПОЧКИ (BREADCRUMBS) - без wrapper */}
-        {showBreadcrumbs && <Breadcrumbs />}
+        {/* ✅ НАВИГАЦИОННЫЕ ЦЕПОЧКИ (BREADCRUMBS) - поверх hero секции */}
+        {showBreadcrumbs && (
+          <div className="relative z-20 -mb-3">
+            <Breadcrumbs />
+          </div>
+        )}
 
         {/* ✅ ОСНОВНОЙ КОНТЕНТ */}
         <main className="flex-1 w-full mx-auto relative -mt-[20px] z-10">
