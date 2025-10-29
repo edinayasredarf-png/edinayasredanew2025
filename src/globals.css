@@ -69,16 +69,65 @@
 .article-content { direction: ltr; color: #111; }
 /* app/globals.css */
 
-/* Навигационные цепочки */
-.breadcrumbs {
-  background: #F6F7FB;
-  border-bottom: 1px solid #E5E7EB;
-}
+/* app/globals.css */
 
-.breadcrumbs a {
-  text-decoration: none;
-}
+/* ========================================
+   НАВИГАЦИОННЫЕ ЦЕПОЧКИ (BREADCRUMBS)
+   ======================================== */
 
-.breadcrumbs a:hover {
-  text-decoration: underline;
-}
+	 .breadcrumbs-wrapper {
+		position: relative;
+		z-index: 20;
+		/* Без фона - breadcrumbs накладываются поверх hero */
+	}
+
+	/* Ссылки в breadcrumbs */
+	.breadcrumbs-wrapper a {
+		text-decoration: none;
+		position: relative;
+		transition: all 0.2s ease;
+	}
+
+	.breadcrumbs-wrapper a:hover {
+		text-decoration: none;
+		text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+	}
+
+	/* Разделители */
+	.breadcrumbs-wrapper svg {
+		flex-shrink: 0;
+		opacity: 0.5;
+	}
+
+	/* Текущая страница */
+	.breadcrumbs-wrapper span {
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Адаптив для мобильных */
+	@media (max-width: 640px) {
+		.breadcrumbs-wrapper {
+			padding: 0;
+		}
+
+		.breadcrumbs-wrapper ol {
+			font-size: 12px;
+			gap: 6px;
+		}
+
+		.breadcrumbs-wrapper svg {
+			width: 12px;
+			height: 12px;
+		}
+	}
+
+	/* Улучшение читаемости на темном фоне */
+	@media (prefers-color-scheme: dark) {
+		.breadcrumbs-wrapper a {
+			color: rgba(255, 255, 255, 0.8);
+		}
+
+		.breadcrumbs-wrapper a:hover {
+			color: rgba(255, 255, 255, 1);
+		}
+	}

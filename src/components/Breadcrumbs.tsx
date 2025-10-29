@@ -88,8 +88,8 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
       />
 
       {/* Визуальные хлебные крошки */}
-      <nav aria-label="Навигационная цепочка" className="breadcrumbs">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8 py-4">
+      <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper">
+        <div className="max-w-[1480px] mx-auto px-5 md:px-8 py-3">
           <ol
             className="flex flex-wrap items-center gap-2 text-sm"
             itemScope
@@ -111,13 +111,13 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
                       <Link
                         href={item.href}
                         itemProp="item"
-                        className="text-gray-600 hover:text-[#0077FF] transition-colors"
+                        className="text-white/70 hover:text-white transition-colors text-sm font-normal"
                       >
                         <span itemProp="name">{item.label}</span>
                       </Link>
                       <meta itemProp="position" content={String(index + 1)} />
                       <svg
-                        className="w-4 h-4 text-gray-400"
+                        className="w-3.5 h-3.5 text-white/50"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -129,7 +129,7 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
                     <>
                       <span
                         itemProp="name"
-                        className="text-gray-900 font-medium"
+                        className="text-white text-sm font-medium"
                       >
                         {item.label}
                       </span>
