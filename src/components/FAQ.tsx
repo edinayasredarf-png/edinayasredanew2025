@@ -102,21 +102,26 @@ export default function FAQ({
                       <span className="relative inline-flex items-center justify-center w-5 h-5 flex-shrink-0">
                         <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] w-full bg-[#101828]" />
                         <span
-                          className={`absolute left-1/2 top-0 -translate-x-1/2 w-[2px] h-full bg-[#101828] transition-all duration-200 ${
+                          className={`absolute left-1/2 top-0 -translate-x-1/2 w-[2px] h-full bg-[#101828] transition-all duration-300 ease-in-out ${
                             isOpen ? "scale-y-0 opacity-0" : "scale-y-100 opacity-100"
                           }`}
                         />
                       </span>
                     </button>
-                    {isOpen && (
-                      <div
-                        id={`faq-answer-${idx}`}
-                        className="pb-6 pr-0 md:pr-10"
-                        itemScope
-                        itemProp="acceptedAnswer"
-                        itemType="https://schema.org/Answer"
-                      >
-                        <div itemProp="text">
+
+                    {/* Контент с плавным раскрытием */}
+                    <div
+                      id={`faq-answer-${idx}`}
+                      className="grid transition-all duration-500 ease-in-out"
+                      style={{
+                        gridTemplateRows: isOpen ? '1fr' : '0fr'
+                      }}
+                      itemScope
+                      itemProp="acceptedAnswer"
+                      itemType="https://schema.org/Answer"
+                    >
+                      <div className="overflow-hidden">
+                        <div className="pb-6 pr-0 md:pr-10" itemProp="text">
                           {typeof item.answer === 'string' ? (
                             <p className="text-[19px] leading-7 text-[#475467]">{item.answer}</p>
                           ) : (
@@ -124,7 +129,7 @@ export default function FAQ({
                           )}
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}
@@ -135,7 +140,7 @@ export default function FAQ({
           {/* Правая колонка: Контактная карточка */}
           {showContactCard && (
             <aside className="lg:pl-6">
-              <div className="rounded-3xl border border-[#E5E7EB] p-7 md:p-9 flex flex-col justify-between min-h-[280px] ">
+              <div className="rounded-3xl border border-[#E5E7EB] p-7 md:p-9 flex flex-col justify-between min-h-[280px]">
                 <div>
                   <h3 className={`text-[clamp(20px,3vw,24px)] ${headingBase} ${headingColor}`}>
                     {contactCardTitle}
@@ -147,7 +152,7 @@ export default function FAQ({
                 <div className="mt-8">
                   <button
                     onClick={openConsult}
-                    className="inline-flex  rounded-xl text-base font-medium text-[#0077FF]  hover:text-[#0761C8] transition"
+                    className="inline-flex rounded-xl text-base font-medium text-[#0077FF] hover:text-[#0761C8] transition-colors duration-300"
                   >
                     {contactButtonText}
                   </button>
