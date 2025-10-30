@@ -6,52 +6,70 @@ const tags = ['Надёжно', 'Быстро', 'Бесплатно'];
 
 const SectionMigration = () => {
   const { openConsult } = useModal();
+
   return (
-    <section className="w-full flex flex-col items-center mt-16">
+    <section className="py-16 md:py-24">
       <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-        <div className="w-full min-h-[540px] p-2 md:p-4 bg-white rounded-[20px] flex flex-col md:flex-row justify-center items-stretch gap-6">
-          {/* Левая часть */}
-          <div className="w-full md:w-[538px] flex flex-col relative py-4 md:py-8 pl-2 md:pl-8 pr-2 md:pr-8">
-            {/* Теги */}
-            <div className="flex gap-2 mb-6 mt-6 md:mt-0">
-              {tags.map((tag) => (
-                <span key={tag} className="px-2 py-1.5 bg-[#F6F7F9] rounded-lg text-black text-sm md:text-base">
-                  {tag}
-                </span>
-              ))}
+        {/* Заголовок */}
+        <h2 className="text-[32px] md:text-[48px] font-medium text-black leading-tight text-center mb-8 md:mb-12 max-w-[560px] mx-auto">
+          Бесплатный перенос данных в платформу
+        </h2>
+
+        {/* Белая карточка с padding */}
+        <div className="bg-white rounded-[20px] p-2 md:p-2">
+          <div className="flex flex-col lg:flex-row gap-6">
+
+            {/* Левая часть */}
+            <div className="w-full lg:w-[calc(100%-722px-24px)] p-6 lg:p-8 flex flex-col">
+              {/* Теги */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1.5 bg-[#F6F7F9] rounded-md text-black text-sm font-medium"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* Текст */}
+              <div className="space-y-6 mb-10 flex-grow">
+                <p className="text-black text-[17px] lg:text-[19px] leading-7">
+                  Поможем интегрировать ваши текущие наработки и реестры в &quot;Единую Среду&quot;, сохраняя структуру и полноту информации.
+                </p>
+                <p className="text-black text-[17px] lg:text-[19px] leading-7">
+                  Даже если ваши данные хранятся в разных форматах или частично неструктурированы — мы найдём решение.
+                </p>
+                <p className="text-black text-[17px] lg:text-[19px] leading-7">
+                  На каждом этапе внедрения, вас сопровождает команда специалистов: от первичной консультации до полной настройки и проверки корректности переноса.
+                </p>
+              </div>
+
+              {/* Кнопка */}
+              <div>
+                <button
+                  type="button"
+                  onClick={openConsult}
+                  className="px-5 py-3.5 bg-[#0077FF] text-white rounded-xl text-base lg:text-lg font-medium hover:bg-[#0066DD] transition-colors"
+                >
+                  Получить консультацию
+                </button>
+              </div>
             </div>
-            {/* Список */}
-            <ul className="flex flex-col gap-4 mb-8 pl-2">
-              <li className="text-black text-sm md:text-base lg:text-lg">
-                Поможем интегрировать ваши текущие наработки и реестры в &quot;Единую Среду&quot;, сохраняя структуру и полноту информации.
-              </li>
-              <li className="text-black text-sm md:text-base lg:text-lg">
-                Даже если ваши данные хранятся в разных форматах или частично неструктурированы — мы найдём решение.
-              </li>
-              <li className="text-black text-sm md:text-base lg:text-lg">
-                На каждом этапе внедрения, вас сопровождает команда специалистов: от первичной консультации до полной настройки и проверки корректности переноса.
-              </li>
-            </ul>
-            {/* Кнопка */}
-            <button
-              type="button"
-              onClick={openConsult}
-              className="inline-block px-6 py-3 bg-[#0077FF] text-white rounded-xl font-medium text-sm md:text-base lg:text-lg text-center hover:bg-[#0077FF]/90 transition-colors open-consult-modal"
-            >
-              Получить консультацию
-            </button>
-          </div>
-          {/* Правая часть */}
-          <div className= "bg-[#F6F7F9] rounded-3xl  w-full md:w-1/2 flex justify-center items-center py-4 md:py-8 pl-2 md:pl-8 pr-2 md:pr-8">
-                            <div className=" flex justify-center items-center aspect-square w-full max-w-[320px] mx-auto md:max-w-[560px]">
+
+            {/* Правая часть - серый блок */}
+            <div className="w-full lg:w-[722px] bg-[#F6F7F9] rounded-[18px] p-8 lg:p-12 flex items-center justify-center min-h-[350px] lg:min-h-[414px]">
               <Image
                 src="/img/migrations.png"
                 alt="Миграция серверов"
-                width={220}
-                height={220}
-                className="w-full h-auto max-w-[80%] mx-auto object-contain"
+                width={434}
+                height={301}
+                className="w-full h-auto max-w-[90%] object-contain"
+                priority
               />
             </div>
+
           </div>
         </div>
       </div>

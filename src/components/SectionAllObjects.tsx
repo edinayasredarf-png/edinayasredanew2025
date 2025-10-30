@@ -1,7 +1,12 @@
 import React from 'react';
 import Image from 'next/image';
 
-const objects = [
+interface ObjectItem {
+  icon: string;
+  label: string;
+}
+
+const objects: ObjectItem[] = [
   { icon: '/icons/Cemetery.svg', label: 'Кладбища и захоронения' },
   { icon: '/icons/Tree.svg', label: 'Зеленые насаждения' },
   { icon: '/icons/Trash.svg', label: 'Места складирования отходов' },
@@ -13,44 +18,70 @@ const objects = [
   { icon: '/icons/City.svg', label: 'и другие объекты городской среды' },
 ];
 
-const ObjectCard: React.FC<{ icon: string; label: string; withRightBorder?: boolean; withBottomBorder?: boolean }> = ({ icon, label, withRightBorder, withBottomBorder }) => (
-  <div className={`flex flex-col h-auto p-8 ${withRightBorder ? 'border-r border-grey-92' : ''} ${withBottomBorder ? 'border-b border-grey-92' : ''}`}>
-    <div className="flex items-center mb-4">
-      <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px] mr-4">
-        <Image src={icon} alt="" width={28} height={28} className="w-7 h-7" />
-      </div>
-      <div className="text-black text-base md:text-lg lg:text-xl font-normal leading-7">
-        {label}
-      </div>
-    </div>
-    {/* Разделитель только если не последняя строка */}
-    {/* <div className="h-px w-full bg-grey-92 mt-auto"></div> */}
-  </div>
-);
+interface ObjectCardProps {
+  icon: string;
+  label: string;
+  index: number;
+  totalItems: number;
+}
 
-const SectionAllObjects = () => (
-  <section className="w-full flex flex-col items-center mt-16">
-    <div className="max-w-[1480px] w-full flex flex-col items-start gap-16 px-5 md:px-8">
-      {/* Заголовок */}
-      <div className="w-full flex flex-col items-center">
-        <h2 className="text-center font-medium text-black text-lg md:text-2xl lg:text-4xl leading-tight">
+const ObjectCard: React.FC<ObjectCardProps> = ({ icon, label, index, totalItems }) => {
+  const COLS = 3;
+  const isLastColumn = (index + 1) % COLS === 0;
+  const isLastRow = index >= totalItems - COLS;
+  const isLastItem = index === totalItems - 1;
+
+  return (
+    <div
+      className={`
+        flex items-center gap-4 p-6 md:p-8
+        ${!isLastColumn && !isLastItem ? 'border-r border-grey-92' : ''}
+        ${!isLastRow ? 'border-b border-grey-92' : ''}
+      `}
+    >
+      {/* Иконка */}
+      <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px]">
+        <Image
+          src={icon}
+          alt={label}
+          width={28}
+          height={28}
+          className="w-7 h-7"
+        />
+      </div>
+
+      {/* Текст */}
+      <p className="text-black text-base md:text-lg lg:text-xl font-normal leading-7">
+        {label}
+      </p>
+    </div>
+  );
+};
+
+const SectionAllObjects: React.FC = () => {
+  return (
+    <section className="py-16 md:py-24">
+      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+        {/* Заголовок */}
+        <h2 className="text-center font-medium text-black text-[28px] md:text-[36px] lg:text-[48px] leading-tight mb-12 md:mb-16">
           Все объекты в одной системе
         </h2>
+
+        {/* Сетка объектов */}
+        <div className="w-full  rounded-[20px] border border-grey-92 grid grid-cols-1 md:grid-cols-3 overflow-hidden">
+          {objects.map((obj, idx) => (
+            <ObjectCard
+              key={`${obj.icon}-${idx}`}
+              icon={obj.icon}
+              label={obj.label}
+              index={idx}
+              totalItems={objects.length}
+            />
+          ))}
+        </div>
       </div>
-      {/* Список */}
-      <div className="w-full rounded-[20px] outline outline-1 outline-grey-92 grid grid-cols-1 md:grid-cols-3 gap-0">
-        {objects.map((obj, idx) => (
-          <ObjectCard
-            key={obj.label}
-            icon={obj.icon}
-            label={obj.label}
-            withRightBorder={idx % 3 !== 2 && idx !== objects.length - 1}
-            withBottomBorder={idx < 6}
-          />
-        ))}
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default SectionAllObjects;
