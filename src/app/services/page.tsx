@@ -265,7 +265,7 @@ export default function ServicesPage() {
                       Запросить КП
                     </button>
                     <a
-                      href="mailto:order@единаясреда.рф"
+                      href="mailto:info@единаясреда.рф"
                       className="px-8 py-4 rounded-xl border border-[#0077FF] text-[#0077FF] font-semibold hover:bg-[#0077FF] hover:text-white transition-colors text-center"
                     >
                       Написать письмо

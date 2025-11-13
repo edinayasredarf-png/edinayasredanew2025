@@ -237,14 +237,14 @@ function TopSheetMenu({
 
               {/* email */}
               <a
-                href="mailto:order@единаясреда.рф"
+                href="mailto:info@единаясреда.рф"
                 onClick={onClose}
                 className="flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-white px-4 py-3 text-[#2777ff] underline transition hover:bg-[#f7f8fc]"
               >
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-[#2777ff]/10 text-[#2777ff]">
                   ✉
                 </span>
-                order@единаясреда.рф
+                info@единаясреда.рф
               </a>
 
               {/* CTA */}
@@ -475,8 +475,8 @@ export default function ImplementationsPage() {
                   открыть чат
                 </Link>
                 <span className="h-5 w-px bg-[#e4e7f1]" />
-                <a href="mailto:order@единаясреда.рф" className="text-sm font-extrabold lowercase underline">
-                  order@единаясреда.рф
+                <a href="mailto:info@единаясреда.рф" className="text-sm font-extrabold lowercase underline">
+                  info@единаясреда.рф
                 </a>
               </div>
             </div>
@@ -715,8 +715,8 @@ export default function ImplementationsPage() {
                 <span className="text-[18px] font-bold lowercase text-[#2777ff] group-hover:underline">telegram</span>
               </Link>
 
-              <a className="inline-flex items-center gap-2 rounded-[100px] border border-[#afb4c4] px-4 py-2 transition hover:bg-[#f7f8fc]" href="mailto:order@единаясреда.рф">
-                <span className="text-[18px] font-extrabold lowercase text-[#2777ff] underline">order@единаясреда.рф</span>
+              <a className="inline-flex items-center gap-2 rounded-[100px] border border-[#afb4c4] px-4 py-2 transition hover:bg-[#f7f8fc]" href="mailto:info@единаясреда.рф">
+                <span className="text-[18px] font-extrabold lowercase text-[#2777ff] underline">info@единаясреда.рф</span>
               </a>
             </div>
 

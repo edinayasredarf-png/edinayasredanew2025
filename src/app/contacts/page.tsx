@@ -60,8 +60,8 @@ export default function ContactsPage() {
                     <p className="text-lg text-gray-600 mt-2">Основной телефон</p>
                   </div>
                   <div>
-                    <p className="text-xl text-black">order@единаясреда.рф</p>
-                    <p className="text-lg text-gray-600 mt-2">Email для заявок</p>
+                    <p className="text-xl text-black">info@единаясреда.рф</p>
+                    <p className="text-lg text-gray-600 mt-2">Email для заявок и информации</p>
                   </div>
                   <div>
                     <p className="text-xl text-black">Пн-Пт: 9:00 - 18:00</p>
@@ -89,7 +89,7 @@ export default function ContactsPage() {
                   Позвонить нам
                 </a>
                 <a
-                  href="mailto:order@единаясреда.рф"
+                  href="mailto:info@единаясреда.рф"
                   className="w-full px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-medium rounded-xl hover:bg-[#F6F7F9] transition-colors text-center block"
                 >
                   Написать письмо

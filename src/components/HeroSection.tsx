@@ -15,10 +15,10 @@ const HeroSection: React.FC = () => {
         <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
           {/* Левая часть: текст (шире) */}
           <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-            <h1 className="text-4xl sm:text-5xl md:text-[78px] font-medium leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-[72px] font-[Raleway] font-medium leading-tight">
               Цифровое управление<br />территориями
             </h1>
-            <p className="mt-8 text-xl sm:text-[27px] text-grey-92 max-w-2xl">
+            <p className="mt-8 text-xl sm:text-[27px] text-[#E3E8F2] max-w-2xl font-[Raleway] font-medium">
               Платформа для эффективного учёта, управления и мониторинга территорий и объектов в организациях любого типа и масштаба
             </p>
             <div className="mt-10">

@@ -173,3 +173,17 @@
 			color: rgba(255, 255, 255, 1);
 		}
 	}
+/* globals.css */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+}
+
+/* аккуратные цифры по всему сайту */
+body {
+  font-variant-numeric: lining-nums tabular-nums;
+  /* страховка, если браузер игнорит font-variant-numeric */
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}

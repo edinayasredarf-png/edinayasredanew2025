@@ -5,7 +5,6 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
-import Breadcrumbs from './Breadcrumbs';
 import Image from 'next/image';
 import Link from 'next/link';
 import AuthModal from './auth/AuthModal';
@@ -95,7 +94,7 @@ const CookieBanner: React.FC = () => {
         </span>
         <button
           onClick={handleAgree}
-          className="px-6 py-2 rounded-xl bg-[#0077FF] text-white font-medium hover:bg-[#005fcc] transition-colors text-sm md:text-base"
+          className="px-6 py-2 rounded-xl bg-[#0077FF] text-white font-[Raleway] font-medium hover:bg-[#005fcc] transition-colors text-sm md:text-base"
         >
           Ок, понятно
         </button>
@@ -115,7 +114,6 @@ const Layout = ({ children }: LayoutProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Не показываем breadcrumbs на главной странице
-  const showBreadcrumbs = pathname !== '/';
 
   const handleMobileSubmenu = (menu: string) => {
     setOpenMobileSubmenu(openMobileSubmenu === menu ? null : menu);
@@ -171,7 +169,7 @@ const Layout = ({ children }: LayoutProps) => {
                 ×
               </button>
             </div>
-            <ul className="flex flex-col gap-2 text-white text-base font-medium">
+            <ul className="flex flex-col gap-2 text-white text-base font-[Raleway] font-medium">
               <li>
                 <Link href="/cases" className="block px-2 py-3 rounded-xl hover:bg-white/10 transition-colors" onClick={() => setIsMobileNavOpen(false)}>Кейсы</Link>
               </li>
@@ -186,7 +184,6 @@ const Layout = ({ children }: LayoutProps) => {
                 {openMobileSubmenu === 'platform' && (
                   <ul className="pl-4 flex flex-col gap-1 mt-1">
                     <li><a href="https://edinayasreda.ru/" className="flex items-center gap-2 py-2 px-2 rounded hover:bg-white/10 transition-colors"><Image src="/icons/icon4.svg" width={20} height={20} alt="Войти в ЛК" />Войти в ЛК</a></li>
-                    <li><a href="#" className="flex items-center gap-2 py-2 px-2 rounded hover:bg-white/10 transition-colors"><Image src="/icons/document.svg" width={20} height={20} alt="Технические характеристики" />Тех. характеристики</a></li>
                     <li><a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-2 py-2 px-2 rounded hover:bg-white/10 transition-colors"><Image src="/icons/play.svg" width={20} height={20} alt="Мобильное приложение" />Мобильное приложение</a></li>
                   </ul>
                 )}
@@ -234,9 +231,9 @@ const Layout = ({ children }: LayoutProps) => {
               </li>
             </ul>
             <div className="flex flex-col gap-3 w-full mt-6">
-              <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#0077FF] hover:bg-opacity-80 open-register-modal">Регистрация</button>
-              <a href="https://edinayasreda.ru/" className="inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-black hover:bg-opacity-80 transition-colors">Вход</a>
-              <a href="#" className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-base font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 open-consult-modal">Получить консультацию</a>
+              <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-[#0077FF] hover:bg-opacity-80 open-register-modal">Регистрация</button>
+              <a href="https://edinayasreda.ru/" className="inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-black hover:bg-opacity-80 transition-colors">Вход</a>
+              <a href="#" className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-base font-[Raleway] font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 open-consult-modal">Получить консультацию</a>
             </div>
             <div className="flex items-center gap-6 mt-8">
               <a href="https://t.me/edinayasredarf" title="Telegram"><img src="/icons/tg.svg" width={24} height={24} alt="Telegram" /></a>
@@ -248,12 +245,6 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         )}
 
-        {/* ✅ НАВИГАЦИОННЫЕ ЦЕПОЧКИ (BREADCRUMBS) - поверх hero секции */}
-        {showBreadcrumbs && (
-          <div className="relative z-20 -mb-3">
-            <Breadcrumbs />
-          </div>
-        )}
 
         {/* ✅ ОСНОВНОЙ КОНТЕНТ */}
         <main className="flex-1 w-full mx-auto relative -mt-[20px] z-10">

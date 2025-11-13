@@ -66,11 +66,11 @@ const SectionSubscribeChannels = () => {
   }, [swiperInstance]);
 
   return (
-    <section className="py-10 lg:py-20">
+    <section className="py-10 lg:py-20 font-[Raleway]">
       <div className="max-w-[1480px] mx-auto px-5 md:px-8">
         {/* Header */}
         <div className="text-center mb-10 lg:mb-12">
-          <h2 className="text-center text-black text-2xl md:text-4xl lg:text-[50px] font-medium leading-[1.1] mb-0">
+          <h2 className="text-center text-[#313131] text-2xl md:text-4xl lg:text-[50px] font-medium leading-[1.1] mb-0">
             Подпишитесь на каналы
           </h2>
         </div>
@@ -80,7 +80,7 @@ const SectionSubscribeChannels = () => {
             key={navReady ? 'ready' : 'not-ready'}
             modules={[Navigation, Pagination]}
             slidesPerView={1}
-            spaceBetween={24}
+            spaceBetween={8}
             onSwiper={setSwiperInstance}
             navigation={navReady ? {
               prevEl: prevRef.current,
@@ -98,12 +98,12 @@ const SectionSubscribeChannels = () => {
               <SwiperSlide key={idx}>
                 <div className="bg-white rounded-3xl p-8 h-full flex flex-col min-h-[260px]">
                   <div className="flex justify-between items-start mb-6">
-                    <h3 className="text-2xl font-bold text-black">
+                    <h3 className="text-2xl font-bold text-[#313131]">
                       {ch.title}
                     </h3>
                     <Image src={ch.icon} alt={ch.title} width={48} height={48} className="w-12 h-12" />
                   </div>
-                  <p className="text-lg text-gray-500 flex-grow mb-8">
+                  <p className="text-lg font-medium text-[#636D79] flex-grow mb-8">
                     {ch.description}
                   </p>
                   <a
@@ -134,7 +134,7 @@ const SectionSubscribeChannels = () => {
             <button
               ref={prevRef}
               aria-label="Предыдущий слайд"
-              className={`slider-prev w-[50px] h-[60px] bg-[#0077FF] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center group transition-transform duration-200 hover:bg-opacity-90 ${isBeginning ? 'opacity-50 cursor-not-allowed' : ''}`}
+							className="w-[50px] h-[60px] bg-[#0077ff] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center hover:bg-[#0a6ae0]"
               disabled={isBeginning}
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -144,7 +144,7 @@ const SectionSubscribeChannels = () => {
             <button
               ref={nextRef}
               aria-label="Следующий слайд"
-              className={`slider-next w-[50px] h-[60px] bg-[#0077FF] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center group transition-transform duration-200 hover:bg-opacity-90 ${isEnd ? 'opacity-50 cursor-not-allowed' : ''}`}
+							className="w-[50px] h-[60px] bg-[#0077ff] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center hover:bg-[#0a6ae0]"
               disabled={isEnd}
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">

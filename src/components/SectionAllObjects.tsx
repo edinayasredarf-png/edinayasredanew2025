@@ -35,8 +35,8 @@ const ObjectCard: React.FC<ObjectCardProps> = ({ icon, label, index, totalItems 
     <div
       className={`
         flex items-center gap-4 p-6 md:p-8
-        ${!isLastColumn && !isLastItem ? 'border-r border-grey-92' : ''}
-        ${!isLastRow ? 'border-b border-grey-92' : ''}
+        ${!isLastColumn && !isLastItem ? 'border-r border-[#DCDCDC]' : ''}
+        ${!isLastRow ? 'border-b border-[#DCDCDC]' : ''}
       `}
     >
       {/* Иконка */}
@@ -51,7 +51,7 @@ const ObjectCard: React.FC<ObjectCardProps> = ({ icon, label, index, totalItems 
       </div>
 
       {/* Текст */}
-      <p className="text-black text-base md:text-lg lg:text-xl font-normal leading-7">
+      <p className="md:text-lg lg:text-xl  font-[Raleway] font-medium text-[#313131] leading-7">
         {label}
       </p>
     </div>
@@ -63,12 +63,12 @@ const SectionAllObjects: React.FC = () => {
     <section className="py-16 md:py-24">
       <div className="max-w-[1480px] mx-auto px-5 md:px-8">
         {/* Заголовок */}
-        <h2 className="text-center font-medium text-black text-[28px] md:text-[36px] lg:text-[48px] leading-tight mb-12 md:mb-16">
+        <h2 className="text-[#313131] text-center font-medium font-[Raleway] text-[28px] md:text-[36px] lg:text-[48px] leading-tight mb-12 md:mb-16">
           Все объекты в одной системе
         </h2>
 
         {/* Сетка объектов */}
-        <div className="w-full  rounded-[20px] border border-grey-92 grid grid-cols-1 md:grid-cols-3 overflow-hidden">
+        <div className="w-full  rounded-[20px] border border-[#DCDCDC] grid grid-cols-1 md:grid-cols-3 overflow-hidden">
           {objects.map((obj, idx) => (
             <ObjectCard
               key={`${obj.icon}-${idx}`}

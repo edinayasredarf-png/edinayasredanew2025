@@ -9,9 +9,9 @@ const SectionMigration = () => {
 
   return (
     <section className="py-16 md:py-24">
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+      <div className="max-w-[1280px] mx-auto px-5 md:px-8 font-[Raleway]">
         {/* Заголовок */}
-        <h2 className="text-[32px] md:text-[48px] font-medium text-black leading-tight text-center mb-8 md:mb-12 max-w-[560px] mx-auto">
+        <h2 className="text-[32px] md:text-[48px] font-medium text-[#313131] leading-tight text-center mb-8 md:mb-12 max-w-[560px] mx-auto">
           Бесплатный перенос данных в платформу
         </h2>
 
@@ -20,9 +20,9 @@ const SectionMigration = () => {
           <div className="flex flex-col lg:flex-row gap-6">
 
             {/* Левая часть */}
-            <div className="w-full lg:w-[calc(100%-722px-24px)] p-6 lg:p-8 flex flex-col">
+            <div className="w-full lg:w-[calc(100%-222px-24px)] p-6 lg:p-8 flex flex-col">
               {/* Теги */}
-              <div className="flex flex-wrap gap-2 mb-8">
+              <div className="flex flex-wrap gap-2 mb-8 text-[#313131} font-medium font-{Raleway}">
                 {tags.map((tag) => (
                   <span
                     key={tag}
@@ -34,14 +34,14 @@ const SectionMigration = () => {
               </div>
 
               {/* Текст */}
-              <div className="space-y-6 mb-10 flex-grow">
-                <p className="text-black text-[17px] lg:text-[19px] leading-7">
+              <div className="space-y-6 mb-10 flex-grow text-[#7C8A9A] font-medium">
+                <p className="text-[17px] lg:text-[19px] leading-7">
                   Поможем интегрировать ваши текущие наработки и реестры в &quot;Единую Среду&quot;, сохраняя структуру и полноту информации.
                 </p>
-                <p className="text-black text-[17px] lg:text-[19px] leading-7">
+                <p className=" text-[17px] lg:text-[19px] leading-7">
                   Даже если ваши данные хранятся в разных форматах или частично неструктурированы — мы найдём решение.
                 </p>
-                <p className="text-black text-[17px] lg:text-[19px] leading-7">
+                <p className=" text-[17px] lg:text-[19px] leading-7">
                   На каждом этапе внедрения, вас сопровождает команда специалистов: от первичной консультации до полной настройки и проверки корректности переноса.
                 </p>
               </div>
@@ -51,8 +51,8 @@ const SectionMigration = () => {
                 <button
                   type="button"
                   onClick={openConsult}
-                  className="px-5 py-3.5 bg-[#0077FF] text-white rounded-xl text-base lg:text-lg font-medium hover:bg-[#0066DD] transition-colors"
-                >
+									className="w-full lg:w-auto px-5 py-3.5 bg-[#0077FF] text-white rounded-xl text-base lg:text-lg font-medium hover:bg-[#0066DD] transition-colors"
+									>
                   Получить консультацию
                 </button>
               </div>

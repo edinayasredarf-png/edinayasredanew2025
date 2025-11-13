@@ -5,12 +5,19 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
-import SectionPlatformAndServices from '../components/SectionPlatformAndServices';
+import SupportersSection from '../components/SupportersSection';
+import WebinarSection from '../components/WebinarSection';
+import TerritoryControlSection from '../components/TerritoryControlSection';
+import VideoInvite from '../components/VideoInvite';
+
+
+
 import SplitStyleCards from '../components/SplitStyleCards';
-import BlueTrustSection from '../components/BlueTrustSection';
-import PartnersWall from '../components/PartnersWall';
-import SectionInterfaceSlider from '../components/SectionInterfaceSlider';
-import SectionPublicPrivate from '../components/SectionPublicPrivate';
+import CompanyBadgesProps from '../components/CompanyBadgesProps';
+
+
+import InterfaceSystem from '../components/InterfaceSystem';
+
 import SectionAllObjects from '../components/SectionAllObjects';
 import SectionMigration from '../components/SectionMigration';
 import SectionQuickStart from '../components/SectionQuickStart';
@@ -20,6 +27,8 @@ import SectionExpertise from '../components/SectionExpertise';
 import SectionSubscribeChannels from '../components/SectionSubscribeChannels';
 import FAQ from '../components/FAQ';
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import BenefitsSection from "@/components/BenefitsSection";
+
 
 // ========================================
 // FAQ ДАННЫЕ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ
@@ -65,29 +74,29 @@ const homeFaqData = [
 export default function HomePage() {
   return (
     <Layout>
+
       {/* Speed Insights от Vercel */}
       <SpeedInsights />
 
       {/* Hero секция с главным заголовком */}
       <HeroSection />
+			<WebinarSection/>
+			<BenefitsSection/>
+			<SupportersSection/>
+			<TerritoryControlSection/>
 
-      {/* Секция "Платформа и услуги" */}
-      <SectionPlatformAndServices />
 
       {/* Карточки с разделением стилей */}
       <SplitStyleCards />
+			<CompanyBadgesProps/>
 
-      {/* Синяя секция доверия */}
-      <BlueTrustSection />
 
-      {/* Стена партнёров */}
-      <PartnersWall />
 
       {/* Слайдер интерфейса */}
-      <SectionInterfaceSlider />
+			<InterfaceSystem/>
+			<VideoInvite/>
 
-      {/* Секция Public/Private */}
-      <SectionPublicPrivate />
+
 
       {/* Новости */}
       <HomeNews />
@@ -111,7 +120,6 @@ export default function HomePage() {
       <FAQ
         items={homeFaqData}
         title="Часто задаваемые вопросы"
-        subtitle="О платформе Единая среда (единаясреда.рф)"
         showContactCard={true}
         contactCardTitle="Не нашли ответ на свой вопрос?"
         contactCardText="Задайте его нам — и мы оперативно ответим."

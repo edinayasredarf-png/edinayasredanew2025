@@ -60,17 +60,17 @@ const DemoAccessModal: React.FC<DemoAccessModalProps> = ({ open, onClose }) => {
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel="Демо-доступ">
       {/* Уникальный контент демо-модалки */}
-      <div className="w-full md:w-[400px] p-4 md:p-6 flex flex-col justify-center relative">
+      <div className="w-full md:w-[400px] p-4 md:p-6 flex flex-col justify-center relative font-[Raleway]">
         <button
           onClick={handleCloseClick}
-          className="absolute top-6 right-6 md:top-8 md:right-8 text-gray-600 hover:text-[#0077FF] text-2xl md:text-3xl"
+          className="absolute top-6 right-6 md:top-8 md:right-8 text-[#313131] hover:text-[#0077FF] text-2xl md:text-3xl"
           aria-label="Закрыть модальное окно"
         >
           &times;
         </button>
-        <div className="block mb-6">
-          <h2 className="text-2xl font-bold mb-2 text-black">Демо-доступ</h2>
-          <p className="text-base text-gray-600">Получите бесплатный демо-доступ к платформе, чтобы ознакомиться с её возможностями и интерфейсом.</p>
+        <div className="block mb-6 font-[Raleway]">
+          <h2 className="text-2xl font-bold mb-2 text-[#313131]">Демо-доступ</h2>
+          <p className="text-medium text-[#7C8A9A]">Получите бесплатный демо-доступ к платформе, чтобы ознакомиться с её возможностями и интерфейсом.</p>
         </div>
         {/* Bitrix24 форма и остальной контент остаются */}
         <div className="mt-4">
@@ -79,7 +79,7 @@ const DemoAccessModal: React.FC<DemoAccessModalProps> = ({ open, onClose }) => {
       </div>
       {showConfirm && (
         <ModalBase open={showConfirm} onClose={handleCancelClose} ariaLabel="Подтверждение закрытия">
-          <div className="p-4 max-w-xs w-full flex flex-col items-center">
+          <div className="p-4 max-w-xs w-full flex flex-col items-center font-[Raleway]">
             <div className="text-lg font-medium mb-4 text-black text-center">Вы точно хотите закрыть окно?</div>
             <div className="flex gap-4 mt-2">
               <button onClick={handleConfirmClose} className="px-6 py-2 rounded-xl bg-[#0077FF] text-white font-medium hover:bg-[#005fcc]">Да, закрыть</button>
@@ -92,4 +92,4 @@ const DemoAccessModal: React.FC<DemoAccessModalProps> = ({ open, onClose }) => {
   );
 };
 
-export default DemoAccessModal; 
+export default DemoAccessModal;

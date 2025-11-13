@@ -1,113 +1,144 @@
+'use client';
+
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useModal } from './ModalProvider';
 
-interface SectionQuickStartProps {
-  onTestClick?: () => void;
-}
+/** Унифицированная кнопка */
+const ButtonLike: React.FC<
+  ({ as: 'button'; onClick: () => void } | { as: 'link'; href: string }) & {
+    label: string;
+    className?: string;
+  }
+> = (props) => {
+  const base =
+    'inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] ' +
+    'hover:ring-1 hover:ring-[#0077FF] transition-colors ' +
+    'w-full md:w-[201.5px]'; // на мобильных — 100% ширины
 
-const cards = (onTestClick?: () => void) => [
-  {
-    title: 'Бесплатный тестовый период 30 дней',
-    description: 'Получите полный доступ к платформе для оценки возможностей управления территориями',
-    button: <button type="button" onClick={onTestClick} className="mt-8 inline-flex items-center justify-center self-start w-full md:w-auto px-6 py-3 bg-white text-black text-lg font-medium rounded-xl border border-transparent hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-[#F1F2F4] group-hover:outline-1 group-hover:outline-[#0077FF]">Начать бесплатно</button>,
-    href: '#',
-    image: '/img/30free.png',
-    imageAlt: 'Тестовый период',
-    imageClass: 'w-[90%] max-w-[320px] mx-auto object-contain',
-    cardClass: 'min-h-[340px] md:min-h-[400px] lg:min-h-[420px] xl:min-h-[480px]'
-  },
-  {
-    title: 'Обучающий курс по работе с платформой',
-    description: 'Освойте все возможности системы управления территориями за короткое время',
-    button: <span className="mt-8 inline-flex items-center justify-center self-start w-full md:w-auto gap-2 px-6 py-3 text-[#0077FF] text-lg font-medium rounded-xl border border-[#0077FF] hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-[#F1F2F4]"><Image src="/icons/play.svg" alt="" width={24} height={24} />Смотреть курс</span>,
-    href: '/course',
-    image: '/img/study.png',
-    imageAlt: 'Обучающий курс',
-    imageClass: 'w-[90%] max-w-[320px] mx-auto object-contain',
-    cardClass: 'min-h-[340px] md:min-h-[400px] lg:min-h-[420px] xl:min-h-[480px]'
-  },
-  {
-    title: 'Грант на цифровизацию территорий',
-    description: 'Получите поддержку для внедрения системы управления территориями в вашей организации',
-    button: <span className="group inline-flex items-center justify-center w-16 h-14 bg-white rounded-xl border border-transparent group-hover:border-[#0077FF] transition-all duration-300"><svg className="w-6 h-6 text-black transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.43 5.92999L20.5 12L14.43 18.07" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path><path d="M3.5 12H20.33" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path></svg></span>,
-    href: '#',
-    image: '/img/grant.png',
-    imageAlt: 'Грант на цифровизацию',
-    imageClass: 'w-[90%] max-w-[320px] mx-auto object-contain',
-    cardClass: 'min-h-[80px] md:min-h-[100px] lg:min-h-[120px]', textWide: true
-  },
-  {
-    title: 'Специальные условия для муниципалитетов',
-    description: 'Льготные тарифы и дополнительная поддержка для органов местного самоуправления',
-    button: <span className="group inline-flex items-center justify-center w-16 h-14 bg-white rounded-xl border border-transparent group-hover:border-[#0077FF] transition-all duration-300"><svg className="w-6 h-6 text-black transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.43 5.92999L20.5 12L14.43 18.07" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path><path d="M3.5 12H20.33" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path></svg></span>,
-    href: '#',
-    image: '/img/municipal.png',
-    imageAlt: 'Условия для муниципалитетов',
-    imageClass: 'w-[90%] max-w-[320px] mx-auto object-contain',
-    cardClass: 'min-h-[80px] md:min-h-[100px] lg:min-h-[120px]', textWide: true
-  },
-];
-
-const QuickStartCard = ({ title, description, button, href, image, imageAlt, imageClass, cardClass, textWide, onTestClick }: any) => {
-  // Если это демо-доступ (href === '#'), то клик по всей карточке открывает модалку
-  const isDemo = href === '#';
-  const handleClick = (e: React.MouseEvent) => {
-    if (isDemo && onTestClick) {
-      e.preventDefault();
-      onTestClick();
-    }
-  };
+  if (props.as === 'button') {
+    return (
+      <button type="button" onClick={props.onClick} className={`${base} ${props.className ?? ''}`}>
+        {props.label}
+      </button>
+    );
+  }
   return (
-    <a
-      href={href}
-      className="group bg-white rounded-3xl p-2.5 flex h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]"
-      target={href?.startsWith('http') ? '_blank' : undefined}
-      rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
-      onClick={handleClick}
-      style={isDemo ? { cursor: 'pointer' } : {}}
-    >
-                      <div className={`bg-[#F6F7F9] rounded-2xl p-8 flex flex-col md:flex-row h-full items-stretch relative overflow-hidden ${cardClass}`}>
-        {/* Левая часть */}
-        <div className={`w-full ${textWide ? 'md:w-full' : 'md:flex-[1.5]'} flex flex-col justify-center py-2 md:py-8 pr-2 md:pr-8 ${!textWide ? 'flex-1' : ''}`}>
-          <h3 className={`${textWide ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl lg:text-4xl'} font-bold text-black leading-tight mb-2`}>{title}</h3>
-          <p className={`${textWide ? 'text-sm md:text-base mb-2' : 'text-base md:text-lg lg:text-xl mb-6'} text-black`}>{description}</p>
-          {!textWide
-            ? React.cloneElement(button, { className: (button.props.className || '') + ' mt-auto' })
-            : React.cloneElement(button, { className: (button.props.className || '') + ' mt-4' })}
+    <Link href={props.href} className={`${base} ${props.className ?? ''}`}>
+      {props.label}
+    </Link>
+  );
+};
+
+type CardProps = {
+  title: string;
+  description: string;
+  buttonLabel: string;
+  image: string;
+  imageAlt: string;
+  onClick?: () => void;
+  href?: string;
+};
+
+const QuickStartCard: React.FC<CardProps> = ({
+  title,
+  description,
+  buttonLabel,
+  image,
+  imageAlt,
+  onClick,
+  href,
+}) => {
+  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
+    href ? (
+      <Link
+        href={href}
+        className="group block bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#0077ff] transition-colors overflow-hidden"
+      >
+        <div className="p-[8px]">{children}</div>
+      </Link>
+    ) : (
+      <div
+        onClick={onClick}
+        className={`group bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#0077ff] transition-colors overflow-hidden ${
+          onClick ? 'cursor-pointer' : ''
+        }`}
+      >
+        <div className="p-[8px]">{children}</div>
+      </div>
+    );
+
+  return (
+    <Wrapper>
+      <div className="bg-[#F6F7F9] rounded-2xl w-full h-full relative overflow-hidden px-6 md:px-8 py-6 md:py-8 flex flex-col min-h-[180px] md:min-h-[260px]">
+        {/* Текст */}
+        <div className="z-10 flex flex-col flex-grow">
+          <h3 className="text-[#313131] text-[26px] md:text-[34.7px] font-medium font-[Raleway] leading-[1.25] md:leading-[45px] max-w-[400px] mb-3">
+            {title}
+          </h3>
+          <p className="text-[#7c8a9a] text-[16.5px] md:text-[18.9px] font-medium font-[Raleway] leading-7 max-w-[440px] mb-8">
+            {description}
+          </p>
+
+          <div className="mt-auto">
+            {href ? (
+              <ButtonLike as="link" href={href} label={buttonLabel} />
+            ) : (
+              <ButtonLike as="button" onClick={onClick!} label={buttonLabel} />
+            )}
+          </div>
         </div>
-        {/* Правая часть: всегда показываем изображение справа */}
-        <div className={`w-full ${textWide ? 'md:w-1/2' : 'md:w-auto md:flex-shrink-0'} flex justify-center items-end mt-8 md:mt-0 ${textWide ? 'relative' : ''}`}>
+
+        {/* Изображение — скрыто на мобильной версии */}
+        <div className="absolute right-8 bottom-6 hidden md:block">
           <Image
             src={image}
             alt={imageAlt}
-            width={textWide ? 160 : 180}
-            height={textWide ? 160 : 120}
-            className={
-              textWide
-                ? 'absolute right-0 bottom-0 max-w-[160px] md:max-w-[200px] opacity-95 pointer-events-none'
-                : 'max-w-[180px] md:max-w-[220px] object-contain'
-            }
+            width={180}
+            height={180}
+            className="object-contain pointer-events-none select-none"
           />
         </div>
       </div>
-    </a>
+    </Wrapper>
   );
 };
 
 const SectionQuickStart: React.FC = () => {
   const { openDemo } = useModal();
+
+  const cards: CardProps[] = [
+    {
+      title: 'Бесплатный тестовый период',
+      description:
+        'Получите полный доступ к платформе для оценки возможностей управления территориями',
+      buttonLabel: 'Начать бесплатно',
+      image: '/img/free-test.png',
+      imageAlt: 'Тестовый период',
+      onClick: openDemo,
+    },
+    {
+      title: 'Обучающий курс по работе с платформой',
+      description:
+        'Освойте все возможности системы управления территориями за короткое время с помощью видеокурса',
+      buttonLabel: 'Смотреть курс',
+      image: '/img/study1.png',
+      imageAlt: 'Обучающий курс',
+      href: '/course',
+    },
+  ];
+
   return (
-    <section className="py-10 lg:py-20">
+    <section className="py-16 md:py-24 font-[Raleway]">
       <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-        <div className="text-center mb-10 lg:mb-12">
-          <h2 className="text-center text-black text-2xl md:text-4xl lg:text-[50px] font-medium leading-[1.1] mb-12">
-            Быстрый старт
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {cards(openDemo).map((card, idx) => (
-            <QuickStartCard key={idx} {...card} onTestClick={openDemo} />
+        <h2 className="text-center text-[#313131] text-[32px] md:text-[39.38px] font-medium leading-[44px] mb-12">
+          Быстрый старт
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2">
+          {cards.map((card, idx) => (
+            <QuickStartCard key={idx} {...card} />
           ))}
         </div>
       </div>
@@ -115,4 +146,4 @@ const SectionQuickStart: React.FC = () => {
   );
 };
 
-export default SectionQuickStart; 
+export default SectionQuickStart;

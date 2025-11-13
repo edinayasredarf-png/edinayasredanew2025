@@ -119,13 +119,13 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center" onClick={handleOverlayClick}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center font-[Raleway]" onClick={handleOverlayClick}>
       {/* Основная модалка */}
       <div className="w-full md:w-1/2 mx-auto m-2 flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-lg animate-fade-in relative">
         {/* Левая часть: фирменный блок (только на md+) */}
         <div className={`hidden md:flex md:w-1/2 ${leftBgColor} ${leftTextColor} flex-col justify-between p-4 md:p-6`}>
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">{title}</h2>
+            <h2 className="text-3xl md:text-4xl font-[Raleway] font-bold mb-4">{title}</h2>
             <p className="text-base md:text-lg mb-8">{description}</p>
           </div>
           <div className="bg-white/10 rounded-2xl p-4 flex flex-col items-start mt-auto">

@@ -15,8 +15,8 @@ const DEFAULT_CARDS: Card[] = [
 
 const DRAG_TOUCH_THRESHOLD = 24;
 const DRAG_MOUSE_THRESHOLD = 36;
-const WHEEL_COOLDOWN_MS   = 240;
-const WHEEL_MIN_DELTA_PX  = 28;
+const WHEEL_COOLDOWN_MS = 240;
+const WHEEL_MIN_DELTA_PX = 28;
 const AUTOPLAY_INTERVAL_MS = 10000;
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
@@ -38,13 +38,7 @@ function usePrefersReducedMotion() {
 
 function usePreloadNeighbors(items: Card[], index: number) {
   useEffect(() => {
-    const preload = (src?: string) => {
-      if (!src) return;
-      const img = new Image();
-      img.src = src;
-      // @ts-ignore
-      img.decode?.().catch(() => {});
-    };
+    const preload = (src?: string) => { if (!src) return; const img = new Image(); img.src = src; /* @ts-ignore */ img.decode?.().catch(() => {}); };
     if (!items.length) return;
     preload(items[(index + 1) % items.length]?.image);
     preload(items[(index - 1 + items.length) % items.length]?.image);
@@ -77,7 +71,6 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
   const [hovering, setHovering] = useState(false);
   const [inView, setInView] = useState(true);
   const lastInteractTs = useRef(0);
-  const [progress, setProgress] = useState(0);
 
   const go = useCallback((next: number) => {
     const normalized = ((next % len) + len) % len;
@@ -85,15 +78,8 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
     onChange?.(normalized);
   }, [len, onChange]);
 
-  const next = useCallback(() => {
-    go(index + 1);
-    lastInteractTs.current = Date.now();
-  }, [go, index]);
-
-  const prev = useCallback(() => {
-    go(index - 1);
-    lastInteractTs.current = Date.now();
-  }, [go, index]);
+  const next = useCallback(() => { go(index + 1); lastInteractTs.current = Date.now(); }, [go, index]);
+  const prev = useCallback(() => { go(index - 1); lastInteractTs.current = Date.now(); }, [go, index]);
 
   const onNextRef = useRef(() => {});
   const onPrevRef = useRef(() => {});
@@ -109,14 +95,12 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
       const idx = clamp(parseInt(m[1], 10) - 1, 0, len - 1);
       if (!Number.isNaN(idx)) setIndex(idx);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [len]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const target = `#f${index + 1}`;
-    if (window.location.hash !== target) {
-      window.history?.replaceState?.(null, '', target);
-    }
+    if (window.location.hash !== target) window.history?.replaceState?.(null, '', target);
   }, [index]);
 
   useEffect(() => {
@@ -155,8 +139,7 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
   }, []);
 
   useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
+    const el = trackRef.current; if (!el) return;
     let startX = 0, startY = 0, active = false;
     const onTouchStart = (e: TouchEvent) => { const t = e.touches[0]; startX = t.clientX; startY = t.clientY; active = true; };
     const onTouchMove  = (e: TouchEvent) => {
@@ -180,17 +163,12 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
   }, []);
 
   useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
+    const el = trackRef.current; if (!el) return;
     let startX = 0, startY = 0, dragging = false, pointerId: number | null = null;
-    const setDraggingClass = (on: boolean) => {
-      el.classList.toggle('cursor-grabbing', on);
-      el.classList.toggle('select-none', on);
-    };
+    const setDraggingClass = (on: boolean) => { el.classList.toggle('cursor-grabbing', on); el.classList.toggle('select-none', on); };
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
-      pointerId = e.pointerId;
-      (e.target as Element).setPointerCapture?.(pointerId);
+      pointerId = e.pointerId; (e.target as Element).setPointerCapture?.(pointerId);
       startX = e.clientX; startY = e.clientY; dragging = true; setDraggingClass(true);
     };
     const onPointerMove = (e: PointerEvent) => {
@@ -198,8 +176,7 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
       const dx = e.clientX - startX, dy = e.clientY - startY;
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > DRAG_MOUSE_THRESHOLD) {
         dx < 0 ? onNextRef.current() : onPrevRef.current();
-        lastInteractTs.current = Date.now();
-        dragging = false; setDraggingClass(false);
+        lastInteractTs.current = Date.now(); dragging = false; setDraggingClass(false);
         if (pointerId != null) (e.target as Element).releasePointerCapture?.(pointerId);
         pointerId = null;
       }
@@ -224,51 +201,6 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (!autoplay || prefersReduced) return;
-    let timer: number | null = null;
-    let startedAt = 0;
-    let raf = 0;
-
-    const baseInterval = Math.max(1500, intervalMs);
-
-    const start = () => {
-      if (hovering || document.hidden || !inView) return;
-      startedAt = Date.now();
-      timer = window.setInterval(() => {
-        if (Date.now() - lastInteractTs.current < 400) return;
-        onNextRef.current();
-        startedAt = Date.now();
-        setProgress(0);
-      }, baseInterval);
-    };
-    const stop = () => { if (timer) { window.clearInterval(timer); timer = null; } };
-
-    const tick = () => {
-      if (timer && !hovering && !document.hidden && inView) {
-        const t = Math.min(1, (Date.now() - startedAt) / baseInterval);
-        setProgress(t);
-      }
-      raf = requestAnimationFrame(tick);
-    };
-
-    start();
-    raf = requestAnimationFrame(tick);
-
-    const onVis = () => { stop(); setProgress(0); start(); };
-    window.addEventListener('visibilitychange', onVis);
-    window.addEventListener('focus', onVis);
-    window.addEventListener('blur', stop);
-
-    return () => {
-      stop();
-      cancelAnimationFrame(raf);
-      window.removeEventListener('visibilitychange', onVis);
-      window.removeEventListener('focus', onVis);
-      window.removeEventListener('blur', stop);
-    };
-  }, [autoplay, prefersReduced, intervalMs, hovering, inView]);
-
   useEffect(() => setIndex((i) => ((i % len) + len) % len), [len]);
 
   const cardInitial = prefersReduced ? { opacity: 0 } : { opacity: 0, x: 24 };
@@ -277,48 +209,41 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
 
   const textInitial = prefersReduced ? { opacity: 0 } : { opacity: 0, y: 10 };
   const textAnimate = prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 };
-  const imgInitial  = prefersReduced ? { opacity: 0 } : { opacity: 0, y: 18 };
-  const imgAnimate  = prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 };
 
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-[#F6F7F9] py-10 md:py-14"
+      className="relative w-full bg-[#F6F7F9] py-10 md:py-14 px-4 font-[Raleway]"
       role="region"
       aria-label="Карусель возможностей"
     >
-      <div className="mx-auto w-[92vw] max-w-[1120px]">
+      <div className="mx-auto w-full max-w-[1120px]">
         <header className="text-center px-4">
-          <h2 className="text-black font-bold leading-[1.1] text-[30px] md:text-[44px]">
+          <h2 className="text-[#313131] font-medium leading-[1.1] text-[32px] md:text-[52px]">
             Все возможности в одном месте
           </h2>
-          <p className="mt-2 text-black/60 text-base md:text-xl">
-            Управляйте городскими данными, контролем работ и отчётностью — без лишних движений.
-          </p>
         </header>
+        <p className="mt-2 text-center text-[#7c8a9a] text-base md:text-xl leading-7 px-4">
+          Управляйте городскими данными, контролем работ и отчётностью — без лишних движений.
+        </p>
 
-        {/* карточка + стрелки */}
+        {/* Трек */}
         <div
-          className="relative mt-6 md:mt-8 outline-none [touch-action:pan-y] rounded-xl"
+          className="relative mt-6 md:mt-8 outline-none [touch-action:pan-y]"
           ref={trackRef}
           tabIndex={0}
-          aria-roledescription="carousel"
-          aria-label="Свайпайте или используйте колёсико и стрелки"
-          aria-live="off"
           onMouseEnter={() => setHovering(true)}
           onMouseLeave={() => setHovering(false)}
         >
-          {/* Стрелки вынесены ЗА границы карточки */}
+          {/* Стрелки */}
           <button
-            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] border border-[#E7ECF4]  hover:bg-[#005fcc] focus-visible:ring-2 focus-visible:ring-black/40"
-            aria-label="Предыдущий слайд"
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] hover:bg-[#005fcc] text-white"
             onClick={() => onPrevRef.current()}
           >
             ‹
           </button>
           <button
-            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -right-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] border border-[#E7ECF4]  hover:bg-[#005fcc] focus-visible:ring-2 focus-visible:ring-black/40"
-            aria-label="Следующий слайд"
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -right-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] hover:bg-[#005fcc] text-white"
             onClick={() => onNextRef.current()}
           >
             ›
@@ -337,72 +262,57 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
                 mass: 0.7,
                 duration: prefersReduced ? 0.18 : undefined,
               }}
-              className="relative w-full rounded-3xl bg-white border border-[#E7ECF4] overflow-hidden will-change-transform"
+              className="relative w-full rounded-[22px] md:rounded-[30px] bg-white  overflow-hidden"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 md:[aspect-ratio:2/1]" style={{ minHeight: 320 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 w-full h-[420px] md:h-[480px] items-stretch">
                 {/* TEXT */}
                 <motion.div
-                  className="flex items-center"
+                  className="min-h-0 flex items-center"
                   initial={textInitial}
                   animate={textAnimate}
                   transition={{ type: prefersReduced ? 'tween' : 'spring', stiffness: 280, damping: 28, mass: 0.6, delay: prefersReduced ? 0 : 0.04 }}
                 >
-                  <div className="px-6 py-8 md:px-10 md:py-10">
-                    <h3 className="text-black font-semibold leading-[1.15] text-[22px] sm:text-[26px] md:text-[32px]">
+                  <div className="px-6 md:pl-[85px] md:pr-8 py-8 md:py-10">
+                    <h3 className="text-[#313131] font-medium leading-9 text-[22px] sm:text-[26px] md:text-[31.3px]">
                       {items[index].title}
                     </h3>
-                    <p className="mt-4 text-black/70 leading-snug text-[15px] sm:text-[16px] md:text-[18px]">
+                    <p className="mt-4 text-[#7c8a9a] leading-7 text-[15px] sm:text-[16px] md:text-xl">
                       {items[index].subtitle}
                     </p>
-
-                    {renderCTA ? (
-                      <div className="mt-6">{renderCTA(items[index])}</div>
-                    ) : null}
+                    {renderCTA ? <div className="mt-6">{renderCTA(items[index])}</div> : null}
                   </div>
                 </motion.div>
 
                 {/* IMAGE */}
-                <motion.div
-                  className="flex items-end justify-center px-2 pt-2 pb-0 md:px-2 md:pt-2 md:pb-0"
-                  initial={imgInitial}
-                  animate={imgAnimate}
-                  transition={{ type: prefersReduced ? 'tween' : 'spring', stiffness: 40, damping: 10, mass: 0.7, delay: prefersReduced ? 0 : 0.06 }}
-                >
-                  <div className="w-full h-full md:aspect-[4/3] flex items-end">
+                <div className="min-h-0 p-1 md:p-2 flex">
+                  <div className="w-full h-full bg-[#f6f7f9] rounded-2xl overflow-hidden flex items-end justify-center">
                     <img
                       src={items[index].image}
                       alt=""
                       loading="lazy"
                       decoding="async"
-                      fetchPriority="low"
                       draggable={false}
-                      className="w-full h-full object-contain object-bottom pointer-events-none select-none will-change-transform"
+                      className="block max-h-[100%] max-w-[100%] object-contain pointer-events-none select-none"
                     />
                   </div>
-                </motion.div>
+                </div>
               </div>
-
-
             </motion.article>
           </AnimatePresence>
-
-          {/* live-объявление для скринридеров */}
-          <span className="sr-only" aria-live="polite" aria-atomic="true">
-            Слайд {index + 1} из {len}: {items[index].title}
-          </span>
         </div>
 
-        {/* индикаторы-точки */}
-        <div className="mt-4 flex items-center justify-center gap-2">
+        {/* Гарантированный нижний отступ */}
+        <div className="h-6 md:h-9" />
+
+        {/* Индикаторы */}
+        <div className="pt-1 pb-2 flex items-center justify-center gap-2">
           {items.map((_, i) => (
             <button
               key={i}
               aria-label={`К карточке ${i + 1}`}
               aria-current={i === index ? 'true' : undefined}
-              className={`h-2.5 rounded-full transition-[width,opacity] focus-visible:ring-2 focus-visible:ring-[black/40] ${
-                i === index ? 'w-6 bg-[#0077FF]' : 'w-2.5 bg-black/25'
-              }`}
-              onClick={() => { setIndex(i); lastInteractTs.current = Date.now(); setProgress(0); }}
+              className={`h-2.5 rounded-full transition-[width,opacity] ${i === index ? 'w-6 bg-[#0077FF]' : 'w-2.5 bg-black/25'}`}
+              onClick={() => setIndex(i)}
             />
           ))}
         </div>

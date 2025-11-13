@@ -176,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({
                   e.preventDefault();
                   (onConsultClick ?? openConsult)();
                 }}
-                className="hidden md:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-[#212121] text-base font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors"
+                className="hidden md:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-[#212121] text-base font-[Raleway] font-[Raleway] font-medium  rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors"
               >
                 <ThemedIcon src="/icons/icon3.svg" size={20} color="#212121" />
                 <span>Получить консультацию</span>
@@ -184,7 +184,7 @@ const Header: React.FC<HeaderProps> = ({
               {!isAuthenticated && onAuthClick ? (
                 <button
                   onClick={onAuthClick}
-                  className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
+                  className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-[Raleway] font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
                 >
                   <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
                   <span>Вход</span>
@@ -192,7 +192,7 @@ const Header: React.FC<HeaderProps> = ({
               ) : !isAuthenticated ? (
                 <a
                   href="https://edinayasreda.ru/"
-                  className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
+                  className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-[Raleway] font-medium   rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
                 >
                   <ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
                   <span>Вход</span>
@@ -250,7 +250,7 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 className={`logo-burger p-2 gap-2.5 px-4 py-2.5 ${
                   isLight ? 'text-[#212121] bg-[#F1F2F4]' : 'text-white bg-[#333]'
-                } text-base font-medium rounded-xl hover:bg-opacity-80 md:hidden`}
+                } text-base font-[Raleway] font-medium rounded-xl hover:bg-opacity-80 md:hidden`}
                 onClick={() => setIsMobileNavOpen(true)}
                 aria-label="Открыть меню"
               >
@@ -290,15 +290,15 @@ const Header: React.FC<HeaderProps> = ({
                   (onConsultClick ?? openConsult)();
                 }}
                 className={isLight
-                  ? 'hidden lg:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-[#212121] text-base font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors'
-                  : 'hidden lg:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-white text-base font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors'}
+                  ? 'hidden lg:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-[#212121] text-base font-[Raleway] font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors'
+                  : 'hidden lg:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-white text-base font-[Raleway] font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors'}
               >
                 <ThemedIcon src="/icons/icon3.svg" size={24} alt="" />
                 <span>Получить консультацию</span>
               </a>
               <a href="https://edinayasreda.ru/" className={isLight
-                ? 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors'
-                : 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-medium rounded-xl bg-[#212121] hover:bg-opacity-80 transition-colors'}
+                ? 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors'
+                : 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-[#212121] hover:bg-opacity-80 transition-colors'}
               >
                 <ThemedIcon src="/icons/icon4.svg" size={24} alt="" />
                 <span>Вход</span>

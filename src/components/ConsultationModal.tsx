@@ -54,10 +54,10 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ open, onClose }) 
   return (
     <>
       <ModalBase open={open} onClose={onClose} ariaLabel="Получить консультацию">
-        <div className="w-full md:w-[400px] p-4 flex flex-col justify-center relative">
+        <div className="w-full md:w-[400px] p-4 flex flex-col justify-center relative font-[Raleway]">
           <div className="flex items-center gap-3 mb-6" style={{paddingTop: '1rem', paddingLeft: '1rem', paddingRight: '1rem'}}>
             <img src="/icons/logo-mobile-black.svg" alt="Логотип" width={40} height={40} className="w-10 h-10" onError={e => e.currentTarget.style.display='none'} />
-            <h2 className="text-2xl md:text-2xl font-medium text-gray-800 flex-1">Получить консультацию</h2>
+            <h2 className="text-2xl md:text-2xl font-medium text-[#313131] flex-1">Получить консультацию</h2>
             <button
               onClick={handleCloseClick}
               className="text-gray-600 hover:text-[#0077FF] text-2xl md:text-3xl"
@@ -73,7 +73,7 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ open, onClose }) 
       </ModalBase>
       {showConfirm && (
         <ModalBase open={showConfirm} onClose={handleCancelClose} ariaLabel="Подтверждение закрытия">
-          <div className="p-4 max-w-xs w-full flex flex-col items-center">
+          <div className="p-4 max-w-xs w-full flex flex-col items-center font-[Raleway]">
             <div className="text-lg font-medium mb-4 text-black text-center">Вы точно хотите закрыть окно?</div>
             <div className="flex gap-4 mt-2">
               <button onClick={handleConfirmClose} className="px-6 py-2 rounded-xl bg-[#0077FF] text-white font-medium hover:bg-[#005fcc]">Да, закрыть</button>
@@ -86,4 +86,4 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ open, onClose }) 
   );
 };
 
-export default ConsultationModal; 
+export default ConsultationModal;

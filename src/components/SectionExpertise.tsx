@@ -31,17 +31,17 @@ const smallCards = [
 ];
 
 const SectionExpertise = () => (
-  <section className="py-10 lg:py-20">
+  <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
     <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         {/* Left Big Card */}
         <a
           href="/about"
-          className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]"
+          className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 border border-[#fff] hover:border-[#0077FF]"
           aria-label="Узнать больше о компании Единая среда — 15 лет технологической экспертизы"
         >
           <div className="relative z-10 flex flex-col flex-grow h-full w-full">
-            <h2 className="text-3xl md:text-4xl lg:text-[40px] font-bold text-black leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-[40px] font-medium text-[#313131] leading-tight">
               15+ лет<br />технологической<br />экспертизы
             </h2>
             <div className="flex-grow"></div>
@@ -61,11 +61,11 @@ const SectionExpertise = () => (
         </a>
 
         {/* Right Column */}
-        <div className="flex flex-col gap-5 h-full">
+        <div className="flex flex-col gap-2 h-full">
           {/* Top Card */}
-          <div className="group bg-white rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center gap-8 transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF] flex-grow">
+          <div className="group bg-white rounded-3xl p-2 flex flex-col md:flex-row items-start md:items-center gap-2 ">
             <div className="order-2 md:order-1 w-full md:w-auto">
-              <h3 className="text-2xl font-normal text-black leading-snug mb-4 md:mb-0">
+              <h3 className="text-xl font-medium text-[#313131] leading-snug mb-4 md:mb-0">
                 <strong>«Единая Среда»</strong> — флагманский продукт российской компании для цифровизации городов и муниципальных территорий.
               </h3>
             </div>
@@ -81,16 +81,16 @@ const SectionExpertise = () => (
           </div>
 
           {/* Bottom 3 Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {smallCards.map((card, idx) => (
               <div
                 key={idx}
-                className="group bg-white rounded-3xl p-5 flex flex-col gap-4 transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]"
+                className="group bg-white rounded-3xl p-5 flex flex-col gap-2 transition-all duration-300 "
               >
                 <div className="w-16 h-16 bg-[#F6F7F9] rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-[#0077FF]/10">
                   {card.icon}
                 </div>
-                <p className="text-base text-gray-700">
+                <p className="text-base font-medium text-[#7C8A9A]">
                   {card.text}
                 </p>
               </div>
