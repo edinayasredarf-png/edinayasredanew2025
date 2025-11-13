@@ -36,60 +36,60 @@ const lowlight = createLowlight(common);
 
 // Слэш-команды в стиле Teletype
 const SLASH_COMMANDS = [
-  { 
-    label: 'Заголовок 2', 
+  {
+    label: 'Заголовок 2',
     icon: 'H2',
-    action: (e: any) => e.chain().focus().toggleHeading({ level: 2 }).run() 
+    action: (e: any) => e.chain().focus().toggleHeading({ level: 2 }).run()
   },
-  { 
-    label: 'Заголовок 3', 
+  {
+    label: 'Заголовок 3',
     icon: 'H3',
-    action: (e: any) => e.chain().focus().toggleHeading({ level: 3 }).run() 
+    action: (e: any) => e.chain().focus().toggleHeading({ level: 3 }).run()
   },
-  { 
-    label: 'Список', 
+  {
+    label: 'Список',
     icon: '•',
-    action: (e: any) => e.chain().focus().toggleBulletList().run() 
+    action: (e: any) => e.chain().focus().toggleBulletList().run()
   },
-  { 
-    label: 'Нумерованный список', 
+  {
+    label: 'Нумерованный список',
     icon: '1.',
-    action: (e: any) => e.chain().focus().toggleOrderedList().run() 
+    action: (e: any) => e.chain().focus().toggleOrderedList().run()
   },
-  { 
-    label: 'Цитата', 
+  {
+    label: 'Цитата',
     icon: '"',
-    action: (e: any) => e.chain().focus().toggleBlockquote().run() 
+    action: (e: any) => e.chain().focus().toggleBlockquote().run()
   },
-  { 
-    label: 'Выноска', 
+  {
+    label: 'Выноска',
     icon: '📌',
-    action: (e: any) => e.chain().focus().toggleBlockquote().run() 
+    action: (e: any) => e.chain().focus().toggleBlockquote().run()
   },
-  { 
-    label: 'Код', 
+  {
+    label: 'Код',
     icon: '</>',
-    action: (e: any) => e.chain().focus().toggleCodeBlock().run() 
+    action: (e: any) => e.chain().focus().toggleCodeBlock().run()
   },
-  { 
-    label: 'Список задач', 
+  {
+    label: 'Список задач',
     icon: '☑',
-    action: (e: any) => e.chain().focus().toggleTaskList().run() 
+    action: (e: any) => e.chain().focus().toggleTaskList().run()
   },
-  { 
-    label: 'Разделитель', 
+  {
+    label: 'Разделитель',
     icon: '—',
-    action: (e: any) => e.chain().focus().setHorizontalRule().run() 
+    action: (e: any) => e.chain().focus().setHorizontalRule().run()
   },
-  { 
-    label: 'Таблица', 
+  {
+    label: 'Таблица',
     icon: '▦',
-    action: (e: any) => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() 
+    action: (e: any) => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
   },
-  { 
-    label: 'YouTube', 
+  {
+    label: 'YouTube',
     icon: '▶',
-    action: (e: any) => insertYouTubePrompt(e) 
+    action: (e: any) => insertYouTubePrompt(e)
   },
 ];
 
@@ -132,26 +132,26 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
       }),
       Image.configure({
         allowBase64: true,
-        HTMLAttributes: { 
-          style: 'max-width:100%;height:auto;border-radius:12px;margin:16px 0;' 
+        HTMLAttributes: {
+          style: 'max-width:100%;height:auto;border-radius:12px;margin:16px 0;'
         },
       }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Placeholder.configure({ 
-        placeholder: 'Наберите / для быстрой вставки...' 
+      Placeholder.configure({
+        placeholder: 'Наберите / для быстрой вставки...'
       }),
-      Youtube.configure({ 
-        HTMLAttributes: { 
-          class: 'rounded-xl overflow-hidden my-4' 
-        } 
+      Youtube.configure({
+        HTMLAttributes: {
+          class: 'rounded-xl overflow-hidden my-4'
+        }
       }),
       Table.configure({ resizable: true, lastColumnResizable: true }),
       TableRow,
       TableHeader,
       TableCell,
-      CodeBlockLowlight.configure({ 
-        lowlight, 
-        defaultLanguage: 'plaintext' 
+      CodeBlockLowlight.configure({
+        lowlight,
+        defaultLanguage: 'plaintext'
       }),
       CharacterCount.configure(),
     ],
@@ -202,7 +202,7 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
       const { from } = editor.state.selection;
       const text = editor.state.doc.textBetween(Math.max(0, from - 50), from, '\n', '\n');
       const slashMatch = /(?:^|\s)\/([a-zA-Zа-яА-Я0-9-_ ]*)$/.exec(text);
-      
+
       if (slashMatch) {
         setSlashOpen(true);
         setSlashQuery(slashMatch[1]?.trim() ?? '');
@@ -223,7 +223,7 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!slashOpen) return;
-      
+
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex(prev => Math.min(prev + 1, slashFiltered.length - 1));
@@ -278,8 +278,8 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
 
   const slashFiltered = useMemo(() => {
     const q = slashQuery.toLowerCase();
-    return SLASH_COMMANDS.filter((c) => 
-      c.label.toLowerCase().includes(q) || 
+    return SLASH_COMMANDS.filter((c) =>
+      c.label.toLowerCase().includes(q) ||
       c.icon.toLowerCase().includes(q)
     ).slice(0, 8);
   }, [slashQuery]);
@@ -295,7 +295,7 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
   return (
     <div className={`teletype-editor ${className}`}>
       {/* Минималистичная панель инструментов */}
-      <div className="teletype-toolbar">
+      <div className="teletype-toolba font-[Raleway]">
         <div className="teletype-toolbar-left">
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -390,8 +390,8 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
 
       {/* Слэш-меню */}
       {slashOpen && (
-        <div 
-          ref={slashRef} 
+        <div
+          ref={slashRef}
           className="teletype-slash-menu"
           style={{
             position: 'absolute',
@@ -405,10 +405,10 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
               key={i}
               className={`teletype-slash-item ${i === selectedIndex ? 'selected' : ''}`}
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { 
-                cmd.action(editor); 
-                setSlashOpen(false); 
-                setSlashQuery(''); 
+              onClick={() => {
+                cmd.action(editor);
+                setSlashOpen(false);
+                setSlashQuery('');
               }}
               onMouseEnter={() => setSelectedIndex(i)}
             >

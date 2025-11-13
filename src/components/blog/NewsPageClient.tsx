@@ -28,10 +28,10 @@ export default function NewsPageClient({ slug }: { slug: string }) {
     const unsubscribe = authStore.subscribe(() => {
       setIsEditor(authStore.canWriteArticles());
     });
-    
+
     // Устанавливаем начальное состояние
     setIsEditor(authStore.canWriteArticles());
-    
+
     return unsubscribe;
   }, []);
 
@@ -55,7 +55,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
 
   useEffect(() => {
     const handleOpenAuthModal = () => {
-      // NewsPageClient doesn't have its own auth modal, 
+      // NewsPageClient doesn't have its own auth modal,
       // but we can trigger the global one
       window.dispatchEvent(new CustomEvent('openAuthModal'));
     };
@@ -67,7 +67,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   // Обработка смены вкладок в левом меню
   const handleTabChange = (tab: 'feed' | 'subscriptions' | 'favorites') => {
     setActiveTab(tab);
-    
+
     if (tab === 'favorites') {
       // Переходим на страницу блога с вкладкой избранного
       router.push('/blog?tab=favorites');
@@ -128,7 +128,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
-              <section className="bg-white rounded-3xl p-6 border">
+              <section className="bg-white rounded-3xl p-6 font-[Raleway] font-medium lining-nums">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
                   <Link
                     href="/news"
@@ -139,7 +139,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                     </svg>
                     Назад к новостям
                   </Link>
-                  
+
                   <div className="flex items-center gap-2 ml-auto">
                     <Link href="/blog" className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center">
                       К статьям
@@ -194,7 +194,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                 </div>
               </section>
 
-              <section className="mt-6 bg-white rounded-3xl p-6 border">
+              <section className="mt-6 bg-white rounded-3xl p-6 ">
                 {news.contentHtml ? (
                   <article className="prose prose-lg max-w-none mx-auto text-[#111] article-content" dir="ltr">
                     <div dangerouslySetInnerHTML={{ __html: news.contentHtml }} />

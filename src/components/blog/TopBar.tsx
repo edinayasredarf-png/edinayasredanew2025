@@ -32,14 +32,14 @@ export default function TopBar() {
       setIsAuthed(isAuth);
       setIsEditor(isEdit);
     });
-    
+
     // Устанавливаем начальное состояние
     const isAuth = authStore.isAuthenticated();
     const isEdit = authStore.canWriteArticles();
     console.log('TopBar initial auth state:', { isAuth, isEdit });
     setIsAuthed(isAuth);
     setIsEditor(isEdit);
-    
+
     return unsubscribe;
   }, []);
   React.useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
@@ -63,7 +63,7 @@ export default function TopBar() {
   };
 
   return (
-    <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] border-b border-[#e1e2e5]">
+    <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] border-b border-[#e1e2e5] font-[Raleway] font-medium">
       <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center">
         {/* ЛОГО слева */}
         <Link
@@ -77,10 +77,10 @@ export default function TopBar() {
         {/* ЦЕНТРАЛЬНЫЙ ПОИСК (desktop) — по центру, шире и выше */}
         <div
           ref={searchRef}
-          className="hidden md:block absolute left-1/2 -translate-x-1/2 w-full max-w-[786px] px-4"
+          className="hidden md:block absolute left-1/2 -translate-x-1/2 w-full max-w-[764px] "
         >
           <div className="relative h-[50px]">
-            <div className="absolute inset-0 bg-white rounded-xl border border-[#e1e2e5] flex items-center pl-12 pr-3">
+            <div className="absolute inset-0 bg-white rounded-xl flex items-center pl-12 pr-4">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -267,7 +267,7 @@ export default function TopBar() {
           )}
 
           {!isAuthed ? (
-            <button 
+            <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
               className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition"
             >

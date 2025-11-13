@@ -23,13 +23,13 @@ export default function MobileSearch({ isOpen, onClose, initialQuery = '' }: Mob
 
   const handleSearch = () => {
     if (!query.trim()) return;
-    
+
     const params = new URLSearchParams();
     params.set('q', query.trim());
     if (contentType !== 'all') {
       params.set('type', contentType);
     }
-    
+
     router.push(`/blog?${params.toString()}`);
     onClose();
   };
@@ -43,7 +43,7 @@ export default function MobileSearch({ isOpen, onClose, initialQuery = '' }: Mob
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16 font-[Raleway]">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-[#111]">Поиск</h2>
@@ -66,7 +66,7 @@ export default function MobileSearch({ isOpen, onClose, initialQuery = '' }: Mob
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Введите запрос..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2777ff] focus:border-transparent"
+              className="w-full px-4 py-3  rounded-lg focus:ring-2 focus:ring-[#2777ff] "
               autoFocus
             />
           </div>

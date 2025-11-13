@@ -57,7 +57,7 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
 
   return (
     <div className={`${level > 0 ? 'ml-6 border-l-2 border-gray-100 pl-4' : ''}`}>
-      <div className="bg-gray-50 rounded-lg p-4 mb-3">
+      <div className="bg-gray-50 rounded-lg p-4 mb-3 font-[Raleway]">
         <div className="flex items-start gap-3">
           {comment.author_avatar ? (
             <img
@@ -72,7 +72,7 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
               </span>
             </div>
           )}
-          
+
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <span className="font-medium text-gray-900">{comment.author_name}</span>
@@ -85,9 +85,9 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
                 })}
               </span>
             </div>
-            
+
             <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
-            
+
             <div className="flex items-center gap-4 mt-3">
               <button
                 onClick={handleReply}
@@ -95,7 +95,7 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
               >
                 Ответить
               </button>
-              
+
               {comment.replies_count > 0 && (
                 <button
                   onClick={() => {
@@ -107,7 +107,7 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
                   {showReplies ? 'Скрыть' : 'Показать'} ответы ({comment.replies_count})
                 </button>
               )}
-              
+
               {canDelete && (
                 <button
                   onClick={handleDelete}
@@ -120,7 +120,7 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
           </div>
         </div>
       </div>
-      
+
       {showReplies && (
         <div className="space-y-3">
           {loading ? (
@@ -190,7 +190,7 @@ export default function CommentSection({ postId, postType }: CommentSectionProps
         newComment,
         replyingTo || undefined
       );
-      
+
       setComments(prev => [...prev, comment]);
       setNewComment('');
       setReplyingTo(null);
@@ -214,7 +214,7 @@ export default function CommentSection({ postId, postType }: CommentSectionProps
   return (
     <div id="comments" className="mt-8">
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Комментарии ({topLevelComments.length})</h3>
-      
+
       <form onSubmit={handleSubmit} className="mb-8">
         <div className="bg-gray-50 rounded-lg p-4">
           <textarea
@@ -225,12 +225,12 @@ export default function CommentSection({ postId, postType }: CommentSectionProps
             className="w-full h-24 resize-none border-none bg-transparent focus:outline-none"
             disabled={!isAuthenticated}
           />
-          
+
           <div className="flex items-center justify-between mt-3">
             <div className="text-sm text-gray-500">
               {replyingTo && (
                 <span>
-                  Ответ на комментарий • 
+                  Ответ на комментарий •
                   <button
                     onClick={() => setReplyingTo(null)}
                     className="ml-1 text-blue-600 hover:text-blue-700"
@@ -240,7 +240,7 @@ export default function CommentSection({ postId, postType }: CommentSectionProps
                 </span>
               )}
             </div>
-            
+
             <button
               type="submit"
               disabled={!newComment.trim() || !isAuthenticated}

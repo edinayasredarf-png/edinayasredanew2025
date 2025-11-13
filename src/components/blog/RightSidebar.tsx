@@ -94,7 +94,7 @@ function AdsCarousel() {
   };
 
   return (
-    <div className="rounded-3xl overflow-hidden border">
+    <div className="rounded-3xl overflow-hidden font-[Raleway] ">
       <div
         ref={wrapRef}
         className="relative w-full h-[424px] bg-white select-none overflow-hidden"
@@ -172,18 +172,25 @@ export default function RightSidebar() {
 
   return (
     <aside className="w-[287px] shrink-0 hidden xl:block">
-      <div className="sticky top-[86px] space-y-4">
-        <div className="p-5 bg-white rounded-3xl border space-y-5">
+      <div className="sticky top-[86px] space-y-4 font-[Raleway]">
+        <div className="p-5 bg-white rounded-3xl  space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-[#111]">Новости</h3>
+            <h3 className="text-xl font-semibold text-[#313131]">Новости</h3>
             <Link
               href="/news"
-              className="h-8 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
+              className="h-8 px-3 rounded-lg border border-[#D1D3D8] text-[#313131] hover:border-[#313131]  text-sm flex items-center"
             >
               Все
+							<img
+          src="/icons/arrow-right.svg"  // ← замените на ваш хостинг, если нужно
+          alt="Все новости"
+          width={14}
+          height={14}
+          className="object-contain"
+        />
             </Link>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-4 font-[Raleway] font-medium  lining-nums">
             {news.slice(0, 6).map((n) => (
               <div key={n.id} className="space-y-1">
                 <div className="text-sm text-[#52555a]">
@@ -191,7 +198,7 @@ export default function RightSidebar() {
                 </div>
                 <Link
                   href={`/news/${n.slug}`}
-                  className="text-base text-[#111] leading-snug hover:underline"
+                  className="text-base text-[#313131] leading-snug hover:text-[#0077FF]"
                 >
                   {n.title}
                 </Link>

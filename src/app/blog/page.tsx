@@ -22,7 +22,7 @@ function BlogHomeInner() {
   const [favoritePostIds, setFavoritePostIds] = useState<string[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => { 
+  useEffect(() => {
     ensureDemo();
     (async () => {
       try {
@@ -65,7 +65,7 @@ function BlogHomeInner() {
   const filtered = useMemo(() => {
     // Исключаем кейсы из ленты блога
     let arr = posts.filter(p => (p.kind || 'post') !== 'case');
-    
+
     // Фильтрация по активной вкладке
     if (activeTab === 'favorites') {
       if (!isAuthenticated) {
@@ -73,7 +73,7 @@ function BlogHomeInner() {
       }
       arr = arr.filter(p => favoritePostIds.includes(p.id));
     }
-    
+
     if (tag) arr = arr.filter(p => (p.tags||[]).some(t => t.toLowerCase() === tag.toLowerCase()));
     if (q) {
       const isTagQuery = q.startsWith('tag:');
@@ -100,7 +100,7 @@ function BlogHomeInner() {
 
   return (
     <BlogLayout>
-      <div className="bg-[#f2f3f7] min-h-screen">
+      <div className="bg-[#f2f3f7] min-h-screen font-{Raleway}">
         <TopBar />
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
@@ -112,7 +112,7 @@ function BlogHomeInner() {
                     <div className="text-gray-500 text-lg mb-4">
                       Для просмотра избранного необходимо войти в систему
                     </div>
-                    <button 
+                    <button
                       onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
                       className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >

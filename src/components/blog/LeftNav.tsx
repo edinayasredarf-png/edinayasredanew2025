@@ -11,14 +11,14 @@ interface ItemProps {
 
 function Item({ active, label, icon, onClick }: ItemProps) {
   return (
-    <div 
-      className={`w-full p-2 rounded-2xl inline-flex items-center gap-3 cursor-pointer hover:bg-white/50 transition-colors ${active ? 'bg-white border' : ''}`}
+    <div
+      className={`w-full p-2 rounded-2xl inline-flex items-center gap-3 cursor-pointer hover:bg-white/50 transition-colors ${active ? 'bg-white ' : ''}`}
       onClick={onClick}
     >
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${active ? 'bg-[#f2f3f7]' : 'bg-white border'}`}>
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${active ? 'bg-[#f2f3f7]' : 'bg-white '}`}>
         <img src={icon} alt={label} className="w-5 h-5" />
       </div>
-      <div className={`${active ? 'text-[#111]' : 'text-[#52555a]'} text-base`}>{label}</div>
+      <div className={`${active ? 'text-[#313131]' : 'text-[#52555a]'} text-base`}>{label}</div>
     </div>
   );
 }
@@ -31,33 +31,33 @@ interface LeftNavProps {
 export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProps) {
   return (
     <aside className="w-[294px] shrink-0 hidden xl:block">
-      <div className="sticky top-[86px] space-y-6">
+      <div className="sticky top-[86px] space-y-6 font-[Raleway] font-medium  lining-nums">
         <nav className="space-y-3">
-          <Item 
-            active={activeTab === 'feed'} 
-            label="Лента" 
-            icon="/icons/blog/lenta.svg" 
+          <Item
+            active={activeTab === 'feed'}
+            label="Лента"
+            icon="/icons/blog/lenta.svg"
             onClick={() => onTabChange?.('feed')}
           />
-          <Item 
-            active={activeTab === 'subscriptions'} 
-            label="Подписки" 
-            icon="/icons/blog/podpiski.svg" 
+          <Item
+            active={activeTab === 'subscriptions'}
+            label="Подписки"
+            icon="/icons/blog/podpiski.svg"
             onClick={() => onTabChange?.('subscriptions')}
           />
-          <Item 
-            active={activeTab === 'favorites'} 
-            label="Избранное" 
-            icon="/icons/blog/izbrannoe.svg" 
+          <Item
+            active={activeTab === 'favorites'}
+            label="Избранное"
+            icon="/icons/blog/izbrannoe.svg"
             onClick={() => onTabChange?.('favorites')}
           />
         </nav>
 
-        <div className="space-y-3 text-sm text-[#52555a]">
-          <Link href="/about" className="hover:text-[#111]">О проекте</Link>
+        <div className="space-y-3 text-sm font-medium text-[#52555a]">
+          <Link href="/about" className="hover:text-[#313131]">О проекте</Link>
           <div className="flex gap-5">
-            <a href="#" className="hover:text-[#111]">Реклама</a>
-            <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="hover:text-[#111]">Поддержка</a>
+            <a href="#" className="hover:text-[#313131]">Реклама</a>
+            <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="hover:text-[#313131]">Поддержка</a>
           </div>
         </div>
 

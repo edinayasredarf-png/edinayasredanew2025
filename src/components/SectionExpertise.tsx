@@ -5,27 +5,18 @@ import Image from 'next/image';
 
 const smallCards = [
   {
-    icon: (
-      <svg className="w-8 h-8 text-[#0077FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0v-4a2 2 0 012-2h6a2 2 0 012 2v4m-6 0h-2" />
-      </svg>
-    ),
+    iconUrl: '/icons/platform.svg',
+    alt: 'Иконка платформы',
     text: 'Комплексная платформа для управления территориями',
   },
   {
-    icon: (
-      <svg className="w-8 h-8 text-[#0077FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
+    iconUrl: '/icons/analytics.svg', // TODO: заменить на реальный URL иконки
+    alt: 'Иконка аналитики',
     text: 'Инструменты для аналитики, мониторинга и планирования',
   },
   {
-    icon: (
-      <svg className="w-8 h-8 text-[#0077FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    ),
+    iconUrl: '/icons/registry.svg', // TODO: заменить на реальный URL иконки
+    alt: 'Иконка реестра ПО',
     text: 'Платформа включена в реестр отечественного ПО',
   },
 ];
@@ -41,20 +32,22 @@ const SectionExpertise = () => (
           aria-label="Узнать больше о компании Единая среда — 15 лет технологической экспертизы"
         >
           <div className="relative z-10 flex flex-col flex-grow h-full w-full">
-            <h2 className="text-3xl md:text-4xl lg:text-[40px] font-medium text-[#313131] leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-[40px] font-medium text-[#313131] leading-[1.1] ">
               15+ лет<br />технологической<br />экспертизы
             </h2>
-            <div className="flex-grow"></div>
+            <div className="flex-grow" />
             <div className="mt-8 inline-flex items-center justify-center self-start px-8 py-3.5 bg-[#0077FF] text-white text-lg font-medium rounded-xl group-hover:bg-opacity-80 transition-all duration-300">
               Подробнее о нас
             </div>
           </div>
-          <div className="hidden md:block absolute right-0 bottom-0 w-1/2 h-auto z-0">
+
+          {/* Изображение — чуть меньше и ниже на десктопе */}
+          <div className="hidden md:block absolute right-0 bottom-[-20px] w-[48%] max-w-[260px] h-auto z-0">
             <Image
               src="/img/es15.png"
               alt="Единая среда — 15 лет технологической экспертизы в области цифровизации территорий"
-              width={300}
-              height={300}
+              width={260}
+              height={260}
               className="w-full h-auto object-contain"
             />
           </div>
@@ -63,13 +56,13 @@ const SectionExpertise = () => (
         {/* Right Column */}
         <div className="flex flex-col gap-2 h-full">
           {/* Top Card */}
-          <div className="group bg-white rounded-3xl p-2 flex flex-col md:flex-row items-start md:items-center gap-2 ">
-            <div className="order-2 md:order-1 w-full md:w-auto">
-              <h3 className="text-xl font-medium text-[#313131] leading-snug mb-4 md:mb-0">
+          <div className="group bg-white rounded-3xl p-4 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-5">
+            <div className="order-2 md:order-1 w-full md:w-auto md:pr-2">
+              <h3 className="text-xl font-medium text-[#313131] leading-snug">
                 <strong>«Единая Среда»</strong> — флагманский продукт российской компании для цифровизации городов и муниципальных территорий.
               </h3>
             </div>
-            <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center p-2.5 w-full md:w-1/2 h-full mx-auto">
+            <div className="order-1 md:order-2 bg-[#F6F7F9] rounded-2xl flex items-center justify-center p-2.5 w-full md:w-1/2 h-full mx-auto">
               <Image
                 src="/img/logo-mobile-black.svg"
                 alt="Логотип платформы Единая среда"
@@ -85,10 +78,16 @@ const SectionExpertise = () => (
             {smallCards.map((card, idx) => (
               <div
                 key={idx}
-                className="group bg-white rounded-3xl p-5 flex flex-col gap-2 transition-all duration-300 "
+                className="group bg-white rounded-3xl p-5 flex flex-col gap-3 transition-all duration-300"
               >
-                <div className="w-16 h-16 bg-[#F6F7F9] rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-[#0077FF]/10">
-                  {card.icon}
+                <div className="w-16 h-16 rounded-2xl border border-[#E0E4EA] flex items-center justify-center transition-all duration-300 group-hover:border-[#0077FF]">
+                  <Image
+                    src={card.iconUrl}
+                    alt={card.alt}
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 object-contain"
+                  />
                 </div>
                 <p className="text-base font-medium text-[#7C8A9A]">
                   {card.text}

@@ -260,9 +260,9 @@ export default function NewPostPage() {
     if (!canPublish) return;
     const now = Date.now();
     // Если редактируем — сохраняем исходный slug
-    const prevPost = editSlug && editType==='post' ? 
+    const prevPost = editSlug && editType==='post' ?
       (await sb_getPostBySlug(editSlug).catch(() => undefined)) || getPostBySlug(editSlug) : undefined;
-    const prevNews = editSlug && editType==='news' ? 
+    const prevNews = editSlug && editType==='news' ?
       (await sb_getNewsBySlug(editSlug).catch(() => undefined)) || getNewsBySlug(editSlug) : undefined;
     const slug = (prevPost?.slug || prevNews?.slug) || genSlug(title);
 
@@ -286,7 +286,7 @@ export default function NewPostPage() {
           createdAt: prev?.createdAt || publishTime, updatedAt: now,
           views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
         };
-        
+
         // Пытаемся сохранить в Supabase
         try {
           await sb_upsertPost(p);
@@ -295,7 +295,7 @@ export default function NewPostPage() {
           console.error('Supabase save failed, using local fallback:', error);
           upsertPost(p);
         }
-        
+
         clearDraft();
 
         const typeName = kind === 'post' ? 'статья' : 'урок';
@@ -338,7 +338,7 @@ export default function NewPostPage() {
           createdAt: prev?.createdAt || publishTime, updatedAt: now,
           views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
         };
-        
+
         // Пытаемся сохранить в Supabase
         try {
           await sb_upsertNews(n);
@@ -347,7 +347,7 @@ export default function NewPostPage() {
           console.error('Supabase save failed, using local fallback:', error);
           upsertNews(n);
         }
-        
+
         clearDraft();
 
         if (isScheduled) {
@@ -368,7 +368,7 @@ export default function NewPostPage() {
   const doDelete = async () => {
     if (!editSlug || !editType) return;
     if (!confirm('Точно удалить?')) return;
-    
+
     try {
       if (editType==='post' || editType==='lesson') {
         const p = await sb_getPostBySlug(editSlug).catch(() => undefined) || getPostBySlug(editSlug);
@@ -420,7 +420,7 @@ export default function NewPostPage() {
 
   if (!authed) {
     return (
-      <div className="bg-[#f2f3f7] min-h-screen">
+      <div className="bg-[#f2f3f7] min-h-screen font-[Raleway]">
         <div className="max-w-[640px] mx-auto px-4 md:px-8 py-8 md:py-16">
           <div className="bg-white rounded-2xl p-6 border">
             <h1 className="text-2xl font-semibold mb-4 text-[#111]">Авторизация редактора</h1>

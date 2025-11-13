@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <footer className="bg-white rounded-2xl mt-8 w-full font-[Raleway]">
+    <footer className="bg-white rounded-2xl mt-8 w-full font-[Raleway] lining-nums">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Footer Top */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pb-8">
@@ -24,7 +24,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-grey-84"></div>
+        <div className="border-t border-[#D4D4D8]"></div>
 
         {/* Footer Navigation Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8 py-8">

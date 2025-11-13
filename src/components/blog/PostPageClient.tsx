@@ -37,11 +37,11 @@ export default function PostPageClient({ slug }: { slug: string }) {
       setIsEditor(authStore.canWriteArticles());
       setIsAuthenticated(authStore.isAuthenticated());
     });
-    
+
     // Устанавливаем начальное состояние
     setIsEditor(authStore.canWriteArticles());
     setIsAuthenticated(authStore.isAuthenticated());
-    
+
     return unsubscribe;
   }, []);
 
@@ -75,7 +75,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
   // Обработка смены вкладок в левом меню
   const handleTabChange = (tab: 'feed' | 'subscriptions' | 'favorites') => {
     setActiveTab(tab);
-    
+
     if (tab === 'favorites') {
       if (!isAuthenticated) {
         // Если пользователь не авторизован, открываем модалку авторизации
@@ -100,7 +100,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
       if (p) {
         await sb_incViews('post', p.slug);
         setMine(myReactions(p.id));
-        
+
         // Check if post is in favorites
         try {
           const favorite = await sb_isFavorite(p.id, 'post');
@@ -120,8 +120,8 @@ export default function PostPageClient({ slug }: { slug: string }) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
         <TopBar />
-        <section className="max-w-[900px] mx-auto px-5 py-16 text-center">
-          <h1 className="text-3xl font-semibold mb-3">Статья не найдена</h1>
+        <section className="max-w-[900px] mx-auto px-5 py-16 text-center font-[Raleway]">
+          <h2 className="text-3xl font-semibold mb-3 text-[#313131]">Загрузка...</h2>
           <Link href="/blog" className="text-[#2777ff] hover:underline">Назад к статьям</Link>
         </section>
       </div>
@@ -148,7 +148,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
 
   const handleFavorite = async () => {
     if (!post) return;
-    
+
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
@@ -177,28 +177,38 @@ export default function PostPageClient({ slug }: { slug: string }) {
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
       <TopBar />
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16 font-[Raleway] font-medium lining-nums">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
-              <section className="bg-white rounded-3xl p-6 border">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
-                  <Link
-                    href="/blog"
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                      <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Назад к статьям
-                  </Link>
+
+
+              <section className=" bg-white rounded-3xl p-6 " >
+							<h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{post.title}</h1>
+							{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
+                <article className="prose prose-lg max-w-none mx-auto text-[#313131] article-content  " dir="ltr">
+                  <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+
+                </article>
+                <style>{`
+                  .prose img, .prose video, .prose iframe { max-width: 100%; height: auto; border-radius: 16px; margin-bottom: 1.4rem;margin-top: 1.2rem;  }
+                  .prose figure { text-align: center;margin-bottom: 1.4rem;  }
+                  .prose figcaption { color:#6b7280; font-size:14px; margin-top:6px;margin-bottom: 1.4rem;  }
+                  .prose blockquote { border-left:4px solid #e1e2e5; padding:8px 12px; border-radius:8px; color:#374151; margin-bottom: 1.4rem; margin-top: 1.4rem;   }
+                  .prose h2 { font-size: 1.8rem; line-height: 1.3; margin-bottom: 1.4rem;  font-weight: 700; }
+                  .prose h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; margin-bottom: 1.4rem font-weight: 600; }
+                  .article-content { direction: ltr; }
+                `}</style>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 mt-14">
+
 
                   {isEditor && (
                     <div className="ml-auto flex items-center gap-2">
                       <Link
                         href={`/blog/new?edit=${encodeURIComponent(post.slug)}&type=post`}
-                        className="h-9 px-3 rounded-lg bg-[#111] text-white hover:bg-[#333] text-sm flex items-center"
+                        className="h-9 px-3 rounded-lg bg-[#313131] text-white hover:bg-[#333] text-sm flex items-center"
                       >
                         Редактировать
                       </Link>
@@ -209,11 +219,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                   )}
                 </div>
 
-                <h1 className="mt-4 text-4xl md:text-5xl font-medium leading-tight text-[#111]">{post.title}</h1>
-                {post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
-                <div className="mt-3 text-[#52555a] text-sm">
-                  {new Date(post.createdAt).toLocaleDateString('ru-RU')}
-                </div>
+
 
                 {!!(post.tags?.length) && (
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -227,9 +233,9 @@ export default function PostPageClient({ slug }: { slug: string }) {
 
                 <div className="mt-4 flex items-center gap-3 text-sm text-[#6b7280]">
                   {/* Comment icon */}
-                  <button 
-                    className="p-2 rounded-lg hover:bg-[#f2f3f7]" 
-                    title="Оставить комментарий" 
+                  <button
+                    className="p-2 rounded-lg hover:bg-[#f2f3f7]"
+                    title="Оставить комментарий"
                     onClick={handleComment}
                   >
                     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -237,7 +243,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                     </svg>
                   </button>
                   {/* Favorite icon */}
-                  <button 
+                  <button
                     className={`p-2 rounded-lg hover:bg-[#f2f3f7] ${isFavorite ? 'text-red-500' : ''}`}
                     title={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
                     onClick={handleFavorite}
@@ -247,43 +253,32 @@ export default function PostPageClient({ slug }: { slug: string }) {
                       <path d="M5 3h14a2 2 0 0 1 2 2v16l-9-4-9 4V5a2 2 0 0 1 2-2Z"/>
                     </svg>
                   </button>
-                  {/* Views */}
+
+
+									{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
+                <div className="text-[#313131] text-sm font-medium">
+                  {new Date(post.createdAt).toLocaleDateString('ru-RU')}
+                </div>
+								  {/* Views */}
                   <div className="ml-auto flex items-center gap-1">
                     <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z" stroke="#a4a8b2" strokeWidth="2" fill="none"/><circle cx="12" cy="12" r="3" fill="#a4a8b2"/></svg>
                     <span>{views}</span>
                   </div>
-                  <button onClick={share} className="px-3 py-1.5 rounded-lg border hover:bg-gray-50 text-[#111]">
-                    Поделиться
-                  </button>
+
                 </div>
-              </section>
 
-              <section className="mt-6 bg-white rounded-3xl p-6 border">
-                <article className="prose prose-lg max-w-none mx-auto text-[#111] article-content" dir="ltr">
-                  <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
-                </article>
-                <style>{`
-                  .prose img, .prose video, .prose iframe { max-width: 100%; height: auto; border-radius: 16px; }
-                  .prose figure { text-align: center; }
-                  .prose figcaption { color:#6b7280; font-size:14px; margin-top:6px; }
-                  .prose blockquote { border-left:4px solid #e1e2e5; padding:8px 12px; border-radius:8px; color:#374151; }
-                  .prose h2 { font-size: 1.5rem; line-height: 1.3; margin-top: 1.4rem; font-weight: 700; }
-                  .prose h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; font-weight: 600; }
-                  .article-content { direction: ltr; }
-                `}</style>
               </section>
-
               {more.length > 0 && (
-                <section className="mt-10">
-                  <h3 className="text-2xl text-[#111]">Читайте ещё</h3>
+                <section className="mt-20">
+                  <h3 className="text-2xl text-[#313131] font-bold">Читайте ещё</h3>
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {more.map(m => (
                       <Link
                         key={m.id}
                         href={`/blog/${m.slug}`}
-                        className="bg-white rounded-3xl p-4 border hover:border-[#2777ff] transition block"
+                        className="bg-white rounded-3xl p-4  hover:border-[#2777ff] transition block"
                       >
-                        <div className="w-full aspect-[16/10] rounded-2xl bg-[#F6F7F9] overflow-hidden border">
+                        <div className="w-full aspect-[16/10] rounded-2xl bg-[#F6F7F9] overflow-hidden ">
                           <img
                             src={m.cover || 'https://placehold.co/400x225'}
                             alt={m.title}
@@ -293,7 +288,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                         <div className="mt-2 text-sm text-[#52555a]">
                           {new Date(m.createdAt).toLocaleDateString('ru-RU')}
                         </div>
-                        <div className="text-[16px] font-semibold text-[#111] leading-snug">
+                        <div className="text-[16px] font-semibold text-[#313131] leading-snug">
                           {m.title}
                         </div>
                       </Link>
