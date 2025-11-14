@@ -30,7 +30,7 @@ const HeroSection: React.FC = () => {
           {/* Правая часть: изображение (только для мобильных, на десктопе абсолютное) */}
           <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
             <Image
-              src="/img/heroes_1.webp"
+              src="/img/hero.webp"
               alt="Абстрактная иллюстрация цифрового управления"
               width={700}
               height={500}
@@ -43,7 +43,7 @@ const HeroSection: React.FC = () => {
         {/* Абсолютное изображение для десктопа — внутри контейнера */}
         <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[600px] h-auto pointer-events-none">
           <Image
-            src="/img/heroes.png"
+            src="/img/hero.webp"
             alt="Абстрактная иллюстрация цифрового управления"
             width={700}
             height={500}

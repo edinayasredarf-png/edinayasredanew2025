@@ -1,7 +1,6 @@
 'use client';
 
 import React, { ReactNode, useState, useEffect } from 'react';
-import Footer from './Footer';
 import AuthModal from './auth/AuthModal';
 import { authStore } from '@/lib/authStore';
 
@@ -18,10 +17,10 @@ export default function BlogLayout({ children }: BlogLayoutProps) {
     const unsubscribe = authStore.subscribe(() => {
       setIsAuthenticated(authStore.isAuthenticated());
     });
-    
+
     // Устанавливаем начальное состояние
     setIsAuthenticated(authStore.isAuthenticated());
-    
+
     return unsubscribe;
   }, []);
 
@@ -45,12 +44,11 @@ export default function BlogLayout({ children }: BlogLayoutProps) {
       <main className="flex-1 w-full mx-auto relative z-10">
         {children}
       </main>
-      
-      <Footer />
-      
+
+
       {/* Auth Modal */}
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={handleAuthSuccess}
       />

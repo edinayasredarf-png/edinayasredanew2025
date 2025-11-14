@@ -85,6 +85,7 @@ const CookieBanner: React.FC = () => {
 
   if (!visible) return null;
 
+
   return (
     <div className="fixed bottom-4 left-0 w-full flex justify-center z-[100] pointer-events-none">
       <div className="bg-white border border-[#0077FF] shadow-xl rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center gap-4 max-w-2xl w-full mx-2 pointer-events-auto animate-fade-in">

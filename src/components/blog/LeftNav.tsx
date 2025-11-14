@@ -39,12 +39,7 @@ export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProp
             icon="/icons/blog/lenta.svg"
             onClick={() => onTabChange?.('feed')}
           />
-          <Item
-            active={activeTab === 'subscriptions'}
-            label="Подписки"
-            icon="/icons/blog/podpiski.svg"
-            onClick={() => onTabChange?.('subscriptions')}
-          />
+
           <Item
             active={activeTab === 'favorites'}
             label="Избранное"
@@ -56,7 +51,7 @@ export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProp
         <div className="space-y-3 text-sm font-medium text-[#52555a]">
           <Link href="/about" className="hover:text-[#313131]">О проекте</Link>
           <div className="flex gap-5">
-            <a href="#" className="hover:text-[#313131]">Реклама</a>
+            <a href="/documents" className="hover:text-[#313131]">Документы</a>
             <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="hover:text-[#313131]">Поддержка</a>
           </div>
         </div>
