@@ -63,7 +63,7 @@ export default function TopBar() {
   };
 
   return (
-    <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] border-b border-[#e1e2e5] font-[Raleway] font-medium">
+    <div className="sticky top-2 z-40 w-full bg-[#f2f3f7] font-[Raleway] font-medium">
       <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center">
         {/* ЛОГО слева */}
         <Link
@@ -80,14 +80,14 @@ export default function TopBar() {
           className="hidden md:block absolute left-1/2 -translate-x-1/2 w-full max-w-[764px] "
         >
           <div className="relative h-[50px]">
-            <div className="absolute inset-0 bg-white rounded-xl flex items-center pl-12 pr-4">
+            <div className="absolute inset-0 bg-white rounded-2xl flex items-center pl-12 pr-4">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') goSearch(q, contentType); }}
                 onFocus={() => setShowSearchDropdown(true)}
                 placeholder="Поиск по статьям и тегам"
-                className="flex-1 outline-none text-[16px] placeholder:text-[#52555a] text-[#111] bg-transparent"
+                className="flex-1 outline-none text-[16px] placeholder:text-[#52555a] text-[#313131] bg-transparent"
                 aria-label="Поле поиска"
               />
             </div>
@@ -97,17 +97,21 @@ export default function TopBar() {
               aria-label="Найти"
               className="absolute left-2 top-1/2 -translate-y-1/2 w-[44px] h-[44px] rounded-lg flex items-center justify-center hover:bg-black/5 transition"
             >
-              <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] text-[#a4a8b2]">
-                <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-              </svg>
+              	<img
+          src="/icons/search.svg"
+          alt="Поиск"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
             </button>
           </div>
 
           {/* выпадашка категорий — БЕЗ затемнения фона */}
           {showSearchDropdown && (
-            <div className="absolute top-full left-4 right-4 mt-2 bg-white rounded-xl border border-[#e1e2e5] shadow-lg z-50">
+            <div className="absolute top-full left-1 right-0 mt-6 bg-white rounded-2xl shadow-2xl ">
               <div className="p-4">
-                <div className="text-sm text-gray-500 mb-3">Категории</div>
+                <div className="text-sm text-[#7C8A9A] font-medium mb-3">Категории</div>
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     ['all','Все'],
@@ -141,12 +145,16 @@ export default function TopBar() {
         <div className="md:hidden ml-auto flex items-center gap-2">
           <button
             onClick={() => setShowMobileSearch(true)}
-            className="w-[40px] h-[40px] rounded-xl bg-white border border-[#e1e2e5] flex items-center justify-center hover:bg-gray-50"
+            className="w-[40px] h-[40px] rounded-xl bg-white flex items-center justify-center hover:bg-gray-50"
             aria-label="Открыть поиск"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-              <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-            </svg>
+            	<img
+          src="/icons/search.svg"
+          alt="Все новости"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
           </button>
 
           {isEditor ? (
@@ -155,17 +163,27 @@ export default function TopBar() {
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
               aria-label="Написать"
             >
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-            </Link>
+	<img
+          src="/icons/plus.svg"
+          alt="Написать"
+          width={20}
+          height={20}
+          className="object-contain"
+        />            </Link>
           ) : !isAuthed ? (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
+
               aria-label="Войти"
-            >
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+            ><img
+						src="/icons/sing_in.svg"
+						alt="Войти в  профиль"
+						width={20}
+						height={20}
+						className="object-contain"
+					/>
+
             </button>
           ) : (
             <Link
@@ -173,9 +191,13 @@ export default function TopBar() {
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
               aria-label="Профиль"
             >
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+           	<img
+          src="/icons/profile.svg"
+          alt="Ваш профиль"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
             </Link>
           )}
 
@@ -191,10 +213,10 @@ export default function TopBar() {
             </button>
 
             {showProfileMenu && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border shadow-lg z-50">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl ">
                 <div className="p-4 border-b border-gray-100">
                   <div className="text-sm text-gray-500">Профиль</div>
-                  <div className="text-lg font-semibold text-[#111]">
+                  <div className="text-lg font-semibold text-[#313131]">
                     {isEditor ? 'Редактор' : isAuthed ? 'Пользователь' : 'Гость'}
                   </div>
                 </div>
@@ -205,23 +227,30 @@ export default function TopBar() {
                       <Link
                         href="/admin"
                         onClick={() => setShowProfileMenu(false)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                      	<img
+          src="/icons/admin.svg"
+          alt="Админ панель"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
                         <span>Админ-панель</span>
                       </Link>
                     )}
                     <Link
                       href="/profile"
                       onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                    	<img
+          src="/icons/profile.svg"
+          alt="Личный кабинет"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
                       <span>Личный кабинет</span>
                     </Link>
                       <button
@@ -231,9 +260,13 @@ export default function TopBar() {
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                       	<img
+          src="/icons/sign_out.svg"
+          alt="Выйти из профиля"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
                         <span>Выйти</span>
                       </button>
                     </>
@@ -243,11 +276,15 @@ export default function TopBar() {
                         setShowProfileMenu(false);
                         window.dispatchEvent(new CustomEvent('openAuthModal'));
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+	<img
+          src="/icons/sign_in.svg"
+          alt="Войти в профиль"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
                       <span>Войти</span>
                     </button>
                   )}
@@ -262,7 +299,13 @@ export default function TopBar() {
           {isEditor && (
             <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
               <span className="hidden sm:inline">Написать</span>
-              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              	<img
+          src="/icons/plus.svg"
+          alt="Все новости"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
             </Link>
           )}
 
@@ -272,15 +315,19 @@ export default function TopBar() {
               className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition"
             >
               <span className="hidden sm:inline">Войти</span>
-              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+							<img
+						src="/icons/sing_in.svg"
+						alt="Войти в  профиль"
+						width={20}
+						height={20}
+						className="object-contain"
+					/>
             </button>
           ) : (
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="h-[46px] w-[46px] rounded-xl bg-white hover:bg-gray-50 transition text-[#111] flex items-center justify-center"
+                className="h-[46px] w-[46px] rounded-xl bg-white hover:bg-gray-50 transition text-[#313131] flex items-center justify-center"
                 aria-haspopup="menu"
                 aria-expanded={showProfileMenu}
               >
@@ -291,7 +338,7 @@ export default function TopBar() {
                 <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border shadow-lg z-50">
                   <div className="p-4 border-b border-gray-100">
                     <div className="text-sm text-gray-500">Профиль</div>
-                    <div className="text-lg font-semibold text-[#111]">
+                    <div className="text-lg font-semibold text-[#313131]">
                       {isEditor ? 'Редактор' : 'Пользователь'}
                     </div>
                   </div>
@@ -299,22 +346,29 @@ export default function TopBar() {
                     <Link
                       href="/admin"
                       onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      	<img
+          src="/icons/admin.svg"
+          alt="Админ панель"
+          width={14}
+          height={14}
+          className="object-contain"
+        />
                       <span>Админ-панель</span>
                     </Link>
                     <Link
                       href="/profile"
                       onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#111]"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                   	<img
+          src="/icons/profile.svg"
+          alt="Личный кабинет"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
                       <span>Личный кабинет</span>
                     </Link>
                     <button
@@ -324,9 +378,13 @@ export default function TopBar() {
                       }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
                     >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                  	<img
+          src="/icons/sign_out.svg"
+          alt="Выйти из профиля "
+          width={20}
+          height={20}
+          className="object-contain"
+        />
                       <span>Выйти</span>
                     </button>
                   </div>

@@ -182,7 +182,7 @@ export default function RightSidebar() {
             >
               Все
 							<img
-          src="/icons/arrow-right.svg"  // ← замените на ваш хостинг, если нужно
+          src="/icons/arrow-right.svg"
           alt="Все новости"
           width={14}
           height={14}
