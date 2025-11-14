@@ -18,7 +18,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
   const kindBadge = getKindBadge(p.kind);
 
   return (
-    <article className="w-full max-w-[372px] bg-white rounded-3xl p-4 ">
+    <article className="w-full max-w-[372px] bg-white rounded-3xl p-4 font-[Raleway] font-medium lining-nums ">
       <Link href={`/blog/${p.slug}`} className="block">
         <div className="w-full aspect-[16/9] bg-[#f2f3f7] rounded-2xl overflow-hidden">
           <img src={p.cover || 'https://placehold.co/340x192'} alt={p.title} className="w-full h-full object-cover" />
@@ -27,7 +27,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
       <div className="pt-3">
         <div className="flex items-start justify-between gap-2">
           <Link href={`/blog/${p.slug}`} className="block flex-1">
-            <h3 className="text-[20px] font-semibold text-[#111] leading-snug">{p.title}</h3>
+            <h3 className="text-[18px] font-semibold text-[#313131] leading-[1.2]">{p.title}</h3>
           </Link>
           {kindBadge && (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${kindBadge.color} flex-shrink-0`}>
@@ -46,10 +46,16 @@ export default function PostCard({ p }: { p: BlogPost }) {
         </div>
       )}
 
-      <div className="mt-4 flex items-center gap-3 text-sm text-[#52555a]">
+      <div className="mt-4 flex items-center gap-2 text-sm text-[#52555a]">
         <div className="ml-auto flex items-center gap-1">
-          <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z" stroke="#a4a8b2" strokeWidth="2" fill="none"/><circle cx="12" cy="12" r="3" fill="#a4a8b2"/></svg>
-          <span>{views}</span>
+
+				<img
+          src="/icons/views.svg"
+          alt="Все новости"
+          width={20}
+          height={20}
+          className="object-contain"
+        />          <span>{views}</span>
         </div>
       </div>
     </article>

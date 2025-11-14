@@ -178,7 +178,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
     <div className="bg-[#f2f3f7] min-h-screen">
       <TopBar />
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16 font-[Raleway] font-medium lining-nums">
-        <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
+        <div className="flex flex-col xl:flex-row gap-2 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
@@ -238,9 +238,13 @@ export default function PostPageClient({ slug }: { slug: string }) {
                     title="Оставить комментарий"
                     onClick={handleComment}
                   >
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/>
-                    </svg>
+                 <img
+          src="/icons/comments.svg"
+          alt="Все новости"
+          width={30}
+          height={30}
+          className="object-contain"
+        />
                   </button>
                   {/* Favorite icon */}
                   <button
@@ -249,20 +253,29 @@ export default function PostPageClient({ slug }: { slug: string }) {
                     onClick={handleFavorite}
                     disabled={loading}
                   >
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                      <path d="M5 3h14a2 2 0 0 1 2 2v16l-9-4-9 4V5a2 2 0 0 1 2-2Z"/>
-                    </svg>
+                <img
+          src="/icons/favorite.svg"
+          alt="Все новости"
+          width={30}
+          height={30}
+          className="object-contain"
+        />
                   </button>
 
 
 									{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
-                <div className="text-[#313131] text-sm font-medium">
+                <div className="text-[#676E7E] text-sm font-medium">
                   {new Date(post.createdAt).toLocaleDateString('ru-RU')}
                 </div>
 								  {/* Views */}
                   <div className="ml-auto flex items-center gap-1">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z" stroke="#a4a8b2" strokeWidth="2" fill="none"/><circle cx="12" cy="12" r="3" fill="#a4a8b2"/></svg>
-                    <span>{views}</span>
+									<img
+          src="/icons/views.svg"
+          alt="Все новости"
+          width={20}
+          height={20}
+          className="object-contain"
+        />                         <span>{views}</span>
                   </div>
 
                 </div>
