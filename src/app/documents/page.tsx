@@ -62,10 +62,11 @@ export default function DocumentsPage() {
   const activeUrl = activeDoc ? docUrls[activeDoc] : null;
 
   return (
-    <div className="min-h-screen bg-white">
+
+    <div className="min-h-screen bg-white font-[Raleway] font-medium lining-nums">
       <main className="flex flex-col lg:flex-row w-full max-w-none m-0 pt-4 min-h-screen bg-white">
         {/* Sidebar */}
-        <aside className="w-full lg:w-80 bg-[#F6F7F9] rounded-2xl shadow-sm p-6 lg:mr-8 lg:ml-0 lg:rounded-r-2xl flex flex-col min-h-screen mb-6 lg:mb-0">
+        <aside className="w-full lg:w-80 bg-[#F6F7F9] rounded-2xl  p-6 lg:mr-8 lg:ml-0 lg:rounded-r-2xl flex flex-col min-h-screen mb-6 lg:mb-0">
           <div className="mb-6">
             <Link href="/" className="flex items-center">
               <Image
@@ -89,14 +90,14 @@ export default function DocumentsPage() {
           </div>
 
           <div className="mb-6">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">Документы проекта для «SaaS» решений</h3>
+            <h3 className="text-xs font-semibold text-[#7C8A9A] uppercase tracking-wider mb-4 px-2">Документы проекта</h3>
             <div className="space-y-2">
               {docFiles.map((doc) => (
                 <button
                   key={doc.file}
                   onClick={() => handleDocClick(doc.file)}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center ${
-                    activeDoc === doc.file ? "bg-[#0077FF]/10 text-[#0077FF] font-medium" : "text-gray-700 hover:bg-[#F6F7F9]"
+                    activeDoc === doc.file ? "bg-[#0077FF]/10 text-[#0077FF] font-medium" : "text-[#313131] hover:bg-[#F6F7F9]"
                   }`}
                 >
                   <span className="inline-flex items-center mr-3">
@@ -111,28 +112,28 @@ export default function DocumentsPage() {
             </div>
           </div>
 
-          <div className="mt-auto text-xs text-gray-500">
+          <div className="mt-auto text-xs text-[#7C8A9A]">
             © Единая Среда, 2025. <br />Все права защищены.
           </div>
         </aside>
 
         {/* Content */}
-        <section className="flex-1 bg-white rounded-2xl shadow-sm p-8 lg:p-12 min-h-screen">
-          <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <section className="flex-1 bg-white rounded-2xl border border-2 border-[#F6F7F9] p-8 lg:p-12 min-h-screen hidden lg:flex lg:flex-col ">
+          <nav className="flex items-center gap-2 text-sm text-[#7C8A9A] mb-6">
             <Link href="/" className="hover:text-blue-600 transition-colors">Единая Среда</Link>
             <span>/</span>
-            <span className="text-gray-600">Документация</span>
+            <span className="text-[#7C8A9A]">Документация</span>
             <span>/</span>
-            <span className="text-gray-700">
-              {activeDoc ? docTitles[activeDoc] : "Документы проекта для «SaaS» решений"}
+            <span className="text-[#7C8A9A]">
+              {activeDoc ? docTitles[activeDoc] : "Документы проекта "}
             </span>
           </nav>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
-            {activeDoc ? docTitles[activeDoc] : "Документы проекта для «SaaS» решений"}
+          <h1 className="text-3xl font-bold text-[#131313] mb-6">
+            {activeDoc ? docTitles[activeDoc] : "Документы проекта "}
           </h1>
 
-          <div className="text-gray-700 leading-relaxed mb-6">
+          <div className="text-[#313131] leading-relaxed mb-6">
             {activeDoc ? docDescriptions[activeDoc] : "Выберите документ в меню слева, чтобы просмотреть его описание и скачать."}
           </div>
 
@@ -141,7 +142,7 @@ export default function DocumentsPage() {
               <div className="mb-6">
                 <iframe
                   src={`${activeUrl}#toolbar=1&navpanes=0&scrollbar=1`}
-                  className="w-full min-h-[600px] border border-gray-200 rounded-lg bg-white"
+                  className="w-full min-h-[600px] border border-[#F6F7F9] rounded-lg bg-white"
                   title={docTitles[activeDoc]}
                 />
               </div>

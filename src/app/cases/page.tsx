@@ -116,7 +116,7 @@ const CasesPage: React.FC = () => {
     <Layout>
       <div className="bg-[#F6F7F9] min-h-screen">
         {/* Hero Section */}
-<section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[400px]">
+<section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[400px] font-[Raleway] font-medium lining-nums">
   <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
     <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
       <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
@@ -164,7 +164,7 @@ const CasesPage: React.FC = () => {
 
 
         {/* Filters Section */}
-      <section className="py-8">
+      <section className="py-8 font-[Raleway] font-medium lining-nums">
         <div className="max-w-[1480px] mx-auto px-5 md:px-8">
           <div className="mb-4">
             <p className="text-gray-500 text-sm">Фильтруйте кейсы по отрасли и типу услуги для быстрого поиска нужных решений</p>
@@ -242,12 +242,12 @@ const CasesPage: React.FC = () => {
 
 
         {/* Cases Grid */}
-      <section id="cases-grid" className="max-w-[1480px] mx-auto px-5 md:px-8 py-4">
+      <section id="cases-grid" className="max-w-[1480px] mx-auto px-5 md:px-8 py-4 font-[Raleway] font-medium lining-nums">
           {filteredCases.length === 0 ? (
             <div className="text-center py-20">
             <div className="text-gray-400 text-6xl mb-6">🔍</div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">По выбранным фильтрам кейсы не найдены</h3>
-            <p className="text-gray-600 mb-8">Попробуйте изменить параметры фильтрации</p>
+            <h3 className="text-2xl font-medium text-gray-900 mb-4">По выбранным фильтрам кейсы не найдены</h3>
+            <p className="text-[#7C8A9A] mb-8">Попробуйте изменить параметры фильтрации</p>
               <button
                 onClick={resetFilters}
               className="inline-block bg-[#0077FF] text-white px-8 py-3 rounded-lg hover:bg-[#0077FF]/90 transition-colors"
@@ -309,10 +309,10 @@ const CasesPage: React.FC = () => {
                             {caseItem.application}
                           </span>
                         </div>
-                        <h3 className={`text-xl font-bold text-black leading-tight mb-3 ${isWide ? 'md:text-2xl' : ''}`}>
+                        <h3 className={`text-xl font-medium text-[#313131] leading-tight mb-3 ${isWide ? 'md:text-2xl' : ''}`}>
                           {caseItem.title}
                         </h3>
-                        <p className={`text-sm text-gray-600 mb-4 line-clamp-2 ${isWide ? 'md:text-base md:line-clamp-3' : ''}`}>
+                        <p className={`text-sm text-[#7C8A9A] mb-4 line-clamp-2 ${isWide ? 'md:text-base md:line-clamp-3' : ''}`}>
                           {caseItem.description}
                         </p>
                         {!!caseItem.location && (
@@ -320,14 +320,14 @@ const CasesPage: React.FC = () => {
                           <svg className="w-4 h-4 text-[#0077FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           </svg>
-                          <span className="text-sm text-gray-600">{caseItem.location}</span>
+                          <span className="text-sm text-[#7C8A9A]">{caseItem.location}</span>
                         </div>
                         )}
 
                       </div>
                       <div className="mt-auto">
                         <span className="group inline-flex items-center justify-center w-12 h-12 bg-white rounded-lg border border-transparent group-hover:border-[#0077FF] transition-all duration-300">
-                          <svg className="w-5 h-5 text-black group-hover:text-[#0077FF] transition-colors duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg className="w-5 h-5 text-[#313131] group-hover:text-[#0077FF] transition-colors duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M14.43 5.92999L20.5 12L14.43 18.07" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
                             <path d="M3.5 12H20.33" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
                           </svg>
@@ -345,18 +345,18 @@ const CasesPage: React.FC = () => {
         </section>
 
       {/* CTA Section */}
-      <section className="bg-[#F6F7F9] py-16">
+      <section className="bg-[#F6F7F9] py-16 font-[Raleway] font-medium lining-nums">
           <div className="max-w-[1480px] mx-auto px-5 md:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6">
               Готовы реализовать похожий проект?
             </h2>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-[#7C8A9A] mb-8">
               Свяжитесь с нами для обсуждения ваших задач и получения персонального предложения
             </p>
             <button
               onClick={openConsult}
-              className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-[#0077FF]/90 transition-colors"
+              className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium text-lg hover:bg-[#0077FF]/90 transition-colors"
             >
               Получить консультацию
             </button>

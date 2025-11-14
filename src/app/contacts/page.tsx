@@ -26,6 +26,7 @@ export default function ContactsPage() {
   return (
     <Layout>
       {/* Hero Section */}
+			<div className='font-[Raleway] font-medium lining-nums'>
       <section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[400px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
@@ -47,25 +48,24 @@ export default function ContactsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
             {/* Contact Info */}
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#313131] mb-12">
                 Контактная информация
               </h2>
 
               {/* Sales Department */}
               <div className="mb-12">
-                <h3 className="text-xl font-semibold text-black mb-6">Отдел продаж</h3>
                 <div className="space-y-4">
                   <div>
                     <p className="text-3xl font-bold text-[#0077FF]">+7 (800) 550-56-12</p>
-                    <p className="text-lg text-gray-600 mt-2">Основной телефон</p>
+                    <p className="text-lg text-[#7C8A9A] mt-2">Телефон отдела продаж</p>
                   </div>
                   <div>
-                    <p className="text-xl text-black">info@единаясреда.рф</p>
-                    <p className="text-lg text-gray-600 mt-2">Email для заявок и информации</p>
+                    <p className="text-xl text-[#313131]">info@единаясреда.рф</p>
+                    <p className="text-lg text-[#7C8A9A] mt-2">Email для заявок и информации</p>
                   </div>
                   <div>
-                    <p className="text-xl text-black">Пн-Пт: 9:00 - 18:00</p>
-                    <p className="text-lg text-gray-600 mt-2">Время работы</p>
+                    <p className="text-xl text-[#313131]">Пн-Пт: 9:00 - 18:00</p>
+                    <p className="text-lg text-[#7C8A9A] mt-2">Время работы</p>
                   </div>
                 </div>
               </div>
@@ -73,10 +73,10 @@ export default function ContactsPage() {
 
               {/* Address
               <div className="mb-12">
-                <h3 className="text-xl font-semibold text-black mb-6">Адрес</h3>
+                <h3 className="text-xl font-semibold text-[#313131] mb-6">Адрес</h3>
                 <div>
-                  <p className="text-xl text-black">г. Ростов-на-Дону, ул. Комарова, 28/2</p>
-                  <p className="text-lg text-gray-600 mt-2">Офис 403, 4 этаж</p>
+                  <p className="text-xl text-[#313131]">г. Ростов-на-Дону, ул. Комарова, 28/2</p>
+                  <p className="text-lg text-[#7C8A9A] mt-2">Офис 403, 4 этаж</p>
                 </div>
               </div>*/}
 
@@ -101,7 +101,7 @@ export default function ContactsPage() {
           </div>
         </div>
       </section>
-
+			</div>
     </Layout>
   );
 }

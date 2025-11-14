@@ -71,7 +71,7 @@ const Case1Inner: React.FC = () => {
 
   return (
     <>
-      {/* HERO */}
+      {/* HERO */} <div className="font-[Raleway] font-medium lining-nums">
       <section className="bg-white text-[#19191a] rounded-b-[20px] relative overflow-hidden">
         <div className="max-w-[1480px] mx-auto px-5 md:px-8 py-10 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
@@ -317,6 +317,7 @@ const Case1Inner: React.FC = () => {
           </div>
         </div>
       </section>
+			</div>
     </>
   );
 };

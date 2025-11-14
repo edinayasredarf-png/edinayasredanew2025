@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useModal } from '@/components/ModalProvider';
 import Footer from '@/components/Footer';
-import ProductsTeamsSection from '@/components/ProductsTeamsSection';
 
 // Специальный Layout с белым header для страницы about
 const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -113,16 +112,20 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <Link href="/pricing" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Цены</Link>
                 <Link href="/documents" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Документация</Link>
                 <Link href="/contacts" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Контакты</Link>
-                <a href="#" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Партнерство</a>
+                <a href="/partnership" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Партнерство</a>
               </nav>
 
               {/* Правая часть с иконками */}
               <div className="flex items-center gap-4 ml-8">
                 {/* Иконка телефона */}
                 <a href="tel:88005505612" className="hidden lg:flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-300 ease-out ">
-                  <svg className="w-6 h-6 text-[#313131]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
+								<img
+          src="/icons/phone.svg"
+          alt="Все новости"
+          width={30}
+          height={30}
+          className="object-contain"
+        />
                 </a>
 
                 {/* Иконка заявки */}
@@ -130,9 +133,13 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   onClick={openConsult}
                   className="hidden lg:flex items-center justify-center w-12 h-12 bg-[#0077FF] rounded-xl hover:bg-[#005fcc] transition-all duration-300 ease-out "
                 >
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
+                <img
+          src="/icons/shop.svg"
+          alt="Оформить заявку"
+          width={30}
+          height={30}
+          className="object-contain"
+        />
                 </button>
 
                 {/* Бургер-меню */}
@@ -167,7 +174,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <div className="text-sm text-[#7C8A9A]">Присоединяйтесь к нашей команде</div>
                 </div>
               </a>
-              <a href="#" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <a href="/partnership" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Партнерство</div>
                   <div className="text-sm text-[#7C8A9A]">Станьте нашим партнером</div>
@@ -771,9 +778,6 @@ export default function AboutPage() {
     </div>
   </div>
 </section>
-
-
-<ProductsTeamsSection />
 
 
       {/* History */}
