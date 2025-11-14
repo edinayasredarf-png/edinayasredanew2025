@@ -100,7 +100,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-grey-84"></div>
+        <div className="border-t border-[#D4D4D8]"></div>
 
         {/* Footer Bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 text-[#313131] text-lg">
