@@ -19,21 +19,13 @@ interface LayoutProps {
 // ========================================
 const HashCleaner: React.FC = () => {
   useEffect(() => {
-    console.log('🔍 HashCleaner запущен');
-    console.log('📍 Текущий URL:', window.location.href);
-    console.log('📍 Hash:', window.location.hash);
-    console.log('📍 Pathname:', window.location.pathname);
-
     const cleanHash = () => {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
 
       // Удаляем ЛЮБОЙ якорь на главной странице
       if (hash && pathname === '/') {
-        console.log('🧹 Удаляем якорь:', hash);
         window.history.replaceState(null, '', pathname);
-        console.log('✅ Якорь удалён');
-        console.log('📍 Новый URL:', window.location.href);
       }
     };
 
@@ -42,7 +34,6 @@ const HashCleaner: React.FC = () => {
 
     // Следим за изменениями
     const handleChange = () => {
-      console.log('🔄 Обнаружено изменение URL');
       cleanHash();
     };
 
@@ -51,7 +42,6 @@ const HashCleaner: React.FC = () => {
 
     // Дополнительная проверка через задержку
     const timer = setTimeout(() => {
-      console.log('⏰ Повторная проверка через 100ms');
       cleanHash();
     }, 100);
 

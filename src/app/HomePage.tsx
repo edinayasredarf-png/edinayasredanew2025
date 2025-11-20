@@ -2,32 +2,67 @@
 
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
 import SupportersSection from '../components/SupportersSection';
-import WebinarSection from '../components/WebinarSection';
 import TerritoryControlSection from '../components/TerritoryControlSection';
-import VideoInvite from '../components/VideoInvite';
-
-
-
 import SplitStyleCards from '../components/SplitStyleCards';
 import CompanyBadgesProps from '../components/CompanyBadgesProps';
-
-
-import InterfaceSystem from '../components/InterfaceSystem';
-
-import SectionAllObjects from '../components/SectionAllObjects';
-import SectionMigration from '../components/SectionMigration';
-import SectionQuickStart from '../components/SectionQuickStart';
-import HomePosts from '../components/HomePosts';
-import HomeNews from '../components/HomeNews';
-import SectionExpertise from '../components/SectionExpertise';
-import SectionSubscribeChannels from '../components/SectionSubscribeChannels';
-import FAQ from '../components/FAQ';
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import BenefitsSection from "@/components/BenefitsSection";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
+// Динамические импорты для секций ниже fold (ленивая загрузка)
+const InterfaceSystem = dynamic(() => import('../components/InterfaceSystem'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const VideoInvite = dynamic(() => import('../components/VideoInvite'), {
+  loading: () => <div className="h-32 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const HomeNews = dynamic(() => import('../components/HomeNews'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const SectionAllObjects = dynamic(() => import('../components/SectionAllObjects'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const SectionMigration = dynamic(() => import('../components/SectionMigration'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const SectionQuickStart = dynamic(() => import('../components/SectionQuickStart'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const HomePosts = dynamic(() => import('../components/HomePosts'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const SectionExpertise = dynamic(() => import('../components/SectionExpertise'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const FAQ = dynamic(() => import('../components/FAQ'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
+
+const SectionSubscribeChannels = dynamic(() => import('../components/SectionSubscribeChannels'), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-2xl" />,
+  ssr: false
+});
 
 
 // ========================================

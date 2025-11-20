@@ -66,7 +66,7 @@ export default function SupportersSection({
                   fill
                   sizes="(max-width: 968px) 90px, 120px"
                   className="object-contain"
-                  priority={i < 3}
+                  loading="lazy"
                 />
               </div>
             </div>

@@ -27,30 +27,19 @@ const HeroSection: React.FC = () => {
               </Button>
             </div>
           </div>
-          {/* Правая часть: изображение (только для мобильных, на десктопе абсолютное) */}
-          <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
+          {/* Изображение: одно для всех устройств с адаптивными размерами */}
+          <div className="flex-1 w-full h-full relative flex justify-center items-end lg:absolute lg:right-0 lg:bottom-0 z-10 lg:w-[40%] lg:max-w-[600px] pointer-events-none">
             <Image
               src="/img/hero.webp"
               alt="Абстрактная иллюстрация цифрового управления"
               width={700}
               height={500}
-              className="w-full max-w-[500px] object-contain"
+              className="w-full max-w-[500px] lg:max-w-[600px] object-contain"
               priority
+              sizes="(max-width: 1024px) 500px, 600px"
               style={{ height: 'auto' }}
             />
           </div>
-        </div>
-        {/* Абсолютное изображение для десктопа — внутри контейнера */}
-        <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[600px] h-auto pointer-events-none">
-          <Image
-            src="/img/hero.webp"
-            alt="Абстрактная иллюстрация цифрового управления"
-            width={700}
-            height={500}
-            className="w-full object-contain"
-            priority
-            style={{ height: 'auto' }}
-          />
         </div>
       </div>
     </section>
