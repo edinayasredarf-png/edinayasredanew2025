@@ -80,7 +80,6 @@ export default function HomePage() {
 
       {/* Hero секция с главным заголовком */}
       <HeroSection />
-			<WebinarSection/>
 			<BenefitsSection/>
 			<SupportersSection/>
 			<TerritoryControlSection/>
