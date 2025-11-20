@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 interface Feature {
   imageSrc: string;
@@ -68,11 +69,14 @@ const SectionFeatures = () => {
   return (
     <section ref={sectionRef} className="h-screen flex overflow-hidden">
       {/* Левая часть с изображением */}
-      <div className="w-1/2 h-full flex items-center justify-center bg-gray-100">
-        <img
+      <div className="w-1/2 h-full flex items-center justify-center bg-gray-100 relative">
+        <Image
           src={features[activeIndex].imageSrc}
           alt={features[activeIndex].imageAlt}
+          width={800}
+          height={600}
           className="max-w-full max-h-full object-contain"
+          sizes="50vw"
         />
       </div>
 

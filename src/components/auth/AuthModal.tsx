@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
 
 interface AuthModalProps {
@@ -65,7 +66,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
-         <img
+         <Image
           src="/icons/close.svg"
           alt="Все новости"
           width={20}

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 type SmallCard = {
   title: string;
@@ -38,17 +39,17 @@ const BlueTrustWithScreen: React.FC<{
         {sideBgLeft && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-0 z-0 hidden sm:block w-[26%] min-w-[180px] max-w-[320px]"
+            className="pointer-events-none absolute inset-y-0 left-0 z-0 hidden sm:block w-[26%] min-w-[180px] max-w-[320px] relative"
           >
-            <img src={sideBgLeft} alt="" className="h-full w-full object-cover opacity-50" />
+            <Image src={sideBgLeft} alt="" fill className="object-cover opacity-50" sizes="(max-width: 640px) 0px, 320px" />
           </div>
         )}
         {sideBgRight && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden sm:block w-[26%] min-w-[180px] max-w-[360px]"
+            className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden sm:block w-[26%] min-w-[180px] max-w-[360px] relative"
           >
-            <img src={sideBgRight} alt="" className="h-full w-full object-cover opacity-50" />
+            <Image src={sideBgRight} alt="" fill className="object-cover opacity-50" sizes="(max-width: 640px) 0px, 360px" />
           </div>
         )}
 
@@ -74,10 +75,12 @@ const BlueTrustWithScreen: React.FC<{
                     key={idx}
                     className="rounded-2xl bg-white border border-white/80 px-5 py-5 lg:px-6 lg:py-6 flex flex-col"
                   >
-                    <div className="mb-4 h-[96px] w-[96px] md:h-[120px] md:w-[120px] rounded-[18px] border border-[#E6ECF4] bg-white flex items-center justify-center overflow-hidden">
-                      <img
+                    <div className="mb-4 h-[96px] w-[96px] md:h-[120px] md:w-[120px] rounded-[18px] border border-[#E6ECF4] bg-white flex items-center justify-center overflow-hidden relative">
+                      <Image
                         src={item.iconSrc}
                         alt={item.iconAlt || ''}
+                        width={88}
+                        height={88}
                         className="max-h-[74%] max-w-[74%] object-contain"
                       />
                     </div>
@@ -96,9 +99,7 @@ const BlueTrustWithScreen: React.FC<{
 
         {/* КАРТИНКА СПРАВА С РЕЖИМОМ НАЛОЖЕНИЯ SCREEN (только desktop) */}
         {!!screenSrc && (
-          <img
-            src={screenSrc}
-            alt=""
+          <div
             className="
               hidden md:block pointer-events-none
               absolute right-6 lg:right-10 top-1/2 -translate-y-1/2
@@ -112,7 +113,15 @@ const BlueTrustWithScreen: React.FC<{
               maskImage:
                 'linear-gradient(90deg, rgba(0,0,0,0) 0%, #000 14%, #000 96%, rgba(0,0,0,0) 100%)',
             }}
-          />
+          >
+            <Image
+              src={screenSrc}
+              alt=""
+              width={1960}
+              height={1080}
+              className="w-full h-auto"
+            />
+          </div>
         )}
       </div>
     </section>

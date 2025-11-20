@@ -110,9 +110,11 @@ export default function PartnershipPage() {
               </div>
 
               <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-                <img
+                <Image
                   src="/img/partner-hero.png"
                   alt="Иллюстрация партнёрской программы"
+                  width={520}
+                  height={400}
                   className="w-full max-w-[520px] object-contain"
                   style={{ height: "auto" }}
                 />
@@ -120,9 +122,11 @@ export default function PartnershipPage() {
             </div>
 
             <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[620px] h-full pointer-events-none">
-              <img
+              <Image
                 src="/img/partners/hero.png"
                 alt="Иллюстрация партнёрской программы"
+                width={620}
+                height={480}
                 className="w-full object-contain"
                 style={{ height: "auto" }}
               />
@@ -586,9 +590,11 @@ export default function PartnershipPage() {
 
         {/* Право: изображение (на мобиле уйдёт вниз автоматически) */}
         <div className=" flex items-end justify-center bg-[#F8FAFC]">
-          <img
+          <Image
             src="/img/partners/partners.png"
             alt="Иллюстрация партнёрства"
+            width={800}
+            height={600}
             className="w-full  h-auto "
           />
         </div>

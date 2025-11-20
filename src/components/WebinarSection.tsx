@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 
 const WebinarSection: React.FC = () => {
   return (
@@ -7,7 +8,7 @@ const WebinarSection: React.FC = () => {
       <div className="w-full max-w-[1022px] bg-white rounded-3xl overflow-hidden flex flex-col md:flex-row items-stretch">
         {/* Чёрный блок (слева на десктопе, сверху на мобильных) */}
         <div className="relative w-full md:w-[498px] h-[220px] md:h-[292px] bg-black md:m-2 md:rounded-2xl rounded-t-2xl overflow-hidden flex items-center justify-center">
-      <img src="/img/webinar.webp" alt="Webinar" className="w-full h-full object-cover" />
+      <Image src="/img/webinar.webp" alt="Webinar" fill className="object-cover" sizes="(max-width: 768px) 100vw, 498px" />
         </div>
 
         {/* Правая часть — текстовый контент */}

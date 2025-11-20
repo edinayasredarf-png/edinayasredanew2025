@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { sb_listNews, NewsItem } from '@/lib/blogStore';
 
@@ -113,10 +114,12 @@ function AdsCarousel() {
               // блокируем клик, если был drag — иначе по свайпу переходила бы ссылка
               onClick={(e) => { if (wasDragged.current) e.preventDefault(); }}
             >
-              <img
+              <Image
                 src={b.src}
                 alt={b.alt || `Баннер ${i + 1}`}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="287px"
                 draggable={false}
               />
             </a>
@@ -181,7 +184,7 @@ export default function RightSidebar() {
               className="h-8 px-3 rounded-lg border border-[#D1D3D8] text-[#313131] hover:border-[#313131]  text-sm flex items-center"
             >
               Все
-							<img
+							<Image
           src="/icons/arrow-right.svg"
           alt="Все новости"
           width={14}

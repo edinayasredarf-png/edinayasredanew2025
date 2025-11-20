@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LeftNav from '@/components/blog/LeftNav';
@@ -238,7 +239,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                     title="Оставить комментарий"
                     onClick={handleComment}
                   >
-                 <img
+                 <Image
           src="/icons/comments.svg"
           alt="Все новости"
           width={30}
@@ -253,7 +254,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                     onClick={handleFavorite}
                     disabled={loading}
                   >
-                <img
+                <Image
           src="/icons/favorite.svg"
           alt="Все новости"
           width={30}
@@ -269,7 +270,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                 </div>
 								  {/* Views */}
                   <div className="ml-auto flex items-center gap-1">
-									<img
+									<Image
           src="/icons/views.svg"
           alt="Все новости"
           width={20}
@@ -291,11 +292,13 @@ export default function PostPageClient({ slug }: { slug: string }) {
                         href={`/blog/${m.slug}`}
                         className="bg-white rounded-3xl p-4  hover:border-[#2777ff] transition block"
                       >
-                        <div className="w-full aspect-[16/10] rounded-2xl bg-[#F6F7F9] overflow-hidden ">
-                          <img
+                        <div className="w-full aspect-[16/10] rounded-2xl bg-[#F6F7F9] overflow-hidden relative">
+                          <Image
                             src={m.cover || 'https://placehold.co/400x225'}
                             alt={m.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 50vw"
                           />
                         </div>
                         <div className="mt-2 text-sm text-[#52555a]">

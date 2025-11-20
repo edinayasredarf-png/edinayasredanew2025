@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import { fileToDataURL } from '@/lib/blogStore';
 
 export default function CoverPicker({ value, onChange }: { value?: string; onChange: (v?: string)=>void; }) {
@@ -15,7 +16,7 @@ export default function CoverPicker({ value, onChange }: { value?: string; onCha
   };
   return (
     <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#F6F7F9] border flex items-center justify-center">
-      {value ? <img src={value} alt="cover" className="w-full h-full object-contain"/> : (
+      {value ? <Image src={value} alt="cover" fill className="object-contain" sizes="100vw"/> : (
         <div className="text-center px-6">
           <div className="text-[#111] font-medium">Обложка</div>
           <div className="text-sm text-[#52555a] mt-1">PNG/JPG/WebP</div>

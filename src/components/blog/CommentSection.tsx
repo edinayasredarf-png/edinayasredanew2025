@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Comment, sb_listComments, sb_createComment, sb_deleteComment } from '@/lib/commentsStore';
 import { authStore } from '@/lib/authStore';
 import AuthModal from '@/components/auth/AuthModal';
@@ -60,9 +61,11 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
       <div className="bg-gray-50 rounded-lg p-4 mb-3 font-[Raleway]">
         <div className="flex items-start gap-3">
           {comment.author_avatar ? (
-            <img
+            <Image
               src={comment.author_avatar}
               alt={comment.author_name}
+              width={32}
+              height={32}
               className="w-8 h-8 rounded-full"
             />
           ) : (

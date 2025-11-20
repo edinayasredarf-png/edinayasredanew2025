@@ -56,7 +56,7 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ open, onClose }) 
       <ModalBase open={open} onClose={onClose} ariaLabel="Получить консультацию">
         <div className="w-full md:w-[400px] p-4 flex flex-col justify-center relative font-[Raleway]">
           <div className="flex items-center gap-3 mb-6" style={{paddingTop: '1rem', paddingLeft: '1rem', paddingRight: '1rem'}}>
-            <img src="/icons/logo-mobile-black.svg" alt="Логотип" width={40} height={40} className="w-10 h-10" onError={e => e.currentTarget.style.display='none'} />
+            <Image src="/icons/logo-mobile-black.svg" alt="Логотип" width={40} height={40} className="w-10 h-10" />
             <h2 className="text-2xl md:text-2xl font-medium text-[#313131] flex-1">Получить консультацию</h2>
             <button
               onClick={handleCloseClick}

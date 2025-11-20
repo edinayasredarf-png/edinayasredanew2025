@@ -73,7 +73,7 @@ export default function Cases2Page() {
                       <div className={`bg-[#F6F7F9] rounded-xl p-4 flex flex-col ${isWide ? 'md:flex-row' : ''} h-full items-stretch relative overflow-hidden min-h-[420px] ${isWide ? 'md:min-h-[360px]' : ''}`}>
                         <div className={`w-full mb-4 ${isWide ? 'md:w-1/2 md:flex md:justify-center md:items-center md:ml-4 md:order-2' : ''}`}>
                           <div className={`relative w-full h-auto rounded-xl flex items-center justify-center overflow-hidden ${isWide ? 'md:w-full md:h-auto' : ''}`}>
-                            <img src={it.cover || '/img/cases/case1.png'} alt={it.title} className="w-full h-full object-cover" />
+                            <Image src={it.cover || '/img/cases/case1.png'} alt={it.title} width={600} height={400} className="w-full h-full object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                           </div>
                         </div>
                         <div className={`flex flex-col justify-between flex-1 ${isWide ? 'md:w-1/2 md:order-1' : ''}`}>

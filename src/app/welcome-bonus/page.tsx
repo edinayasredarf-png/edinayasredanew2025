@@ -48,9 +48,11 @@ export default function WelcomeBonusPage() {
 
               {/* Картинка — на мобиле снизу, на десктопе справа */}
               <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-                <img
+                <Image
                   src="/img/bonus-hero.png"
                   alt="Иллюстрация бонуса"
+                  width={520}
+                  height={400}
                   className="w-full max-w-[520px] object-contain"
                   style={{ height: "auto" }}
                 />
@@ -59,9 +61,11 @@ export default function WelcomeBonusPage() {
 
             {/* Картинка справа (desktop) */}
             <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[620px] h-auto pointer-events-none">
-              <img
+              <Image
                 src="/img/bonus-hero.png"
                 alt="Иллюстрация бонуса"
+                width={620}
+                height={480}
                 className="w-full object-contain"
                 style={{ height: "auto" }}
               />
@@ -275,9 +279,11 @@ export default function WelcomeBonusPage() {
 
                 {/* Право — картинка */}
                 <div className="p-8 md:p-12 flex items-end justify-center bg-[#F8FAFC]">
-                  <img
+                  <Image
                     src="/img/bonus-cta.png"
                     alt="Иллюстрация бонуса"
+                    width={520}
+                    height={400}
                     className="w-full max-w-[520px] h-auto object-contain"
                   />
                 </div>

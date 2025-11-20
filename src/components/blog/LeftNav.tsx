@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface ItemProps {
@@ -16,7 +17,7 @@ function Item({ active, label, icon, onClick }: ItemProps) {
       onClick={onClick}
     >
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${active ? 'bg-[#f2f3f7]' : 'bg-white '}`}>
-        <img src={icon} alt={label} className="w-5 h-5" />
+        <Image src={icon} alt={label} width={20} height={20} className="w-5 h-5" />
       </div>
       <div className={`${active ? 'text-[#313131]' : 'text-[#52555a]'} text-base`}>{label}</div>
     </div>
@@ -58,16 +59,16 @@ export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProp
 
         <div className="flex gap-3">
           <a href="https://vk.com/edinayasredarf" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <img src="/icons/vk.svg" alt="VK" className="w-4 h-4 brightness-0 invert" />
+            <Image src="/icons/vk.svg" alt="VK" width={16} height={16} className="brightness-0 invert" />
           </a>
           <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <img src="/icons/tg.svg" alt="Telegram" className="w-4 h-4 brightness-0 invert" />
+            <Image src="/icons/tg.svg" alt="Telegram" width={16} height={16} className="brightness-0 invert" />
           </a>
           <a href="https://dzen.ru/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <img src="/icons/dzen.svg" alt="Дзен" className="w-4 h-4 brightness-0 invert" />
+            <Image src="/icons/dzen.svg" alt="Дзен" width={16} height={16} className="brightness-0 invert" />
           </a>
           <a href="https://vkvideo.ru/@edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <img src="/icons/vkvideo.svg" alt="VK Video" className="w-4 h-4 brightness-0 invert" />
+            <Image src="/icons/vkvideo.svg" alt="VK Video" width={16} height={16} className="brightness-0 invert" />
           </a>
         </div>
 

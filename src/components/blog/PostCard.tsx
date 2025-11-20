@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import React from 'react';
+import Image from 'next/image';
 import { BlogPost } from '@/lib/blogStore';
 
 export default function PostCard({ p }: { p: BlogPost }) {
@@ -20,8 +21,8 @@ export default function PostCard({ p }: { p: BlogPost }) {
   return (
     <article className="w-full max-w-[472px] bg-white rounded-3xl p-4 font-[Raleway] font-medium lining-nums ">
       <Link href={`/blog/${p.slug}`} className="block">
-        <div className="w-full aspect-[16/9] bg-[#f2f3f7] rounded-2xl overflow-hidden">
-          <img src={p.cover || 'https://placehold.co/340x192'} alt={p.title} className="w-full h-full object-cover" />
+        <div className="w-full aspect-[16/9] bg-[#f2f3f7] rounded-2xl overflow-hidden relative">
+          <Image src={p.cover || 'https://placehold.co/340x192'} alt={p.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 472px" />
         </div>
       </Link>
       <div className="pt-3">
@@ -48,8 +49,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
 
       <div className="mt-4 flex items-center gap-2 text-sm text-[#52555a]">
         <div className="ml-auto flex items-center gap-1">
-
-				<img
+				<Image
           src="/icons/views.svg"
           alt="Все новости"
           width={20}

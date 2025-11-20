@@ -90,9 +90,11 @@ export default function ServicesPage() {
 
               {/* Право — изображение (на мобиле уходит вниз) */}
               <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-                <img
-                  src="/img/price.png" // при желании замените на /img/services-hero.png
+                <Image
+                  src="/img/price.png"
                   alt="Иллюстрация услуг"
+                  width={520}
+                  height={400}
                   className="w-full max-w-[520px] object-contain"
                   style={{ height: "auto" }}
                 />
@@ -101,9 +103,11 @@ export default function ServicesPage() {
 
             {/* Картинка справа на десктопе */}
             <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[620px] h-auto pointer-events-none">
-              <img
+              <Image
                 src="/img/price.png"
                 alt="Иллюстрация услуг"
+                width={620}
+                height={480}
                 className="w-full object-contain"
                 style={{ height: "auto" }}
               />
@@ -275,9 +279,11 @@ export default function ServicesPage() {
 
                 {/* Право — изображение */}
                 <div className="p-8 md:p-12 flex items-end justify-center bg-[#F8FAFC]">
-                  <img
-                    src="/img/price.png" // можно заменить на тематичную /img/services-cta.png
+                  <Image
+                    src="/img/price.png"
                     alt="Иллюстрация к услугам"
+                    width={520}
+                    height={400}
                     className="w-full max-w-[520px] h-auto object-contain"
                   />
                 </div>

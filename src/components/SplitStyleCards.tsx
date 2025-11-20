@@ -39,12 +39,12 @@ function usePrefersReducedMotion() {
 
 function usePreloadNeighbors(items: Card[], index: number) {
   useEffect(() => {
-    const preload = (src?: string) => { 
-      if (!src || typeof window === 'undefined') return; 
-      const img = new window.Image(); 
-      img.src = src; 
-      /* @ts-ignore */ 
-      img.decode?.().catch(() => {}); 
+    const preload = (src?: string) => {
+      if (!src || typeof window === 'undefined') return;
+      const img = new window.Image();
+      img.src = src;
+      /* @ts-ignore */
+      img.decode?.().catch(() => {});
     };
     if (!items.length) return;
     preload(items[(index + 1) % items.length]?.image);

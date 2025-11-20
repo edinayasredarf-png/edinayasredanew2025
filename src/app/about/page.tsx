@@ -119,7 +119,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <div className="flex items-center gap-4 ml-8">
                 {/* Иконка телефона */}
                 <a href="tel:88005505612" className="hidden lg:flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-300 ease-out ">
-								<img
+								<Image
           src="/icons/phone.svg"
           alt="Все новости"
           width={30}
@@ -133,7 +133,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   onClick={openConsult}
                   className="hidden lg:flex items-center justify-center w-12 h-12 bg-[#0077FF] rounded-xl hover:bg-[#005fcc] transition-all duration-300 ease-out "
                 >
-                <img
+                <Image
           src="/icons/shop.svg"
           alt="Оформить заявку"
           width={30}
@@ -533,11 +533,12 @@ export default function AboutPage() {
               Единая Среда
             </h3>
             <div className="w-[42px] h-[42px] rounded-lg flex items-center justify-center">
-              <img
+              <Image
                 src="/icons/es-blue.svg"
                 alt="Единая Среда"
+                width={42}
+                height={42}
                 className="w-full max-w-[500px] object-contain"
-                style={{ height: 'auto' }}
               />
             </div>
           </Link>
@@ -584,11 +585,12 @@ export default function AboutPage() {
               MyRoots
             </h3>
             <div className="w-[42px] h-[42px] rounded-lg flex items-center justify-center">
-              <img
+              <Image
                 src="/icons/myroots.svg"
                 alt="MyRoots"
+                width={42}
+                height={42}
                 className="w-full max-w-[500px] object-contain"
-                style={{ height: 'auto' }}
               />
             </div>
           </Link>
@@ -635,11 +637,12 @@ export default function AboutPage() {
               Область Развития
             </h3>
             <div className="w-[64px] h-[42px] rounded-lg flex items-center justify-center">
-              <img
+              <Image
                 src="/icons/oblastrazvitia.svg"
                 alt="Область Развития"
+                width={64}
+                height={42}
                 className="w-full max-w-[500px] object-contain"
-                style={{ height: 'auto' }}
               />
             </div>
           </Link>
@@ -811,11 +814,12 @@ export default function AboutPage() {
               {/* Стрелка между элементами */}
               {index < historyItems.length - 1 && (
                 <div className="absolute top-2/8 right-4 transform translate-x-1/20 -translate-y-2/3">
-                   <img
+                   <Image
                 src="/icons/arrow.svg"
                 alt="Единая Среда"
+                width={50}
+                height={50}
                 className="w-full max-w-[500px] object-contain"
-                style={{ height: 'auto' }}
               />
                 </div>
               )}

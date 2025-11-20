@@ -488,7 +488,7 @@ export default function ImplementationsPage() {
                 className="inline-flex items-center gap-2 rounded-b-xl bg-[#2777ff] px-5 py-3"
                 aria-label="На главную"
               >
-                <img src="/img/logo.svg" width={120} height={36} alt="единая среда.рф" className="h-9 w-auto" />
+                <Image src="/img/logo.svg" width={120} height={36} alt="единая среда.рф" className="h-9 w-auto" />
                 <span className="sr-only">единая среда.рф</span>
               </a>
             </div>

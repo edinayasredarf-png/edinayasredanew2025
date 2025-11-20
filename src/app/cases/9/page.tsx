@@ -295,11 +295,13 @@ const Case9Inner: React.FC = () => {
               href={`/cases/${m.id}`}
               className="bg-white rounded-3xl p-6 hover:ring-1 hover:ring-[#0077FF] transition"
             >
-              <div className="w-full h-64 rounded-xl bg-[#F6F7F9] overflow-hidden flex items-center justify-center">
-                <img
+              <div className="w-full h-64 rounded-xl bg-[#F6F7F9] overflow-hidden flex items-center justify-center relative">
+                <Image
                   src={caseImages[(m.id as number) - 1] || caseImages[0]}
                   alt={m.title}
-                  className="w-full h-auto object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
                 />
               </div>
               <div className="mt-5 text-sm text-gray-500">{m.industry}</div>

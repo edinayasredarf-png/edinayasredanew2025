@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform, spring } from "framer-motion";
 import { useModal } from "./ModalProvider";
 
@@ -23,7 +24,7 @@ const IconSquareOutlined: React.FC<{ icon?: string; alt?: string; className?: st
     className={`flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-white ${className}`}
     aria-hidden={!alt}
   >
-    {icon ? <img src={icon} alt={alt} className="h-6 w-6 object-contain" /> : <div className="h-6 w-6" />}
+    {icon ? <Image src={icon} alt={alt} width={24} height={24} className="h-6 w-6 object-contain" /> : <div className="h-6 w-6" />}
   </div>
 );
 

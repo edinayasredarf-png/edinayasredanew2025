@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { NewsItem, sb_listNews } from '@/lib/blogStore';
 
@@ -52,8 +53,8 @@ export default function RightSidebar() {
           </div>
         </div>
 
-        <div className="rounded-3xl overflow-hidden border">
-          <img src="https://placehold.co/286x424" alt="banner" className="w-full h-auto"/>
+        <div className="rounded-3xl overflow-hidden border relative w-full aspect-[286/424]">
+          <Image src="https://placehold.co/286x424" alt="banner" fill className="object-cover" sizes="287px"/>
         </div>
       </div>
     </aside>

@@ -97,18 +97,22 @@ export default function InventoryBurialsPage() {
               </div>
             </div>
             <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-              <img
+              <Image
                 src="/img/cemetery1.png"
                 alt="Инвентаризация мест захоронений"
+                width={500}
+                height={400}
                 className="w-full max-w-[500px] object-contain"
                 style={{ height: 'auto' }}
               />
             </div>
           </div>
           <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[500px] h-auto pointer-events-none">
-            <img
+            <Image
                 src="/img/cemetery1.png"
 								alt="Инвентаризация мест захоронений"
+              width={500}
+              height={400}
               className="w-full object-contain"
               style={{ height: 'auto' }}
             />

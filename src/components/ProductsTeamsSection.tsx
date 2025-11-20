@@ -17,9 +17,11 @@ const ProductsTeamsSection = () => {
       name: "Единая Среда",
       tabIcon: "/icons/es-blue.svg",
       icon: (
-        <img
+        <Image
           src="/icons/es-blue.svg"
           alt="Единая Среда"
+          width={500}
+          height={300}
           className="w-full max-w-[500px] object-contain"
           style={{ height: "auto" }}
         />
@@ -36,9 +38,11 @@ const ProductsTeamsSection = () => {
       name: "MyRoots",
       tabIcon: "/icons/myroots.svg",
       icon: (
-        <img
+        <Image
           src="/icons/myroots.svg"
           alt="Мои Корни"
+          width={50}
+          height={50}
           className="w-full max-w-[50px] object-contain"
           style={{ height: "auto" }}
         />
@@ -56,9 +60,11 @@ const ProductsTeamsSection = () => {
       name: "Область Развития",
       tabIcon: "/icons/oblastrazvitia.svg",
       icon: (
-        <img
+        <Image
           src="/icons/oblastrazvitia.svg"
           alt="Область Развития"
+          width={50}
+          height={50}
           className="w-full max-w-[50px] object-contain"
           style={{ height: "auto" }}
         />

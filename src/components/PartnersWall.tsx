@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
 
 /* -------- данные -------- */
@@ -41,9 +42,11 @@ const LogoCard: React.FC<Logo> = ({ src, alt, href }) => (
       flex items-center justify-center
     "
   >
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={120}
+      height={48}
       className="max-h-10 md:max-h-12 w-auto object-contain"
       loading="lazy"
     />

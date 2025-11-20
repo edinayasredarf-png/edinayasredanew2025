@@ -237,11 +237,11 @@ const Layout = ({ children }: LayoutProps) => {
               <a href="#" className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-base font-[Raleway] font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 open-consult-modal">Получить консультацию</a>
             </div>
             <div className="flex items-center gap-6 mt-8">
-              <a href="https://t.me/edinayasredarf" title="Telegram"><img src="/icons/tg.svg" width={24} height={24} alt="Telegram" /></a>
-              <a href="https://vk.com/edinayasredarf" title="VK"><img src="/icons/vk.svg" width={24} height={24} alt="VK" /></a>
-              <a href="https://vkvideo.ru/@edinayasreda" title="VK Video"><img src="/icons/vkvideo.svg" width={24} height={24} alt="VK Video" /></a>
-              <a href="https://dzen.ru/edinayasreda" title="Dzen"><img src="/icons/dzen.svg" width={24} height={24} alt="Dzen" /></a>
-              <a href="https://www.youtube.com/@edinayasreda" title="Youtube"><img src="/icons/youtube.svg" width={24} height={24} alt="Youtube" /></a>
+              <a href="https://t.me/edinayasredarf" title="Telegram"><Image src="/icons/tg.svg" width={24} height={24} alt="Telegram" /></a>
+              <a href="https://vk.com/edinayasredarf" title="VK"><Image src="/icons/vk.svg" width={24} height={24} alt="VK" /></a>
+              <a href="https://vkvideo.ru/@edinayasreda" title="VK Video"><Image src="/icons/vkvideo.svg" width={24} height={24} alt="VK Video" /></a>
+              <a href="https://dzen.ru/edinayasreda" title="Dzen"><Image src="/icons/dzen.svg" width={24} height={24} alt="Dzen" /></a>
+              <a href="https://www.youtube.com/@edinayasreda" title="Youtube"><Image src="/icons/youtube.svg" width={24} height={24} alt="Youtube" /></a>
             </div>
           </div>
         )}

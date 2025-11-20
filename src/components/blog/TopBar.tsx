@@ -3,6 +3,7 @@
 // TopBar — белый поиск (desktop) крупнее и по центру, без затемнения фона
 import Link from 'next/link';
 import React, { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import MobileSearch from './MobileSearch';
@@ -71,7 +72,7 @@ export default function TopBar() {
           className="w-[46px] h-[46px] rounded-xl overflow-hidden shrink-0"
           aria-label="Logo"
         >
-          <img src="/icons/es-blue.svg" alt="logo" className="w-full h-full object-contain" />
+          <Image src="/icons/es-blue.svg" alt="logo" width={46} height={46} className="w-full h-full object-contain" />
         </Link>
 
         {/* ЦЕНТРАЛЬНЫЙ ПОИСК (desktop) — по центру, шире и выше */}
@@ -97,7 +98,7 @@ export default function TopBar() {
               aria-label="Найти"
               className="absolute left-2 top-1/2 -translate-y-1/2 w-[44px] h-[44px] rounded-lg flex items-center justify-center hover:bg-black/5 transition"
             >
-              	<img
+              	<Image
           src="/icons/search.svg"
           alt="Поиск"
           width={20}
@@ -148,7 +149,7 @@ export default function TopBar() {
             className="w-[40px] h-[40px] rounded-xl bg-white flex items-center justify-center hover:bg-gray-50"
             aria-label="Открыть поиск"
           >
-            	<img
+            	<Image
           src="/icons/search.svg"
           alt="Все новости"
           width={20}
@@ -163,7 +164,7 @@ export default function TopBar() {
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
               aria-label="Написать"
             >
-	<img
+	<Image
           src="/icons/plus.svg"
           alt="Написать"
           width={20}
@@ -176,7 +177,7 @@ export default function TopBar() {
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
 
               aria-label="Войти"
-            ><img
+            ><Image
 						src="/icons/sing_in.svg"
 						alt="Войти в  профиль"
 						width={20}
@@ -191,7 +192,7 @@ export default function TopBar() {
               className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
               aria-label="Профиль"
             >
-           	<img
+           	<Image
           src="/icons/profile.svg"
           alt="Ваш профиль"
           width={20}
@@ -209,7 +210,7 @@ export default function TopBar() {
               aria-expanded={showProfileMenu}
               aria-label="Меню профиля"
             >
-              <img src="/icons/blog/podpiski.svg" alt="Профиль" className="w-5 h-5" />
+              <Image src="/icons/blog/podpiski.svg" alt="Профиль" width={20} height={20} className="w-5 h-5" />
             </button>
 
             {showProfileMenu && (
@@ -229,7 +230,7 @@ export default function TopBar() {
                         onClick={() => setShowProfileMenu(false)}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                       >
-                      	<img
+                      	<Image
           src="/icons/admin.svg"
           alt="Админ панель"
           width={20}
@@ -244,7 +245,7 @@ export default function TopBar() {
                       onClick={() => setShowProfileMenu(false)}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-                    	<img
+                    	<Image
           src="/icons/profile.svg"
           alt="Личный кабинет"
           width={20}
@@ -260,7 +261,7 @@ export default function TopBar() {
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
                       >
-                       	<img
+                       	<Image
           src="/icons/sign_out.svg"
           alt="Выйти из профиля"
           width={20}
@@ -278,7 +279,7 @@ export default function TopBar() {
                       }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-	<img
+	<Image
           src="/icons/sign_in.svg"
           alt="Войти в профиль"
           width={20}
@@ -299,7 +300,7 @@ export default function TopBar() {
           {isEditor && (
             <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
               <span className="hidden sm:inline">Написать</span>
-              	<img
+              	<Image
           src="/icons/plus.svg"
           alt="Все новости"
           width={20}
@@ -315,7 +316,7 @@ export default function TopBar() {
               className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition"
             >
               <span className="hidden sm:inline">Войти</span>
-							<img
+							<Image
 						src="/icons/sing_in.svg"
 						alt="Войти в  профиль"
 						width={20}
@@ -331,7 +332,7 @@ export default function TopBar() {
                 aria-haspopup="menu"
                 aria-expanded={showProfileMenu}
               >
-                <img src="/icons/blog/podpiski.svg" alt="Профиль" className="w-5 h-5" />
+                <Image src="/icons/blog/podpiski.svg" alt="Профиль" width={20} height={20} className="w-5 h-5" />
               </button>
 
               {showProfileMenu && (
@@ -348,7 +349,7 @@ export default function TopBar() {
                       onClick={() => setShowProfileMenu(false)}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-                      	<img
+                      	<Image
           src="/icons/admin.svg"
           alt="Админ панель"
           width={14}
@@ -362,7 +363,7 @@ export default function TopBar() {
                       onClick={() => setShowProfileMenu(false)}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
                     >
-                   	<img
+                   	<Image
           src="/icons/profile.svg"
           alt="Личный кабинет"
           width={20}
@@ -378,7 +379,7 @@ export default function TopBar() {
                       }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
                     >
-                  	<img
+                  	<Image
           src="/icons/sign_out.svg"
           alt="Выйти из профиля "
           width={20}

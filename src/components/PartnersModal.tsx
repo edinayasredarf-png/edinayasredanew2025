@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { ModalBase } from "./Modal";
 
 interface PartnersModalProps {
@@ -44,13 +45,12 @@ const PartnersModal: React.FC<PartnersModalProps> = ({ open, onClose }) => {
       <ModalBase open={open} onClose={onClose} ariaLabel="Заявка на сотрудничество">
         <div className="w-full md:w-[400px] p-4 flex flex-col justify-center relative font-[Raleway]">
           <div className="flex items-center gap-3 mb-6" style={{ paddingTop: "1rem", paddingLeft: "1rem", paddingRight: "1rem" }}>
-            <img
+            <Image
               src="/icons/logo-mobile-black.svg"
               alt="Логотип"
               width={40}
               height={40}
               className="w-10 h-10"
-              onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
             />
             <h2 className="text-2xl md:text-2xl font-medium text-gray-800 flex-1">Заявка на сотрудничество</h2>
             <button

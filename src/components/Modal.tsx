@@ -130,7 +130,7 @@ const Modal: React.FC<ModalProps> = ({
           </div>
           <div className="bg-white/10 rounded-2xl p-4 flex flex-col items-start mt-auto">
             <div className="flex items-center gap-3 mb-2">
-              <img src="/img/box.png" alt="Бонус" width={40} height={40} className="w-full h-full" />
+              <Image src="/img/box.png" alt="Бонус" width={40} height={40} className="w-full h-full" />
             </div>
           </div>
         </div>

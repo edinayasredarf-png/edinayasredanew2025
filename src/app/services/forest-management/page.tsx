@@ -1,6 +1,7 @@
 "use client";
 import Layout from '../../../components/Layout';
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 export default function ForestManagementPage() {
   const [openItems, setOpenItems] = useState<number[]>([]);
@@ -51,18 +52,22 @@ export default function ForestManagementPage() {
                 </div>
               </div>
               <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-                <img
+                <Image
                   src="/img/les.png"
                   alt="Лесоустройство"
+                  width={500}
+                  height={400}
                   className="w-full max-w-[500px] object-contain"
                   style={{ height: 'auto' }}
                 />
               </div>
             </div>
             <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[500px] h-auto pointer-events-none">
-              <img
+              <Image
                 src="/img/les.png"
                 alt="Лесоустройство"
+                width={500}
+                height={400}
                 className="w-full object-contain"
                 style={{ height: 'auto' }}
               />
@@ -195,9 +200,11 @@ export default function ForestManagementPage() {
                   </button>
                 </div>
                 <div className="flex-shrink-0 flex justify-center items-end w-full md:w-auto mt-8 md:mt-0 md:ml-8">
-                  <img
+                  <Image
                     src="/img/услуга_лес.png"
                     alt="Лесоустройство"
+                    width={176}
+                    height={200}
                     className="w-auto h-auto max-w-[176px] object-contain"
                   />
                 </div>
@@ -233,9 +240,11 @@ export default function ForestManagementPage() {
                   </ul>
                 </div>
                 <div className="flex-shrink-0 flex justify-center items-end w-full md:w-auto mt-8 md:mt-0 md:ml-8">
-                  <img
+                  <Image
                     src="/img/problem.png"
                     alt="Проблемы"
+                    width={176}
+                    height={200}
                     className="w-auto h-auto max-w-[176px] object-contain"
                   />
                 </div>

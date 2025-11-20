@@ -139,24 +139,26 @@ const CasesPage: React.FC = () => {
 
       {/* Мобильное изображение */}
       <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-        <img
+        <Image
           src="/img/cases/cases-hero.svg"
           alt="Иллюстрация кейсов"
+          width={500}
+          height={400}
           className="w-full max-w-[500px] object-contain"
           style={{ height: 'auto' }}
-          onError={(e) => (e.currentTarget.style.display = 'none')}
         />
       </div>
     </div>
 
     {/* Десктопное изображение справа */}
     <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[450px] h-auto pointer-events-none">
-      <img
+      <Image
         src="/img/cases/cases-hero.svg"
         alt="Иллюстрация кейсов"
+        width={450}
+        height={360}
         className="w-full object-contain"
         style={{ height: 'auto' }}
-        onError={(e) => (e.currentTarget.style.display = 'none')}
       />
     </div>
   </div>
@@ -294,10 +296,13 @@ const CasesPage: React.FC = () => {
                     {/* Изображение */}
                     <div className={`w-full mb-4 ${isWide ? 'md:w-1/2 md:flex md:justify-center md:items-center md:ml-4 md:order-2' : ''}`}>
                       <div className={`relative w-full h-auto rounded-xl flex items-center justify-center overflow-hidden ${isWide ? 'md:w-full md:h-auto' : ''}`}>
-                        <img
+                        <Image
                           src={(dynImg) || (caseImages[caseItem.id - 1] || caseImages[0]) || '/img/cases/case1.png'}
                           alt={caseItem.title}
+                          width={600}
+                          height={400}
                           className="w-full h-full object-cover"
+                          sizes="(max-width: 768px) 100vw, 50vw"
                         />
                       </div>
                     </div>
