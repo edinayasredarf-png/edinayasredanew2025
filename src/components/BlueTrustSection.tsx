@@ -120,7 +120,7 @@ const BlueTrustWithScreen: React.FC<{
               width={1960}
               height={1080}
               className="w-full h-auto"
-            />
+          />
           </div>
         )}
       </div>

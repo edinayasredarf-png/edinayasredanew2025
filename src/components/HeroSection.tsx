@@ -28,7 +28,7 @@ const HeroSection: React.FC = () => {
             </div>
           </div>
           {/* Изображение: одно для всех устройств с адаптивными размерами */}
-          <div className="flex-1 w-full h-full relative flex justify-center items-end lg:absolute lg:right-0 lg:bottom-0 z-10 lg:w-[40%] lg:max-w-[600px] pointer-events-none">
+          <div className="flex-1 w-full h-full relative flex justify-center items-end lg:absolute lg:right-0 lg:bottom-[-80px] z-10 lg:w-[40%] lg:max-w-[600px] pointer-events-none">
             <Image
               src="/img/hero.webp"
               alt="Абстрактная иллюстрация цифрового управления"
