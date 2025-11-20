@@ -83,7 +83,9 @@ const QuickStartCard: React.FC<CardProps> = ({
 
           <div className="mt-auto">
             {href ? (
-              <ButtonLike as="link" href={href} label={buttonLabel} />
+              <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] hover:ring-1 hover:ring-[#0077FF] transition-colors w-full md:w-[201.5px]">
+                {buttonLabel}
+              </span>
             ) : (
               <ButtonLike as="button" onClick={onClick!} label={buttonLabel} />
             )}

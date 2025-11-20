@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 import { useModal } from "./ModalProvider";
 
 type Benefit = { title: string; desc: string };
@@ -50,12 +51,17 @@ export default function BenefitsSection({
         <div
           className={`relative rounded-2xl hidden lg:flex ${leftBg} h-[280px] lg:min-h-[344px] p-3 items-center justify-center`}
         >
-          <img
-            src={imageSrc}
-            alt={imageAlt}
-            className="w-[50%] h-[50%] object-contain"
-            loading="lazy"
-          />
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative w-[60%] max-w-[200px] aspect-square">
+              <Image
+                src={imageSrc}
+                alt={imageAlt}
+                fill
+                className="object-contain"
+                sizes="(max-width: 1024px) 160px, 200px"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Правая часть — карточки */}
@@ -68,12 +74,15 @@ export default function BenefitsSection({
               {/* На мобильных изображение появляется в первой карточке над текстом, слева */}
               {idx === 0 && (
                 <div className="md:hidden mb-3 -mt-1 flex justify-start">
-                  <img
-                    src={imageSrc}
-                    alt={imageAlt}
-                    className="w-[60px] h-[60px] object-contain opacity-90"
-                    loading="lazy"
-                  />
+                  <div className="relative w-[60px] h-[60px]">
+                    <Image
+                      src={imageSrc}
+                      alt={imageAlt}
+                      fill
+                      className="object-contain opacity-90"
+                      sizes="60px"
+                    />
+                  </div>
                 </div>
               )}
 

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 type BadgeItem = {
   title: string;
@@ -28,13 +29,13 @@ const Card: React.FC<BadgeItem> = ({ title, iconSrc, iconAlt }) => (
       <div className="w-full h-[250px] bg-[#f6f7f9] rounded-2xl relative overflow-hidden">
         {/* Иконка */}
         <div className="absolute left-1/2 -translate-x-1/2 top-[18px] w-[110px] h-[110px] rounded-[18px] outline outline-1 outline-offset-[-1px] outline-[#e6ecf4] overflow-hidden flex items-center justify-center bg-white/0">
-          <img
+          <Image
             src={iconSrc}
             alt={iconAlt ?? ''}
-            className="block w-[80px] h-[80px] object-contain"
-            draggable={false}
+            width={80}
+            height={80}
+            className="w-[80px] h-[80px] object-contain"
             loading="lazy"
-            decoding="async"
           />
         </div>
 

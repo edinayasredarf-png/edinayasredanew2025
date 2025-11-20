@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Card = { title: string; subtitle: string; image: string };
@@ -38,7 +39,13 @@ function usePrefersReducedMotion() {
 
 function usePreloadNeighbors(items: Card[], index: number) {
   useEffect(() => {
-    const preload = (src?: string) => { if (!src) return; const img = new Image(); img.src = src; /* @ts-ignore */ img.decode?.().catch(() => {}); };
+    const preload = (src?: string) => { 
+      if (!src || typeof window === 'undefined') return; 
+      const img = new window.Image(); 
+      img.src = src; 
+      /* @ts-ignore */ 
+      img.decode?.().catch(() => {}); 
+    };
     if (!items.length) return;
     preload(items[(index + 1) % items.length]?.image);
     preload(items[(index - 1 + items.length) % items.length]?.image);
@@ -285,14 +292,15 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
 
                 {/* IMAGE */}
                 <div className="min-h-0 p-1 md:p-2 flex">
-                  <div className="w-full h-full bg-[#f6f7f9] rounded-2xl overflow-hidden flex items-end justify-center">
-                    <img
+                  <div className="relative w-full h-full bg-[#f6f7f9] rounded-2xl overflow-hidden">
+                    <Image
                       src={items[index].image}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      draggable={false}
-                      className="block max-h-[100%] max-w-[100%] object-contain pointer-events-none select-none"
+                      alt={items[index].title}
+                      fill
+                      className="object-contain pointer-events-none select-none"
+                      sizes="(max-width: 768px) 100vw, 540px"
+                      priority={index === 0}
+                      style={{ objectPosition: 'bottom center' }}
                     />
                   </div>
                 </div>
