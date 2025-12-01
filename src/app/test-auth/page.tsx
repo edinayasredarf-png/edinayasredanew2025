@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authStore } from '@/lib/authStore';
 import Image from 'next/image';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 
-export default function TestAuthPage() {
+function TestAuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -445,3 +445,19 @@ export default function TestAuthPage() {
   );
 }
 
+export default function TestAuthPage() {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4"></div>
+            <p className="text-[#313131] font-[Raleway]">Загрузка...</p>
+          </div>
+        </div>
+      </Layout>
+    }>
+      <TestAuthPageInner />
+    </Suspense>
+  );
+}
