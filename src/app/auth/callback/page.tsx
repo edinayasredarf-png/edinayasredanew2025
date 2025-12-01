@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
 import { exchangeCodeForToken, getUserInfo } from '@/lib/oauth';
 import Layout from '@/components/Layout';
 
-export default function AuthCallbackPage() {
+function AuthCallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -171,5 +171,20 @@ export default function AuthCallbackPage() {
   );
 }
 
-
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4"></div>
+            <p className="text-[#313131] font-[Raleway]">Загрузка...</p>
+          </div>
+        </div>
+      </Layout>
+    }>
+      <AuthCallbackInner />
+    </Suspense>
+  );
+}
 
