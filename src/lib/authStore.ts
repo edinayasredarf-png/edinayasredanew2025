@@ -247,18 +247,74 @@ export class AuthStore {
     return data;
   }
 
-  async signInWithProvider(provider: 'google') {
+  async signInWithProvider(provider: 'google' | 'yandex' | 'vk') {
+    // Для Google используем Supabase OAuth
+    if (provider === 'google') {
+      const sb = getSupabase();
+      if (!sb) throw new Error('Supabase not initialized');
+
+      const { data, error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+      return data;
+    }
+
+    // Для Яндекс и ВК используем кастомную OAuth реализацию
+    if (provider === 'yandex' || provider === 'vk') {
+      const { initiateOAuth } = await import('./oauth');
+      initiateOAuth(provider);
+      // initiateOAuth перенаправляет пользователя, поэтому мы не возвращаем данные здесь
+      return { url: null };
+    }
+
+    throw new Error(`Unsupported provider: ${provider}`);
+  }
+
+  async signUpWithPhone(phone: string) {
     const sb = getSupabase();
     if (!sb) throw new Error('Supabase not initialized');
 
-    const { data, error } = await sb.auth.signInWithOAuth({
-      provider,
+    // Нормализуем номер телефона (убираем пробелы, скобки и т.д.)
+    const normalizedPhone = phone.replace(/\s|\(|\)|-/g, '');
+
+    const { data, error } = await sb.auth.signInWithOtp({
+      phone: normalizedPhone,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        channel: 'sms',
       },
     });
 
     if (error) throw error;
+    return data;
+  }
+
+  async verifyPhoneOTP(phone: string, token: string) {
+    const sb = getSupabase();
+    if (!sb) throw new Error('Supabase not initialized');
+
+    // Нормализуем номер телефона
+    const normalizedPhone = phone.replace(/\s|\(|\)|-/g, '');
+
+    const { data, error } = await sb.auth.verifyOtp({
+      phone: normalizedPhone,
+      token,
+      type: 'sms',
+    });
+
+    if (error) throw error;
+    
+    // После успешной верификации загружаем профиль
+    if (data.user) {
+      this.user = data.user;
+      await this.loadProfile();
+      this.notifyListeners();
+    }
+    
     return data;
   }
 

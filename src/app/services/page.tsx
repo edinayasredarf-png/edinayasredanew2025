@@ -58,7 +58,7 @@ export default function ServicesPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen">
+      <div className="min-h-screen font-[Raleway] font-medium lining-nums">
 
         {/* HERO — минимализм: слева текст и кнопки, справа изображение */}
         <section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[420px]">
@@ -235,9 +235,7 @@ export default function ServicesPage() {
 
                 {benefits.map((b, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <span className="inline-flex w-12 h-12 rounded-lg bg-[#0077FF] items-center justify-center shrink-0">
-                      <Image src={b.icon} alt="" width={20} height={20} />
-                    </span>
+
                     <p className="text-[18px] leading-7 text-[#101828]">{b.text}</p>
                   </div>
                 ))}

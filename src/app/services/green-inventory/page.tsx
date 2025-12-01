@@ -101,7 +101,7 @@ export default function GreenInventoryPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#F6F7F9]">
+      <div className="min-h-screen bg-[#F6F7F9] font-[Raleway] font-medium lining-nums">
         {/* Hero Section */}
         <section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[400px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">

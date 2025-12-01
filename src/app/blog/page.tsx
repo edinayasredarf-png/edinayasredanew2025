@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
@@ -12,6 +13,7 @@ import { authStore } from '@/lib/authStore';
 import { useSearchParams } from 'next/navigation';
 
 function BlogHomeInner() {
+  const router = useRouter();
   const sp = useSearchParams();
   const qFromUrl = sp.get('q') || '';
   const tag = sp.get('tag') || '';
@@ -21,6 +23,7 @@ function BlogHomeInner() {
   const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>(tabFromUrl);
   const [favoritePostIds, setFavoritePostIds] = useState<string[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     ensureDemo();
@@ -62,6 +65,40 @@ function BlogHomeInner() {
   useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
   useEffect(() => { setActiveTab(tabFromUrl); }, [tabFromUrl]);
 
+  // Обработка query параметров error и success
+  useEffect(() => {
+    const error = sp.get('error');
+    const success = sp.get('success');
+    
+    if (error) {
+      setNotification({ type: 'error', message: decodeURIComponent(error) });
+      // Очищаем URL от параметра error
+      const newSearchParams = new URLSearchParams(sp.toString());
+      newSearchParams.delete('error');
+      const newUrl = newSearchParams.toString() 
+        ? `/blog?${newSearchParams.toString()}`
+        : '/blog';
+      router.replace(newUrl, { scroll: false });
+      
+      // Скрываем уведомление через 5 секунд
+      setTimeout(() => setNotification(null), 5000);
+    }
+    
+    if (success) {
+      setNotification({ type: 'success', message: decodeURIComponent(success) });
+      // Очищаем URL от параметра success
+      const newSearchParams = new URLSearchParams(sp.toString());
+      newSearchParams.delete('success');
+      const newUrl = newSearchParams.toString() 
+        ? `/blog?${newSearchParams.toString()}`
+        : '/blog';
+      router.replace(newUrl, { scroll: false });
+      
+      // Скрываем уведомление через 5 секунд
+      setTimeout(() => setNotification(null), 5000);
+    }
+  }, [sp, router]);
+
   const filtered = useMemo(() => {
     // Исключаем кейсы из ленты блога
     let arr = posts.filter(p => (p.kind || 'post') !== 'case');
@@ -102,6 +139,26 @@ function BlogHomeInner() {
     <BlogLayout>
       <div className="bg-[#f2f3f7] min-h-screen font-{Raleway}">
         <TopBar />
+        
+        {/* Уведомления */}
+        {notification && (
+          <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg max-w-md ${
+            notification.type === 'success' 
+              ? 'bg-green-500 text-white' 
+              : 'bg-red-500 text-white'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span>{notification.message}</span>
+              <button
+                onClick={() => setNotification(null)}
+                className="ml-4 text-white hover:text-gray-200"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={setActiveTab} />

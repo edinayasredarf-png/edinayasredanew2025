@@ -86,7 +86,7 @@ export default function PartnershipPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen">
+      <div className="min-h-screen font-[Raleway] font-medium lining-nums">
 
         {/* HERO с картинкой справа */}
         <section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[420px]">
