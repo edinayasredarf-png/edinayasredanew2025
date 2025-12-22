@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
   const isCompanyActive = ['/about', '/career'].some((p) => pathname?.startsWith(p));
 
   // Подмена логотипов
-  const logoDesktopSrc = isLight ? '/img/logo_dark.svg' : '/img/logo.svg';
+  const logoDesktopSrc = isLight ? '/img/logo_dark.svg' : '/img/hn_logo.svg';
   const logoMobileSrc = isLight ? '/img/logo-mobile-dark.svg' : '/img/logo-mobile.svg';
 
   const navLinkBase =

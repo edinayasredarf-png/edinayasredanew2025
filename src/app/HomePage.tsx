@@ -5,7 +5,7 @@
 import React, { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
-import HeroSection from '../components/HeroSection';
+import HeroSectionHN from '../components/HeroSectionHN';
 import SupportersSection from '../components/SupportersSection';
 import TerritoryControlSection from '../components/TerritoryControlSection';
 import SplitStyleCards from '../components/SplitStyleCards';
@@ -114,7 +114,7 @@ export default function HomePage() {
       <SpeedInsights />
 
       {/* Hero секция с главным заголовком */}
-      <HeroSection />
+      <HeroSectionHN />
 			<BenefitsSection/>
 			<SupportersSection/>
 			<TerritoryControlSection/>
