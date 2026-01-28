@@ -5,10 +5,10 @@ import { getCaseSeoBySlug } from '@/lib/seoServer';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(
-  { params }: { params: { slug: string } }
-): Promise<Metadata> {
-  const slug = params?.slug;
+export async function generateMetadata(props: any): Promise<Metadata> {
+  const raw = props?.params;
+  const params = raw && typeof raw.then === 'function' ? await raw : raw;
+  const slug = params?.slug as string;
   const fallbackTitle = 'Кейс';
   const fallbackDescription = 'Кейс компании «Единая среда».';
 
