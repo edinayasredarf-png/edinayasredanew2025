@@ -10,8 +10,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/news' },
 };
 
-export default function NewsPage({ searchParams }: { searchParams?: { s?: string } }) {
-  const slug = (searchParams?.s || '').trim();
+export default function NewsPage(props: any) {
+  // В некоторых билдах Next searchParams может приходить как Promise — распакуем универсально
+  const rawSearch = props?.searchParams;
+  const searchParams = rawSearch && typeof rawSearch.then === 'function' ? undefined : rawSearch;
+  const slug = (searchParams?.s || '').trim?.() || '';
   if (slug) {
     redirect(`/news/${encodeURIComponent(slug)}`);
   }
