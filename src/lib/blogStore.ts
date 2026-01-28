@@ -34,6 +34,15 @@ export type NewsItem = {
 };
 
 // -------- CASES (separate table) ----------
+export const CASE_APPLICATION_OPTIONS = [
+  'Единая Среда',
+  'Инвентаризация зеленых насаждений',
+  'Инвентаризация мест захоронений',
+  'Лесоустройство',
+  'Мелиорация',
+  'Волонтерство',
+] as const;
+
 export type CaseItem = {
   id: string;            // uuid
   slug: string;
@@ -42,6 +51,8 @@ export type CaseItem = {
   cover?: string;
   contentHtml: string;
   tags?: string[] | any;
+  application?: string;  // тип кейса из CASE_APPLICATION_OPTIONS
+  location?: string;     // место проведения работ
   createdAt: number;
   updatedAt: number;
   views?: number;
@@ -56,10 +67,15 @@ export type BlogDraft = {
   blocks?: any[];        // черновые блоки редактора
   tags?: string[];
   savedAt?: number;
+  /** для кейсов: тип из CASE_APPLICATION_OPTIONS */
+  caseApplication?: string;
+  /** для кейсов: место проведения работ */
+  caseLocation?: string;
 };
 
 const K_POSTS = 'BLOG_POSTS_V2';
 const K_NEWS  = 'BLOG_NEWS_V2';
+const K_CASES = 'BLOG_CASES_V1';
 const K_TAGS  = 'BLOG_TAGS_V1';
 const K_DRAFT = 'BLOG_DRAFT_V3';
 const K_AUTH  = 'BLOG_AUTH_V1';
@@ -141,6 +157,19 @@ export function publishScheduledNews(id: string) {
     saveNews(list);
   }
 }
+
+// -------- CASES (local fallback) ----------
+export function loadCases(): CaseItem[] { return read<CaseItem[]>(K_CASES, []); }
+export function saveCases(list: CaseItem[]) { write(K_CASES, list); }
+export function listCases(): CaseItem[] { return [...loadCases()].sort((a,b)=>b.createdAt - a.createdAt); }
+export function getCaseBySlug(slug: string) { return loadCases().find(c => c.slug === slug); }
+export function upsertCase(c: CaseItem) {
+  const list = loadCases();
+  const idx = list.findIndex(x => x.id === c.id || x.slug === c.slug);
+  if (idx >= 0) list[idx] = c; else list.unshift(c);
+  saveCases(list);
+}
+export function deleteCaseById(id: string) { saveCases(loadCases().filter(c => c.id !== id)); }
 
 // функция для удаления тестовых новостей
 export function clearTestNews() {
@@ -351,6 +380,8 @@ function mapCaseRow(row: any): CaseItem {
     cover: row.cover ?? undefined,
     contentHtml: row.contenthtml ?? row.contentHtml,
     tags: row.tags ?? [],
+    application: row.application ?? undefined,
+    location: row.location ?? undefined,
     createdAt: row.createdat ?? row.createdAt,
     updatedAt: row.updatedat ?? row.updatedAt,
     views: row.views ?? 0,
@@ -399,6 +430,8 @@ function caseToPayload(c: CaseItem): any {
     cover: c.cover ?? null,
     contenthtml: c.contentHtml,
     tags: c.tags ?? [],
+    application: c.application ?? null,
+    location: c.location ?? null,
     createdat: c.createdAt,
     updatedat: c.updatedAt,
     views: c.views ?? 0,
@@ -454,29 +487,57 @@ export async function sb_deleteNewsById(id: string): Promise<void> {
 }
 
 export async function sb_listCases(): Promise<CaseItem[]> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('cases').select('*').order('createdat', { ascending: false });
-  if (error) throw error;
-  return (data || []).map(mapCaseRow);
+  const sb = getSupabase();
+  if (!sb) return listCases();
+  try {
+    const { data, error } = await sb.from('cases').select('*').order('createdat', { ascending: false });
+    if (error) throw error;
+    return (data || []).map(mapCaseRow);
+  } catch (e) {
+    console.log('Supabase list cases failed, using local fallback:', e);
+    return listCases();
+  }
 }
 
 export async function sb_getCaseBySlug(slug: string): Promise<CaseItem | undefined> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('cases').select('*').eq('slug', slug).maybeSingle();
-  if (error) throw error;
-  return data ? mapCaseRow(data) : undefined;
+  const sb = getSupabase();
+  if (!sb) return getCaseBySlug(slug);
+  try {
+    const { data, error } = await sb.from('cases').select('*').eq('slug', slug).maybeSingle();
+    if (error) throw error;
+    return data ? mapCaseRow(data) : undefined;
+  } catch (e) {
+    console.log('Supabase get case failed, using local fallback:', e);
+    return getCaseBySlug(slug);
+  }
 }
 
 export async function sb_upsertCase(c: CaseItem): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('cases').upsert(caseToPayload(c), { onConflict: 'slug' });
-  if (error) throw error;
+  const sb = getSupabase();
+  if (!sb) { upsertCase(c); return; }
+  try {
+    // Не задаём onConflict вручную: Supabase использует первичный ключ таблицы.
+    const { error } = await sb.from('cases').upsert(caseToPayload(c));
+    if (error) throw error;
+  } catch (e) {
+    console.log('Supabase upsert case failed, using local fallback:', e);
+    upsertCase(c);
+    // Пробрасываем ошибку дальше — UI покажет, что это локальный фоллбек (см. editor)
+    throw e;
+  }
 }
 
 export async function sb_deleteCaseById(id: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('cases').delete().eq('id', id);
-  if (error) throw error;
+  const sb = getSupabase();
+  if (!sb) { deleteCaseById(id); return; }
+  try {
+    const { error } = await sb.from('cases').delete().eq('id', id);
+    if (error) throw error;
+  } catch (e) {
+    console.log('Supabase delete case failed, using local fallback:', e);
+    deleteCaseById(id);
+    throw e;
+  }
 }
 
 export async function sb_incViews(kind: 'post'|'news', slug: string): Promise<void> {

@@ -96,8 +96,9 @@ const Header: React.FC<HeaderProps> = ({
     return pathname?.startsWith(href);
   };
 
-  // Белый «базовый» header на страницах кейсов
-  const isLight = pathname?.startsWith('/cases/');
+  // Белый «базовый» header на страницах кейсов (детальные страницы)
+  // Важно: /cases (список) и /cases2 (список) остаются тёмными, как в дизайне.
+  const isLight = pathname?.startsWith('/cases/') || pathname?.startsWith('/cases2/');
 
   const isServicesActive = pathname?.startsWith('/services');
   const isCompanyActive = ['/about', '/career'].some((p) => pathname?.startsWith(p));

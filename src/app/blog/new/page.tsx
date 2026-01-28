@@ -17,7 +17,8 @@ import {
   publishScheduledPost, publishScheduledNews,
   sb_getPostBySlug, sb_getNewsBySlug, sb_upsertPost, sb_upsertNews,
   sb_getCaseBySlug, sb_upsertCase, sb_deleteCaseById,
-  sb_deletePostById, sb_deleteNewsById
+  sb_deletePostById, sb_deleteNewsById,
+  CASE_APPLICATION_OPTIONS
 } from '@/lib/blogStore';
 
 // ---------- типы блоков ----------
@@ -101,6 +102,8 @@ export default function NewPostPage() {
   const [cover, setCover] = useState<string | undefined>();
   const [tags, setTags] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [caseApplication, setCaseApplication] = useState<string>('');
+  const [caseLocation, setCaseLocation] = useState<string>('');
   const [loadingEdit, setLoadingEdit] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<string>('');
   const [showNotification, setShowNotification] = useState(false);
@@ -133,15 +136,20 @@ export default function NewPostPage() {
       setTitle(d.title || ''); setSubtitle(d.subtitle || '');
       setCover(d.cover); setBlocks((d.blocks as Block[]) || []);
       setTags(d.tags || []);
+      setCaseApplication(d.caseApplication || '');
+      setCaseLocation(d.caseLocation || '');
     }
   }, [editSlug]);
 
   // автосейв
   useEffect(() => {
-    const draft: BlogDraft = { kind, title, subtitle, cover, blocks, tags, savedAt: Date.now() };
+    const draft: BlogDraft = {
+      kind, title, subtitle, cover, blocks, tags, savedAt: Date.now(),
+      ...(kind === 'case' ? { caseApplication, caseLocation } : {}),
+    };
     const t = setTimeout(()=>saveDraft(draft), 250);
     return ()=>clearTimeout(t);
-  }, [kind, title, subtitle, cover, blocks, tags]);
+  }, [kind, title, subtitle, cover, blocks, tags, caseApplication, caseLocation]);
 
   // режим редактирования
   useEffect(() => {
@@ -162,6 +170,8 @@ export default function NewPostPage() {
           if (c) {
             setKind('case'); setTitle(c.title); setSubtitle(c.subtitle||'');
             setCover(c.cover); setTags((c.tags as any) || []);
+            setCaseApplication(c.application || '');
+            setCaseLocation(c.location || '');
             setBlocks([{ id: uid(), type:'text', align:'left', text: c.contentHtml } as TextBlock]);
             setStep(2);
           }
@@ -256,6 +266,35 @@ export default function NewPostPage() {
     setTimeout(() => setShowNotification(false), 3000);
   };
 
+  const formatError = (err: unknown) => {
+    try {
+      if (!err) return 'unknown';
+      if (typeof err === 'string') return err;
+      if (err instanceof Error) {
+        const anyErr: any = err as any;
+        return JSON.stringify({
+          name: anyErr.name,
+          message: anyErr.message,
+          code: anyErr.code,
+          details: anyErr.details,
+          hint: anyErr.hint,
+          status: anyErr.status,
+        });
+      }
+      const anyErr: any = err as any;
+      return JSON.stringify({
+        name: anyErr?.name,
+        message: anyErr?.message,
+        code: anyErr?.code,
+        details: anyErr?.details,
+        hint: anyErr?.hint,
+        status: anyErr?.status,
+      });
+    } catch {
+      return 'unserializable error';
+    }
+  };
+
   const publish = async () => {
     if (!canPublish) return;
     const now = Date.now();
@@ -309,26 +348,67 @@ export default function NewPostPage() {
         }
       } else if (kind === 'case') {
         // Сохраняем кейс в отдельную таблицу cases
-        const id = crypto.randomUUID();
-        await sb_upsertCase({
-          id,
-          slug,
-          title,
-          subtitle,
-          cover,
-          contentHtml: html,
-          tags,
-          createdAt: now,
-          updatedAt: now,
-          views: 0,
-          reactions: { heart:0, fire:0, smile:0 }
-        });
+        const prevCase = editSlug && editType === 'case' ? await sb_getCaseBySlug(editSlug) : undefined;
+        const caseSlug = prevCase?.slug || slug;
+        
+        try {
+          await sb_upsertCase({
+            id: prevCase?.id || crypto.randomUUID(),
+            slug: caseSlug,
+            title,
+            subtitle,
+            cover,
+            contentHtml: html,
+            tags,
+            application: caseApplication || undefined,
+            location: caseLocation || undefined,
+            createdAt: prevCase?.createdAt || now,
+            updatedAt: now,
+            views: prevCase?.views || 0,
+            reactions: prevCase?.reactions || { heart:0, fire:0, smile:0 }
+          });
+          console.log('Case saved to Supabase successfully');
+        } catch (error) {
+          console.error('Supabase save failed:', error, formatError(error));
+          // Если ошибка связана с отсутствием колонок application/location, попробуем сохранить без них
+          const errorMsg = error && typeof error === 'object' && 'message' in error ? String(error.message) : '';
+          if (errorMsg.includes('application') || errorMsg.includes('location') || errorMsg.includes('column')) {
+            console.warn('Retrying without application/location fields...');
+            try {
+              await sb_upsertCase({
+                id: prevCase?.id || crypto.randomUUID(),
+                slug: caseSlug,
+                title,
+                subtitle,
+                cover,
+                contentHtml: html,
+                tags,
+                createdAt: prevCase?.createdAt || now,
+                updatedAt: now,
+                views: prevCase?.views || 0,
+                reactions: prevCase?.reactions || { heart:0, fire:0, smile:0 }
+              });
+              console.log('Case saved without application/location fields');
+              showNotificationToast('Кейс сохранён, но поля "Тип" и "Место" не сохранены. Добавьте колонки application и location в таблицу cases в Supabase.');
+            } catch (retryError) {
+              console.error('Retry also failed:', retryError);
+              showNotificationToast('Ошибка при сохранении. Проверьте консоль.');
+              return; // Не продолжаем, если повторная попытка тоже не удалась
+            }
+          } else {
+            // Важное: sb_upsertCase уже сохранил локально как fallback (см. blogStore),
+            // поэтому показываем понятное сообщение, что Supabase отказал (RLS/права/схема).
+            showNotificationToast('Supabase отклонил сохранение, но кейс сохранён локально (в этом браузере). Проверьте права/RLS таблицы cases в Supabase.');
+            return; // Не продолжаем при других ошибках
+          }
+        }
+        
         clearDraft();
         if (isScheduled) {
           showNotificationToast(`Кейс запланирован на ${new Date(publishTime).toLocaleString('ru-RU')}`);
         } else {
           showNotificationToast('Кейс опубликован!');
-          window.location.href = `/cases2`;
+          window.location.href = `/cases2/${caseSlug}`;
         }
       } else {
         const prev = prevNews;
@@ -562,15 +642,45 @@ export default function NewPostPage() {
                 <StepTitle>Заголовок</StepTitle>
                 <input
                   className="w-full border rounded-xl px-4 py-3 text-xl text-[#111]"
-                  placeholder={kind==='news' ? 'Заголовок новости' : 'Заголовок статьи'}
+                  placeholder={
+                    kind==='news' ? 'Заголовок новости' :
+                    kind==='case' ? 'Заголовок кейса' :
+                    kind==='lesson' ? 'Заголовок урока' : 'Заголовок статьи'
+                  }
                   value={title} onChange={e=>setTitle(e.target.value)}
                 />
-                {kind==='post' && (
+                {(kind==='post' || kind==='case') && (
                   <input
                     className="w-full border rounded-xl px-4 py-3 text-[#111]"
                     placeholder="Подзаголовок (необязательно)"
                     value={subtitle} onChange={e=>setSubtitle(e.target.value)}
                   />
+                )}
+                {kind==='case' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-[#111] mb-2">Тип кейса</label>
+                      <select
+                        className="w-full border rounded-xl px-4 py-3 text-[#111] bg-white"
+                        value={caseApplication}
+                        onChange={e=>setCaseApplication(e.target.value)}
+                      >
+                        <option value="">— Выберите тип —</option>
+                        {CASE_APPLICATION_OPTIONS.map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#111] mb-2">Место проведения работ</label>
+                      <input
+                        className="w-full border rounded-xl px-4 py-3 text-[#111]"
+                        placeholder="Например: Ростов-на-Дону, Красноярский край"
+                        value={caseLocation}
+                        onChange={e=>setCaseLocation(e.target.value)}
+                      />
+                    </div>
+                  </>
                 )}
               </div>
             )}

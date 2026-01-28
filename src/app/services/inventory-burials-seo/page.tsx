@@ -80,7 +80,7 @@ export default function InventoryBurialsSeoPage() {
                 </p>
               </div>
               <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Подрядчики по инвентаризации кладбищ
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -151,7 +151,7 @@ export default function InventoryBurialsSeoPage() {
         {/* Функциональные возможности */}
         <section className="py-14 md:py-20">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-black font-medium mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-6">
               Функциональные возможности АИС «Единая среда»
             </h2>
             <p className="text-gray-700 text-base md:text-lg mb-8 max-w-3xl">
@@ -160,8 +160,8 @@ export default function InventoryBurialsSeoPage() {
               захоронений и инструменты аналитики для управления территорией.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Электронная карта кладбища
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -170,17 +170,17 @@ export default function InventoryBurialsSeoPage() {
                   участков и инфраструктуры.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Реестр мест захоронений
                 </h3>
-                <p className="text-gray-600 text-sm md:text-base  text-[#313131]">
+                <p className="text-gray-600 text-sm md:text-base">
                   Ведение <strong>реестра мест погребения</strong>, ответственных
                   лиц, надмогильных сооружений и участков с историей изменений.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Поиск захоронений для граждан
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -195,7 +195,7 @@ export default function InventoryBurialsSeoPage() {
         {/* Как проводится инвентаризация */}
         <section className="py-14 md:py-20 bg-[#F5F7FA]">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-black font-medium mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-6">
               Как проводится инвентаризация мест захоронений
             </h2>
             <p className="text-gray-700 text-base md:text-lg mb-8 max-w-3xl">
@@ -204,7 +204,7 @@ export default function InventoryBurialsSeoPage() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Подготовка и анализ архивов
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -214,7 +214,7 @@ export default function InventoryBurialsSeoPage() {
                 </p>
               </div>
               <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Полевые работы и съемка
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -224,7 +224,7 @@ export default function InventoryBurialsSeoPage() {
                 </p>
               </div>
               <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Камеральная обработка и загрузка в систему
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -240,7 +240,7 @@ export default function InventoryBurialsSeoPage() {
         {/* Соответствие законодательству */}
         <section className="py-14 md:py-20">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-black font-medium mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-6">
               Соответствие требованиям государства и подготовка к единой базе
             </h2>
             <p className="text-gray-700 text-base md:text-lg mb-8 max-w-3xl">
@@ -255,12 +255,12 @@ export default function InventoryBurialsSeoPage() {
         {/* Результат и CTA + слайдер интерфейса */}
         <section className="py-14 md:py-20 bg-[#F5F7FA]">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-black font-medium mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-6">
               Результат для муниципалитета и граждан
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
               <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Для администрации и служб
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -270,7 +270,7 @@ export default function InventoryBurialsSeoPage() {
                 </p>
               </div>
               <div className="bg-white rounded-3xl p-6">
-                <h3 className="text-lg md:text-xl font-semibold mb-3  text-[#313131]">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Для жителей
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -307,7 +307,7 @@ export default function InventoryBurialsSeoPage() {
             </div>
 
             <div className="max-w-3xl mx-auto text-center">
-              <h3 className="text-xl md:text-2xl font-semibold mb-4  text-[#313131]">
+              <h3 className="text-xl md:text-2xl font-semibold mb-4 text-[#313131]">
                 Узнайте стоимость инвентаризации кладбищ для вашего муниципалитета
               </h3>
               <p className="text-gray-600 text-sm md:text-base mb-6">
@@ -336,5 +336,3 @@ export default function InventoryBurialsSeoPage() {
     </Layout>
   );
 }
-
-

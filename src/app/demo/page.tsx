@@ -1,0 +1,150 @@
+"use client";
+
+import Layout from "@/components/Layout";
+
+export default function DemoPage() {
+	const handleKP = () => {
+		window.dispatchEvent(new CustomEvent("openKPModal"));
+	};
+
+	const handleConsult = () => {
+		window.dispatchEvent(new CustomEvent("openConsultModal"));
+	};
+
+	return (
+		<Layout>
+			<div className="font-[Raleway] font-medium lining-nums">
+				{/* Hero */}
+				<section className="bg-black text-white rounded-b-[20px] relative overflow-hidden">
+					<div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+						<div className="max-w-4xl">
+							<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-medium leading-tight">
+								Демо‑версия АИС «Единая среда»
+							</h1>
+							<p className="mt-6 text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl">
+								Посмотрите, как работает система: интерактивная карта, карточки
+								объектов, реестры, поиск, отчеты и аналитика. Доступ к демо
+								предоставляем по запросу.
+							</p>
+							<div className="mt-8 flex flex-col sm:flex-row gap-4">
+								<button
+									onClick={handleConsult}
+									className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+								>
+									Получить доступ к демо
+								</button>
+								<button
+									onClick={handleKP}
+									className="inline-flex items-center justify-center bg-white text-[#0077FF] border border-[#0077FF] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/10 transition-colors duration-200 focus:outline-none"
+								>
+									Запросить КП
+								</button>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				{/* What you can see */}
+				<section className="py-14 md:py-20">
+					<div className="max-w-[1200px] mx-auto px-4">
+						<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-6">
+							Что можно посмотреть в демо
+						</h2>
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+								<h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
+									Интерактивная карта
+								</h3>
+								<p className="text-gray-600 text-sm md:text-base">
+									Слои объектов, поиск по карте, привязка записей к координатам,
+									быстрые фильтры и тематические выборки.
+								</p>
+							</div>
+							<div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+								<h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
+									Реестры и карточки объектов
+								</h3>
+								<p className="text-gray-600 text-sm md:text-base">
+									Единая база, атрибуты, фото, документы, история изменений и
+									управление статусами.
+								</p>
+							</div>
+							<div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+								<h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
+									Отчеты и аналитика
+								</h3>
+								<p className="text-gray-600 text-sm md:text-base">
+									Сводные показатели, выгрузки, контроль качества данных и
+									отчеты под задачи муниципалитета.
+								</p>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				{/* Demo iframe */}
+				<section className="py-6 md:py-10">
+					<div className="max-w-[1200px] mx-auto px-4">
+						<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+							<div>
+								<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium">
+									Демо‑интерфейс системы
+								</h2>
+								<p className="text-gray-600 text-sm md:text-base mt-2 max-w-2xl">
+									Интерактивная демонстрация интерфейса. Если демо не загрузилось —
+									попробуйте обновить страницу или откройте в новом окне.
+								</p>
+							</div>
+							<a
+								href="https://edinayasreda.ru/widget-api/widgetInfo/48603540c87bf7acfc31c93b54dfefc35cad960b1d36ac54ef5626cdb8844c33"
+								target="_blank"
+								rel="noreferrer"
+								className="inline-flex items-center justify-center bg-white text-[#0077FF] border border-[#0077FF] px-6 py-3 rounded-xl font-medium hover:bg-[#0077FF]/10 transition-colors duration-200"
+							>
+								Открыть демо в новом окне
+							</a>
+						</div>
+
+						<div className="w-full rounded-[20px] overflow-hidden bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+							<iframe
+								src="https://edinayasreda.ru/widget-api/widgetInfo/48603540c87bf7acfc31c93b54dfefc35cad960b1d36ac54ef5626cdb8844c33"
+								title="Демо‑версия АИС «Единая среда»"
+								className="w-full h-[70vh] min-h-[560px] border-0"
+								loading="lazy"
+								allow="clipboard-read; clipboard-write; fullscreen"
+							/>
+						</div>
+					</div>
+				</section>
+
+				{/* CTA */}
+				<section className="py-14 md:py-20">
+					<div className="max-w-[900px] mx-auto px-4 text-center">
+						<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-4">
+							Хотите демо под вашу задачу?
+						</h2>
+						<p className="text-gray-700 text-sm md:text-base mb-6">
+							Покажем нужные модули и сценарии, ответим на вопросы и подскажем
+							оптимальный формат внедрения.
+						</p>
+						<div className="flex flex-col sm:flex-row justify-center gap-4">
+							<button
+								onClick={handleConsult}
+								className="inline-flex items-center justify-center bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+							>
+								Запросить доступ к демо
+							</button>
+							<button
+								onClick={handleKP}
+								className="inline-flex items-center justify-center bg-white text-[#0077FF] border border-[#0077FF] px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/10 transition-colors duration-200 focus:outline-none"
+							>
+								Получить коммерческое предложение
+							</button>
+						</div>
+					</div>
+				</section>
+			</div>
+		</Layout>
+	);
+}
+
