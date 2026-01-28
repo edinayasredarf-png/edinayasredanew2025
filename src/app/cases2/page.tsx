@@ -148,9 +148,8 @@ export default function Cases2Page() {
 														setSelectedApplication(application);
 														setApplicationOpen(false);
 													}}
-													className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-														selectedApplication === application ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
-													}`}
+													className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${selectedApplication === application ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
+														}`}
 												>
 													{application}
 												</button>

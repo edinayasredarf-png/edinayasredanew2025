@@ -53,6 +53,24 @@ export default function NewsPageClient({ slug }: { slug: string }) {
     return () => window.removeEventListener('newsUpdated', handleNewsUpdate);
   }, [slug]);
 
+  // SEO на клиенте (на случай, если серверные метаданные не применились)
+  useEffect(() => {
+    if (!news?.title) return;
+    document.title = `${news.title} | Единая среда`;
+    const strip = (html: string) =>
+      html
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const desc = strip(news.contentHtml || '').slice(0, 180);
+    if (desc) {
+      const meta = document.querySelector('meta[name="description"]');
+      if (meta) meta.setAttribute('content', desc);
+    }
+  }, [news?.title, news?.contentHtml]);
+
   useEffect(() => {
     const handleOpenAuthModal = () => {
       // NewsPageClient doesn't have its own auth modal,

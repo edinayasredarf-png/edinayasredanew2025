@@ -2,13 +2,13 @@ import React from 'react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Блог — Единая среда',
+  title: 'Блог | Единая среда',
   description: 'Статьи, новости и кейсы о цифровизации территорий, опыте внедрений и продуктовых обновлениях платформы «Единая среда».',
   alternates: { canonical: '/blog' },
   openGraph: {
     type: 'website',
     url: '/blog',
-    title: 'Блог — Единая среда',
+    title: 'Блог | Единая среда',
     description: 'Статьи, новости и кейсы о цифровизации территорий и платформа «Единая среда».',
   },
 };

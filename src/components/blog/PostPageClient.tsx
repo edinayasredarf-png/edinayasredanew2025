@@ -64,6 +64,17 @@ export default function PostPageClient({ slug }: { slug: string }) {
     return () => window.removeEventListener('blogUpdated', handleBlogUpdate);
   }, [slug]);
 
+  // SEO на клиенте (на случай, если серверные метаданные не применились)
+  useEffect(() => {
+    if (!post?.title) return;
+    document.title = `${post.title} | Единая среда`;
+    const desc = (post.subtitle || '').trim();
+    if (desc) {
+      const meta = document.querySelector('meta[name="description"]');
+      if (meta) meta.setAttribute('content', desc);
+    }
+  }, [post?.title, post?.subtitle]);
+
   useEffect(() => {
     const handleOpenAuthModal = () => {
       setShowAuthModal(true);
