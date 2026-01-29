@@ -1,6 +1,8 @@
 "use client";
 
 import Layout from "@/components/Layout";
+import Widget from '@/components/Widget';
+
 
 export default function DemoPage() {
 	const handleKP = () => {
@@ -23,8 +25,7 @@ export default function DemoPage() {
 							</h1>
 							<p className="mt-6 text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl">
 								Посмотрите, как работает система: интерактивная карта, карточки
-								объектов, реестры, поиск, отчеты и аналитика. Доступ к демо
-								предоставляем по запросу.
+								объектов, реестры, поиск, отчеты и аналитика.
 							</p>
 							<div className="mt-8 flex flex-col sm:flex-row gap-4">
 								<button
@@ -44,7 +45,7 @@ export default function DemoPage() {
 					</div>
 				</section>
 
-				{/* What you can see */}
+				{/* What you can see *
 				<section className="py-14 md:py-20">
 					<div className="max-w-[1200px] mx-auto px-4">
 						<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-6">
@@ -81,6 +82,8 @@ export default function DemoPage() {
 						</div>
 					</div>
 				</section>
+/}
+
 
 				{/* Demo iframe */}
 				<section className="py-6 md:py-10">
@@ -95,19 +98,12 @@ export default function DemoPage() {
 									попробуйте обновить страницу или откройте в новом окне.
 								</p>
 							</div>
-							<a
-								href="https://edinayasreda.ru/widget-api/widgetInfo/48603540c87bf7acfc31c93b54dfefc35cad960b1d36ac54ef5626cdb8844c33"
-								target="_blank"
-								rel="noreferrer"
-								className="inline-flex items-center justify-center bg-white text-[#0077FF] border border-[#0077FF] px-6 py-3 rounded-xl font-medium hover:bg-[#0077FF]/10 transition-colors duration-200"
-							>
-								Открыть демо в новом окне
-							</a>
+
 						</div>
 
 						<div className="w-full rounded-[20px] overflow-hidden bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
 							<iframe
-								src="https://edinayasreda.ru/widget-api/widgetInfo/48603540c87bf7acfc31c93b54dfefc35cad960b1d36ac54ef5626cdb8844c33"
+								src="https://edinayasreda.ru/widget-api/widgetInfo/a4e301963b55b5f08a108b152523f8611c484f9db2377bed559763ff052dd4b0"
 								title="Демо‑версия АИС «Единая среда»"
 								className="w-full h-[70vh] min-h-[560px] border-0"
 								loading="lazy"
@@ -121,7 +117,7 @@ export default function DemoPage() {
 				<section className="py-14 md:py-20">
 					<div className="max-w-[900px] mx-auto px-4 text-center">
 						<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-4">
-							Хотите демо под вашу задачу?
+							Хотите посмотреть на систему с менеджером?
 						</h2>
 						<p className="text-gray-700 text-sm md:text-base mb-6">
 							Покажем нужные модули и сценарии, ответим на вопросы и подскажем
@@ -132,7 +128,7 @@ export default function DemoPage() {
 								onClick={handleConsult}
 								className="inline-flex items-center justify-center bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
 							>
-								Запросить доступ к демо
+								Запросить видеосозвон
 							</button>
 							<button
 								onClick={handleKP}
