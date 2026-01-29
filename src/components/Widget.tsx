@@ -7,7 +7,7 @@ interface WidgetProps {
 	height?: string | number;
 }
 
-const WidgetIframe: React.FC<WidgetProps> = ({ token, width = '100%', height = 600 }) => {
+const Widget: React.FC<WidgetProps> = ({ token, width = '100%', height = 600 }) => {
 	return (
 		<div style={{ width, height, border: '1px solid #ddd', borderRadius: 8, overflow: 'hidden' }}>
 			<iframe
@@ -23,4 +23,4 @@ const WidgetIframe: React.FC<WidgetProps> = ({ token, width = '100%', height = 6
 	);
 };
 
-export default WidgetIframe;
+export default Widget;

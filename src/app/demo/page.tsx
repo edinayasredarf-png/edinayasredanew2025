@@ -1,7 +1,7 @@
 "use client";
 
 import Layout from "@/components/Layout";
-import Widget from "@/components/Widget";
+
 
 
 export default function DemoPage() {
@@ -103,7 +103,7 @@ export default function DemoPage() {
 
 						<div className="w-full rounded-[20px] overflow-hidden bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
 							<iframe
-								src="https://edinayasreda.ru/widget-api/widgetInfo/a4e301963b55b5f08a108b152523f8611c484f9db2377bed559763ff052dd4b0"
+								src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
 								title="Демо‑версия АИС «Единая среда»"
 								className="w-full h-[70vh] min-h-[560px] border-0"
 								loading="lazy"
