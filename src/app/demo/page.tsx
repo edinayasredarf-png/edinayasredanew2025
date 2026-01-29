@@ -1,7 +1,7 @@
 "use client";
 
 import Layout from "@/components/Layout";
-import Widget from '@/components/Widget';
+import Widget from "@/components/Widget";
 
 
 export default function DemoPage() {
@@ -95,7 +95,7 @@ export default function DemoPage() {
 								</h2>
 								<p className="text-gray-600 text-sm md:text-base mt-2 max-w-2xl">
 									Интерактивная демонстрация интерфейса. Если демо не загрузилось —
-									попробуйте обновить страницу или откройте в новом окне.
+									попробуйте обновить страницу.
 								</p>
 							</div>
 
