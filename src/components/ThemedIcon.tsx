@@ -30,7 +30,8 @@ const ThemedIcon: React.FC<Props> = ({
   color,
 }) => {
   const pathname = usePathname();
-  const isLight = pathname?.startsWith('/cases');
+  // Светлая тема только для детальных страниц кейсов, не для списков
+  const isLight = pathname?.startsWith('/cases/') || pathname?.startsWith('/cases2/');
 
   const finalColor = color ?? (isLight ? light : dark);
 

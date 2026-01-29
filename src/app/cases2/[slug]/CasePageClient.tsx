@@ -45,6 +45,23 @@ export default function CasePageClient({ slug }: { slug?: string }) {
     return unsubscribe;
   }, []);
 
+  // Обновляем заголовок вкладки и мета-описание по данным кейса,
+  // чтобы пользователь видел корректный title даже если серверный SEO не знает про этот кейс.
+  useEffect(() => {
+    if (!caseData) return;
+    if (caseData.title) {
+      document.title = `${caseData.title} | Единая Среда`;
+    } else {
+      document.title = 'Кейс | Единая Среда';
+    }
+    if (caseData.subtitle) {
+      const meta = document.querySelector('meta[name=\"description\"]') as HTMLMetaElement | null;
+      if (meta) {
+        meta.content = caseData.subtitle;
+      }
+    }
+  }, [caseData?.title, caseData?.subtitle]);
+
   useEffect(() => {
     if (!effectiveSlug) return;
 
