@@ -32,8 +32,8 @@ export default function DemoPage() {
 					</div>
 				</section>
 
-				{/* What you can see *
-				<section className="py-14 md:py-20">
+				{/* What you can see */}
+				{/* <section className="py-14 md:py-20">
 					<div className="max-w-[1200px] mx-auto px-4">
 						<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium mb-6">
 							Что можно посмотреть в демо
@@ -68,8 +68,7 @@ export default function DemoPage() {
 							</div>
 						</div>
 					</div>
-				</section>
-/}
+				</section> */}
 
 
 				{/* Demo iframe */}
@@ -120,13 +119,14 @@ export default function DemoPage() {
 							</div>
 
 							<div className="w-full rounded-[20px] overflow-hidden bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
-							<iframe
-								src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
-								title="Демо‑версия АИС «Единая среда»"
-								className="w-full h-[70vh] min-h-[560px] border-0"
-								loading="lazy"
-								allow="clipboard-read; clipboard-write; fullscreen"
-							/>
+								<iframe
+									src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
+									title="Демо‑версия АИС «Единая среда»"
+									className="w-full h-[70vh] min-h-[560px] border-0"
+									loading="lazy"
+									allow="clipboard-read; clipboard-write; fullscreen"
+								/>
+							</div>
 						</div>
 					</div>
 				</section>
