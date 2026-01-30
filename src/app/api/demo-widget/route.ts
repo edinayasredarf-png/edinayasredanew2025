@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const DEMO_WIDGET_URL = 'https://edinayasreda.ru/widget-api/widgetInfo/48603540c87bf7acfc31c93b54dfefc35cad960b1d36ac54ef5626cdb8844c33';
+// Актуальный URL виджета для внедрения (как ты прислал)
+const DEMO_WIDGET_URL =
+  'https://edinayasreda.ru/widget-api/widgetInfo/a4e301963b55b5f08a108b152523f8611c484f9db2377bed559763ff052dd4b0';
 
 /**
  * Прокси для демо-виджета
@@ -8,10 +10,11 @@ const DEMO_WIDGET_URL = 'https://edinayasreda.ru/widget-api/widgetInfo/48603540c
  */
 export async function GET(request: NextRequest) {
 	try {
-		// Делаем запрос с правильным Referer
+		// Делаем запрос с Referer, совпадающим с вашим боевым доменом
 		const response = await fetch(DEMO_WIDGET_URL, {
 			headers: {
-				'Referer': 'https://edinayasreda.ru/',
+				// домен, на котором открыт /demo
+				Referer: 'https://единаясреда.рф/demo',
 				'User-Agent': request.headers.get('user-agent') || 'Mozilla/5.0',
 			},
 			// Не следовать редиректам автоматически, чтобы контролировать процесс

@@ -18,29 +18,16 @@ export default function DemoPage() {
 			<div className="font-[Raleway] font-medium lining-nums">
 				{/* Hero */}
 				<section className="bg-black text-white rounded-b-[20px] relative overflow-hidden">
-					<div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+					<div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-4 py-10 md:py-16">
 						<div className="max-w-4xl">
 							<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-medium leading-tight">
-								Демо‑версия АИС «Единая среда»
+								Демо‑версия <br></br>АИС «Единая среда»
 							</h1>
 							<p className="mt-6 text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl">
 								Посмотрите, как работает система: интерактивная карта, карточки
 								объектов, реестры, поиск, отчеты и аналитика.
 							</p>
-							<div className="mt-8 flex flex-col sm:flex-row gap-4">
-								<button
-									onClick={handleConsult}
-									className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
-								>
-									Получить доступ к демо
-								</button>
-								<button
-									onClick={handleKP}
-									className="inline-flex items-center justify-center bg-white text-[#0077FF] border border-[#0077FF] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/10 transition-colors duration-200 focus:outline-none"
-								>
-									Запросить КП
-								</button>
-							</div>
+
 						</div>
 					</div>
 				</section>
@@ -87,7 +74,7 @@ export default function DemoPage() {
 
 				{/* Demo iframe */}
 				<section className="py-6 md:py-10">
-					<div className="max-w-[1200px] mx-auto px-4">
+					<div className="max-w-[1480px] mx-auto px-4">
 						<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
 							<div>
 								<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium">
@@ -103,7 +90,8 @@ export default function DemoPage() {
 
 						<div className="w-full rounded-[20px] overflow-hidden bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
 							<iframe
-								src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
+								// Грузим через наш прокси-роут, чтобы работало и на проде
+								src="/api/demo-widget"
 								title="Демо‑версия АИС «Единая среда»"
 								className="w-full h-[70vh] min-h-[560px] border-0"
 								loading="lazy"
