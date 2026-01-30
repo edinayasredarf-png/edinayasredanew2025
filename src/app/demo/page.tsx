@@ -99,14 +99,14 @@ export default function DemoPage() {
 									height={20}
 									className="w-10 h-10 rotate-20"
 								/>
-								<p className="text-sm text-[#313131] font-medium leading-tight   max-w-[260px]">
-									Нажмите на название паспорта, чтобы к нему переместиться и открыть его
+								<p className="text-sm text-[#313131] font-medium leading-tight   max-w-[460px]">
+									Нажмите на название паспорта, чтобы к нему переместиться и нажмите на его границы чтобы открыть его
 								</p>
 							</div>
 
 							{/* Подсказка сверху справа: слева текст, справа стрелка, на одной линии */}
 							<div className="hidden xl:flex flex-row items-center gap-3 absolute right-6 top-0 z-10">
-								<p className="text-sm text-[#313131] font-medium leading-tight max-w-[260px] text-right">
+								<p className="text-sm text-[#313131] font-medium leading-tight max-w-[360px] text-right">
 									Нажмите на кнопку слоев чтобы поменять картографическую подложку
 								</p>
 								<Image
