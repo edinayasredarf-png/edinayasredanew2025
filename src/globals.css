@@ -6,184 +6,320 @@
 /* @import url('../public_html 2/style.css'); */
 
 @keyframes waving-flag {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+	0% {
+		background-position: 0% 50%;
+	}
+
+	100% {
+		background-position: 100% 50%;
+	}
 }
+
 .waving-flag {
-  background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
-  background-size: 200% 200%;
-  animation: waving-flag 1.2s linear infinite alternate;
-  will-change: background-position;
+	background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
+	background-size: 200% 200%;
+	animation: waving-flag 1.2s linear infinite alternate;
+	will-change: background-position;
 }
 
 /* Добавлено: анимация waving-flag по hover на .group */
 .group:hover .flag-animate {
-  background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
-  background-size: 200% 200%;
-  animation: waving-flag 1.2s linear infinite alternate;
+	background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
+	background-size: 200% 200%;
+	animation: waving-flag 1.2s linear infinite alternate;
 }
 
 /* Уважение предпочтений пользователя по анимациям */
 @media (prefers-reduced-motion: reduce) {
-  .waving-flag,
-  .group:hover .flag-animate {
-    animation: none;
-  }
+
+	.waving-flag,
+	.group:hover .flag-animate {
+		animation: none;
+	}
 }
+
 .ProseMirror {
-  min-height: 240px;
-  line-height: 1.7;
-  color: #111;
+	min-height: 240px;
+	line-height: 1.7;
+	color: #111;
 }
-.ProseMirror p { margin: 0.75rem 0; }
-.ProseMirror h1 { font-size: 1.875rem; font-weight: 700; margin: 1.25rem 0; }
-.ProseMirror h2 { font-size: 1.5rem;   font-weight: 700; margin: 1rem 0; }
-.ProseMirror h3 { font-size: 1.25rem;  font-weight: 600; margin: 0.75rem 0; }
-.ProseMirror ul, .ProseMirror ol { padding-left: 1.25rem; margin: 0.75rem 0; }
+
+.ProseMirror p {
+	margin: 0.75rem 0;
+}
+
+.ProseMirror h1 {
+	font-size: 1.875rem;
+	font-weight: 700;
+	margin: 1.25rem 0;
+}
+
+.ProseMirror h2 {
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin: 1rem 0;
+}
+
+.ProseMirror h3 {
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin: 0.75rem 0;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+	padding-left: 1.25rem;
+	margin: 0.75rem 0;
+}
+
 .ProseMirror blockquote {
-  border-left: 4px solid #e5e7eb; padding: 8px 12px; color: #374151;
-  margin: 12px 0; border-radius: 8px; background: #fafafa;
+	border-left: 4px solid #e5e7eb;
+	padding: 8px 12px;
+	color: #374151;
+	margin: 12px 0;
+	border-radius: 8px;
+	background: #fafafa;
 }
+
 .ProseMirror pre {
-  background: #0b1020; color:#f8fafc; padding:12px 14px; border-radius:12px; overflow:auto;
+	background: #0b1020;
+	color: #f8fafc;
+	padding: 12px 14px;
+	border-radius: 12px;
+	overflow: auto;
 }
-.ProseMirror img, .ProseMirror video { max-width: 100%; border-radius: 12px; }
+
+.ProseMirror img,
+.ProseMirror video {
+	max-width: 100%;
+	border-radius: 12px;
+}
+
 /* TipTap base */
-.tiptap { color: #111; }
-.tiptap p { margin: 0.75rem 0; }
-.tiptap h2 { font-size: 1.5rem; line-height: 1.3; margin-top: 1.4rem; font-weight: 700; }
-.tiptap h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; font-weight: 600; }
-.tiptap blockquote { border-left:4px solid #e1e2e5; padding:8px 12px; border-radius:8px; color:#374151; margin: 12px 0; }
-.tiptap img { max-width: 100%; height: auto; border-radius: 16px; display: block; margin: 12px 0; }
-.tiptap iframe { width: 100%; height: auto; border: 0; border-radius: 16px; }
+.tiptap {
+	color: #111;
+}
+
+.tiptap p {
+	margin: 0.75rem 0;
+}
+
+.tiptap h2 {
+	font-size: 1.5rem;
+	line-height: 1.3;
+	margin-top: 1.4rem;
+	font-weight: 700;
+}
+
+.tiptap h3 {
+	font-size: 1.25rem;
+	line-height: 1.35;
+	margin-top: 1.2rem;
+	font-weight: 600;
+}
+
+.tiptap blockquote {
+	border-left: 4px solid #e1e2e5;
+	padding: 8px 12px;
+	border-radius: 8px;
+	color: #374151;
+	margin: 12px 0;
+}
+
+.tiptap img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 16px;
+	display: block;
+	margin: 12px 0;
+}
+
+.tiptap iframe {
+	width: 100%;
+	height: auto;
+	border: 0;
+	border-radius: 16px;
+}
 
 /* Единые стили для контента статей/новостей */
 .article-content img,
 .article-content video,
-.article-content iframe { max-width: 100%; height: auto; border-radius: 16px; }
-.article-content figure { text-align: center; }
-.article-content figcaption { color:#6b7280; font-size:14px; margin-top:6px; }
-.article-content blockquote { border-left:4px solid #e1e2e5; padding:8px 12px; border-radius:8px; color:#374151; }
-.article-content h2 { font-size: 1.5rem; line-height: 1.3; margin-top: 1.4rem; font-weight: 700; }
-.article-content h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; font-weight: 600; }
-.article-content { direction: ltr; color: #111; }
+.article-content iframe {
+	max-width: 100%;
+	height: auto;
+	border-radius: 16px;
+}
+
+.article-content figure {
+	text-align: center;
+}
+
+.article-content figcaption {
+	color: #6b7280;
+	font-size: 14px;
+	margin-top: 6px;
+}
+
+.article-content blockquote {
+	border-left: 4px solid #e1e2e5;
+	padding: 8px 12px;
+	border-radius: 8px;
+	color: #374151;
+}
+
+.article-content h2 {
+	font-size: 1.5rem;
+	line-height: 1.3;
+	margin-top: 1.4rem;
+	font-weight: 700;
+}
+
+.article-content h3 {
+	font-size: 1.25rem;
+	line-height: 1.35;
+	margin-top: 1.2rem;
+	font-weight: 600;
+}
+
+.article-content {
+	direction: ltr;
+	color: #111;
+}
+
 /* app/globals.css */
 
 /* ========================================
    НАВИГАЦИОННЫЕ ЦЕПОЧКИ (BREADCRUMBS)
    ======================================== */
 
-	 .breadcrumbs-wrapper {
-		position: relative;
-		z-index: 20;
+.breadcrumbs-wrapper {
+	position: relative;
+	z-index: 20;
+}
+
+/* Ссылки в breadcrumbs */
+.breadcrumbs-wrapper a {
+	text-decoration: none;
+	position: relative;
+	transition: all 0.2s ease;
+	display: inline-flex;
+	align-items: center;
+}
+
+.breadcrumbs-wrapper a:hover {
+	text-decoration: none;
+	text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Разделители */
+.breadcrumbs-wrapper svg {
+	flex-shrink: 0;
+	opacity: 0.5;
+}
+
+/* Текущая страница */
+.breadcrumbs-wrapper span {
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	display: inline-block;
+}
+
+/* Улучшение читаемости на темном фоне */
+.breadcrumbs-wrapper a,
+.breadcrumbs-wrapper span {
+	text-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.5),
+		0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Адаптив для планшетов */
+@media (max-width: 768px) {
+	.breadcrumbs-wrapper {
+		padding: 0;
 	}
 
-	/* Ссылки в breadcrumbs */
+	.breadcrumbs-wrapper ol {
+		gap: 6px;
+	}
+}
+
+/* Адаптив для мобильных */
+@media (max-width: 640px) {
+	.breadcrumbs-wrapper ol {
+		font-size: 11px;
+		gap: 4px;
+		padding: 8px 0;
+	}
+
+	.breadcrumbs-wrapper svg {
+		width: 12px;
+		height: 12px;
+	}
+
+	/* Убираем лишние отступы на мобильных */
+	.breadcrumbs-wrapper .max-w-\[1480px\] {
+		padding-left: 12px;
+		padding-right: 12px;
+	}
+}
+
+/* Адаптив для очень маленьких экранов */
+@media (max-width: 375px) {
+	.breadcrumbs-wrapper ol {
+		font-size: 10px;
+		gap: 3px;
+	}
+
+	.breadcrumbs-wrapper svg {
+		width: 10px;
+		height: 10px;
+	}
+}
+
+/* Улучшение для больших экранов */
+@media (min-width: 1280px) {
+	.breadcrumbs-wrapper ol {
+		font-size: 14px;
+	}
+}
+
+/* Тёмная тема (если понадобится) */
+@media (prefers-color-scheme: dark) {
 	.breadcrumbs-wrapper a {
-		text-decoration: none;
-		position: relative;
-		transition: all 0.2s ease;
-		display: inline-flex;
-		align-items: center;
+		color: rgba(255, 255, 255, 0.8);
 	}
 
 	.breadcrumbs-wrapper a:hover {
-		text-decoration: none;
-		text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+		color: rgba(255, 255, 255, 1);
 	}
+}
 
-	/* Разделители */
-	.breadcrumbs-wrapper svg {
-		flex-shrink: 0;
-		opacity: 0.5;
-	}
-
-	/* Текущая страница */
-	.breadcrumbs-wrapper span {
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-		display: inline-block;
-	}
-
-	/* Улучшение читаемости на темном фоне */
-	.breadcrumbs-wrapper a,
-	.breadcrumbs-wrapper span {
-		text-shadow:
-			0 1px 2px rgba(0, 0, 0, 0.5),
-			0 0 4px rgba(0, 0, 0, 0.3);
-	}
-
-	/* Адаптив для планшетов */
-	@media (max-width: 768px) {
-		.breadcrumbs-wrapper {
-			padding: 0;
-		}
-
-		.breadcrumbs-wrapper ol {
-			gap: 6px;
-		}
-	}
-
-	/* Адаптив для мобильных */
-	@media (max-width: 640px) {
-		.breadcrumbs-wrapper ol {
-			font-size: 11px;
-			gap: 4px;
-			padding: 8px 0;
-		}
-
-		.breadcrumbs-wrapper svg {
-			width: 12px;
-			height: 12px;
-		}
-
-		/* Убираем лишние отступы на мобильных */
-		.breadcrumbs-wrapper .max-w-\[1480px\] {
-			padding-left: 12px;
-			padding-right: 12px;
-		}
-	}
-
-	/* Адаптив для очень маленьких экранов */
-	@media (max-width: 375px) {
-		.breadcrumbs-wrapper ol {
-			font-size: 10px;
-			gap: 3px;
-		}
-
-		.breadcrumbs-wrapper svg {
-			width: 10px;
-			height: 10px;
-		}
-	}
-
-	/* Улучшение для больших экранов */
-	@media (min-width: 1280px) {
-		.breadcrumbs-wrapper ol {
-			font-size: 14px;
-		}
-	}
-
-	/* Тёмная тема (если понадобится) */
-	@media (prefers-color-scheme: dark) {
-		.breadcrumbs-wrapper a {
-			color: rgba(255, 255, 255, 0.8);
-		}
-
-		.breadcrumbs-wrapper a:hover {
-			color: rgba(255, 255, 255, 1);
-		}
-	}
 /* globals.css */
 html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  font-kerning: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+	font-kerning: normal;
 }
 
 /* аккуратные цифры по всему сайту */
 body {
-  font-variant-numeric: lining-nums tabular-nums;
-  /* страховка, если браузер игнорит font-variant-numeric */
-  font-feature-settings: "lnum" 1, "tnum" 1;
+	font-variant-numeric: lining-nums tabular-nums;
+	/* страховка, если браузер игнорит font-variant-numeric */
+	font-feature-settings: "lnum" 1, "tnum" 1;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.98);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.animate-\[fadeIn_0\.35s_ease\] {
+	animation: fadeIn 0.35s ease forwards;
 }

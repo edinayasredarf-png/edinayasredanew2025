@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import Image from "next/image";
 
 export default function DemoPage() {
 	const [isDemoLoaded, setIsDemoLoaded] = useState(false);
+	const [isFullscreen, setIsFullscreen] = useState(false);
 	const iframeRef = useRef<HTMLIFrameElement>(null);
 
 	const handleKP = () => {
@@ -16,12 +17,26 @@ export default function DemoPage() {
 		window.dispatchEvent(new CustomEvent("openConsultModal"));
 	};
 
-	// Fullscreen для iframe
+	// Fullscreen
 	const handleFullscreen = () => {
 		if (iframeRef.current) {
 			iframeRef.current.requestFullscreen?.();
 		}
 	};
+
+	// Exit fullscreen
+	const exitFullscreen = () => {
+		document.exitFullscreen?.();
+	};
+
+	// Слушаем изменения fullscreen
+	useEffect(() => {
+		const listener = () => {
+			setIsFullscreen(Boolean(document.fullscreenElement));
+		};
+		document.addEventListener("fullscreenchange", listener);
+		return () => document.removeEventListener("fullscreenchange", listener);
+	}, []);
 
 	return (
 		<Layout>
@@ -54,7 +69,7 @@ export default function DemoPage() {
 						</div>
 
 						<div className="relative w-full mt-4 pt-10">
-							<div className="relative w-full rounded-[20px] overflow-hidden shadow-[0_0_0_1px_rgba(15,23,42,0.06)] min-h-[760px]">
+							<div className="relative w-full rounded-[20px] overflow-hidden shadow-[0_0_0_1px_rgba(15,23,42,0.06)] min-h-[560px]">
 
 								{/* COVER */}
 								{!isDemoLoaded && (
@@ -104,17 +119,28 @@ export default function DemoPage() {
 											ref={iframeRef}
 											src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
 											title="Демо-версия АИС «Единая среда»"
-											className="w-full h-[70vh] min-h-[760px] border-0"
+											className="w-full h-[70vh] min-h-[560px] border-0"
 											loading="lazy"
 											allow="clipboard-read; clipboard-write; fullscreen"
 										/>
+
 										{/* Fullscreen button */}
 										<button
 											onClick={handleFullscreen}
-											className="absolute bottom-4 right-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg"
+											className="absolute bottom-4 right-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
 										>
 											Открыть на полный экран
 										</button>
+
+										{/* Exit fullscreen / вернуться на страницу */}
+										{isFullscreen && (
+											<button
+												onClick={exitFullscreen}
+												className="absolute bottom-4 left-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+											>
+												Вернуться на страницу
+											</button>
+										)}
 									</div>
 								)}
 							</div>
