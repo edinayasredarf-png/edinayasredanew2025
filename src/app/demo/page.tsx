@@ -59,6 +59,14 @@ export default function DemoPage() {
 								Посмотрите, как работает система: интерактивная карта, карточки
 								объектов, реестры, поиск, отчеты и аналитика.
 							</p>
+							<div className="mt-10">
+								<button
+									onClick={() => setIsStoriesOpen(true)}
+									className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition"
+								>
+									Посмотреть инструкцию
+								</button>
+							</div>
 						</div>
 					</div>
 				</section>
@@ -153,17 +161,7 @@ export default function DemoPage() {
 					</div>
 				</section>
 
-				{/* Инструкция (Stories) — отдельная кнопка CTA */}
-				<section className="py-10">
-					<div className="max-w-[900px] mx-auto px-4 text-center">
-						<button
-							onClick={() => setIsStoriesOpen(true)}
-							className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition"
-						>
-							Посмотреть инструкцию
-						</button>
-					</div>
-				</section>
+
 
 				{/* Stories Modal */}
 				<StoriesModal
