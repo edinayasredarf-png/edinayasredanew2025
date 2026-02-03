@@ -116,41 +116,49 @@ export default function InventoryBurialsPage() {
 				</section >
 
 				{/* ДЛЯ КОГО */}
-				<section className="max-w-[1480px] mx-auto px-4 py-24" >
+				<section className="max-w-[1480px] mx-auto px-4 py-24">
 					<h2 className="text-center text-[#313131] text-4xl md:text-[52px] leading-tight mb-16">
 						Для кого подходит система инвентаризации мест захоронений
 					</h2>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
 
-						{/* CARD */}
 						{[
 							{
 								title: "Органы местного самоуправления",
-								text: "Выполнение нормативных требований по ведению реестра мест захоронений, формирование отчетности и планирование развития кладбищ."
+								text: "Выполнение нормативных требований по ведению реестра мест захоронений, формирование отчетности и планирование развития кладбищ.",
+								image: "/img/imz1.png"
 							},
 							{
 								title: "Муниципальные кладбища и МУПы",
-								text: "Ведение единой базы захоронений и учета мест на кладбище, исключение ошибок и потерь записей."
+								text: "Ведение единой базы захоронений и учета мест на кладбище, исключение ошибок и потерь записей.",
+								image: "/img/imz2.png"
 							},
 							{
 								title: "Подрядчики по инвентаризации кладбищ",
-								text: "Профессиональный инструмент для инвентаризации мест погребения и передачи результатов заказчику."
+								text: "Профессиональный инструмент для инвентаризации мест погребения и передачи результатов заказчику.",
+								image: "/img/imz3.png"
 							}
 						].map((card, i) => (
-							<div key={i} className="bg-white rounded-3xl flex flex-col overflow-hidden">
+							<div
+								key={i}
+								className="bg-white rounded-3xl flex flex-col overflow-hidden transition"
+							>
+								{/* IMAGE */}
 								<div className="p-2">
 									<div className="bg-[#f6f7f9] rounded-2xl flex items-center justify-center h-[260px]">
 										<Image
-											src="/img/reasons-3.png"
-											alt="Инвентаризация кладбищ"
+											src={card.image}
+											alt={card.title}
 											width={320}
 											height={320}
+											className="object-contain"
 										/>
 									</div>
 								</div>
 
-								<div className="px-8 py-4 space-y-4">
+								{/* TEXT */}
+								<div className="px-8 py-6 space-y-4">
 									<h3 className="text-[#313131] text-2xl leading-snug">
 										{card.title}
 									</h3>
@@ -161,7 +169,8 @@ export default function InventoryBurialsPage() {
 							</div>
 						))}
 					</div>
-				</section >
+				</section>
+
 
 				{/* ЗАДАЧИ */}
 				<section className="max-w-[1480px] mx-auto px-4 py-24" >
@@ -175,7 +184,7 @@ export default function InventoryBurialsPage() {
 						<div className="lg:col-span-2 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
 							<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center">
 								<Image
-									src="/img/reasons-3.png"
+									src="/img/imz4.png"
 									alt="Инвентаризация кладбищ"
 									width={320}
 									height={320}
@@ -228,7 +237,7 @@ export default function InventoryBurialsPage() {
 
 							<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center">
 								<Image
-									src="/img/reasons-3.png"
+									src="/img/imz5.png"
 									alt="Инвентаризация кладбищ"
 									width={320}
 									height={320}
@@ -285,7 +294,6 @@ export default function InventoryBurialsPage() {
 				</section >
 
 				{/* КАК ПРОВОДИТСЯ ИНВЕНТАРИЗАЦИЯ */}
-				{/* КАК ПРОВОДИТСЯ */}
 				<section className="max-w-[880px] mx-auto px-4 py-24">
 					<h2 className="text-center text-[#313131] text-4xl md:text-[52px] mb-16">
 						Как проводится инвентаризация кладбищ
@@ -296,49 +304,58 @@ export default function InventoryBurialsPage() {
 							{
 								title: "Подготовка и анализ архивов",
 								text: "Изучение книг захоронений, схем участков и электронных данных для формирования точного плана работ.",
+								image: "/img/imz6.png"
 							},
 							{
 								title: "Полевые работы",
 								text: "GPS-съемка, фотофиксация и сбор данных по каждому месту захоронения.",
+								image: "/img/imz7.png"
 							},
 							{
 								title: "Создание цифрового реестра",
 								text: "Формирование электронной карты кладбища и запуск системы учета.",
+								image: "/img/imz8.png"
 							},
 						].map((item, i) => (
 							<div
 								key={i}
-								className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8"
+								className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 transition "
 							>
-								<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
+								{/* IMAGE */}
+								<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-8 min-h-[260px]">
 									<Image
-										src="/img/reasons-3.png"
-										alt="Процесс инвентаризации кладбищ"
+										src={item.image}
+										alt={item.title}
 										width={260}
 										height={260}
+										className="object-contain"
 									/>
 								</div>
 
+								{/* TEXT */}
 								<div className="lg:w-1/2 flex flex-col justify-center p-6">
 									<h3 className="text-2xl mb-4 text-[#313131]">
 										{item.title}
 									</h3>
-									<p className="text-lg text-[#7c8a9a]">{item.text}</p>
+									<p className="text-lg text-[#7c8a9a] leading-relaxed">
+										{item.text}
+									</p>
 								</div>
 							</div>
 						))}
 					</div>
 
-
-					{/* Кнопка внизу */}
+					{/* Кнопка */}
 					<div className="flex justify-center mt-12">
 						<button
 							onClick={handleConsult}
-							className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+							className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition hover:scale-[1.03]"
+						>
 							Получить консультацию
 						</button>
 					</div>
 				</section>
+
 
 				{/* Соответствие требованиям государства */}
 				<section className="max-w-[1020px] mx-auto px-4 ">
@@ -347,7 +364,7 @@ export default function InventoryBurialsPage() {
 							{/* Изображение слева с внутренним отступом */}
 							<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-4">
 								<Image
-									src="/img/reasons-3.png"
+									src="/img/imz9.png"
 									alt="Инвентаризация кладбищ"
 									width={320}
 									height={320}
@@ -406,7 +423,9 @@ export default function InventoryBurialsPage() {
 
 					{/* Кнопка внизу */}
 					<div className="flex justify-center mt-12">
-						<button className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+						<button
+							onClick={handleConsult}
+							className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
 							Получить консультацию
 						</button>
 					</div>
@@ -503,7 +522,7 @@ export default function InventoryBurialsPage() {
 						{/* Изображение справа */}
 						<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
 							<Image
-								src="/img/reasons-3.png"
+								src="/img/imz_cta.png"
 								alt="Получить консультацию по инвентаризации и оцифровке мест"
 								width={320}
 								height={320}
