@@ -7,7 +7,7 @@ import Image from "next/image";
 export default function DemoPage() {
 	const [isDemoLoaded, setIsDemoLoaded] = useState(false);
 	const [isFullscreen, setIsFullscreen] = useState(false);
-	const iframeRef = useRef<HTMLIFrameElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
 
 	const handleKP = () => {
 		window.dispatchEvent(new CustomEvent("openKPModal"));
@@ -17,10 +17,10 @@ export default function DemoPage() {
 		window.dispatchEvent(new CustomEvent("openConsultModal"));
 	};
 
-	// Fullscreen
+	// Fullscreen контейнера
 	const handleFullscreen = () => {
-		if (iframeRef.current) {
-			iframeRef.current.requestFullscreen?.();
+		if (containerRef.current) {
+			containerRef.current.requestFullscreen?.();
 		}
 	};
 
@@ -29,7 +29,6 @@ export default function DemoPage() {
 		document.exitFullscreen?.();
 	};
 
-	// Слушаем изменения fullscreen
 	useEffect(() => {
 		const listener = () => {
 			setIsFullscreen(Boolean(document.fullscreenElement));
@@ -68,82 +67,78 @@ export default function DemoPage() {
 							</p>
 						</div>
 
-						<div className="relative w-full mt-4 pt-10">
-							<div className="relative w-full rounded-[20px] overflow-hidden shadow-[0_0_0_1px_rgba(15,23,42,0.06)] min-h-[560px]">
-
-								{/* COVER */}
-								{!isDemoLoaded && (
-									<>
-										<Image
-											src="/img/demo-cover-desktop.jpg"
-											alt="Превью демо системы"
-											fill
-											priority
-											className="hidden md:block object-cover"
-										/>
-										<Image
-											src="/img/demo-cover-mobile.jpg"
-											alt="Превью демо системы"
-											fill
-											priority
-											className="md:hidden object-cover"
-										/>
-
-										<div className="absolute inset-0 bg-black/40 z-10" />
-
-										{/* Play button */}
-										<div className="absolute inset-0 z-20 flex items-center justify-center">
-											<button
-												onClick={() => setIsDemoLoaded(true)}
-												className="relative flex items-center justify-center w-32 h-32 group"
-											>
-												<span className="absolute w-32 h-32 rounded-full bg-[#3D98FF]/20 transition-transform duration-500 group-hover:scale-110"></span>
-												<span className="absolute w-24 h-24 rounded-full bg-[#3D98FF]/30 transition-transform duration-500 group-hover:scale-125"></span>
-												<span className="absolute w-16 h-16 rounded-full bg-[#0077FF]"></span>
-												<Image
-													src="/img/play.svg"
-													alt="Play demo"
-													width={38}
-													height={38}
-													className="relative z-10 group-hover:scale-110 transition"
-												/>
-											</button>
-										</div>
-									</>
-								)}
-
-								{/* iframe */}
-								{isDemoLoaded && (
-									<div className="relative animate-[fadeIn_0.35s_ease]">
-										<iframe
-											ref={iframeRef}
-											src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
-											title="Демо-версия АИС «Единая среда»"
-											className="w-full h-[70vh] min-h-[560px] border-0"
-											loading="lazy"
-											allow="clipboard-read; clipboard-write; fullscreen"
-										/>
-
-										{/* Fullscreen button */}
+						<div
+							ref={containerRef}
+							className="relative w-full rounded-[20px] overflow-hidden shadow-[0_0_0_1px_rgba(15,23,42,0.06)] min-h-[560px]"
+						>
+							{/* COVER */}
+							{!isDemoLoaded && (
+								<>
+									<Image
+										src="/img/demo-cover-desktop.jpg"
+										alt="Превью демо системы"
+										fill
+										priority
+										className="hidden md:block object-cover"
+									/>
+									<Image
+										src="/img/demo-cover-mobile.jpg"
+										alt="Превью демо системы"
+										fill
+										priority
+										className="md:hidden object-cover"
+									/>
+									<div className="absolute inset-0 bg-black/40 z-10" />
+									<div className="absolute inset-0 z-20 flex items-center justify-center">
 										<button
-											onClick={handleFullscreen}
-											className="absolute bottom-4 right-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+											onClick={() => setIsDemoLoaded(true)}
+											className="relative flex items-center justify-center w-32 h-32 group"
 										>
-											Открыть на полный экран
+											<span className="absolute w-32 h-32 rounded-full bg-[#3D98FF]/20 transition-transform duration-500 group-hover:scale-110"></span>
+											<span className="absolute w-24 h-24 rounded-full bg-[#3D98FF]/30 transition-transform duration-500 group-hover:scale-125"></span>
+											<span className="absolute w-16 h-16 rounded-full bg-[#0077FF]"></span>
+											<Image
+												src="/img/play.svg"
+												alt="Play demo"
+												width={38}
+												height={38}
+												className="relative z-10 group-hover:scale-110 transition"
+											/>
 										</button>
-
-										{/* Exit fullscreen / вернуться на страницу */}
-										{isFullscreen && (
-											<button
-												onClick={exitFullscreen}
-												className="absolute bottom-4 left-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
-											>
-												Вернуться на страницу
-											</button>
-										)}
 									</div>
-								)}
-							</div>
+								</>
+							)}
+
+							{/* iframe */}
+							{isDemoLoaded && (
+								<div className="relative animate-[fadeIn_0.35s_ease]">
+									<iframe
+										src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
+										title="Демо-версия АИС «Единая среда»"
+										className="w-full h-[70vh] min-h-[560px] border-0"
+										loading="lazy"
+										allow="clipboard-read; clipboard-write; fullscreen"
+									/>
+
+									{/* Fullscreen button */}
+									<button
+										onClick={handleFullscreen}
+										className="absolute bottom-4 right-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+									>
+										Открыть на полный экран
+									</button>
+
+									{/* Кнопка вернуться на страницу (внутри контейнера, видна в fullscreen) */}
+									{isFullscreen && (
+										<button
+											onClick={exitFullscreen}
+											className="absolute bottom-4 left-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+										>
+											Вернуться на страницу
+										</button>
+									)}
+								</div>
+							)}
 						</div>
 					</div>
 				</section>
