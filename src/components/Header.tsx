@@ -382,11 +382,11 @@ const Header: React.FC<HeaderProps> = ({
 									</button>
 									{openMenu === 'services' && (
 										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
-											<Link href="/services/inventarizaciya-kladbish" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+											<Link href="/services/imz" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Cemetery.svg" size={24} className="mr-1" />
 												Инвентаризация мест захоронений
 											</Link>
-											<Link href="/services/green-inventory" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+											<Link href="/services/izn" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Tree.svg" size={24} className="mr-1" />
 												Инвентаризация зеленых насаждений
 											</Link>
@@ -572,7 +572,7 @@ const Header: React.FC<HeaderProps> = ({
 									{openMobileSubmenu === 'services' && (
 										<div className="mt-1 ml-3 flex flex-col gap-1">
 											<Link
-												href="/services/inventarizaciya-kladbish"
+												href="/services/imz"
 												className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5"
 												onClick={() => setIsMobileNavOpen(false)}
 											>
@@ -580,7 +580,7 @@ const Header: React.FC<HeaderProps> = ({
 												Инвентаризация мест захоронений
 											</Link>
 											<Link
-												href="/services/green-inventory"
+												href="/services/izn"
 												className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5"
 												onClick={() => setIsMobileNavOpen(false)}
 											>
