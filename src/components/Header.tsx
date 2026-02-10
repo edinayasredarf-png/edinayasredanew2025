@@ -289,14 +289,14 @@ const Header: React.FC<HeaderProps> = ({
 									? 'hidden lg:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-[#212121] text-base font-[Raleway] font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors'
 									: 'hidden lg:inline-flex items-center justify-center gap-2 px-4 py-[9px] text-white text-base font-[Raleway] font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 transition-colors'}
 							>
-								<ThemedIcon src="/icons/icon3.svg" size={24} alt="" />
+								<ThemedIcon src="/icons/icon3.svg"  size={24}  alt="" />
 								<span>Получить консультацию</span>
 							</a>
 							<a href="https://edinayasreda.ru/" className={isLight
 								? 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors'
 								: 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-[#212121] hover:bg-opacity-80 transition-colors'}
 							>
-								<ThemedIcon src="/icons/icon4.svg" size={24} alt="" />
+								<ThemedIcon src="/icons/icon4.svg"  size={24} alt="" />
 								<span>Вход</span>
 							</a>
 							<Button onClick={onRegisterClick ?? openRegister} variant="primary" className="open-register-modal">
@@ -345,7 +345,7 @@ const Header: React.FC<HeaderProps> = ({
 									{openMenu === 'platform' && (
 										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
 											<a href="https://edinayasreda.ru/" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
-												<ThemedIcon src="/icons/icon4.svg" size={24} className="mr-1" /> Войти в ЛК
+												<ThemedIcon src="/icons/icon4.svg"  size={24} className="mr-1" /> Войти в ЛК
 											</a>
 
 											<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
@@ -546,11 +546,11 @@ const Header: React.FC<HeaderProps> = ({
 									</button>
 									{openMobileSubmenu === 'platform' && (
 										<div className="mt-1 ml-3 flex flex-col gap-1">
-											<a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
+											<a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5">
 												<ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" className="mr-1" /> Войти в ЛК
 											</a>
 
-											<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5">
+											<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5">
 												<ThemedIcon src="/icons/Mobile.svg" size={20} color="#212121" className="mr-1" /> Мобильное приложение
 											</a>
 										</div>
@@ -573,7 +573,7 @@ const Header: React.FC<HeaderProps> = ({
 										<div className="mt-1 ml-3 flex flex-col gap-1">
 											<Link
 												href="/services/inventarizaciya-kladbish"
-												className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5"
+												className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5"
 												onClick={() => setIsMobileNavOpen(false)}
 											>
 												<ThemedIcon src="/icons/Cemetery.svg" size={20} color="#212121" className="mr-1" />
@@ -581,7 +581,7 @@ const Header: React.FC<HeaderProps> = ({
 											</Link>
 											<Link
 												href="/services/green-inventory"
-												className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5"
+												className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5"
 												onClick={() => setIsMobileNavOpen(false)}
 											>
 												<ThemedIcon src="/icons/Tree.svg" size={20} color="#212121" className="mr-1" />
@@ -589,7 +589,7 @@ const Header: React.FC<HeaderProps> = ({
 											</Link>
 											<Link
 												href="/services/forest-management"
-												className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5"
+												className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5"
 												onClick={() => setIsMobileNavOpen(false)}
 											>
 												<ThemedIcon src="/icons/Forest.svg" size={20} color="#212121" className="mr-1" />
@@ -622,10 +622,10 @@ const Header: React.FC<HeaderProps> = ({
 									</button>
 									{openMobileSubmenu === 'company' && (
 										<div className="mt-1 ml-3 flex flex-col gap-1">
-											<Link href="/about" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5" onClick={() => setIsMobileNavOpen(false)}>
+											<Link href="/about" className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5" onClick={() => setIsMobileNavOpen(false)}>
 												<ThemedIcon src="/icons/City.svg" size={20} color="#212121" className="mr-1" /> О компании
 											</Link>
-											<Link href="/career" className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-black/5" onClick={() => setIsMobileNavOpen(false)}>
+											<Link href="/career" className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5" onClick={() => setIsMobileNavOpen(false)}>
 												<ThemedIcon src="/icons/Job.svg" size={20} color="#212121" className="mr-1" /> Карьера
 											</Link>
 										</div>

@@ -290,20 +290,21 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
                   </div>
                 </motion.div>
 
-                {/* IMAGE */}
-                <div className="min-h-0 p-1 md:p-2 flex">
-                  <div className="relative w-full h-full bg-[#f6f7f9] rounded-2xl overflow-hidden">
-                    <Image
-                      src={items[index].image}
-                      alt={items[index].title}
-                      fill
-                      className="object-contain pointer-events-none select-none"
-                      sizes="(max-width: 768px) 100vw, 540px"
-                      priority={index === 0}
-                      style={{ objectPosition: 'bottom center' }}
-                    />
-                  </div>
-                </div>
+             {/* IMAGE */}
+<div className="min-h-0 p-1 md:p-2 flex">
+  <div className="relative w-full h-[300px] sm:h-[360px] md:h-[480px] bg-[#f6f7f9] rounded-2xl overflow-hidden">
+    <Image
+      src={items[index].image}
+      alt={items[index].title}
+      fill
+      className="object-contain pointer-events-none select-none"
+      sizes="(max-width: 640px) 100vw, (max-width: 768px) 80vw, 540px"
+      priority={index === 0}
+      style={{ objectPosition: 'bottom center' }}
+    />
+  </div>
+</div>
+
               </div>
             </motion.article>
           </AnimatePresence>

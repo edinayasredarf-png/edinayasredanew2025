@@ -2,6 +2,7 @@
 import Layout from '../../../components/Layout';
 import Image from 'next/image';
 import FAQService from "@/components/FAQService";
+import DemoIframeSection from "../../../components/DemoIframeSection";
 
 
 
@@ -432,66 +433,8 @@ export default function InventoryBurialsPage() {
 				</section>
 
 				{/* Demo iframe */}
-				<section className="py-6 md:py-10">
+				<DemoIframeSection />
 
-					<div className="max-w-[1480px] mx-auto px-4">
-
-						<div>
-							<h2 className="text-center text-[#313131] text-4xl md:text-[52px] font-medium leading-tight mb-4">
-								Интерфейс системы учета кладбищ
-							</h2>
-
-							<p className="text-center text-[#7c8a9a] text-lg md:text-xl max-w-3xl mx-auto mb-16">
-								Управляйте местами захоронений, ведите учет и аналитику — всё в одной цифровой платформе							</p>
-						</div>
-						<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-
-
-						</div>
-
-						{/* Контейнер с iframe и подсказками */}
-						{/* pt-20 — резервируем вертикальное место под подсказки, чтобы они не наезжали на iframe */}
-						<div className="relative w-full mt-4 pt-10">
-							{/* Подсказка сверху слева: слева стрелка, справа текст, на одной линии */}
-							<div className="hidden xl:flex flex-row items-center gap-3 absolute left-6 top-0 z-10">
-								<Image
-									src="/icons/arrow-demo-left.svg"
-									alt="Стрелка к списку паспортов"
-									width={20}
-									height={20}
-									className="w-10 h-10 rotate-20"
-								/>
-								<p className="text-sm text-[#313131] font-medium leading-tight   max-w-[460px]">
-									Нажмите на название паспорта, чтобы к нему переместиться и нажмите на его границы чтобы открыть его
-								</p>
-							</div>
-
-							{/* Подсказка сверху справа: слева текст, справа стрелка, на одной линии */}
-							<div className="hidden xl:flex flex-row items-center gap-3 absolute right-6 top-0 z-10">
-								<p className="text-sm text-[#313131] font-medium leading-tight max-w-[360px] text-right">
-									Нажмите на кнопку слоев чтобы поменять картографическую подложку
-								</p>
-								<Image
-									src="/icons/arrow-demo-right.svg"
-									alt="Стрелка к панели фильтров"
-									width={40}
-									height={40}
-									className="w-10 h-10 -rotate-0"
-								/>
-							</div>
-
-							<div className="w-full rounded-[20px] overflow-hidden bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
-								<iframe
-									src="https://edinayasreda.ru/widget-api/widgetInfo/3de475668fe4652b8a699f4e317f99fe1f3e90783488d3d18926574b526c32b3"
-									title="Демо‑версия АИС «Единая среда»"
-									className="w-full h-[70vh] min-h-[560px] border-0"
-									loading="lazy"
-									allow="clipboard-read; clipboard-write; fullscreen"
-								/>
-							</div>
-						</div>
-					</div>
-				</section>
 
 				{/* Консультация */}
 				<section className="max-w-[980px] mx-auto px-4 py-24">

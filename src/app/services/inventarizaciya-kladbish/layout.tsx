@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import DemoIframeSection from "../../../components/DemoIframeSection";
+
 
 export const metadata: Metadata = {
 	title: 'Инвентаризация мест захоронений и оцифровка кладбищ под ключ с созданием цифрового реестра',
