@@ -3,11 +3,11 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Инвентаризация зелёных насаждений — Единая среда',
   description: 'Инвентаризация деревьев и зелёных насаждений: ГИС-учёт, аналитика, паспорта объектов. Точные данные и отчёты.',
-  alternates: { canonical: '/services/inventarizaciya-zelenyh-nasazhdeniy' },
+  alternates: { canonical: '/services/izn' },
   openGraph: {
     title: 'Инвентаризация зелёных насаждений — Единая среда',
     description: 'Полный учёт зелёных зон: координаты, атрибуты, аналитика в ГИС.',
-    url: '/services/inventarizaciya-zelenyh-nasazhdeniy',
+    url: '/services/izn',
     type: 'article',
     images: [{ url: '/img/услуга_изн.png', width: 1200, height: 630, alt: 'Инвентаризация зелёных насаждений' }],
   },

@@ -1,16 +1,15 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import DemoIframeSection from "../../../components/DemoIframeSection";
 
 
 export const metadata: Metadata = {
 	title: 'Инвентаризация мест захоронений и оцифровка кладбищ под ключ с созданием цифрового реестра',
 	description: 'Профессиональная инвентаризация мест захоронений: сбор, оцифровка и аналитика данных. Соответствие требованиям и высокая точность.',
-	alternates: { canonical: '/services/inventory-burials' },
+	alternates: { canonical: '/services/imz' },
 	openGraph: {
 		title: 'Инвентаризация мест захоронений — Единая среда',
 		description: 'Сбор, оцифровка и аналитика данных о местах захоронений. Точность и соответствие требованиям.',
-		url: '/services/inventory-burials',
+		url: '/services/imz',
 		type: 'article',
 		images: [{ url: '/img/cemetery.png', width: 1200, height: 630, alt: 'Инвентаризация мест захоронений' }],
 	},
@@ -35,14 +34,14 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					name: "АИС «Единая среда»",
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
-					url: "https://edinayasreda.ru/services/inventory-burials",
+					url: "https://edinayasreda.ru/services/imz",
 					screenshot: "https://edinayasreda.ru/img/cemetery.png",
 					description: "Инвентаризация мест захоронений и кладбищ с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
 						priceCurrency: "RUB",
-						url: "https://edinayasreda.ru/services/inventory-burials"
+						url: "https://edinayasreda.ru/services/imz"
 					},
 					featureList: [
 						"Электронная карта кладбищ",

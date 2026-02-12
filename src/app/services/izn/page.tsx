@@ -820,50 +820,31 @@ export default function GreenInventoryPage() {
   </div>
 </section>
 
+<section className="max-w-[980px] mx-auto px-4 py-24">
+					<div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
 
-<section className="py-24 bg-[#f5f7fa]">
-  <div className="max-w-[1280px] mx-auto px-4 flex flex-col items-center gap-16">
+						{/* Текст слева */}
+						<div className="lg:w-1/2 flex flex-col justify-center p-6">
+							<h2 className="text-[#313131] text-3xl md:text-[28px] font-medium leading-snug mb-6">
+								Оставьте запрос на <br />
+								консультацию с индивидуальным расчетом
+							</h2>
 
-    {/* Контейнер */}
-		<div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
-      {/* Левый блок с текстом */}
-      <div className="flex-1 px-6 py-8 lg:p-8  flex flex-col gap-6">
+							<p className="text-[#7c8a9a] text-lg leading-relaxed mb-8">
+							Цена зависит от нескольких факторов: площади территории, плотности насаждений, сложности ландшафта, объема полевых работ, требований к итоговой документации.  Оставьте заявку — подготовим коммерческое предложение в течение 24 часов.
+							</p>
 
-        {/* Заголовок */}
-        <h2 className="text-[#313131] text-3xl md:text-[37px] font-medium leading-[44px]">
-          Стоимость инвентаризации зеленых насаждений
-        </h2>
+							<div>
+								<button
+									onClick={handleKP}
+									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+									Оставить заявку
+								</button>
+							</div>
+						</div>
 
-        {/* Подзаголовок */}
-        <p className="text-[#7c8a9a] text-lg md:text-xl leading-7">
-          Цена зависит от нескольких факторов: площади территории, плотности насаждений, сложности ландшафта, объема полевых работ, требований к итоговой документации
-        </p>
-
-        {/* Информация под текстом */}
-        <p className="text-[#7c8a9a] text-lg md:text-xl leading-7">
-          Оставьте заявку — подготовим коммерческое предложение в течение 24 часов.
-        </p>
-
-        {/* Кнопки */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-4">
-          <button
-					                  onClick={handleKP}
-
-														className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
-														Оставить заявку
-          </button>
-          <button
-					                  onClick={handleConsult}
-
-
-					className=" text-[#313131] border border-[#313131] text-lg font-medium rounded-xl px-8 py-4 hover:border-[#0077FF] hover:text-[#0077FF] transition">
-            Получить консультацию
-          </button>
-        </div>
-      </div>
-
-      {/* Правый блок с изображением */}
-    	<div className="lg:w-1/3 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
+						{/* Изображение справа */}
+						<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
 							<Image
 								src="/img/imz_cta.png"
 								alt="Получить консультацию по инвентаризации и оцифровке мест"
@@ -872,9 +853,13 @@ export default function GreenInventoryPage() {
 							/>
 						</div>
 
-    </div>
-  </div>
-</section>
+					</div>
+				</section>
+
+
+
+
+
 
 		{/* ✅ FAQ СЕКЦИЯ */}
 		<FAQ
