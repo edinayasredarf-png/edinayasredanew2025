@@ -2,6 +2,9 @@
 import Layout from '../../../components/Layout';
 import React, { useState } from 'react';
 import Image from 'next/image';
+import FAQ from "../../../components/FAQ";
+
+
 
 export default function ForestManagementPage() {
   const [openItems, setOpenItems] = useState<number[]>([]);
@@ -9,6 +12,35 @@ export default function ForestManagementPage() {
   const handleKP = () => {
     window.dispatchEvent(new CustomEvent('openKPModal'));
   };
+
+	const homeFaqData = [
+		{
+			question: "Какой срок исполнения работ?",
+			answer:
+				"Выполнение комплекса работ занимает от 20 рабочих дней (календарный месяц) до 2х лет",
+		},
+		{
+			question: "Что из себя представляет услуга?",
+			answer:
+				"Перечень мероприятий, включающих оценку качественного и количественного состояния лесов (лесных участков), а также разработку проектной документации в области охраны, защитных, воспроизводства и их использования, определяющие направление деятельности на ближайшие 10 лет.",
+		},
+		{
+			question: "Как часто проводится лесоустройство?",
+			answer:
+				"Сроки повторяемости лесоустроительных работ регламентируются лесоустроительной инструкцией. Лесоустроительные работы могут проводиться через каждые 10, 15 или 20 лет в зависимости от интенсивности ведения лесного хозяйства.",
+		},
+		{
+			question: "Сколько времени занимает инвентаризация?",
+			answer:
+				"Сроки зависят от площади и сложности участка — от нескольких дней до нескольких недель.",
+		},
+		{
+			question: "Для чего нужна таксация леса?",
+			answer:
+				"Таксация лесов методом дешифрирования проводится для выявления, учета и оценки количественных и качественных характеристик лесных ресурсов (вычисление высоты и возраста лесных насаждений, среднего диаметра, средней высоты, относительной полноты, бонитет древостоя, запас на 1 га).",
+		},
+	];
+
 
   const handleConsult = () => {
     window.dispatchEvent(new CustomEvent('openConsultModal'));
@@ -606,84 +638,16 @@ export default function ForestManagementPage() {
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column - FAQ */}
-              <div className="lg:col-span-2">
-                <h2 className="text-4xl md:text-5xl font-bold text-black mb-12">FAQ</h2>
-                <div className="space-y-0">
-                  {[
-                    {
-                      question: "Какой срок исполнения работ?",
-                      answer: "Выполнение комплекса работ занимает от 20 рабочих дней (календарный месяц) до 2х лет."
-                    },
-                    {
-                      question: "Что из себя представляет услуга?",
-                      answer: "Перечень мероприятий, включающих оценку качественного и количественного состояния лесов (лесных участков), а также разработку проектной документации в области охраны, защитных, воспроизводства и их использования, определяющие направление деятельности на ближайшие 10 лет."
-                    },
-                    {
-                      question: "Как часто проводится лесоустройство?",
-                      answer: "Сроки повторяемости лесоустроительных работ регламентируются лесоустроительной инструкцией. Лесоустроительные работы могут проводиться через каждые 10, 15 или 20 лет в зависимости от интенсивности ведения лесного хозяйства."
-                    },
-                    {
-                      question: "Для чего нужна таксация леса?",
-                      answer: "Таксация лесов методом дешифрирования проводится для выявления, учета и оценки количественных и качественных характеристик лесных ресурсов (вычисление высоты и возраста лесных насаждений, среднего диаметра, средней высоты, относительной полноты, бонитет древостоя, запас на 1 га)."
-                    }
-                  ].map((faq, index) => (
-                    <div key={index} className="border-b border-gray-200 py-6">
-                      <div
-                        className="flex items-center justify-between cursor-pointer group"
-                        onClick={() => toggleItem(index)}
-                      >
-                        <h3 className="text-lg font-medium text-black pr-8">{faq.question}</h3>
-                        <div className="flex-shrink-0">
-                          <svg
-                            className={`w-6 h-6 text-black group-hover:text-[#0077FF] transition-all duration-300 ${
-                              openItems.includes(index) ? 'rotate-45' : ''
-                            }`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          openItems.includes(index)
-                            ? 'max-h-96 opacity-100 mt-4'
-                            : 'max-h-0 opacity-0 mt-0'
-                        }`}
-                      >
-                        <div className="text-gray-600 leading-relaxed">
-                          {faq.answer}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+   						{/* ✅ FAQ СЕКЦИЯ */}
+		<FAQ
+				items={homeFaqData}
+				title="Часто задаваемые вопросы"
+				showContactCard={true}
+				contactCardTitle="Не нашли ответ на свой вопрос?"
+				contactCardText="Задайте его нам — и мы оперативно ответим."
+				contactButtonText="Задать вопрос"
+			/>
 
-              {/* Right Column - Support Block */}
-              <div className="space-y-6">
-                {/* Support Block */}
-                <div className="bg-[#F6F7F9] rounded-3xl p-8">
-                  <h3 className="text-2xl font-bold text-black mb-4">Не нашли ответ на свой вопрос?</h3>
-                  <p className="text-gray-600 mb-6">Задайте его нам на портале поддержки, и мы оперативно ответим.</p>
-                  <a
-                    href="mailto:info@единаясреда.рф?subject=Вопрос"
-                    className="text-[#0077FF] hover:text-[#0056CC] transition-colors font-medium"
-                  >
-                    Задать вопрос
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* CTA Section */}
         <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16 mb-16">

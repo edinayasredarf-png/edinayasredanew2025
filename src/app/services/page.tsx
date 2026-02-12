@@ -26,7 +26,7 @@ export default function ServicesPage() {
       title: "Оцифровка мест захоронений",
       desc:
         "Создание точного реестра, схема участков, поиск онлайн. Поддержка инвентаризации, оплат и публикации на портале.",
-      href: "/services/inventory-burials",
+      href: "/services/imz",
       image: "/img/услуга_имз.png",
     },
     {
@@ -34,7 +34,7 @@ export default function ServicesPage() {
       title: "Инвентаризация зелёных насаждений",
       desc:
         "Паспортизация деревьев и кустарников, учёт работ (КР/ТР), планирование агротехмероприятий, визуализации и отчётность.",
-      href: "/services/green-inventory",
+      href: "/services/izn",
       image: "/img/услуга_изн.png",
     },
     {

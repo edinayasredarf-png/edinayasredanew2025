@@ -390,7 +390,7 @@ const Header: React.FC<HeaderProps> = ({
 												<ThemedIcon src="/icons/Tree.svg" size={24} className="mr-1" />
 												Инвентаризация зеленых насаждений
 											</Link>
-											<Link href="/services/forest-management" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+											<Link href="/services/les" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Forest.svg" size={24} className="mr-1" />
 												Лесоустройство
 											</Link>
@@ -403,7 +403,7 @@ const Header: React.FC<HeaderProps> = ({
 														: 'bg-white/10 text-white hover:bg-white/20'
 														} items-center justify-center gap-2 py-2.5 rounded-xl transition-colors`}
 												>
-													<ThemedIcon src="/icons/arrow_right.svg" size={20} />
+													<ThemedIcon src="/icons/arrow-right.svg" size={20} />
 													Посмотреть все услуги
 												</Link>
 											</div>
@@ -588,7 +588,7 @@ const Header: React.FC<HeaderProps> = ({
 												Инвентаризация зеленых насаждений
 											</Link>
 											<Link
-												href="/services/forest-management"
+												href="/services/les"
 												className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5"
 												onClick={() => setIsMobileNavOpen(false)}
 											>
@@ -601,7 +601,7 @@ const Header: React.FC<HeaderProps> = ({
 												onClick={() => setIsMobileNavOpen(false)}
 												className="mt-2 bg-[#F6F7F9] text-[#212121] hover:bg-black/5 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors"
 											>
-												<ThemedIcon src="/icons/arrow_right.svg" size={18} color="#212121" />
+												<ThemedIcon src="/icons/arrow-right.svg" size={18} color="#212121" />
 												Посмотреть все услуги
 											</Link>
 										</div>

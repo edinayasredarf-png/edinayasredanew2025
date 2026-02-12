@@ -4,6 +4,7 @@ import Layout from '../../../components/Layout';
 import Image from 'next/image';
 import Card from '../../../components/Card';
 import DemoIframeSection from "../../../components/DemoIframeSection";
+import FAQ from "../../../components/FAQ";
 
 export default function GreenInventoryPage() {
   const [openItems, setOpenItems] = useState<number[]>([]);
@@ -15,6 +16,34 @@ export default function GreenInventoryPage() {
   const handleConsult = () => {
     window.dispatchEvent(new CustomEvent('openConsultModal'));
   };
+
+	 const homeFaqData = [
+		{
+			question: "Обязательна ли инвентаризация зеленых насаждений?",
+			answer:
+				"Во многих регионах учет зеленого фонда является частью системы управления территориями и необходим для корректной эксплуатации объектов.",
+		},
+		{
+			question: "Как часто нужно проводить инвентаризацию?",
+			answer:
+				"Рекомендуется обновлять данные каждые несколько лет или после значительных изменений территории.",
+		},
+		{
+			question: "Что получает заказчик по итогам работ?",
+			answer:
+				"Цифровую базу насаждений, карту, паспорта объектов и комплект отчетной документации.",
+		},
+		{
+			question: "Сколько времени занимает инвентаризация?",
+			answer:
+				"Сроки зависят от площади и сложности участка — от нескольких дней до нескольких недель.",
+		},
+		{
+			question: "Можно ли интегрировать данные в существующие системы?",
+			answer:
+				"Да, цифровой формат позволяет использовать информацию в различных управленческих платформах.",
+		},
+	];
 
   const toggleItem = (index: number) => {
     setOpenItems(prev =>
@@ -171,10 +200,10 @@ export default function GreenInventoryPage() {
     <div className="lg:col-span-3 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
       <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
         <Image
-          src="/img/imz4.png"
-          alt="Инвентаризация кладбищ"
-          width={320}
-          height={320}
+          src="/img/services/izn/1.png"
+          alt="Актуальные данные об инвентаризации"
+          width={180}
+          height={180}
         />
       </div>
       <div className="lg:w-1/2 bg-white rounded-3xl p-4 flex flex-col justify-center">
@@ -236,10 +265,10 @@ export default function GreenInventoryPage() {
       </div>
       <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
         <Image
-          src="/img/imz4.png"
-          alt="Инвентаризация кладбищ"
-          width={320}
-          height={320}
+          src="/img/services/izn/2.png"
+          alt="Не просто отчет зеленого реестра"
+          width={220}
+          height={220}
         />
       </div>
     </div>
@@ -346,10 +375,10 @@ export default function GreenInventoryPage() {
       </div>
       <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
         <Image
-          src="/img/imz4.png"
-          alt="Инвентаризация кладбищ"
-          width={320}
-          height={320}
+          src="/img/services/izn/3.png"
+          alt="Система нужна всем"
+          width={160}
+          height={160}
         />
       </div>
     </div>
@@ -394,7 +423,9 @@ export default function GreenInventoryPage() {
           "фотофиксация",
           "геопривязка каждого объекта"
         ],
-        image: "/img/imz1.png"
+        image: "/img/services/izn/4.png"
+
+
       },
       {
         title: "Камеральная обработка",
@@ -404,7 +435,7 @@ export default function GreenInventoryPage() {
           "структурирование данных",
           "подготовка аналитики"
         ],
-        image: "/img/imz2.png"
+        image: "/img/services/izn/5.png"
       },
       {
         title: "Документация",
@@ -414,7 +445,7 @@ export default function GreenInventoryPage() {
           "отчетные материалы",
           "рекомендации по содержанию"
         ],
-        image: "/img/imz3.png"
+        image: "/img/services/izn/6.png"
       }
     ].map((card, i) => (
       <div
@@ -427,8 +458,8 @@ export default function GreenInventoryPage() {
             <Image
               src={card.image}
               alt={card.title}
-              width={320}
-              height={320}
+              width={	160}
+              height={160}
               className="object-contain"
             />
           </div>
@@ -498,7 +529,7 @@ export default function GreenInventoryPage() {
       <div className="bg-white rounded-3xl p-2 flex items-center">
         <div className="w-full h-full min-h-[420px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center">
           <Image
-            src="/img/imz4.png"
+            src="/img/services/izn/7.png"
             alt="Цифровая система"
             width={260}
             height={220}
@@ -593,16 +624,16 @@ export default function GreenInventoryPage() {
         {/* Карточка 2 с изображением */}
         <div className="absolute top-0 left-[372px] w-[736px] h-[300px] bg-white rounded-3xl flex gap-2 p-2">
           <div className="w-[356px] flex flex-col gap-3 px-7 pt-[27px] pb-[123px]">
-            <h3 className="text-[#313131] text-[28px] font-medium leading-9">Безопасность данных
+            <h3 className="text-[#313131] text-[28px] font-medium leading-9"> Экспертная команда
 						</h3>
             <p className="text-[#7C8A9A] text-xl leading-7">
-            Все информация надежно защищена и хранится в соответствии с требованиями законодательства.
+           Объединяем специалистов в области озеленения и цифровых решений.
             </p>
           </div>
-          <div className="w-[356px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10 py-[72px]">
+          <div className="w-[356px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10 ">
             <Image
-              src="/img/imz4.png"
-              alt="Инвентаризация кладбищ"
+            src="/img/services/izn/8.png"
+						alt="Инвентаризация кладбищ"
               width={320}
               height={320}
             />
@@ -612,19 +643,19 @@ export default function GreenInventoryPage() {
         {/* Карточка 3 */}
         <div className="absolute top-0 left-[1116px] w-[364px] min-h-[300px] bg-white rounded-3xl flex flex-col p-2 pb-[67px]">
           <div className="flex flex-col gap-3 px-7 pt-[27px] pb-7">
-            <h3 className="text-[#313131] text-[28px] font-medium leading-9">Экспертная команда</h3>
-            <p className="text-[#7C8A9A] text-xl leading-7">
-              Объединяем специалистов в области озеленения и цифровых решений.
+            <h3 className="text-[#313131] text-[28px] font-medium leading-9">Безопасность данных</h3>
+            <p className="text-[#7C8A9A] text-xl leading-7"> Все информация надежно защищена и хранится в соответствии с требованиями законодательства.
+
             </p>
           </div>
         </div>
 
         {/* Карточка 4 с изображением */}
         <div className="absolute top-[308px] left-0 w-[736px] min-h-[300px] bg-white rounded-3xl flex gap-2 p-2">
-          <div className="w-[356px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10 py-[72px]">
+          <div className="w-[356px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10 py-10 ]">
             <Image
-              src="/img/imz4.png"
-              alt="Инвентаризация кладбищ"
+            src="/img/services/izn/9.png"
+						alt="Инвентаризация кладбищ"
               width={320}
               height={320}
             />
@@ -642,15 +673,15 @@ export default function GreenInventoryPage() {
           <div className="w-[356px] flex flex-col gap-3 px-7 pt-[27px] pb-[87px]">
             <h3 className="text-[#313131] text-[28px] font-medium">Постоплата</h3>
             <p className="text-[#7C8A9A] text-xl leading-7">
-              Предлагаем уникальную возможность воспользоваться услугой с опцией постоплаты. Сначала получаете услугу, а оплачиваете позже.
+              Предлагаем уникальную возможность. Сначала получаете услугу, а оплачиваете позже.
             </p>
           </div>
-          <div className="w-[356px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10 py-[72px]">
+          <div className="w-[356px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10 ">
             <Image
-              src="/img/imz4.png"
-              alt="Инвентаризация кладбищ"
-              width={320}
-              height={320}
+            src="/img/services/izn/10.png"
+						alt="Инвентаризация кладбищ"
+              width={220}
+              height={220}
             />
           </div>
         </div>
@@ -844,6 +875,16 @@ export default function GreenInventoryPage() {
     </div>
   </div>
 </section>
+
+		{/* ✅ FAQ СЕКЦИЯ */}
+		<FAQ
+				items={homeFaqData}
+				title="Часто задаваемые вопросы"
+				showContactCard={true}
+				contactCardTitle="Не нашли ответ на свой вопрос?"
+				contactCardText="Задайте его нам — и мы оперативно ответим."
+				contactButtonText="Задать вопрос"
+			/>
 
       </div>
     </Layout>

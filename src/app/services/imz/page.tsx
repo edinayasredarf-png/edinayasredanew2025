@@ -1,8 +1,9 @@
 "use client";
 import Layout from '../../../components/Layout';
 import Image from 'next/image';
-import FAQService from "@/components/FAQService";
 import DemoIframeSection from "../../../components/DemoIframeSection";
+import FAQ from "../../../components/FAQ";
+
 
 
 
@@ -14,6 +15,35 @@ export default function InventoryBurialsPage() {
 	const handleConsult = () => {
 		window.dispatchEvent(new CustomEvent('openConsultModal'));
 	};
+
+	const homeFaqData = [
+		{
+			question: "Что включает инвентаризация мест захоронений?",
+			answer:
+				"Инвентаризация включает анализ архивных данных, полевые обследования территорий, GPS-съемку, фотофиксацию и создание цифрового реестра мест захоронений."
+		},
+		{
+			question: "Зачем муниципалитету проводить оцифровку кладбищ?",
+			answer:
+				"Цифровой реестр позволяет точно учитывать захоронения, планировать развитие территорий, снижать ручной труд сотрудников и повышать прозрачность учета."
+		},
+		{
+			question: "Соответствует ли система государственным требованиям?",
+			answer:
+				"Да. Работы выполняются с учетом действующих нормативов и требований, а также с возможностью интеграции в региональные и государственные информационные системы."
+		},
+		{
+			question: "Сколько времени занимает инвентаризация кладбища?",
+			answer:
+				"Сроки зависят от площади территории, состояния архивов и количества захоронений. После консультации мы готовим индивидуальный план работ."
+		},
+		{
+			question: "Можно ли интегрировать данные в существующие системы учета?",
+			answer:
+				"Да. Мы обеспечиваем перенос данных и интеграцию с муниципальными и ведомственными платформами."
+		}
+	];
+
 
 	const advantages = [
 		{
@@ -474,7 +504,17 @@ export default function InventoryBurialsPage() {
 
 					</div>
 				</section>
-				<FAQService />
+
+						{/* ✅ FAQ СЕКЦИЯ */}
+		<FAQ
+				items={homeFaqData}
+				title="Часто задаваемые вопросы"
+				showContactCard={true}
+				contactCardTitle="Не нашли ответ на свой вопрос?"
+				contactCardText="Задайте его нам — и мы оперативно ответим."
+				contactButtonText="Задать вопрос"
+			/>
+
 
 
 			</div >
