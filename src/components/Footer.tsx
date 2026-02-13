@@ -111,7 +111,7 @@ const Footer = () => {
             <Link href="/documents" className="hover:text-azure">Политика конфиденциальности</Link>
           </div>
           <div className="flex items-center gap-6">
-            <a href="https://max.ru/u/f9LHodD0cOJZILKNb4kxSrf65ZDrDC8VHBCUT7OOQCkDcv8MzTDP_8tCiWU" title="Max">
+            <a href="https://max.ru/id6150100608_biz" title="Max">
               <Image src="/icons/max.svg" alt="" width={24} height={24} />
             </a>
             <a href="https://t.me/edinayasredarf" title="Telegram">

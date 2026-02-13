@@ -8,21 +8,29 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const channels = [
-  {
-    title: 'Telegram-канал ЕС',
-    description: 'Кейсы, обновления платформы и новости из мира геоданных и цифровизации .',
-    icon: '/icons/tg.svg',
+	{
+    title: 'Наш канал в Max',
+    description: 'Новости платформы, примеры внедрения, полезные материалы о цифровизации и ГИC.',
+    icon: '/icons/max.svg',
     buttonText: 'Подписаться',
-    buttonHref: 'https://t.me/edinayasredarf',
+    buttonHref: 'https://max.ru/id6150100608_biz',
   },
-
-  {
+	{
     title: 'Сообщество ВКонтакте',
     description: 'Присоединяйтесь, чтобы обсуждать кейсы, делиться опытом и задавать вопросы.',
     icon: '/icons/vk.svg',
     buttonText: 'Подписаться',
     buttonHref: 'https://vk.com/edinayasredarf',
   },
+  {
+    title: 'Telegram-канал ЕС',
+    description: 'Кейсы, обновления платформы и новости из мира геоданных и цифровизации.',
+    icon: '/icons/tg.svg',
+    buttonText: 'Подписаться',
+    buttonHref: 'https://t.me/edinayasredarf',
+  },
+
+
   {
     title: 'Наш блог на Dzen',
     description: 'Глубокие технические разборы, лучшие практики и аналитика в области геоданных.',
