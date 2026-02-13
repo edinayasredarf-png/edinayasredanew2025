@@ -34,7 +34,7 @@ const KPModal: React.FC<KPModalProps> = ({ open, onClose }) => {
 
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel="Запросить КП">
-      <div className="relative w-full md:w-[400px] p-6 flex flex-col font-[Raleway]">
+      <div className=" bg-white rounded-2xl shadow-lg relative w-full md:w-[400px] p-6 flex flex-col font-[Raleway]">
 
         {/* Крестик */}
         <button

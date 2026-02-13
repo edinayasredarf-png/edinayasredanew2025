@@ -36,7 +36,7 @@ const DemoAccessModal: React.FC<DemoAccessModalProps> = ({ open, onClose }) => {
 
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel="Демо-доступ">
-      <div className="relative w-full md:w-[400px] p-6 flex flex-col font-[Raleway]">
+      <div className=" bg-white rounded-2xl shadow-lg  relative w-full md:w-[400px] p-6 flex flex-col font-[Raleway]">
 
         {/* Крестик */}
         <button

@@ -44,7 +44,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({ open, onClose, children, classNam
       role="dialog"
       aria-label={ariaLabel}
     >
-      <div className={`bg-white rounded-2xl shadow-lg relative flex flex-col ${className}`}>
+      <div className={` relative flex flex-col ${className}`}>
         {children}
       </div>
     </div>
