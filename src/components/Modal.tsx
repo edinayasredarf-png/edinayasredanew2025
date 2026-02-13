@@ -44,7 +44,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({ open, onClose, children, classNam
       role="dialog"
       aria-label={ariaLabel}
     >
-      <div className={` rounded-2xl shadow-lg relative flex flex-col ${className}`}>
+      <div className={` rounded-2xl relative flex flex-col ${className}`}>
         {children}
       </div>
     </div>
@@ -99,7 +99,7 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel={title}>
-      <div className="w-full md:w-1/2 mx-auto m-2 flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-lg animate-fade-in relative">
+      <div className="w-full md:w-1/2 mx-auto m-2 flex flex-col md:flex-row rounded-2xl overflow-hidden  animate-fade-in relative">
 
         {/* Левая часть: фирменный блок (только на md+) */}
         <div className={`hidden md:flex md:w-1/2 ${leftBgColor} ${leftTextColor} flex-col justify-between p-4 md:p-6`}>
