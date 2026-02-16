@@ -11,6 +11,11 @@ const handleKP = () => {
 };
 
 
+const handleConsult = () => {
+	window.dispatchEvent(new CustomEvent('openConsultModal'));
+};
+
+
 const advantages = [
 	{
 		icon: '/icons/эксперты.svg',
@@ -100,60 +105,55 @@ export default function ServicesPage() {
     <Layout>
       <div className="min-h-screen font-[Raleway] font-medium lining-nums">
 
-        {/* HERO — минимализм: слева текст и кнопки, справа изображение */}
-        <section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[420px]">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
-            <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
-              {/* Лево */}
-              <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-                <h1 className={`text-4xl sm:text-5xl md:text-[72px] ${headingBase}`}>
-                  Услуги
-                </h1>
-                <p className="mt-8 text-xl sm:text-[27px] text-grey-92 max-w-2xl">
-                  Простые и надёжные решения для цифрового управления территориями и объектами — от оцифровки и инвентаризации до интеграций и сопровождения.
-                </p>
-                <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={handleOpenKP}
-                    className="inline-flex items-center justify-center bg-[#0077FF] text-white font-semibold px-8 py-4 rounded-xl hover:bg-[#0062D8] transition-colors"
-                  >
-                    Запросить КП
-                  </button>
-                  <a
-                    href="#catalog"
-                    className="inline-flex items-center justify-center border border-white/30 text-white px-8 py-4 rounded-xl hover:bg-white hover:text-black transition-colors"
-                  >
-                    Каталог услуг
-                  </a>
-                </div>
-              </div>
+			<section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[400px]">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
+          <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
+            <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
+              <h1 className="text-4xl sm:text-5xl md:text-[68px] font-medium leading-tight">
+							Услуги
+              </h1>
+              <p className="mt-8 text-xl sm:text-[20px] text-gray-300 max-w-2xl">
+							Простые и надёжные решения для цифрового управления территориями и объектами — от оцифровки и инвентаризации до интеграций и сопровождения.
 
-              {/* Право — изображение (на мобиле уходит вниз) */}
-              <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-                <Image
-                  src="./img/services.webp"
-                  alt="Иллюстрация услуг"
-                  width={676}
-                  height={583}
-                  className="w-full max-w-[583px] object-contain"
-                  style={{ height: "auto" }}
-                />
+</p>
+              <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleKP}
+                  className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                >
+                  Запросить КП
+                </button>
+                <button
+                  onClick={handleConsult}
+                  className="inline-block  text-white border border-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-white/10 transition-colors"
+                >
+                 Бесплатная консультация
+                </button>
               </div>
             </div>
-
-            {/* Картинка справа на десктопе */}
-            <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[620px] h-auto pointer-events-none">
+            <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
               <Image
-							src="/img/services.webp"
-							alt="Иллюстрация услуг"
-                width={676}
-                height={583}
-                className="w-full object-contain"
-                style={{ height: "auto" }}
+                src="/icons/services.webp"
+                alt="Инвентаризация зеленых насаждений "
+                width={500}
+                height={400}
+                className="w-full max-w-[500px] object-contain"
+                style={{ height: 'auto' }}
               />
             </div>
           </div>
-        </section>
+          <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[500px] h-auto pointer-events-none">
+            <Image
+                src="/img/services.webp"
+								alt="Инвентаризация мест захоронений"
+              width={500}
+              height={400}
+              className="w-full object-contain"
+              style={{ height: 'auto' }}
+            />
+          </div>
+        </div>
+      </section>
 
         {/* КАТАЛОГ УСЛУГ — карточки с изображением сверху и аккуратным ховером */}
         <section id="catalog" className="max-w-[1400px] mx-auto mt-8 px-2 py-2">
