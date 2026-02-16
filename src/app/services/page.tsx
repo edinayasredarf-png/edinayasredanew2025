@@ -133,23 +133,21 @@ export default function ServicesPage() {
             </div>
             <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
               <Image
-                src="/icons/services.webp"
-                alt="Инвентаризация зеленых насаждений "
+                src="/img/services.webp"
+                alt="Услуги"
                 width={500}
-                height={400}
+                height={500}
                 className="w-full max-w-[500px] object-contain"
-                style={{ height: 'auto' }}
               />
             </div>
           </div>
           <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[500px] h-auto pointer-events-none">
             <Image
                 src="/img/services.webp"
-								alt="Инвентаризация мест захоронений"
+								alt="Услуги"
               width={500}
-              height={400}
+              height={500}
               className="w-full object-contain"
-              style={{ height: 'auto' }}
             />
           </div>
         </div>
