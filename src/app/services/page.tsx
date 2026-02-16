@@ -157,8 +157,8 @@ export default function ServicesPage() {
         <section id="catalog" className="max-w-[1400px] mx-auto mt-8 px-2 py-2">
           {/* Заголовок/подзаголовок как в примере */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
-            <h2 className="text-4xl text-black font-medium text-left">Каталог услуг</h2>
-            <div className="text-black text-xl max-w-xl">
+            <h2 className=" text-[#313131] text-4xl md:text-[56px] font-medium leading-tight text-left">Каталог услуг</h2>
+            <div className="text-[#7c8a9a] text-lg leading-relaxed">
               Выберите нужную услугу — и оставьте заявку или проконсультируйтесь с нашими менеджерами.
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function ServicesPage() {
           {/* Сетка карточек */}
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* “Единая среда” — первая карточка */}
-            <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97">
+            <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-6 transition-all duration-300">
               <Image
                 src="/img/ес.svg"
                 alt="Единая среда"
@@ -175,23 +175,23 @@ export default function ServicesPage() {
                 className="object-contain max-w-[100%] max-h-[100%] mr-4"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
-              <div className="flex flex-col justify-center h-full pl-2 md:pl-4">
-                <div className="mb-2 text-center md:text-left">
-                  <h3 className="text-xl font-medium text-black">Единая среда</h3>
+              <div className="flex flex-col justify-center h-full ">
+                <div className="mb-2 text-center md:text-left pl-2 md:pl-4">
+                  <h3 className="text-[#313131] text-2xl font-medium mb-4">Единая среда</h3>
                 </div>
-                <p className="text-base text-gray-500 text-center md:text-left mx-auto md:mx-0 mb-4">
+                <p className="text-[#7c8a9a] text-lg leading-relaxed text-center md:text-left mx-auto md:mx-0 mb-4 pl-2 md:pl-4">
                   Платформа для цифрового управления территориями, автоматизации процессов и аналитики для организаций любого масштаба.
                 </p>
                 <div className="flex flex-col gap-2 w-full mt-auto">
                   <Link
                     href="/"
-                    className="w-full bg-gray-100 text-gray-700 font-medium py-2 rounded-xl text-base hover:bg-gray-200 transition-colors text-center inline-flex items-center justify-center"
+                    className="w-full bg-gray-100 text-gray-700 font-medium py-4 rounded-2xl text-base hover:bg-gray-200 transition-colors text-center inline-flex items-center justify-center"
                   >
                     Подробнее о системе
                   </Link>
                   <button
                     onClick={handleOpenKP}
-                    className="w-full bg-white text-[#0077FF] border border-[#0077FF] hover:bg-[#0077FF]/10 font-bold py-2 rounded-xl text-base transition-colors"
+                    className="w-full bg-white text-[#0077FF] border border-[#0077FF] hover:bg-[#0077FF]/10 font-bold py-4 rounded-2xl text-base transition-colors"
                   >
                     Оставить заявку
                   </button>
@@ -203,7 +203,7 @@ export default function ServicesPage() {
             {services.map((s, i) => (
               <div
                 key={i}
-                className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97"
+                className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-6 transition-all duration-300 "
               >
                 {/* Изображение услуги */}
                 <Image
@@ -216,27 +216,27 @@ export default function ServicesPage() {
                 />
 
                 {/* Текстовый блок */}
-                <div className="flex flex-col justify-center h-full pl-2 md:pl-4">
+                <div className="flex flex-col justify-center h-full ">
                   {/* ТОЛЬКО заголовок — без иконки */}
-                  <div className="mb-2 text-center md:text-left">
-                    <h3 className="text-xl font-medium text-black">{s.title}</h3>
+                  <div className="mb-2 text-center md:text-left pl-2 md:pl-4">
+                    <h3 className="text-[#313131] text-2xl font-medium mb-4">{s.title}</h3>
                   </div>
 
-                  <p className="text-base text-gray-500 text-center md:text-left mx-auto md:mx-0 mb-4">
+                  <p className="text-[#7c8a9a] text-lg leading-relaxed text-center md:text-left mx-auto md:mx-0 mb-4 pl-2 md:pl-4">
                     {s.desc}
                   </p>
 
                   <div className="flex flex-col gap-2 w-full mt-auto">
                     <Link
                       href={s.href}
-                      className="w-full bg-gray-100 text-gray-700 font-medium py-2 rounded-xl text-base hover:bg-gray-200 transition-colors text-center"
+                      className="w-full bg-gray-100 text-gray-700 font-medium py-4 rounded-2xl text-base hover:bg-gray-200 transition-colors text-center"
                     >
                       Подробнее об услуге
                     </Link>
 
                     <button
                       onClick={handleOpenKP}
-                      className="w-full bg-white text-[#0077FF] border border-[#0077FF] hover:bg-[#0077FF]/10 font-bold py-2 rounded-xl text-base transition-colors"
+                      className="w-full bg-white text-[#0077FF] border border-[#0077FF] hover:bg-[#0077FF]/10 font-bold py-4 rounded-2xl text-base transition-colors"
                     >
                       Оставить заявку
                     </button>
