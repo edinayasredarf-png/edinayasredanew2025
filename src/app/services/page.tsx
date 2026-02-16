@@ -5,6 +5,46 @@ import { useModal } from "@/components/ModalProvider";
 import Image from "next/image";
 import Link from "next/link";
 
+
+const handleKP = () => {
+	window.dispatchEvent(new CustomEvent('openKPModal'));
+};
+
+
+const advantages = [
+	{
+		icon: '/icons/эксперты.svg',
+		label: 'Огромный опыт в отрасли',
+		description: 'Более 17-летний практический опыт позволяет нам применять проверенные решения и адаптировать методологию под задачи каждого проекта.'
+	},
+	{
+		icon: '/icons/Соответстиве требованиям.svg',
+		label: 'Прозрачные бюджеты и прогнозируемые сроки',
+		description: 'Фиксируем стоимость и этапы работ заранее, чтобы вы могли точно планировать ресурсы и избегать неожиданных расходов.'
+	},
+	{
+		icon: '/icons/information.svg',
+		label: 'Современное оборудование. ',
+		description: 'Используем RTK-технологии, мобильные комплексы и актуальное программное обеспечение для быстрого сбора и максимально точной обработки данных.'
+	},
+	{
+		icon: '/icons/новое оборудование.svg',
+		label: 'Квалифицированные специалисты. ',
+		description: 'Над проектами работают ГИС-инженеры, полевые эксперты и аналитики данных, обеспечивая высокий профессиональный уровень на каждом этапе.'
+	},
+	{
+		icon: '/icons/Безопасность данных.svg',
+		label: 'Собственная платформа «Единая Среда».',
+		description: 'Предоставляем безопасную цифровую среду для хранения, анализа и управления данными с удобным доступом к отчетности.'
+	},
+	{
+		icon: '/icons/Постоплата.svg',
+		label: 'Поддержка и обучение.',
+		description: 'Сопровождаем внедрение системы, обучаем команды и предоставляем всю необходимую документацию для эффективной работы.'
+	},
+];
+
+
 export default function ServicesPage() {
   // Достаём модалки; если openKP нет в типах — безопасно вызовем через any.
   const modal = useModal() as any;
@@ -42,7 +82,7 @@ export default function ServicesPage() {
       title: "Лесоустройство",
       desc:
         "Учёт выделов, мероприятия, мониторинг. Мобильные обходы, офлайн-режим и последующая синхронизация с хранилищем.",
-      href: "/services/forest-management",
+      href: "/services/les",
       image: "/img/услуга_лес.png",
     },
   ];
@@ -91,11 +131,11 @@ export default function ServicesPage() {
               {/* Право — изображение (на мобиле уходит вниз) */}
               <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
                 <Image
-                  src="/img/price.png"
+                  src="./img/services.webp"
                   alt="Иллюстрация услуг"
-                  width={520}
-                  height={400}
-                  className="w-full max-w-[520px] object-contain"
+                  width={676}
+                  height={583}
+                  className="w-full max-w-[583px] object-contain"
                   style={{ height: "auto" }}
                 />
               </div>
@@ -104,10 +144,10 @@ export default function ServicesPage() {
             {/* Картинка справа на десктопе */}
             <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[620px] h-auto pointer-events-none">
               <Image
-                src="/img/price.png"
-                alt="Иллюстрация услуг"
-                width={620}
-                height={480}
+							src="/img/services.webp"
+							alt="Иллюстрация услуг"
+                width={676}
+                height={583}
                 className="w-full object-contain"
                 style={{ height: "auto" }}
               />
@@ -219,76 +259,90 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* Почему выбирают нас */}
-        <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <h2 className={`text-3xl md:text-4xl lg:text-[48px] text-center mb-10 ${headingBase} ${headingColor}`}>
-              Почему выбирают нас
-            </h2>
 
-            <div className="rounded-3xl border border-[#E5E7EB] bg-white p-5 md:p-6 relative overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-8 relative">
-                {/* Разделители на md+ */}
-                <div className="hidden md:block absolute left-0 right-0 top-1/2 h-px bg-[#E5E7EB]" />
-                <div className="hidden md:block absolute top-0 bottom-0 left-1/3 w-px bg-[#E5E7EB]" />
-                <div className="hidden md:block absolute top-0 bottom-0 left-2/3 w-px bg-[#E5E7EB]" />
+				<section className="bg-[#f5f7fa] py-24" >
+					<div className="max-w-[1480px] mx-auto px-4">
 
-                {benefits.map((b, i) => (
-                  <div key={i} className="flex items-start gap-3">
+						<h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
+						Почему выбирают нас	</h2>
 
-                    <p className="text-[18px] leading-7 text-[#101828]">{b.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+						<div className="rounded-[20px] border border-[#e3e8f2] overflow-hidden">
+
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+								{advantages.map((item, index) => (
+									<div
+										key={index}
+										className={`
+							p-10
+							border-[#e3e8f2]
+							${index % 3 !== 2 ? "lg:border-r" : ""}
+							${index < 3 ? "border-b" : ""}
+						`}
+									>
+										<h3 className="text-[#313131] text-2xl font-medium mb-4">
+											{item.label}
+										</h3>
+
+										<p className="text-[#7c8a9a] text-lg leading-relaxed">
+											{item.description}
+										</p>
+									</div>
+								))}
+							</div>
+
+							<div className="flex justify-center py-12">
+								<button
+									onClick={handleKP}
+									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
+								>
+									Оставить заявку
+								</button>
+							</div>
+
+						</div>
+					</div>
+				</section >
+
+				<section className="max-w-[980px] mx-auto px-4 py-24">
+					<div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
+
+						{/* Текст слева */}
+						<div className="lg:w-1/2 flex flex-col justify-center p-6">
+							<h2 className="text-[#313131] text-3xl md:text-[28px] font-medium leading-snug mb-6">
+								Оставьте запрос на <br />
+								консультацию с индивидуальным расчетом
+							</h2>
+
+							<p className="text-[#7c8a9a] text-lg leading-relaxed mb-8">
+							Готовы обсудить задачи — оставьте заявку, предложим варианты запуска и подготовим смету с этапами работ.
+
+
+							</p>
+
+							<div>
+								<button
+									onClick={handleKP}
+									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+									Оставить заявку
+								</button>
+							</div>
+						</div>
+
+						{/* Изображение справа */}
+						<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
+							<Image
+								src="/img/imz_cta.png"
+								alt="Получить консультацию по инвентаризации и оцифровке мест"
+								width={320}
+								height={320}
+							/>
+						</div>
+
+					</div>
+				</section>
 
 
 
-        {/* Минималистичный CTA: слева текст+кнопки, справа картинка */}
-        <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <div className="rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-2">
-                {/* Лево */}
-                <div className="p-8 md:p-12 flex flex-col justify-center">
-                  <h2 className={`text-3xl md:text-4xl lg:text-5xl mb-4 ${headingBase} ${headingColor}`}>
-                    Готовы обсудить задачу?
-                  </h2>
-                  <p className={`text-lg md:text-xl ${paragraphMuted} mb-8 max-w-xl`}>
-                    Оставьте заявку — предложим варианты запуска и подготовим смету с этапами работ.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <button
-                      onClick={handleOpenKP}
-                      className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#0062D8] transition-colors"
-                    >
-                      Запросить КП
-                    </button>
-                    <a
-                      href="mailto:info@единаясреда.рф"
-                      className="px-8 py-4 rounded-xl border border-[#0077FF] text-[#0077FF] font-semibold hover:bg-[#0077FF] hover:text-white transition-colors text-center"
-                    >
-                      Написать письмо
-                    </a>
-                  </div>
-                </div>
-
-                {/* Право — изображение */}
-                <div className="p-8 md:p-12 flex items-end justify-center bg-[#F8FAFC]">
-                  <Image
-                    src="/img/price.png"
-                    alt="Иллюстрация к услугам"
-                    width={520}
-                    height={400}
-                    className="w-full max-w-[520px] h-auto object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
       </div>
     </Layout>
