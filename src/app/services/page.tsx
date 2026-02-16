@@ -131,13 +131,13 @@ export default function ServicesPage() {
                 </button>
               </div>
             </div>
-            <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
+            <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10  ">
               <Image
                 src="/img/services.webp"
                 alt="Услуги"
                 width={500}
                 height={500}
-                className="w-full max-w-[500px] object-contain"
+                className="w-full max-w-[500px] object-contain "
               />
             </div>
           </div>
