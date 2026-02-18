@@ -15,7 +15,7 @@ const base =
   'inline-flex items-center justify-center font-medium rounded-xl transition-colors duration-200 focus:outline-none';
 
 const sizeVariants = {
-  normal: 'px-4 py-2.5 md:px-5 text-base md:text-lg',
+  normal: 'px-4 py-2 md:px-5 text-base md:text-lg',
   large: 'px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl',
 };
 

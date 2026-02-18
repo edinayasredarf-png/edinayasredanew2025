@@ -13,6 +13,41 @@ export default function ForestManagementPage() {
     window.dispatchEvent(new CustomEvent('openKPModal'));
   };
 
+	const advantages = [
+		{
+			icon: '/icons/эксперты.svg',
+			label: 'Инвентаризация лесных ресурсов и получение достоверных данных',
+			description: 'Специалисты проводят комплексное обследование территории, фиксируя фактические характеристики лесных участков. Это позволяет сформировать актуальную информационную базу, на которую можно опираться при управлении лесным фондом, планировании работ и принятии стратегических решений.'
+		},
+		{
+			icon: '/icons/Соответстиве требованиям.svg',
+			label: 'Определение породного состава и возраста насаждений',
+			description: 'Анализ структуры леса помогает понять его текущее состояние и потенциал развития. Знание пород и возрастных групп необходимо для грамотного ухода за насаждениями, прогнозирования их роста и своевременного проведения хозяйственных мероприятий..'
+		},
+		{
+			icon: '/icons/information.svg',
+			label: 'Оценка экологического состояния лесных территорий',
+			description: 'В ходе лесоустройства выявляются факторы, влияющие на устойчивость экосистем: повреждения, болезни, последствия природных или антропогенных воздействий. Такая оценка помогает сохранить биологическое разнообразие и предотвратить деградацию лесных массивов.'
+		},
+		{
+			icon: '/icons/новое оборудование.svg',
+			label: 'Выявление участков, требующих восстановления или защиты',
+			description: 'Обследование позволяет определить территории, где необходимы санитарные рубки, лесовосстановление или дополнительные меры охраны. Это снижает риски распространения вредителей, повышает устойчивость лесов и способствует их долгосрочному сохранению.'
+		},
+		{
+			icon: '/icons/Безопасность данных.svg',
+			label: 'Планирование лесохозяйственных мероприятий',
+			description: 'На основе собранных данных формируется четкий план действий: уход за лесом, восстановление насаждений, противопожарные меры и рациональное использование ресурсов. Системный подход помогает эффективно распределять бюджет и минимизировать экологические риски.'
+		},
+		{
+			icon: '/icons/Постоплата.svg',
+			label: 'Обеспечение соответствия требованиям лесного законодательства',
+			description: 'Лесоустройство проводится с учетом действующих нормативов и правил. Подготовленная документация подтверждает законность использования лесных территорий и упрощает взаимодействие с контролирующими органами.'
+		},
+	];
+
+
+
 	const homeFaqData = [
 		{
 			question: "Какой срок исполнения работ?",
@@ -108,536 +143,427 @@ export default function ForestManagementPage() {
         </div>
       </section>
 
+
+			<section className="py-24 bg-[#f5f7fa]">
+  <div className="max-w-[1480px] mx-auto px-4">
+
+    {/* Заголовок */}
+    <h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
+			Мы более 17 лет работаем на этом рынке и знаем об лесоустройстве всё
+    </h2>
+
+    {/* GRID */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+
+      {/* ЛЕВАЯ БОЛЬШАЯ */}
+      <div className="bg-white rounded-3xl p-9 flex flex-col justify-between min-h-[420px]">
+        <h3 className="text-[#313131] text-2xl md:text-[26px] leading-snug">
+				Что такое лесоустройство
+        </h3>
+
+        <p className="text-[#7c8a9a] text-lg md:text-xl leading-relaxed">
+				Лесоустройство — это система мероприятий по изучению лесного фонда, оценке его состояния и планированию рационального использования лесных ресурсов.<br></br>
+
+В ходе работ формируется достоверная информационная база о лесных территориях: определяется состав насаждений, их возраст, состояние, экологическая ценность и потенциал использования. </p>
+      </div>
+
+      {/* ЦЕНТР — ИЗОБРАЖЕНИЕ */}
+      <div className="bg-white rounded-3xl p-2 flex items-center">
+        <div className="w-full h-full min-h-[420px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center">
+          <Image
+            src="/img/services/izn/7.png"
+            alt="Цифровая система"
+            width={260}
+            height={220}
+            className="object-contain"
+          />
+        </div>
+      </div>
+
+      {/* ПРАВАЯ КОЛОНКА */}
+      <div className="flex flex-col gap-2">
+
+        {/* ВЫ ПОЛУЧАЕТЕ */}
+        <div className="bg-white rounded-3xl p-9">
+          <h3 className="text-[#313131] text-2xl mb-4">
+					Результаты лесоустройства становятся основой для:
+          </h3>
+
+          <ul className="space-y-3 text-[#7c8a9a] text-lg leading-relaxed">
+            {[
+              "стратегического развития территорий",
+              "охраны и восстановления лесов",
+              "повышения эффективности управления",
+              "экологической безопасности региона"
+            ].map((item, i) => (
+							<li
+							key={i}
+							className="
+							relative pl-6
+							before:content-['']
+							before:absolute
+							before:left-0
+							before:top-1/2
+							before:-translate-y-1/2
+							before:w-2
+							before:h-2
+							before:bg-no-repeat
+							before:bg-contain
+							before:bg-center
+							before:bg-[url('/icons/check_blue.svg')]
+						"
+						>
+							{item}
+						</li>
+
+            ))}
+          </ul>
+        </div>
+
+        {/* НИЖНИЙ БЛОК */}
+        <div className="bg-white rounded-3xl px-9 py-6">
+          <p className="text-[#7c8a9a] text-lg leading-relaxed">
+					Грамотно проведённое лесоустройство помогает не только сохранить природный потенциал, но и использовать его максимально рационально.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section className="py-24 bg-[#f5f7fa]">
+  <div className="max-w-[1480px] mx-auto px-4">
+
+    {/* Заголовок */}
+    <h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
+		Кому необходима лесоустройство
+    </h2>
+
+    {/* Верхний ряд — 3 карточки */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
+      <div className="bg-white rounded-3xl p-6">
+        <h3 className="text-[#313131] text-2xl font-medium mb-4">Муниципалитетам</h3>
+        <p className="text-[#7c8a9a] text-lg leading-6">
+				Для контроля состояния лесного фонда и повышения прозрачности управления.
+        </p>
+      </div>
+
+      <div className="bg-white rounded-3xl p-6">
+        <h3 className="text-[#313131] text-2xl font-medium mb-4">Региональным органам власти</h3>
+        <p className="text-[#7c8a9a] text-lg leading-6">
+				При развитии территорий и реализации природоохранных программ.
+        </p>
+      </div>
+
+      <div className="bg-white rounded-3xl p-6">
+        <h3 className="text-[#313131] text-2xl font-medium mb-4">Лесничества</h3>
+        <p className="text-[#7c8a9a] text-lg leading-6">
+				И профильные учреждения, для актуализации данных и планирования работ
+        </p>
+      </div>
+    </div>
+
+    {/* Нижний ряд */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-12">
+
+      {/* Левая карточка */}
+      <div className="bg-white rounded-3xl p-6">
+        <h3 className="text-[#313131] text-2xl font-medium mb-4">Арендаторам лесных участков</h3>
+        <p className="text-[#7c8a9a] text-lg leading-6">
+				Для законного и эффективного использования ресурсов
+        </p>
+      </div>
+
+      {/* Правая большая карточка (занимает 2 колонки) */}
+			<div className="lg:col-span-2 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
+			<div className="lg:w-1/2 flex flex-col p-4">
+
+        <h3 className="text-2xl text-[#313131] mb-4">
+        Инвесторам
+        </h3>
+        <p className="text-lg text-[#7c8a9a]">
+				При подготовке проектов освоения территорий.
+        </p>
+      </div>
+      <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
+        <Image
+          src="/img/services/izn/3.png"
+          alt="Система нужна всем"
+          width={160}
+          height={160}
+        />
+      </div>
+    </div>
+    </div>
+
+
+    {/* Кнопка */}
+    <div className="flex justify-center">
+      <button
+        onClick={handleKP}
+        className="bg-[#0077ff] hover:bg-[#0066db] text-white text-xl font-medium px-8 py-4 rounded-xl transition"
+      >
+        Оставить заявку
+      </button>
+    </div>
+
+  </div>
+</section>
+
+
+<section className="bg-[#f5f7fa] py-24" >
+					<div className="max-w-[1480px] mx-auto px-4">
+
+						<h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
+						Какие задачи решает лесоустройство
+						</h2>
+
+						<div className="rounded-[20px] border border-[#e3e8f2] overflow-hidden">
+
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+								{advantages.map((item, index) => (
+									<div
+										key={index}
+										className={`
+							p-10
+							border-[#e3e8f2]
+							${index % 3 !== 2 ? "lg:border-r" : ""}
+							${index < 3 ? "border-b" : ""}
+						`}
+									>
+										<h3 className="text-[#313131] text-2xl font-medium mb-4">
+											{item.label}
+										</h3>
+
+										<p className="text-[#7c8a9a] text-lg leading-relaxed">
+											{item.description}
+										</p>
+									</div>
+								))}
+							</div>
+
+							<div className="flex justify-center py-12">
+								<button
+									onClick={handleKP}
+									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
+								>
+									Оставить заявку
+								</button>
+							</div>
+
+						</div>
+					</div>
+				</section >
+
+
+				<section className="max-w-[880px] mx-auto px-4 py-24">
+					<h2 className="text-center text-[#313131] text-4xl md:text-[52px] mb-16">
+					Как проводится лесоустройство
+					</h2>
+
+					<div className="flex flex-col gap-4">
+						{[
+							{
+								title: "Подготовительный этап",
+								text: "Включает проведение первого лесоустроительного совещания, получение сведений от Заказчика, сбор и анализ данных, подготовку топографических карт и обеспечение космической съёмкой.",
+								image: "/img/imz6.png"
+							},
+							{
+								title: "Полевые работы",
+								text: "Включает выезд на объект работ, проведение тренировок, таксацию лесов с использованием специализированного оборудования и приемку-сдачу полевых работ.",
+								image: "/img/imz7.png"
+							},
+							{
+								title: "Камеральные работы",
+								text: "Включает камеральную обработку лесоустроительной информации, составление документации, подготовку картографической информации и финальную сдачу работ.",
+								image: "/img/imz8.png"
+							},
+						].map((item, i) => (
+							<div
+								key={i}
+								className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 transition "
+							>
+								{/* IMAGE */}
+								<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-8 min-h-[260px]">
+									<Image
+										src={item.image}
+										alt={item.title}
+										width={260}
+										height={260}
+										className="object-contain"
+									/>
+								</div>
+
+								{/* TEXT */}
+								<div className="lg:w-1/2 flex flex-col justify-center p-6">
+									<h3 className="text-2xl mb-4 text-[#313131]">
+										{item.title}
+									</h3>
+									<p className="text-lg text-[#7c8a9a] leading-relaxed">
+										{item.text}
+									</p>
+								</div>
+							</div>
+						))}
+					</div>
+
+					{/* Кнопка */}
+					<div className="flex justify-center mt-12">
+						<button
+							onClick={handleConsult}
+							className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition hover:scale-[1.03]"
+						>
+							Получить консультацию
+						</button>
+					</div>
+				</section>
+
+
+				<section className="max-w-[1480px] mx-auto px-4 py-24">
+
+{/* Заголовок */}
+<h2 className="text-center text-[#313131] text-4xl md:text-[52px] leading-tight">
+Наши преимущества
+</h2>
+
+{/* Подзаголовок */}
+<p className="text-center text-[#7c8a9a] text-xl mt-6 mb-16 max-w-3xl mx-auto">
+Мы выполняем полный цикл работ — от полевого обследования до передачи готовой цифровой базы.
+</p>
+
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+	{[
+		{
+			title: "Опыт и компетенции",
+			list: [
+				"Более 15 лет работы в отрасли",
+				"Совокупный опыт команды более 100 лет",
+				"Выполнено более 100 муниципальных и государственных контрактов",
+				"Лидеры команды участвуют в разработке отраслевых нормативно-правовых актов",
+				"фотофиксация",
+				"Опыт работы в группах и комиссиях государственных и муниципальных органах"
+			],
+			image: "/img/services/izn/4.png"
+
+
+		},
+		{
+			title: "Технологии",
+			list: [
+				"Современное и высококачественное оборудование",
+				"Собственный отдел программистов",
+				"Собственный сервис «Единая среда» для  эффективного учёта, управления и мониторинга территорий и объектов в организациях любого типа и масштаба",
+				"Соответствие отечественным и международным требованиям"
+			],
+			image: "/img/services/izn/5.png"
+		},
+		{
+			title: "Уверенность в результате",
+			list: [
+				"Точное понимание целей и задач заказчиков",
+				"Продуктовая линейка для органов местного самоуправления",
+				"Закрытие большей части вопросов управления городской средой",
+				"Учет всех деталей, даже не учтенных в ТЗ",
+				"Важность как условий контракта, так и конечного результата"
+			],
+			image: "/img/services/izn/6.png"
+		}
+	].map((card, i) => (
+		<div
+			key={i}
+			className="bg-white rounded-3xl flex flex-col overflow-hidden "
+		>
+			{/* IMAGE */}
+			<div className="p-2">
+				<div className="bg-[#f6f7f9] rounded-2xl flex items-center justify-center h-[260px]">
+					<Image
+						src={card.image}
+						alt={card.title}
+						width={	160}
+						height={160}
+						className="object-contain"
+					/>
+				</div>
+			</div>
+
+			{/* TEXT */}
+			<div className="p-6 space-y-4">
+				<h3 className="text-[#313131] text-2xl leading-snug">
+					{card.title}
+				</h3>
+
+				<ul className="space-y-3 text-[#7c8a9a] text-lg leading-relaxed pl-0">
+					{card.list.map((item, idx) => (
+						<li
+							key={idx}
+							className="
+								relative pl-6
+								before:content-['']
+								before:absolute
+								before:left-0
+								before:top-1/2
+								before:-translate-y-1/2
+								before:w-2
+								before:h-2
+								before:bg-no-repeat
+								before:bg-contain
+								before:bg-center
+								before:bg-[url('/icons/check_blue.svg')]
+							"
+						>
+							{item}
+						</li>
+					))}
+				</ul>
+
+			</div>
+		</div>
+	))}
+</div>
+</section>
+
+	{/* Консультация */}
+	<section className="max-w-[980px] mx-auto px-4 py-24">
+					<div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
+
+						{/* Текст слева */}
+						<div className="lg:w-1/2 flex flex-col justify-center p-6">
+							<h2 className="text-[#313131] text-3xl md:text-[28px] font-medium leading-snug mb-6">
+								Оставьте запрос на <br />
+								консультацию с индивидуальным расчетом
+							</h2>
+
+							<p className="text-[#7c8a9a] text-lg leading-relaxed mb-8">
+								Стоимость зависит от площади кладбищ, состояния архивов и необходимого
+								объема полевых работ. Оставьте заявку, и мы подготовим расчет под вашу
+								задачу.
+							</p>
+
+							<div>
+								<button
+									onClick={handleKP}
+									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+									Оставить заявку
+								</button>
+							</div>
+						</div>
+
+						{/* Изображение справа */}
+						<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
+							<Image
+								src="/img/imz_cta.png"
+								alt="Получить консультацию по инвентаризации и оцифровке мест"
+								width={320}
+								height={320}
+							/>
+						</div>
+
+					</div>
+				</section>
+
         {/* О компании */}
-        <section className="py-16 md:py-24 ">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Левая колонка - Опыт и экспертиза */}
-              <div className="flex flex-col justify-center">
-                <div className="mb-8">
-                  <div className="inline-flex items-center bg-[#0077FF]/10 text-[#0077FF] px-4 py-2 rounded-full text-sm font-medium mb-4">
-                    <span className="mr-2">🏆</span>
-                    Лидер в лесоустройстве
-                  </div>
-                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight mb-6">
-                    Мы более 10 лет работаем на этом рынке и знаем об лесоустройстве всё
-                  </h2>
-                  <p className="text-lg text-gray-600 leading-relaxed">
-                    Также мы работаем по всей стране, предоставляя качественные услуги лесоустройства с соблюдением всех требований законодательства.
-                  </p>
-                </div>
-
-                {/* Статистика */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-[#0077FF] mb-2">10+</div>
-                    <div className="text-sm text-gray-600">Лет опыта</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-[#0077FF] mb-2">100+</div>
-                    <div className="text-sm text-gray-600">Реализованных проектов</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Правая колонка - Что получаете */}
-                              <div className="bg-[#F6F7F9] rounded-3xl p-8 bg-white">
-                <h3 className="text-2xl font-bold text-black mb-6">
-                  Предоставьте мероприятия по лесоустройству и вы получите
-                </h3>
-                <p className="text-gray-600 mb-8">
-                  комплекс работ состоящих из:
-                </p>
-                <div className="space-y-6">
-                  <div className="flex items-start group">
-                    <div className="flex-shrink-0 w-12 h-12 bg-[#0077FF] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                      <span className="text-white font-bold text-lg">1</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-black mb-2">Проектирования</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        Осуществляется как в отношении лесничеств, эксплуатационных, защитных и резервных лесов и особо защитных участков лесов, так и в отношении мероприятий, направленных на сохранение лесов
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start group">
-                    <div className="flex-shrink-0 w-12 h-12 bg-[#0077FF] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                      <span className="text-white font-bold text-lg">2</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-black mb-2">Закрепления на местности</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        Проводится в отношении лесничеств, участковых лесничеств, а также земель под эксплуатационными, защитными и резервными лесами и особо защитными участками лесов
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start group">
-                    <div className="flex-shrink-0 w-12 h-12 bg-[#0077FF] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                      <span className="text-white font-bold text-lg">3</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-black mb-2">Таксации</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        Качественно и в срок выполненную работу от экспертов в своей области
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleKP}
-                  className="mt-8 inline-flex items-center justify-center bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none w-full md:w-auto"
-                >
-                  Получить коммерческое предложение
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Для чего нужно */}
-        <section className="py-16 md:py-24 ">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Левая карточка - Преимущества лесоустройства */}
-              <div className="bg-white rounded-[20px] p-8 flex flex-col md:flex-row min-h-[276px]">
-                <div className="flex-1 flex flex-col justify-between h-full">
-                  <h3 className="font-medium text-black text-lg md:text-xl lg:text-2xl leading-9 mb-4">
-                    Преимущества лесоустройства
-                  </h3>
-                  <ul className="text-black text-sm md:text-base lg:text-lg leading-7 mb-6 space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span className="text-[#0077FF] text-lg">✓</span>
-                      <span>Планирование деятельности по работе в лесах</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-[#0077FF] text-lg">✓</span>
-                      <span>Достоверная информация о лесных участках</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-[#0077FF] text-lg">✓</span>
-                      <span>Выполнение полномочий органов местного самоуправления</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-[#0077FF] text-lg">✓</span>
-                      <span>Разработка Лесохозяйственного регламента</span>
-                    </li>
-                  </ul>
-                  <button
-                    onClick={handleConsult}
-                    className="bg-[#0077FF] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#005fcc] transition-colors self-start"
-                  >
-                    Получить консультацию
-                  </button>
-                </div>
-                <div className="flex-shrink-0 flex justify-center items-end w-full md:w-auto mt-8 md:mt-0 md:ml-8">
-                  <Image
-                    src="/img/услуга_лес.png"
-                    alt="Лесоустройство"
-                    width={176}
-                    height={200}
-                    className="w-auto h-auto max-w-[176px] object-contain"
-                  />
-                </div>
-              </div>
-
-              {/* Правая карточка - Проблемы, которые решает лесоустройство */}
-              <div className="bg-white rounded-[20px] p-8 flex flex-col md:flex-row min-h-[276px]">
-                <div className="flex-1 flex flex-col justify-between h-full">
-                  <h3 className="font-medium text-black text-lg md:text-xl lg:text-2xl leading-9 mb-4">
-                    Проблемы, которые решает лесоустройство
-                  </h3>
-                  <ul className="text-black text-sm md:text-base lg:text-lg leading-7 mb-6 space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span className="text-rose-500 text-lg">✖</span>
-                      <span>Отсутствие достоверной информации о лесных ресурсах</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-rose-500 text-lg">✖</span>
-                      <span>Неэффективное планирование лесопользования</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-rose-500 text-lg">✖</span>
-                      <span>Нарушения лесного законодательства</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-rose-500 text-lg">✖</span>
-                      <span>Отсутствие контроля за лесными участками</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-rose-500 text-lg">✖</span>
-                      <span>Сложности в управлении лесным фондом</span>
-                    </li>
-                  </ul>
-                </div>
-                <div className="flex-shrink-0 flex justify-center items-end w-full md:w-auto mt-8 md:mt-0 md:ml-8">
-                  <Image
-                    src="/img/problem.png"
-                    alt="Проблемы"
-                    width={176}
-                    height={200}
-                    className="w-auto h-auto max-w-[176px] object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Как проводится лесоустройство */}
-        <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-black text-center mb-16">
-              Как проводится лесоустройство?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Карточка 1 - Подготовительный этап */}
-              <div className="bg-white rounded-3xl p-8 hover:ring-2 hover:ring-[#0077FF] hover:ring-offset-2 transition-all duration-300">
-                <div className="flex items-center mb-6">
-                  <div className="w-16 h-16 bg-[#0077FF] rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white font-bold text-2xl">1</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-black">Подготовительный этап</h3>
-                </div>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Включает проведение первого лесоустроительного совещания, получение сведений от Заказчика, сбор и анализ данных, подготовку топографических карт и обеспечение космической съёмкой.
-                </p>
-                <button
-                  onClick={() => toggleItem(0)}
-                  className="text-[#0077FF] font-medium hover:text-[#0056CC] transition-colors flex items-center gap-2"
-                >
-                  <span>{openItems.includes(0) ? 'Скрыть' : 'Подробнее'}</span>
-                  <svg
-                    className={`w-5 h-5 transition-transform duration-300 ${
-                      openItems.includes(0) ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openItems.includes(0)
-                      ? 'max-h-96 opacity-100 mt-6'
-                      : 'max-h-0 opacity-0 mt-0'
-                  }`}
-                >
-                  <div className="space-y-4 text-sm text-gray-600">
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">1</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Проведение первого лесоустроительного совещания</h4>
-                        <p className="text-gray-600 text-sm">
-                          До начала полевых работ по вопросам организации выполнения лесоустройства, определения особенностей объекта лесотаксационных работ.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">2</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Получение сведений от Заказчика</h4>
-                        <p className="text-gray-600 text-sm">
-                          О границах объекта таксации лесов и выполненных мероприятиях по охране, защите, воспроизводству лесов.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">3</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Сбор и анализ данных</h4>
-                        <p className="text-gray-600 text-sm">
-                          Об изменениях, произошедших в лесах в результате хозяйственной деятельности, пожаров, воздействия вредных организмов.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">4</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Подготовка топографических карт</h4>
-                        <p className="text-gray-600 text-sm">
-                          Подбор, установление наличия, заказ и приобретение топографических карт на территорию объекта работ.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">5</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Обеспечение космической съёмкой</h4>
-                        <p className="text-gray-600 text-sm">
-                          Обеспечение работ материалами космической съёмки в соответствии с требованиями охвата всей площади лесничества.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Карточка 2 - Полевые работы */}
-              <div className="bg-white rounded-3xl p-8 hover:ring-2 hover:ring-[#0077FF] hover:ring-offset-2 transition-all duration-300">
-                <div className="flex items-center mb-6">
-                  <div className="w-16 h-16 bg-[#0077FF] rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white font-bold text-2xl">2</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-black">Полевые работы</h3>
-                </div>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Включает выезд на объект работ, проведение тренировок, таксацию лесов с использованием специализированного оборудования и приемку-сдачу полевых работ.
-                </p>
-                <button
-                  onClick={() => toggleItem(1)}
-                  className="text-[#0077FF] font-medium hover:text-[#0056CC] transition-colors flex items-center gap-2"
-                >
-                  <span>{openItems.includes(1) ? 'Скрыть' : 'Подробнее'}</span>
-                  <svg
-                    className={`w-5 h-5 transition-transform duration-300 ${
-                      openItems.includes(1) ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openItems.includes(1)
-                      ? 'max-h-96 opacity-100 mt-6'
-                      : 'max-h-0 opacity-0 mt-0'
-                  }`}
-                >
-                  <div className="space-y-4 text-sm text-gray-600">
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">1</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Выезд на объект работ</h4>
-                        <p className="text-gray-600 text-sm">
-                          Начало полевых работ с выездом на объект.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">2</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Проведение тренировок</h4>
-                        <p className="text-gray-600 text-sm">
-                          Тренировки представителя Заказчика и Исполнителя работ.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">3</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Таксация лесов</h4>
-                        <p className="text-gray-600 text-sm">
-                          Таксация лесов с загрузкой собранных данных в облако хранения информации для выявления, учета и оценки характеристик лесных ресурсов.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">4</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Методы таксации</h4>
-                        <p className="text-gray-600 text-sm">
-                          Таксация лесов осуществляется по первому таксационному разряду с использованием материалов ДЗЗ глазомерно-измерительным способом.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">5</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Специализированное оборудование</h4>
-                        <p className="text-gray-600 text-sm">
-                          Использование специализированных программ, мерной вилки, маятникового высотомера, измерительной ленты и другого оборудования.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">6</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Приемка-сдача полевых работ</h4>
-                        <p className="text-gray-600 text-sm">
-                          Специалистами Заказчика и Исполнителя проведена совместная проверка работ по таксации, приемка-сдача полевых работ.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Карточка 3 - Камеральные работы */}
-              <div className="bg-white rounded-3xl p-8 hover:ring-2 hover:ring-[#0077FF] hover:ring-offset-2 transition-all duration-300">
-                <div className="flex items-center mb-6">
-                  <div className="w-16 h-16 bg-[#0077FF] rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white font-bold text-2xl">3</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-black">Камеральные работы</h3>
-                </div>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Включает камеральную обработку лесоустроительной информации, составление документации, подготовку картографической информации и финальную сдачу работ.
-                </p>
-                <button
-                  onClick={() => toggleItem(2)}
-                  className="text-[#0077FF] font-medium hover:text-[#0056CC] transition-colors flex items-center gap-2"
-                >
-                  <span>{openItems.includes(2) ? 'Скрыть' : 'Подробнее'}</span>
-                  <svg
-                    className={`w-5 h-5 transition-transform duration-300 ${
-                      openItems.includes(2) ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openItems.includes(2)
-                      ? 'max-h-96 opacity-100 mt-6'
-                      : 'max-h-0 opacity-0 mt-0'
-                  }`}
-                >
-                  <div className="space-y-4 text-sm text-gray-600">
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">1</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Камеральная обработка</h4>
-                        <p className="text-gray-600 text-sm">
-                          Камеральная обработка лесоустроительной информации.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">2</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Составление документации</h4>
-                        <p className="text-gray-600 text-sm">
-                          Составление лесоустроительной документации и подготовка пояснительной записки по результатам лесоустройства.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">3</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Подготовка картографической информации</h4>
-                        <p className="text-gray-600 text-sm">
-                          Подготовка картографической и атрибутивной информации, совмещенной на повыдельном уровне в форматах ГИС.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">4</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Обработка информации</h4>
-                        <p className="text-gray-600 text-sm">
-                          Перевод атрибутивной информации с бумажных носителей в электронный вид, обработка информации специализированным программным обеспечением.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">5</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Зонирование и составление карт</h4>
-                        <p className="text-gray-600 text-sm">
-                          Зонирование запроектированных мероприятий по охране, защите, воспроизводству лесов. Составление лесных карт в цифровом виде.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">6</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Финальная подготовка</h4>
-                        <p className="text-gray-600 text-sm">
-                          Составление пояснительной записки по лесничеству, подготовка проекта изменений в лесохозяйственный регламент.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="text-[#0077FF] font-bold text-xs mr-3 mt-0.5">7</span>
-                      <div>
-                        <h4 className="font-semibold text-black mb-1">Сдача работ</h4>
-                        <p className="text-gray-600 text-sm">
-                          Проведение второго лесоустроительного совещания по итогам работ, печать, размножение, компоновка документов и сдача Заказчику.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Почему выбирать нас */}
-        <section className="py-16 md:py-24 ">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-black text-center mb-16">
-              Почему выбирать нас выгодно
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Опыт и компетенции",
-                  icon: "🏆",
-                  items: [
-                    "Более 15 лет работы в отрасли",
-                    "Совокупный опыт команды более 100 лет",
-                    "Выполнено более 100 муниципальных и государственных контрактов",
-                    "Лидеры команды участвуют в разработке отраслевых нормативно-правовых актов",
-                    "Опыт работы в группах и комиссиях государственных и муниципальных органах"
-                  ]
-                },
-                {
-                  title: "Технологии",
-                  icon: "⚡",
-                  items: [
-                    "Современное и высококачественное оборудование с поверками",
-                    "Новейшее программное обеспечение",
-                    "Взаимодействие с разработчиками ПО",
-                    "Собственный отдел программистов",
-                    "Разработка сервиса «Единая среда»",
-                    "Соответствие отечественным и международным требованиям"
-                  ]
-                },
-                {
-                  title: "Уверенность в результате",
-                  icon: "🎯",
-                  items: [
-                    "Точное понимание целей и задач заказчиков",
-                    "Продуктовая линейка для органов местного самоуправления",
-                    "Закрытие большей части вопросов управления городской средой",
-                    "Учет всех деталей, даже не учтенных в ТЗ",
-                    "Важность как условий контракта, так и конечного результата"
-                  ]
-                }
-              ].map((item, index) => (
-                <div key={index} className="bg-white rounded-3xl p-8 hover:ring-2 hover:ring-[#0077FF] hover:ring-offset-2 transition-all duration-300 shadow-sm hover:shadow-lg">
-                  <div className="flex items-center mb-6">
-                    <div className="w-16 h-16 bg-[#0077FF]/10 rounded-2xl flex items-center justify-center mr-4">
-                      <span className="text-2xl">{item.icon}</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-black">{item.title}</h3>
-                  </div>
-                  <ul className="space-y-3">
-                    {item.items.map((listItem, itemIndex) => (
-                      <li key={itemIndex} className="flex items-start">
-                        <div className="w-2 h-2 bg-[#0077FF] rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                        <span className="text-gray-600 text-sm leading-relaxed">{listItem}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
    						{/* ✅ FAQ СЕКЦИЯ */}
 		<FAQ
@@ -650,23 +576,7 @@ export default function ForestManagementPage() {
 			/>
 
 
-        {/* CTA Section */}
-        <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16 mb-16">
-          <div className="bg-[#0077FF] rounded-[20px] md:rounded-[30px] p-6 md:p-12 text-center text-white">
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8">
-              Оформить заявку на лесоустройство
-            </h2>
-            <p className="text-base md:text-xl text-blue-100 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed px-2 md:px-0">
-              Получите профессиональное лесоустройство с соблюдением всех требований законодательства
-            </p>
-            <button
-              onClick={handleKP}
-              className="inline-flex items-center justify-center bg-white text-[#0077FF] px-6 md:px-10 py-3 md:py-5 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none"
-            >
-              Получить коммерческое предложение
-            </button>
-          </div>
-        </section>
+
       </div>
     </Layout>
   );
