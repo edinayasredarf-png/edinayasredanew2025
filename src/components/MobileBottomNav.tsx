@@ -51,47 +51,42 @@ function isActive(pathname: string, href: string) {
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
+  const activeIndex = NAV_ITEMS.findIndex((item) => isActive(pathname, item.href));
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[120] md:hidden pointer-events-none pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto w-full max-w-[480px] px-3 pb-3">
         <div className="pointer-events-auto w-full rounded-[28px] border border-white/60 bg-white/80 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-[30px]">
-          <div className="relative flex items-stretch gap-0.5 overflow-hidden rounded-[28px] px-2 py-2">
+          <div className="relative flex items-stretch rounded-[28px] px-2 py-2">
             {/* Фон */}
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute inset-0 rounded-[28px] bg-gradient-to-b from-white/50 to-white/30" />
               <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.8),transparent_70%)]" />
             </div>
 
-            {/* Плавно перемещающийся активный фон */}
-            {NAV_ITEMS.map((item, index) => {
-              const active = isActive(pathname, item.href);
-              if (!active) return null;
-
-              return (
-                <motion.div
-                  key="active-pill"
-                  layoutId="mobile-nav-pill"
-                  className="absolute inset-y-1 rounded-[24px] bg-gradient-to-b from-white to-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(0,0,0,0.04)]"
-                  style={{
-                    left: `calc(${(index / NAV_ITEMS.length) * 100}% + 0.125rem)`,
-                    right: `calc(${((NAV_ITEMS.length - index - 1) / NAV_ITEMS.length) * 100}% + 0.125rem)`,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 30,
-                  }}
-                />
-              );
-            })}
+            {/* Активный индикатор */}
+            {activeIndex !== -1 && (
+              <motion.div
+                layoutId="mobile-nav-pill"
+                className="absolute top-2 bottom-2 rounded-[18px] bg-gradient-to-b from-white to-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(0,0,0,0.04)]"
+                style={{
+                  width: `calc((100% - 1rem) / ${NAV_ITEMS.length})`,
+                  left: `calc(0.5rem + ((100% - 1rem) / ${NAV_ITEMS.length}) * ${activeIndex})`,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 30,
+                }}
+              />
+            )}
 
             {NAV_ITEMS.map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <div
                   key={item.key}
-                  className="relative flex-1 min-w-[60px] flex items-stretch justify-center"
+                  className="relative flex-1 min-w-0 flex items-stretch justify-center"
                 >
                   <Link
                     href={item.href}
