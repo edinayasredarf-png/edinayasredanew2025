@@ -80,12 +80,12 @@ const StoriesStrip: React.FC = () => {
               >
                 <div
                   className={[
-                    "relative w-20 h-20 bg-black rounded-2xl overflow-hidden p-1.5",
+                    "relative w-20 h-20 bg-black rounded-full overflow-hidden p-1.5",
                     "border-2",
                     isViewed ? "border-gray-400" : "border-[#0077FF]",
                   ].join(" ")}
                 >
-                  <div className="relative w-full h-full rounded-xl overflow-hidden">
+                  <div className="relative w-full h-full rounded-full overflow-hidden">
                     <Image
                       src={story.thumbnail}
                       alt={story.title}

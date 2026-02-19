@@ -10,6 +10,7 @@ import Link from 'next/link';
 import AuthModal from './auth/AuthModal';
 import { authStore } from '@/lib/authStore';
 import StoriesStrip from "./StoriesStrip";
+import MobileBottomNav from "./MobileBottomNav";
 
 interface LayoutProps {
   children: ReactNode;
@@ -246,6 +247,9 @@ const Layout = ({ children }: LayoutProps) => {
 
         {/* ✅ FOOTER */}
         <Footer />
+
+        {/* ✅ МОБИЛЬНОЕ ДНО МЕНЮ (как в Telegram 2026, жидкое стекло) */}
+        <MobileBottomNav />
 
         {/* ✅ COOKIE BANNER */}
         <CookieBanner />
