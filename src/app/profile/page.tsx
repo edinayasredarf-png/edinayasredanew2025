@@ -70,7 +70,7 @@ export default function ProfilePage() {
         try {
           const favorites = await sb_getUserFavorites();
           const posts = await sb_listPosts();
-          
+
           const favoritePostsData = favorites.map(fav => {
             const post = posts.find(p => p.id === fav.post_id);
             return post ? {
@@ -123,15 +123,15 @@ export default function ProfilePage() {
       <ProfileLayout>
         <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl font-bold text-[#313131] mb-4">
               Необходима авторизация
             </h1>
             <p className="text-gray-600 mb-6">
               Для доступа к личному кабинету необходимо войти в систему
             </p>
-            <button 
+            <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
             >
               Войти
             </button>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
       <ProfileLayout>
         <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4"></div>
             <p className="text-gray-600">Загрузка профиля...</p>
           </div>
         </div>
@@ -158,9 +158,9 @@ export default function ProfilePage() {
     <ProfileLayout>
       <div className="min-h-screen bg-[#F6F7FB] py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div className="bg-white rounded-2xl  p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Личный кабинет</h1>
+              <h1 className="text-2xl font-bold text-[#313131]">Личный кабинет</h1>
               <button
                 onClick={() => authStore.signOut()}
                 className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
@@ -170,9 +170,9 @@ export default function ProfilePage() {
             </div>
 
             {/* Информация о профиле */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-[Raleway] font-medium lining-nums">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Личная информация</h2>
+                <h2 className="text-lg font-semibold text-[#313131] mb-4">Личная информация</h2>
                 {isEditing ? (
                   <div className="space-y-4">
                     <div>
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                         type="text"
                         value={editData.full_name}
                         onChange={(e) => setEditData({...editData, full_name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077FF] focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -194,13 +194,13 @@ export default function ProfilePage() {
                         type="text"
                         value={editData.organization}
                         onChange={(e) => setEditData({...editData, organization: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077FF] focus:border-transparent"
                       />
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={handleSaveProfile}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
                       >
                         Сохранить
                       </button>
@@ -216,26 +216,26 @@ export default function ProfilePage() {
                   <div className="space-y-3">
                     <div>
                       <span className="text-sm text-gray-500">Имя:</span>
-                      <p className="text-gray-900">{profile.full_name || 'Не указано'}</p>
+                      <p className="text-[#313131]">{profile.full_name || 'Не указано'}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Email:</span>
-                      <p className="text-gray-900">{profile.email}</p>
+                      <p className="text-[#313131]">{profile.email}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Организация:</span>
-                      <p className="text-gray-900">{profile.organization || 'Не указана'}</p>
+                      <p className="text-[#313131]">{profile.organization || 'Не указана'}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Роль:</span>
-                      <p className="text-gray-900">
-                        {profile.role === 'admin' ? 'Администратор' : 
+                      <p className="text-[#313131]">
+                        {profile.role === 'admin' ? 'Администратор' :
                          profile.role === 'author' ? 'Редактор' : 'Пользователь'}
                       </p>
                     </div>
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
                     >
                       Редактировать
                     </button>
@@ -244,15 +244,15 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Статистика</h2>
+                <h2 className="text-lg font-semibold text-[#313131] mb-4">Статистика</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Избранных статей:</span>
-                    <span className="font-semibold">{favoritePosts.length}</span>
+                    <span className="font-semibold text-gray-600">{favoritePosts.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Дата регистрации:</span>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-gray-600">
                       {new Date(profile.created_at).toLocaleDateString('ru-RU')}
                     </span>
                   </div>
@@ -263,7 +263,7 @@ export default function ProfilePage() {
             {/* Заявка на роль редактора */}
             {profile.role === 'user' && (
               <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Стать редактором</h2>
+                <h2 className="text-lg font-semibold text-[#313131] mb-4">Стать редактором</h2>
                 <p className="text-gray-600 mb-4">
                   Хотите писать статьи для нашего блога? Подайте заявку на получение роли редактора.
                 </p>
@@ -277,14 +277,14 @@ export default function ProfilePage() {
                         value={requestMessage}
                         onChange={(e) => setRequestMessage(e.target.value)}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077FF] focus:border-transparent"
                         placeholder="Опишите ваш опыт работы, сферу деятельности организации и почему вы хотите стать редактором..."
                       />
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={handleRequestAuthorRole}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
                       >
                         Отправить заявку
                       </button>
@@ -309,8 +309,8 @@ export default function ProfilePage() {
           </div>
 
           {/* Избранные статьи */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Избранные статьи</h2>
+          <div className="bg-white rounded-2xl  p-6">
+            <h2 className="text-lg font-semibold text-[#313131] mb-4">Избранные статьи</h2>
             {favoritePosts.length === 0 ? (
               <p className="text-gray-500 text-center py-8">
                 У вас пока нет избранных статей
@@ -334,7 +334,7 @@ export default function ProfilePage() {
                         />
                       </div>
                     )}
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    <h3 className="font-semibold text-[#313131] mb-2 line-clamp-2">
                       {post.title}
                     </h3>
                     <p className="text-sm text-gray-500">
@@ -347,20 +347,20 @@ export default function ProfilePage() {
           </div>
 
           {/* Заказ услуг */}
-          <div className="bg-white rounded-2xl shadow-sm p-6 mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Заказать услуги</h2>
+          <div className="bg-white rounded-2xl  p-6 mt-6">
+            <h2 className="text-lg font-semibold text-[#313131] mb-4">Заказать услуги</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">Платформа "Единая среда"</h3>
+                <h3 className="font-semibold text-[#313131] mb-2">Платформа "Единая среда"</h3>
                 <p className="text-gray-600 text-sm mb-4">
                   Получите доступ к цифровой платформе для управления территориями
                 </p>
-                <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button className="w-full px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors">
                   Заказать платформу
                 </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">Консультационные услуги</h3>
+                <h3 className="font-semibold text-[#313131] mb-2">Консультационные услуги</h3>
                 <p className="text-gray-600 text-sm mb-4">
                   Получите консультацию по внедрению и использованию платформы
                 </p>
