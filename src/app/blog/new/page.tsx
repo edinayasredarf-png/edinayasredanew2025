@@ -529,10 +529,13 @@ export default function NewPostPage() {
       <div className="bg-[#f2f3f7] min-h-screen" dir="ltr">
         <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-8">
           <div className="flex items-center justify-between mb-6">
-            <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Назад
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Назад
+              </Link>
+              <Link href="/blog/stories" className="rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]">Сторисы</Link>
+            </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               {editSlug && editType && (
                 <button onClick={doDelete} className="px-4 py-2 rounded-lg border hover:bg-gray-50 text-[#111]">Удалить</button>

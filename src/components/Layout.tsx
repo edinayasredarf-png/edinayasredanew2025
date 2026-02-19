@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import AuthModal from './auth/AuthModal';
 import { authStore } from '@/lib/authStore';
+import StoriesStrip from "./StoriesStrip";
 
 interface LayoutProps {
   children: ReactNode;
@@ -142,12 +143,13 @@ const Layout = ({ children }: LayoutProps) => {
         {/* ✅ ОЧИСТКА ЯКОРЕЙ */}
         <HashCleaner />
 
+
         {/* ✅ HEADER */}
         <Header
           isMobileNavOpen={isMobileNavOpen}
           setIsMobileNavOpen={setIsMobileNavOpen}
         />
-
+	<StoriesStrip />
         {/* ✅ МОБИЛЬНОЕ МЕНЮ */}
         {isMobileNavOpen && (
           <div className="relative z-50 w-full bg-black/95 rounded-b-2xl flex flex-col p-4 pt-2 shadow-2xl border border-white/10 animate-slide-down">
