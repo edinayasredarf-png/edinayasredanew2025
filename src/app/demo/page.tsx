@@ -7,27 +7,27 @@ import { StoriesModal } from "@/components/StoriesModal";
 
 const storiesData = [
 	{
-		url: "/img/demo/1.png",
+		url: "/img/demo/1.webp",
 		header: { heading: "Инструкция 1", subheading: "", profileImage: "" },
 	},
 	{
-		url: "/img/demo/2.png",
+		url: "/img/demo/2.webp",
 		header: { heading: "Инструкция 2", subheading: "", profileImage: "" },
 	},
 	{
-		url: "/img/demo/3.png",
+		url: "/img/demo/3.webp",
 		header: { heading: "Инструкция 3", subheading: "", profileImage: "" },
 	},
 	{
-	url: "/img/demo/4.png",
+	url: "/img/demo/4.webp",
 	header: { heading: "Инструкция 4", subheading: "", profileImage: "" },
 },
 {
-url: "/img/demo/5.png",
+url: "/img/demo/5.webp",
 header: { heading: "Инструкция 5", subheading: "", profileImage: "" },
 },
 {
-	url: "/img/demo/6.png",
+	url: "/img/demo/6.webp",
 	header: { heading: "Инструкция 6", subheading: "", profileImage: "" },
 	},
 ];
