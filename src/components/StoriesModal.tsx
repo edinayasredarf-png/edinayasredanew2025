@@ -195,7 +195,7 @@ function legacyToInstaStories(items: LegacyStoryItem[]): InstaStoryItem[] {
     return {
       url: s.url,
       type: (isVideo ? "video" : "image") as "video" | "image",
-      duration: s.duration ?? 10000,
+      duration: s.duration ?? 5000,
       muted: isVideo,
       header: s.header
       ? {
