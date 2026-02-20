@@ -11,6 +11,8 @@ import { BlogPost, ensureDemo, sb_listPosts } from '@/lib/blogStore';
 import { sb_getUserFavorites } from '@/lib/commentsStore';
 import { authStore } from '@/lib/authStore';
 import { useSearchParams } from 'next/navigation';
+import MobileBottomNav from '@/components/MobileBottomNav';
+
 
 function BlogHomeInner() {
   const router = useRouter();
@@ -69,31 +71,31 @@ function BlogHomeInner() {
   useEffect(() => {
     const error = sp.get('error');
     const success = sp.get('success');
-    
+
     if (error) {
       setNotification({ type: 'error', message: decodeURIComponent(error) });
       // Очищаем URL от параметра error
       const newSearchParams = new URLSearchParams(sp.toString());
       newSearchParams.delete('error');
-      const newUrl = newSearchParams.toString() 
+      const newUrl = newSearchParams.toString()
         ? `/blog?${newSearchParams.toString()}`
         : '/blog';
       router.replace(newUrl, { scroll: false });
-      
+
       // Скрываем уведомление через 5 секунд
       setTimeout(() => setNotification(null), 5000);
     }
-    
+
     if (success) {
       setNotification({ type: 'success', message: decodeURIComponent(success) });
       // Очищаем URL от параметра success
       const newSearchParams = new URLSearchParams(sp.toString());
       newSearchParams.delete('success');
-      const newUrl = newSearchParams.toString() 
+      const newUrl = newSearchParams.toString()
         ? `/blog?${newSearchParams.toString()}`
         : '/blog';
       router.replace(newUrl, { scroll: false });
-      
+
       // Скрываем уведомление через 5 секунд
       setTimeout(() => setNotification(null), 5000);
     }
@@ -139,12 +141,12 @@ function BlogHomeInner() {
     <BlogLayout>
       <div className="bg-[#f2f3f7] min-h-screen font-{Raleway}">
         <TopBar />
-        
+
         {/* Уведомления */}
         {notification && (
           <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg max-w-md ${
-            notification.type === 'success' 
-              ? 'bg-green-500 text-white' 
+            notification.type === 'success'
+              ? 'bg-green-500 text-white'
               : 'bg-red-500 text-white'
           }`}>
             <div className="flex items-center justify-between">
@@ -191,6 +193,8 @@ function BlogHomeInner() {
     </BlogLayout>
   );
 }
+<MobileBottomNav />
+
 
 export default function BlogHome() {
   return (

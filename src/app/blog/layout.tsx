@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 
+
 export const metadata: Metadata = {
   title: 'Блог | Единая среда',
   description: 'Статьи, новости и кейсы о цифровизации территорий, опыте внедрений и продуктовых обновлениях платформы «Единая среда».',
@@ -21,6 +22,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
       {children}
+
     </div>
   );
 }
