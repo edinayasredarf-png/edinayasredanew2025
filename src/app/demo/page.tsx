@@ -135,7 +135,7 @@ export default function DemoPage() {
                       className="hidden md:block object-cover"
                     />
                     <Image
-                      src="/img/demo-cover-mobile.jpg"
+                      src="/img/card3.webp"
                       alt="Превью демо системы"
                       fill
                       priority
