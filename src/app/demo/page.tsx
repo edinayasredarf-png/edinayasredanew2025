@@ -9,35 +9,35 @@ import type { Story } from "@/lib/storiesStore";
 const storiesData = [
   {
     url: "/img/demo/1.webp",
-    header: { heading: "Инструкция 1", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
   {
     url: "/img/demo/2.webp",
-    header: { heading: "Инструкция 2", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
   {
     url: "/img/demo/3.webp",
-    header: { heading: "Инструкция 3", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
   {
     url: "/img/demo/4.webp",
-    header: { heading: "Инструкция 4", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
   {
     url: "/img/demo/5.webp",
-    header: { heading: "Инструкция 5", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
   {
     url: "/img/demo/6.webp",
-    header: { heading: "Инструкция 6", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
 	{
     url: "/img/demo/7.webp",
-    header: { heading: "Инструкция 7", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
 	{
     url: "/img/demo/8.webp",
-    header: { heading: "Инструкция 8", subheading: "", profileImage: "" },
+    header: { heading: "", subheading: "", profileImage: "" },
   },
 ];
 
