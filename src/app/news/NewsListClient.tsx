@@ -9,8 +9,13 @@ import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import { sb_listNews, NewsItem } from '@/lib/blogStore';
 
+// MUI Skeleton
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
+
 export default function NewsListClient() {
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const [activeTab, setActiveTab] =
@@ -23,6 +28,8 @@ export default function NewsListClient() {
         setNews(newsData);
       } catch (e) {
         console.error('Failed to load news from database:', e);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
@@ -62,31 +69,61 @@ export default function NewsListClient() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-1 gap-4">
-                  {news.map((n) => (
-                    <Link
-                      key={n.id}
-                      href={`/news/${encodeURIComponent(n.slug)}`}
-                      className="rounded-2xl border border-[#DCDDE1] p-4 hover:border-[#2777ff] bg-white"
-                    >
-                      <div className="text-sm text-[#52555a]">
-                        {new Date(n.createdAt).toLocaleDateString('ru-RU')}
-                      </div>
-                      <div className="mt-1 text-base font-semibold text-[#313131] leading-snug">
-                        {n.title}
-                      </div>
-                      {!!(n.tags?.length) && (
-                        <div className="mt-1 flex flex-wrap gap-2">
-                          {n.tags!.map((t) => (
-                            <span key={t} className="text-sm text-[#7C8A9A]">
-                              #{t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </Link>
-                  ))}
+                  {loading
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                        <Stack
+                          key={i}
+                          spacing={1}
+                          className="rounded-2xl border border-[#DCDDE1] p-4 bg-white"
+                        >
+                          <Skeleton
+                            variant="text"
+                            width="30%"
+                            height={16}
+                            sx={{ borderRadius: 4 }}
+                            animation="wave"
+                          />
+                          <Skeleton
+                            variant="text"
+                            width="80%"
+                            height={24}
+                            sx={{ borderRadius: 6 }}
+                            animation="wave"
+                          />
+                          <Skeleton
+                            variant="text"
+                            width="50%"
+                            height={16}
+                            sx={{ borderRadius: 4 }}
+                            animation="wave"
+                          />
+                        </Stack>
+                      ))
+                    : news.map((n) => (
+                        <Link
+                          key={n.id}
+                          href={`/news/${encodeURIComponent(n.slug)}`}
+                          className="rounded-2xl border border-[#DCDDE1] p-4 hover:border-[#2777ff] bg-white"
+                        >
+                          <div className="text-sm text-[#52555a]">
+                            {new Date(n.createdAt).toLocaleDateString('ru-RU')}
+                          </div>
+                          <div className="mt-1 text-base font-semibold text-[#313131] leading-snug">
+                            {n.title}
+                          </div>
+                          {!!(n.tags?.length) && (
+                            <div className="mt-1 flex flex-wrap gap-2">
+                              {n.tags!.map((t) => (
+                                <span key={t} className="text-sm text-[#7C8A9A]">
+                                  #{t}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </Link>
+                      ))}
 
-                  {!news.length && (
+                  {!loading && !news.length && (
                     <div className="text-[#7C8A9A]">Новостей пока нет</div>
                   )}
                 </div>
@@ -100,4 +137,3 @@ export default function NewsListClient() {
     </div>
   );
 }
-
