@@ -31,6 +31,14 @@ const storiesData = [
     url: "/img/demo/6.webp",
     header: { heading: "Инструкция 6", subheading: "", profileImage: "" },
   },
+	{
+    url: "/img/demo/7.webp",
+    header: { heading: "Инструкция 7", subheading: "", profileImage: "" },
+  },
+	{
+    url: "/img/demo/8.webp",
+    header: { heading: "Инструкция 8", subheading: "", profileImage: "" },
+  },
 ];
 
 export default function DemoPage() {
