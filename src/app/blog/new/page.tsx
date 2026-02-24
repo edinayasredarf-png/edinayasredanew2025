@@ -83,7 +83,7 @@ function renderBlocks(blocks: Block[]): string {
 
 // ---------- заголовок шага ----------
 function StepTitle({children}:{children:React.ReactNode}) {
-  return <h2 className="text-xl font-semibold text-[#111]">{children}</h2>;
+  return <h2 className="text-xl font-semibold text-[#313131]">{children}</h2>;
 }
 
 export default function NewPostPage() {
@@ -350,7 +350,7 @@ export default function NewPostPage() {
         // Сохраняем кейс в отдельную таблицу cases
         const prevCase = editSlug && editType === 'case' ? await sb_getCaseBySlug(editSlug) : undefined;
         const caseSlug = prevCase?.slug || slug;
-        
+
         try {
           await sb_upsertCase({
             id: prevCase?.id || crypto.randomUUID(),
@@ -402,7 +402,7 @@ export default function NewPostPage() {
             return; // Не продолжаем при других ошибках
           }
         }
-        
+
         clearDraft();
         if (isScheduled) {
           showNotificationToast(`Кейс запланирован на ${new Date(publishTime).toLocaleString('ru-RU')}`);
@@ -503,12 +503,12 @@ export default function NewPostPage() {
       <div className="bg-[#f2f3f7] min-h-screen font-[Raleway]">
         <div className="max-w-[640px] mx-auto px-4 md:px-8 py-8 md:py-16">
           <div className="bg-white rounded-2xl p-6 border">
-            <h1 className="text-2xl font-semibold mb-4 text-[#111]">Авторизация редактора</h1>
-            <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#111]" placeholder="Логин" value={login} onChange={e=>setLogin(e.target.value)} />
-            <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#111]" placeholder="Пароль" type="password" value={pass} onChange={e=>setPass(e.target.value)} />
+            <h1 className="text-2xl font-semibold mb-4 text-[#313131]">Авторизация редактора</h1>
+            <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#313131]" placeholder="Логин" value={login} onChange={e=>setLogin(e.target.value)} />
+            <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#313131]" placeholder="Пароль" type="password" value={pass} onChange={e=>setPass(e.target.value)} />
             <div className="flex gap-2">
               <button onClick={doLogin} className="bg-[#2777ff] text-white px-5 py-2.5 rounded-lg">Войти</button>
-              <Link href="/blog" className="px-5 py-2.5 rounded-lg border text-[#111]">Назад</Link>
+              <Link href="/blog" className="px-5 py-2.5 rounded-lg border  text-[#313131]">Назад</Link>
             </div>
           </div>
         </div>
@@ -530,25 +530,25 @@ export default function NewPostPage() {
         <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#313131] px-4 py-2 text-white hover:bg-[#313131]/90">
+                <svg className="w-5 h-5 color-whte" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Назад
               </Link>
-              <Link href="/blog/stories" className="rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]">Сторисы</Link>
+              <Link href="/blog/stories" className="rounded-xl border border-[#0077FF] px-4 py-2 text-[#0077FF] hover:bg-[#0077FF]  hover:text-white">Сторисы</Link>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               {editSlug && editType && (
-                <button onClick={doDelete} className="px-4 py-2 rounded-lg border hover:bg-gray-50 text-[#111]">Удалить</button>
+                <button onClick={doDelete} className="px-4 py-2 rounded-lg border hover:bg-gray-50 text-[#313131]">Удалить</button>
               )}
               <button
                 onClick={() => setShowScheduled(!showScheduled)}
-                className="px-4 py-2 rounded-lg border border-yellow-300 text-yellow-600 hover:bg-yellow-50"
+                className="px-4 py-2 rounded-xl border border-[#0077FF] text-[#0077FF] hover:bg-[#0077FF]/20"
               >
                 {showScheduled ? 'Скрыть' : 'Показать'} отложенные ({scheduledPosts.length + scheduledNews.length})
               </button>
               <button
                 onClick={()=> setStep(s=> Math.min(s+1,3))}
-                className="px-5 py-2 rounded-lg bg-[#2777ff] text-white">{step<3?'Далее':'Готово'}</button>
+                className="px-5 py-2 rounded-xl bg-[#0077FF] text-white hover:bg-[#0077FF]/90">{step<3?'Далее':'Готово'}</button>
             </div>
           </div>
 
@@ -557,7 +557,7 @@ export default function NewPostPage() {
             <div className="mb-6 flex flex-wrap items-center gap-2 text-sm overflow-x-auto">
               {[0,1,2,3].map(i=>(
                 <button key={i} onClick={()=>setStep(i)}
-                  className={`h-8 px-3 rounded-lg border ${step===i?'bg-[#2777ff] text-white border-[#2777ff]':'bg-white text-[#111]'}`}>
+                  className={`h-8 px-3 rounded-lg  ${step===i?'bg-[#2777ff] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#0077FF]/10 text-[#313131]'}`}>
                   {i===0?'Тип':i===1?'Заголовок':i===2?'Контент':'Обложка/теги'}
                 </button>
               ))}
@@ -571,7 +571,7 @@ export default function NewPostPage() {
                   {scheduledPosts.map(post => (
                     <div key={post.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                       <div>
-                        <div className="font-medium text-[#111]">{post.title}</div>
+                        <div className="font-medium text-[#313131]">{post.title}</div>
                         <div className="text-sm text-gray-500">
                           Статья • {new Date(post.createdAt).toLocaleString('ru-RU')}
                         </div>
@@ -595,7 +595,7 @@ export default function NewPostPage() {
                   {scheduledNews.map(news => (
                     <div key={news.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                       <div>
-                        <div className="font-medium text-[#111]">{news.title}</div>
+                        <div className="font-medium text-[#313131]">{news.title}</div>
                         <div className="text-sm text-gray-500">
                           Новость • {new Date(news.createdAt).toLocaleString('ru-RU')}
                         </div>
@@ -631,7 +631,7 @@ export default function NewPostPage() {
                   ].map(x=>(
                     <button key={x.k}
                       onClick={()=>setKind(x.k as any)}
-                      className={`h-12 rounded-xl border ${kind===x.k?'bg-[#2777ff] text-white border-[#2777ff]':'bg-white text-[#111]'}`}>
+                      className={`h-12 rounded-xl   ${kind===x.k?'bg-[#0077FF] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#0077FF]/10 text-[#313131]'}`}>
                       {x.label}
                     </button>
                   ))}
@@ -644,7 +644,7 @@ export default function NewPostPage() {
               <div className="space-y-4">
                 <StepTitle>Заголовок</StepTitle>
                 <input
-                  className="w-full border rounded-xl px-4 py-3 text-xl text-[#111]"
+                  className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-xl text-[#313131]"
                   placeholder={
                     kind==='news' ? 'Заголовок новости' :
                     kind==='case' ? 'Заголовок кейса' :
@@ -654,7 +654,7 @@ export default function NewPostPage() {
                 />
                 {(kind==='post' || kind==='case') && (
                   <input
-                    className="w-full border rounded-xl px-4 py-3 text-[#111]"
+                    className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-[#313131]"
                     placeholder="Подзаголовок (необязательно)"
                     value={subtitle} onChange={e=>setSubtitle(e.target.value)}
                   />
@@ -662,22 +662,22 @@ export default function NewPostPage() {
                 {kind==='case' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-[#111] mb-2">Тип кейса</label>
+                      <label className="block text-sm font-medium text-[#313131] mb-2">Тип кейса</label>
                       <select
-                        className="w-full border rounded-xl px-4 py-3 text-[#111] bg-white"
+                        className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-[#313131] bg-white"
                         value={caseApplication}
                         onChange={e=>setCaseApplication(e.target.value)}
                       >
-                        <option value="">— Выберите тип —</option>
+                        <option value="">Выберите тип</option>
                         {CASE_APPLICATION_OPTIONS.map(opt => (
                           <option key={opt} value={opt}>{opt}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#111] mb-2">Место проведения работ</label>
+                      <label className="block text-sm font-medium text-[#313131] mb-2">Место проведения работ</label>
                       <input
-                        className="w-full border rounded-xl px-4 py-3 text-[#111]"
+                        className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-[#313131]"
                         placeholder="Например: Ростов-на-Дону, Красноярский край"
                         value={caseLocation}
                         onChange={e=>setCaseLocation(e.target.value)}
@@ -718,26 +718,26 @@ export default function NewPostPage() {
                     <div className="text-sm text-[#52555a] mt-2">Рекомендованный размер: 1280×720, формат JPG/PNG/WebP.</div>
                   </div>
                   <div>
-                    <div className="mb-2 font-medium text-[#111]">Теги</div>
+                    <div className="mb-2 font-medium text-[#313131]">Теги</div>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {tags.map(t=>(
                         <button key={t} onClick={()=>setTags(tags.filter(x=>x!==t))}
-                          className="px-3 py-1.5 rounded-lg bg-[#e9eefb] text-[#111]">#{t} ×</button>
+                          className="px-3 py-1.5 rounded-lg bg-[#e9eefb] text-[#313131]">#{t} ×</button>
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <input id="newtag" className="flex-1 border rounded-lg px-3 py-2 text-[#111]" placeholder="Создать новый тег" />
+                      <input id="newtag" className="flex-1 border-2 border-[#F6F7FB]  rounded-xl px-3 py-2 text-[#313131]" placeholder="Создать новый тег" />
                       <button onClick={()=>{
                         const el = document.getElementById('newtag') as HTMLInputElement;
                         const t = (el?.value||'').trim(); if (!t) return;
                         addTag(t); setAllTags(listAllTags()); if(!tags.includes(t)) setTags([...tags,t]); el.value='';
-                      }} className="px-3 py-2 rounded-lg border text-[#111]">Добавить</button>
+                      }} className="px-3 py-2 rounded-xl bg-[#313131] border text-white">Добавить</button>
                     </div>
                     {!!allTags.length && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {allTags.map(t=>(
                           <button key={t} onClick={()=>{ if(!tags.includes(t)) setTags([...tags,t]); }}
-                            className="px-3 py-1.5 rounded-lg border hover:bg-gray-50 text-[#111]">#{t}</button>
+                            className="px-3 py-1.5 rounded-xl border-2 border-[#F6F7FB]  hover:bg-gray-50 text-[#313131]">#{t}</button>
                         ))}
                       </div>
                     )}
@@ -749,7 +749,7 @@ export default function NewPostPage() {
                   <StepTitle>Отложенная публикация</StepTitle>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-[#111] mb-2">
+                      <label className="block text-sm font-medium text-[#313131] mb-2">
                         Дата и время публикации (необязательно)
                       </label>
                       <input
@@ -757,7 +757,7 @@ export default function NewPostPage() {
                         value={scheduledDate}
                         onChange={(e) => setScheduledDate(e.target.value)}
                         min={new Date().toISOString().slice(0, 16)}
-                        className="w-full border rounded-lg px-3 py-2 text-[#111]"
+                        className="w-full border-2 border-[#F6F7FB]  rounded-lg px-3 py-2 text-[#313131]"
                       />
                       <div className="text-sm text-[#52555a] mt-1">
                         Оставьте пустым для немедленной публикации
@@ -772,7 +772,7 @@ export default function NewPostPage() {
                     Опубликовать
                   </button>
                   <button onClick={()=>{ clearDraft(); setTitle(''); setSubtitle(''); setCover(undefined); setBlocks([]); setTags([]); setStep(0); }}
-                    className="px-6 py-3 rounded-xl border hover:bg-gray-50 text-[#111]">Очистить черновик</button>
+                    className="px-6 py-3 rounded-xl bg-[#F11212] hover:bg-[#F11212]/90 text-white">Очистить черновик</button>
                 </div>
               </div>
             )}

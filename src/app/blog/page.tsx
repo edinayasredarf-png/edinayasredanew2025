@@ -13,13 +13,17 @@ import { authStore } from '@/lib/authStore';
 import { useSearchParams } from 'next/navigation';
 import MobileBottomNav from '@/components/MobileBottomNav';
 
+// MUI Skeleton
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
 
 function BlogHomeInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const qFromUrl = sp.get('q') || '';
   const tag = sp.get('tag') || '';
-  const tabFromUrl = sp.get('tab') as 'feed' | 'subscriptions' | 'favorites' || 'feed';
+  const tabFromUrl = (sp.get('tab') as 'feed' | 'subscriptions' | 'favorites') || 'feed';
+
   const [q, setQ] = useState(qFromUrl);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>(tabFromUrl);
@@ -27,6 +31,7 @@ function BlogHomeInner() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  // Загрузка постов
   useEffect(() => {
     ensureDemo();
     (async () => {
@@ -40,7 +45,7 @@ function BlogHomeInner() {
     })();
   }, []);
 
-  // Подписываемся на изменения аутентификации
+  // Подписка на изменения аутентификации
   useEffect(() => {
     const unsubscribe = authStore.subscribe(() => {
       setIsAuthenticated(authStore.isAuthenticated());
@@ -49,7 +54,7 @@ function BlogHomeInner() {
     return unsubscribe;
   }, []);
 
-  // Загружаем избранное при смене вкладки
+  // Загрузка избранного при смене вкладки
   useEffect(() => {
     if (activeTab === 'favorites' && isAuthenticated) {
       (async () => {
@@ -64,52 +69,43 @@ function BlogHomeInner() {
     }
   }, [activeTab, isAuthenticated]);
 
+  // Синхронизация query параметров
   useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
   useEffect(() => { setActiveTab(tabFromUrl); }, [tabFromUrl]);
 
-  // Обработка query параметров error и success
+  // Обработка уведомлений через query параметры
   useEffect(() => {
     const error = sp.get('error');
     const success = sp.get('success');
 
-    if (error) {
-      setNotification({ type: 'error', message: decodeURIComponent(error) });
-      // Очищаем URL от параметра error
-      const newSearchParams = new URLSearchParams(sp.toString());
-      newSearchParams.delete('error');
-      const newUrl = newSearchParams.toString()
-        ? `/blog?${newSearchParams.toString()}`
-        : '/blog';
-      router.replace(newUrl, { scroll: false });
-
-      // Скрываем уведомление через 5 секунд
+    const showNotification = (type: 'success' | 'error', message: string) => {
+      setNotification({ type, message });
       setTimeout(() => setNotification(null), 5000);
+    };
+
+    if (error) {
+      showNotification('error', decodeURIComponent(error));
     }
 
     if (success) {
-      setNotification({ type: 'success', message: decodeURIComponent(success) });
-      // Очищаем URL от параметра success
-      const newSearchParams = new URLSearchParams(sp.toString());
-      newSearchParams.delete('success');
-      const newUrl = newSearchParams.toString()
-        ? `/blog?${newSearchParams.toString()}`
-        : '/blog';
-      router.replace(newUrl, { scroll: false });
+      showNotification('success', decodeURIComponent(success));
+    }
 
-      // Скрываем уведомление через 5 секунд
-      setTimeout(() => setNotification(null), 5000);
+    if (error || success) {
+      const newSearchParams = new URLSearchParams(sp.toString());
+      newSearchParams.delete('error');
+      newSearchParams.delete('success');
+      const newUrl = newSearchParams.toString() ? `/blog?${newSearchParams.toString()}` : '/blog';
+      router.replace(newUrl, { scroll: false });
     }
   }, [sp, router]);
 
+  // Фильтрация постов
   const filtered = useMemo(() => {
-    // Исключаем кейсы из ленты блога
     let arr = posts.filter(p => (p.kind || 'post') !== 'case');
 
-    // Фильтрация по активной вкладке
     if (activeTab === 'favorites') {
-      if (!isAuthenticated) {
-        return []; // Показываем пустой список, если не авторизован
-      }
+      if (!isAuthenticated) return [];
       arr = arr.filter(p => favoritePostIds.includes(p.id));
     }
 
@@ -130,12 +126,12 @@ function BlogHomeInner() {
     return arr;
   }, [posts, q, tag, activeTab, favoritePostIds, isAuthenticated]);
 
+  // Разделение на две колонки
   const cols = useMemo(() => {
     const A: BlogPost[] = [], B: BlogPost[] = [];
     filtered.forEach((p, i) => (i % 2 === 0 ? A : B).push(p));
     return [A, B];
   }, [filtered]);
-
 
   return (
     <BlogLayout>
@@ -165,7 +161,8 @@ function BlogHomeInner() {
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={setActiveTab} />
             <main className="flex-1 flex justify-center">
-              <div className="w-full max-w-[761px]">
+              <div className="w-full max-w-[764px]">
+                {/* Не авторизован + избранное */}
                 {activeTab === 'favorites' && !isAuthenticated ? (
                   <div className="text-center py-12">
                     <div className="text-gray-500 text-lg mb-4">
@@ -173,12 +170,24 @@ function BlogHomeInner() {
                     </div>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-6 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
                     >
                       Войти
                     </button>
                   </div>
+                ) : posts.length === 0 ? (
+                  // Skeleton пока загружаются посты
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <Stack key={i} spacing={1}>
+                        <Skeleton variant="rectangular" sx={{ borderRadius: 6 }} width={350} height={200} />
+                        <Skeleton variant="text" width={300} height={30} />
+                        <Skeleton variant="text" width={250} height={20} />
+                      </Stack>
+                    ))}
+                  </div>
                 ) : (
+                  // Рендер постов
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
                     {cols[0].map(p => <PostCard key={p.id} p={p} />)}
                     {cols[1].map(p => <PostCard key={p.id} p={p} />)}
@@ -190,11 +199,10 @@ function BlogHomeInner() {
           </div>
         </div>
       </div>
+      <MobileBottomNav />
     </BlogLayout>
   );
 }
-<MobileBottomNav />
-
 
 export default function BlogHome() {
   return (

@@ -23,16 +23,16 @@ export default function CoverPicker({ value, onChange }: { value?: string; onCha
         </div>
       )}
       <div className="absolute bottom-3 right-3 flex gap-2 font-[Raleway]">
-        <button onClick={pick} className="px-4 py-2 rounded-xl bg-white border hover:bg-gray-50">Выбрать</button>
+        <button onClick={pick} className="px-4 py-2 rounded-xl bg-[#313131] text-white font-medium  hover:bg-[#313131]/90">Выбрать</button>
         <button
           onClick={() => {
             const url = prompt('Вставьте ссылку на изображение (например https://media.единаясреда.рф/media/blog/cover.jpg)');
             if (!url) return;
             onChange(url);
           }}
-          className="px-4 py-2 rounded-xl bg-white border hover:bg-gray-50"
+          className="px-4 py-2 rounded-xl bg-[#313131] text-white font-medium  hover:bg-[#313131]/90"
         >Вставить ссылку</button>
-        {value && <button onClick={()=>onChange(undefined)} className="px-4 py-2 rounded-xl bg-white border hover:bg-gray-50">Удалить</button>}
+        {value && <button onClick={()=>onChange(undefined)} className="px-4 py-2 rounded-xl bg-[#F11212] text-white font-medium  hover:bg-[#F11212]/90">Удалить</button>}
       </div>
     </div>
   );

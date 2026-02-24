@@ -167,13 +167,13 @@ export default function BlogStoriesPage() {
       <div className="bg-[#f2f3f7] min-h-screen font-[Raleway]">
         <div className="max-w-[640px] mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl p-6 border">
-            <h1 className="text-2xl font-semibold mb-4 text-[#111]">Редактор сторис</h1>
+            <h1 className="text-2xl font-semibold mb-4 text-[#313131]">Редактор сторис</h1>
             <p className="text-gray-600 mb-4">Войдите под учётной записью редактора блога.</p>
-            <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#111]" placeholder="Логин" value={login} onChange={(e) => setLogin(e.target.value)} />
-            <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#111]" placeholder="Пароль" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
+            <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#313131]" placeholder="Логин" value={login} onChange={(e) => setLogin(e.target.value)} />
+            <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#313131]" placeholder="Пароль" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
             <div className="flex gap-2">
-              <button onClick={() => auth.login(login, pass) && setAuthed(true)} className="bg-[#2777ff] text-white px-5 py-2.5 rounded-lg">Войти</button>
-              <Link href="/blog" className="px-5 py-2.5 rounded-lg border text-[#111]">В блог</Link>
+              <button onClick={() => auth.login(login, pass) && setAuthed(true)} className="bg-[#0077FF] text-white px-5 py-2.5 rounded-lg">Войти</button>
+              <Link href="/blog" className="px-5 py-2.5 rounded-lg border text-[#313131]">В блог</Link>
             </div>
           </div>
         </div>
@@ -185,24 +185,24 @@ export default function BlogStoriesPage() {
     <div className="bg-[#f2f3f7] min-h-screen font-[Raleway]">
       <div className="max-w-[900px] mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#F6F7F9] px-4 py-2 text-[#111] hover:bg-[#ECEFF3]">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#313131] px-4 py-2 text-white hover:bg-[#313131]/90">
+            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             В блог
           </Link>
-          <button onClick={startCreate} className="px-5 py-2.5 rounded-lg bg-[#2777ff] text-white">
+          <button onClick={startCreate} className="px-5 py-2.5 rounded-lg bg-[#0077FF] text-white">
             + Новый сторис
           </button>
         </div>
 
         {toast && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[2000] bg-[#111] text-white px-4 py-2 rounded-lg shadow-lg">
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[2000] bg-[#313131] text-white px-4 py-2 rounded-lg shadow-lg">
             {toast}
           </div>
         )}
 
         {/* Список сторис + статистика */}
         <div className="bg-white rounded-2xl border p-6 mb-6">
-          <h2 className="text-xl font-semibold text-[#111] mb-4">Сторисы и статистика</h2>
+          <h2 className="text-xl font-semibold text-[#313131] mb-4">Сторисы и статистика</h2>
           {stories.length === 0 && !editingId && (
             <p className="text-gray-500">Пока нет сторис. Нажмите «Новый сторис».</p>
           )}
@@ -213,11 +213,11 @@ export default function BlogStoriesPage() {
                   {s.thumbnail ? <Image src={s.thumbnail} alt="" width={56} height={56} className="w-full h-full object-cover" /> : null}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-[#111] truncate">{s.title}</div>
+                  <div className="font-medium text-[#313131] truncate">{s.title}</div>
                   <div className="text-sm text-gray-500">Просмотры: {s.viewCount ?? 0}</div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button onClick={() => startEdit(s)} className="px-3 py-1.5 rounded-lg bg-[#2777ff] text-white text-sm">Редактировать</button>
+                  <button onClick={() => startEdit(s)} className="px-3 py-1.5 rounded-lg bg-[#0077FF] text-white text-sm">Редактировать</button>
                   <button onClick={() => handleDelete(s.id)} className="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 text-sm hover:bg-red-50">Удалить</button>
                 </div>
               </li>
@@ -228,12 +228,12 @@ export default function BlogStoriesPage() {
         {/* Форма создания/редактирования */}
         {(editingId !== null || formSlides.length > 0) && (
           <div className="bg-white rounded-2xl border p-6">
-            <h2 className="text-xl font-semibold text-[#111] mb-4">{editingId ? 'Редактирование сториса' : 'Новый сторис'}</h2>
+            <h2 className="text-xl font-semibold text-[#313131] mb-4">{editingId ? 'Редактирование сториса' : 'Новый сторис'}</h2>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-[#111] mb-1">Заголовок (в квадрате)</label>
+              <label className="block text-sm font-medium text-[#313131] mb-1">Заголовок (в квадрате)</label>
               <input
-                className="w-full border rounded-lg px-4 py-2 text-[#111]"
+                className="w-full border-2 border-[#F6F7FB]  rounded-lg px-4 py-2 text-[#313131]"
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="Например: Обновление платформы"
@@ -241,27 +241,27 @@ export default function BlogStoriesPage() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-[#111] mb-1">Превью (квадрат)</label>
+              <label className="block text-sm font-medium text-[#313131] mb-1">Превью (квадрат)</label>
               <div className="flex items-center gap-3">
                 {formThumbnail ? (
                   <div className="w-20 h-20 rounded-xl overflow-hidden border">
                     <Image src={formThumbnail} alt="" width={80} height={80} className="w-full h-full object-cover" />
                   </div>
                 ) : null}
-                <button type="button" onClick={() => uploadImage(0, 'thumbnail')} className="px-4 py-2 rounded-lg border text-[#111] text-sm">Загрузить картинку</button>
+                <button type="button" onClick={() => uploadImage(0, 'thumbnail')} className="px-12 py-4  bg-[#313131] hover:bg-[#313131]/90  rounded-2xl border font-medium text-white">Загрузить картинку</button>
               </div>
             </div>
 
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium text-[#111]">Слайды</label>
-              <button type="button" onClick={addSlide} className="px-3 py-1.5 rounded-lg bg-[#2777ff] text-white text-sm">+ Слайд</button>
+              <label className="text-sm font-medium text-[#313131]">Слайды</label>
+              <button type="button" onClick={addSlide} className="px-3 py-1.5 rounded-lg bg-[#0077FF] text-white font-medium  text-sm">+ Слайд</button>
             </div>
 
             <div className="space-y-6">
               {formSlides.map((slide, idx) => (
                 <div key={slide.id} className="p-4 rounded-xl border bg-gray-50/50">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-medium text-[#111]">Слайд {idx + 1}</span>
+                    <span className="font-medium text-[#313131]">Слайд {idx + 1}</span>
                     <button type="button" onClick={() => removeSlide(idx)} className="text-red-600 text-sm">Удалить</button>
                   </div>
 
@@ -271,7 +271,7 @@ export default function BlogStoriesPage() {
                       <select
                         value={slide.type}
                         onChange={(e) => updateSlide(idx, { type: e.target.value as 'image' | 'video' | 'text' })}
-                        className="ml-2 border rounded px-2 py-1 text-[#111]"
+                        className="ml-2 bg-white border border-[#0077FF]  rounded px-2 py-1 text-[#313131]"
                       >
                         <option value="image">Картинка</option>
                         <option value="video">Видео</option>
@@ -293,12 +293,12 @@ export default function BlogStoriesPage() {
                             )
                           ) : null}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <button type="button" onClick={() => uploadImage(idx, 'url')} className="px-3 py-1.5 rounded border text-sm text-[#111]">Загрузить</button>
+                            <button type="button" onClick={() => uploadImage(idx, 'url')} className="px-12 py-4  bg-[#313131] hover:bg-[#313131]/90 rounded-2xl border font-medium text-white">Загрузить</button>
                             {slide.type === 'video' && (
                               <input
                                 type="url"
                                 placeholder="Или прямая ссылка .mp4"
-                                className="flex-1 min-w-[180px] border rounded px-2 py-1.5 text-sm text-[#111]"
+                                className="flex-1 min-w-[180px] border rounded px-2 py-1.5 text-sm text-[#313131]"
                                 value={slide.url?.startsWith('http') ? slide.url : ''}
                                 onChange={(e) => updateSlide(idx, { url: e.target.value.trim() || undefined })}
                               />
@@ -311,7 +311,7 @@ export default function BlogStoriesPage() {
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Текст в слайде</label>
                       <textarea
-                        className="w-full border rounded-lg px-3 py-2 text-[#111] text-sm min-h-[60px]"
+                        className="w-full border rounded-lg px-3 py-2 text-[#313131] text-sm min-h-[60px]"
                         value={slide.text || ''}
                         onChange={(e) => updateSlide(idx, { text: e.target.value })}
                         placeholder="Текст поверх картинки или содержимое текстового слайда"
@@ -323,7 +323,7 @@ export default function BlogStoriesPage() {
                       <select
                         value={slide.textPosition || 'bottom'}
                         onChange={(e) => updateSlide(idx, { textPosition: e.target.value as StoryTextPosition })}
-                        className="border rounded px-2 py-1 text-[#111]"
+                        className="border rounded px-2 py-1 text-[#313131]"
                       >
                         <option value="top">Сверху</option>
                         <option value="center">По центру</option>
@@ -335,13 +335,13 @@ export default function BlogStoriesPage() {
                       <label className="block text-sm text-gray-600 mb-1">Кнопка (необязательно)</label>
                       <div className="flex gap-2 flex-wrap">
                         <input
-                          className="border rounded px-2 py-1 text-[#111] flex-1 min-w-[100px]"
+                          className="border rounded px-2 py-1 text-[#313131] flex-1 min-w-[100px]"
                           placeholder="Текст кнопки"
                           value={slide.button?.label || ''}
                           onChange={(e) => updateSlide(idx, { button: { ...slide.button!, label: e.target.value, url: slide.button?.url || '' } })}
                         />
                         <input
-                          className="border rounded px-2 py-1 text-[#111] flex-1 min-w-[100px]"
+                          className="border rounded px-2 py-1 text-[#313131] flex-1 min-w-[100px]"
                           placeholder="Ссылка"
                           value={slide.button?.url || ''}
                           onChange={(e) => updateSlide(idx, { button: { ...slide.button!, url: e.target.value, label: slide.button?.label || '' } })}
@@ -352,7 +352,7 @@ export default function BlogStoriesPage() {
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Опрос (необязательно)</label>
                       <input
-                        className="w-full border rounded px-2 py-1 text-[#111] mb-2"
+                        className="w-full border rounded px-2 py-1 text-[#313131] mb-2"
                         placeholder="Вопрос"
                         value={slide.poll?.question || ''}
                         onChange={(e) => updateSlide(idx, { poll: { ...slide.poll!, question: e.target.value, options: slide.poll?.options || [] } })}
@@ -361,7 +361,7 @@ export default function BlogStoriesPage() {
                         {(slide.poll?.options || ['', '']).map((opt, oi) => (
                           <div key={oi} className="flex items-center gap-2">
                             <input
-                              className="border rounded px-2 py-1 text-[#111] flex-1 min-w-[120px]"
+                              className="border rounded px-2 py-1 text-[#313131] flex-1 min-w-[120px]"
                               placeholder={`Вариант ${oi + 1}`}
                               value={opt}
                               onChange={(e) => {
@@ -388,7 +388,7 @@ export default function BlogStoriesPage() {
                               const res = [...prevResults, 0];
                               updateSlide(idx, { poll: { ...slide.poll!, question: slide.poll?.question || '', options: opts, results: res } });
                             }}
-                            className="px-3 py-1.5 rounded border text-sm text-[#111]"
+                            className="px-3 py-1.5 rounded border text-sm text-[#313131]"
                           >
                             + Вариант
                           </button>
@@ -426,7 +426,7 @@ export default function BlogStoriesPage() {
 
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Файлы (необязательно)</label>
-                      <button type="button" onClick={() => addAttachment(idx)} className="px-3 py-1.5 rounded border text-sm text-[#111]">+ Прикрепить файл</button>
+                      <button type="button" onClick={() => addAttachment(idx)} className="px-3 py-1.5 rounded border text-sm text-[#313131]">+ Прикрепить файл</button>
                       {slide.attachments?.length ? (
                         <ul className="mt-2 space-y-1 text-sm text-gray-600">
                           {slide.attachments.map((a, ai) => (
@@ -440,7 +440,7 @@ export default function BlogStoriesPage() {
                       <label className="block text-sm text-gray-600 mb-1">Длительность (мс)</label>
                       <input
                         type="number"
-                        className="border rounded px-2 py-1 text-[#111] w-24"
+                        className="border rounded px-2 py-1 text-[#313131] w-24"
                         value={slide.duration ?? 5000}
                         onChange={(e) => updateSlide(idx, { duration: Number(e.target.value) || 5000 })}
                       />
@@ -451,8 +451,8 @@ export default function BlogStoriesPage() {
             </div>
 
             <div className="mt-6 flex gap-2">
-              <button onClick={saveStory} className="px-5 py-2.5 rounded-lg bg-[#2777ff] text-white">Сохранить сторис</button>
-              <button onClick={() => { setEditingId(null); setFormSlides([]); }} className="px-5 py-2.5 rounded-lg border text-[#111]">Отмена</button>
+              <button onClick={saveStory} className="px-5 py-2.5 rounded-lg bg-[#0077FF] text-white">Сохранить сторис</button>
+              <button onClick={() => { setEditingId(null); setFormSlides([]); }} className="px-5 py-2.5 rounded-lg border text-[#313131]">Отмена</button>
             </div>
           </div>
         )}
