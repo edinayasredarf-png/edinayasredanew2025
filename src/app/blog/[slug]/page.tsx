@@ -1,4 +1,5 @@
-// ФАЙЛ: src/app/blog/[slug]/page.tsx
+'use client'; // НЕ ставим здесь! Страница должна быть серверной
+
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import PostPageClient from '@/components/blog/PostPageClient';
@@ -6,10 +7,9 @@ import { getPostSeoBySlug } from '@/lib/seoServer';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
-// ⚠️ Важно: Никаких 'use client' здесь! Страница должна быть серверной
 export const dynamic = 'force-dynamic';
 
-// Генерация SEO-метаданных — серверная функция
+// Генерация метаданных — серверная функция
 export async function generateMetadata(props: any): Promise<Metadata> {
   const raw = props?.params;
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
@@ -52,7 +52,7 @@ export async function generateMetadata(props: any): Promise<Metadata> {
   };
 }
 
-// Skeleton для загрузки поста
+// Skeleton отдельный компонент
 function PostSkeleton() {
   return (
     <div className="max-w-[800px] mx-auto p-4 sm:p-6 md:p-8 space-y-6">
@@ -72,21 +72,14 @@ function PostSkeleton() {
       </Stack>
       <Stack spacing={1}>
         {Array.from({ length: 2 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            variant="text"
-            width={`${60 - i * 10}%`}
-            height={32}
-            sx={{ borderRadius: 4 }}
-            animation="wave"
-          />
+          <Skeleton key={i} variant="text" width={`${60 - i * 10}%`} height={32} sx={{ borderRadius: 4 }} animation="wave" />
         ))}
       </Stack>
     </div>
   );
 }
 
-// Серверная страница с Suspense
+// Серверная страница
 export default async function BlogPostPage(props: any) {
   const raw = props?.params;
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
