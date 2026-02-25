@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import 'reactjs-tiptap-editor/style.css';
+import 'prism-code-editor-lightweight/layout.css';
+import 'prism-code-editor-lightweight/themes/github-dark.css';
+import '@/styles/article-content.css';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import Image from 'next/image';
@@ -208,19 +212,6 @@ export default function CasePageClient({ slug }: { slug?: string }) {
                   className="prose prose-lg max-w-none text-[#313131] article-content article-toc-targets"
                   dangerouslySetInnerHTML={{ __html: contentWithIds }}
                 />
-                <style jsx global>{`
-                  .prose img, .prose video, .prose iframe { max-width: 100%; height: auto; border-radius: 16px; margin-bottom: 1.4rem; margin-top: 1.2rem; }
-                  .prose figure { text-align: center; margin-bottom: 1.4rem; }
-                  .prose figcaption { color:#6b7280; font-size:14px; margin-top:6px; margin-bottom: 1.4rem; }
-                  .prose blockquote { border-left:4px solid #e1e2e5; padding:8px 12px; border-radius:8px; color:#374151; margin-bottom: 1.4rem; margin-top: 1.4rem; }
-                  .article-toc-targets h2, .article-toc-targets h3 { scroll-margin-top: 1.5rem; }
-                  .prose h2 { font-size: 1.8rem; line-height: 1.3; margin-bottom: 1.4rem; font-weight: 700; }
-                  .prose h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; margin-bottom: 1.4rem; font-weight: 600; }
-                  .prose p { margin-bottom: 1rem; line-height: 1.75; }
-                  .prose ul, .prose ol { margin-bottom: 1rem; padding-left: 1.5rem; }
-                  .prose li { margin-bottom: 0.5rem; }
-                  .article-content { direction: ltr; }
-                `}</style>
 
                 {isEditor && (
                   <div className="mt-8 pt-6 border-t border-gray-200 flex items-center gap-3">

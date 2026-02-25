@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import 'reactjs-tiptap-editor/style.css';
+import 'prism-code-editor-lightweight/layout.css';
+import 'prism-code-editor-lightweight/themes/github-dark.css';
+import '@/styles/article-content.css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -203,15 +207,6 @@ export default function PostPageClient({ slug }: { slug: string }) {
                   <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
 
                 </article>
-                <style>{`
-                  .prose img, .prose video, .prose iframe { max-width: 100%; height: auto; border-radius: 16px; margin-bottom: 1.4rem;margin-top: 1.2rem;  }
-                  .prose figure { text-align: center;margin-bottom: 1.4rem;  }
-                  .prose figcaption { color:#6b7280; font-size:14px; margin-top:6px;margin-bottom: 1.4rem;  }
-                  .prose blockquote { border-left:4px solid #e1e2e5; padding:8px 12px; border-radius:8px; color:#374151; margin-bottom: 1.4rem; margin-top: 1.4rem;   }
-                  .prose h2 { font-size: 1.8rem; line-height: 1.3; margin-bottom: 1.4rem;  font-weight: 700; }
-                  .prose h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; margin-bottom: 1.4rem font-weight: 600; }
-                  .article-content { direction: ltr; }
-                `}</style>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 mt-14">
 

@@ -7,7 +7,7 @@ import CoverPicker from '@/components/blog/CoverPicker';
 
 // ⚠️ Важно: импортируем dynamic под другим именем, чтобы не конфликтовало с export const dynamic
 import nextDynamic from 'next/dynamic';
-const TipTapEditor = nextDynamic(() => import('@/components/blog/TipTapEditor'), { ssr: false });
+const TipTapEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
 import {
   BlogDraft, BlogPost, NewsItem, auth, clearDraft, fileToDataURL,
@@ -258,7 +258,7 @@ export default function NewPostPage() {
   };
 
   // публикация
-  const canPublish = useMemo(() => title.trim().length > 2 && (kind === 'news' ? true : blocks.length>0), [title, blocks, kind]);
+  const canPublish = useMemo(() => title.trim().length > 2 && (kind === 'news' || kind === 'case' ? true : blocks.length>0), [title, blocks, kind]);
 
   const showNotificationToast = (message: string) => {
     setNotificationMessage(message);

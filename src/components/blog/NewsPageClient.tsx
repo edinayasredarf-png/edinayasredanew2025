@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import 'reactjs-tiptap-editor/style.css';
+import 'prism-code-editor-lightweight/layout.css';
+import 'prism-code-editor-lightweight/themes/github-dark.css';
+import '@/styles/article-content.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LeftNav from '@/components/blog/LeftNav';
@@ -220,13 +224,6 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                 ) : (
                   <div className="text-[#111] text-lg">Подробностей нет.</div>
                 )}
-                <style>{`
-                  .prose img, .prose video, .prose iframe { max-width: 100%; height: auto; border-radius: 16px; }
-                  .prose figcaption { color:#6b7280; font-size:14px; margin-top:6px; }
-                  .prose h2 { font-size: 1.5rem; line-height: 1.3; margin-top: 1.4rem; font-weight: 700; }
-                  .prose h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; font-weight: 600; }
-                  .article-content { direction: ltr; }
-                `}</style>
               </section>
             </div>
           </main>

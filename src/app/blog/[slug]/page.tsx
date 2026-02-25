@@ -1,5 +1,3 @@
-'use client'; // НЕ ставим здесь! Страница должна быть серверной
-
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import PostPageClient from '@/components/blog/PostPageClient';
