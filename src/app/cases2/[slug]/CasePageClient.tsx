@@ -18,13 +18,16 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
 function parseTocAndInjectIds(html: string): { html: string; toc: TocItem[] } {
   const toc: TocItem[] = [];
   let index = 0;
-  const regex = /<h([23])>([\s\S]*?)<\/h\1>/gi;
-  const withIds = html.replace(regex, (_, level, inner) => {
+  const regex = /<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi;
+  const withIds = html.replace(regex, (_, level, attrs, inner) => {
     const text = inner.replace(/<[^>]+>/g, '').trim();
     const id = `section-${index}`;
     toc.push({ id, text, level: level === '2' ? 2 : 3 });
     index++;
-    return `<h${level} id="${id}">${inner}</h${level}>`;
+    // сохраняем существующие атрибуты, добавляем id
+    const existingId = /id="[^"]*"/.test(attrs);
+    const newAttrs = existingId ? attrs.replace(/id="[^"]*"/, `id="${id}"`) : ` id="${id}"${attrs}`;
+    return `<h${level}${newAttrs}>${inner}</h${level}>`;
   });
   return { html: withIds, toc };
 }
