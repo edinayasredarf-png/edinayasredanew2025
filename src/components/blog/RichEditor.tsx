@@ -252,10 +252,12 @@ export default function RichEditor({ initialHtml = '', onChange }: Props) {
   // Синхронизация если initialHtml изменился снаружи (например при загрузке черновика)
   useEffect(() => {
     if (editor && initialHtml && editor.getHTML() !== initialHtml) {
-      editor.commands.setContent(initialHtml, false);
+      editor.commands.setContent(initialHtml, { emitUpdate: false });
       onChangeRef.current?.(initialHtml);
     }
   }, [initialHtml, editor]);
+
+  if (!editor) return null;
 
   return (
     <RichTextProvider editor={editor}>
