@@ -202,7 +202,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
             <div className="w-full max-w-[761px]">
 
 
-              <section className=" bg-white rounded-3xl p-6 " >
+              <section>
 							<h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{post.title}</h1>
 							{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
                 <article className="prose prose-lg max-w-none mx-auto text-[#313131] article-content  " dir="ltr">

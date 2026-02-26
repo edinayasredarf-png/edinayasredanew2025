@@ -232,7 +232,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                 </div>
               </section>
 
-              <section className="mt-6 bg-white rounded-3xl p-6 ">
+              <section className="mt-6">
                 {news.contentHtml ? (
                   <article className="prose prose-lg max-w-none mx-auto text-[#111] article-content" dir="ltr">
                     <div dangerouslySetInnerHTML={{ __html: news.contentHtml }} />
