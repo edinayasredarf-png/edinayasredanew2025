@@ -3,6 +3,7 @@
 "use client";
 import React, { ReactNode, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import Script from 'next/script';
 import Header from './Header';
 import Footer from './Footer';
 import Image from 'next/image';
@@ -280,6 +281,15 @@ const Layout = ({ children }: LayoutProps) => {
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           onSuccess={handleAuthSuccess}
+        />
+
+        {/* ✅ БИТРИКС 24 — сквозная аналитика */}
+        <Script
+          id="bitrix24-tracker"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,u){var s=d.createElement('script');s.async=true;s.src=u+'?'+(Date.now()/60000|0);var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);})(window,document,'https://cdn-ru.bitrix24.ru/b32921504/crm/tag/call.tracker.js');`,
+          }}
         />
       </div>
   );
