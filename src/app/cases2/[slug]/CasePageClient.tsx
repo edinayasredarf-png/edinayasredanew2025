@@ -210,7 +210,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
         <section className="max-w-[1480px] mx-auto px-5 md:px-8 py-10 md:py-14">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-8">
             <article className="space-y-10">
-              <section className="bg-white rounded-3xl p-6 md:p-8">
+              <section>
                 <div
                   className="prose prose-lg max-w-none text-[#313131] article-content article-toc-targets"
                   dangerouslySetInnerHTML={{ __html: contentWithIds }}
