@@ -79,20 +79,41 @@ const CookieBanner: React.FC = () => {
 
 
   return (
-    <div className="fixed bottom-4 left-0 w-full flex justify-center z-[100] pointer-events-none">
-      <div className="bg-white border border-[#0077FF] shadow-xl rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center gap-4 max-w-2xl w-full mx-2 pointer-events-auto animate-fade-in">
-        <span className="text-black text-sm md:text-base flex-1 text-center md:text-left">
-          Мы используем файлы cookie для улучшения работы сайта. Подробнее в разделе{' '}
-          <a href="/documents" className="text-[#0077FF] underline hover:text-[#005fcc] transition-colors" target="_blank" rel="noopener noreferrer">Документация</a>.
-        </span>
-        <button
-          onClick={handleAgree}
-          className="px-6 py-2 rounded-xl bg-[#0077FF] text-white font-[Raleway] font-medium hover:bg-[#005fcc] transition-colors text-sm md:text-base"
-        >
-          Ок, понятно
-        </button>
+    <>
+      {/* Десктоп — справа снизу */}
+      <div className="hidden md:flex fixed bottom-6 right-6 z-[100]">
+        <div className="bg-[#292c32] rounded-2xl px-4 py-[14px] flex items-center gap-4 shadow-xl">
+          <span className="text-white text-base font-normal font-[Raleway] leading-[1.6]">
+            Пользуясь нашим сайтом, вы соглашаетесь<br/>
+            с тем, что <a href="/documents" target="_blank" rel="noopener noreferrer" className="underline">мы используем cookies</a>
+          </span>
+          <button
+            onClick={handleAgree}
+            className="px-5 py-3 bg-[#0077FF] rounded-xl text-white text-base font-normal font-[Raleway] leading-[18px] hover:bg-[#005fcc] transition-colors whitespace-nowrap"
+          >
+            Принять
+          </button>
+        </div>
       </div>
-    </div>
+
+      {/* Мобайл — по центру снизу с крестиком */}
+      <div className="flex md:hidden fixed bottom-4 left-0 w-full justify-center z-[100] px-4">
+        <div className="bg-[#292c32] rounded-2xl px-4 py-[14px] flex items-center gap-3 shadow-xl w-full max-w-sm relative">
+          <span className="text-white text-sm font-normal font-[Raleway] leading-[1.6] flex-1 pr-2">
+            Пользуясь нашим сайтом, вы соглашаетесь с тем, что <a href="/documents" target="_blank" rel="noopener noreferrer" className="underline">мы используем cookies</a>
+          </span>
+          <button
+            onClick={handleAgree}
+            className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-white hover:text-gray-300 transition-colors"
+            aria-label="Закрыть"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </>
   );
 };
 
