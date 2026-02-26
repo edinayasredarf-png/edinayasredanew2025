@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import 'reactjs-tiptap-editor/style.css';
 import 'prism-code-editor-lightweight/layout.css';
 import 'prism-code-editor-lightweight/themes/github-dark.css';
@@ -24,6 +24,24 @@ import { authStore } from '@/lib/authStore';
 import { sb_isFavorite, sb_toggleFavorite } from '@/lib/commentsStore';
 import CommentSection from '@/components/blog/CommentSection';
 import AuthModal from '@/components/auth/AuthModal';
+
+type TocItem = { id: string; text: string; level: 2 | 3 };
+
+function parseTocAndInjectIds(html: string): { html: string; toc: TocItem[] } {
+  const toc: TocItem[] = [];
+  let index = 0;
+  const regex = /<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi;
+  const withIds = html.replace(regex, (_, level, attrs, inner) => {
+    const text = inner.replace(/<[^>]+>/g, '').trim();
+    const id = `section-${index}`;
+    toc.push({ id, text, level: level === '2' ? 2 : 3 });
+    index++;
+    const existingId = /id="[^"]*"/.test(attrs);
+    const newAttrs = existingId ? attrs.replace(/id="[^"]*"/, `id="${id}"`) : ` id="${id}"${attrs}`;
+    return `<h${level}${newAttrs}>${inner}</h${level}>`;
+  });
+  return { html: withIds, toc };
+}
 
 export default function PostPageClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -147,6 +165,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
   }
 
   const views = post.views || 0;
+  const { html: contentWithIds, toc } = useMemo(() => parseTocAndInjectIds(post.contentHtml || ''), [post.contentHtml]);
 
   const share = () => {
     const url = location.href;
@@ -206,7 +225,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
 							<h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{post.title}</h1>
 							{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
                 <article className="prose prose-lg max-w-none mx-auto text-[#313131] article-content  " dir="ltr">
-                  <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+                  <div dangerouslySetInnerHTML={{ __html: contentWithIds }} />
 
                 </article>
 
@@ -325,7 +344,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
               <CommentSection postId={post.id} postType="post" />
             </div>
           </main>
-          <RightSidebar />
+          <RightSidebar toc={toc} />
         </div>
       </div>
 

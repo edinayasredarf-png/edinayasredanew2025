@@ -150,7 +150,9 @@ function AdsCarousel({ loading }: { loading?: boolean }) {
 }
 
 /* ================== Правый сайдбар ================== */
-export default function RightSidebar() {
+type TocItem = { id: string; text: string; level: 2 | 3 };
+
+export default function RightSidebar({ toc }: { toc?: TocItem[] }) {
   const [news, setNews] = React.useState<NewsItem[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -182,56 +184,82 @@ export default function RightSidebar() {
     };
   }, []);
 
+  const hasToc = toc && toc.length > 0;
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <aside className="w-[287px] shrink-0 hidden xl:block">
       <div className="sticky top-[86px] space-y-4 font-[Raleway]">
         <div className="p-5 bg-white rounded-3xl space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-[#313131]">Новости</h3>
-            <Link
-              href="/news"
-              className="h-8 px-3 rounded-lg border border-[#D1D3D8] text-[#313131] hover:border-[#313131] text-sm flex items-center"
-            >
-              Все
-              <Image
-                src="/icons/arrow-right.svg"
-                alt="Все новости"
-                width={14}
-                height={14}
-                className="object-contain"
-              />
-            </Link>
-          </div>
-
-          {loading ? (
-            // Skeleton для новостей
-            <Stack spacing={2}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Stack key={i} spacing={0.5}>
-                  <Skeleton variant="text" width={100} height={14} sx={{ borderRadius: 1 }} animation="wave" />
-                  <Skeleton variant="text" width={200} height={20} sx={{ borderRadius: 2 }} animation="wave" />
-                </Stack>
-              ))}
-            </Stack>
-          ) : (
-            <div className="space-y-4 font-[Raleway] font-medium lining-nums">
-              {news.slice(0, 6).map((n) => (
-                <div key={n.id} className="space-y-1">
-                  <div className="text-sm text-[#52555a]">
-                    {new Date(n.createdAt).toLocaleDateString('ru-RU')}
-                  </div>
-                  <Link
-                    href={`/news/${n.slug}`}
-                    className="text-base text-[#313131] leading-snug hover:text-[#0077FF]"
+          {hasToc ? (
+            <>
+              <h3 className="text-xl font-semibold text-[#313131]">Содержание</h3>
+              <nav className="space-y-2 text-gray-800">
+                {toc!.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => scrollToSection(item.id)}
+                    className={`block w-full text-left text-base hover:text-[#0077FF] transition-colors leading-snug ${item.level === 3 ? 'pl-3' : ''}`}
                   >
-                    {n.title}
-                  </Link>
+                    {item.text}
+                  </button>
+                ))}
+              </nav>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-[#313131]">Новости</h3>
+                <Link
+                  href="/news"
+                  className="h-8 px-3 rounded-lg border border-[#D1D3D8] text-[#313131] hover:border-[#313131] text-sm flex items-center"
+                >
+                  Все
+                  <Image
+                    src="/icons/arrow-right.svg"
+                    alt="Все новости"
+                    width={14}
+                    height={14}
+                    className="object-contain"
+                  />
+                </Link>
+              </div>
+
+              {loading ? (
+                <Stack spacing={2}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Stack key={i} spacing={0.5}>
+                      <Skeleton variant="text" width={100} height={14} sx={{ borderRadius: 1 }} animation="wave" />
+                      <Skeleton variant="text" width={200} height={20} sx={{ borderRadius: 2 }} animation="wave" />
+                    </Stack>
+                  ))}
+                </Stack>
+              ) : (
+                <div className="space-y-4 font-[Raleway] font-medium lining-nums">
+                  {news.slice(0, 6).map((n) => (
+                    <div key={n.id} className="space-y-1">
+                      <div className="text-sm text-[#52555a]">
+                        {new Date(n.createdAt).toLocaleDateString('ru-RU')}
+                      </div>
+                      <Link
+                        href={`/news/${n.slug}`}
+                        className="text-base text-[#313131] leading-snug hover:text-[#0077FF]"
+                      >
+                        {n.title}
+                      </Link>
+                    </div>
+                  ))}
+                  {!news.length && (
+                    <div className="text-sm text-[#52555a]">Еще нет новостей</div>
+                  )}
                 </div>
-              ))}
-              {!news.length && (
-                <div className="text-sm text-[#52555a]">Еще нет новостей</div>
               )}
-            </div>
+            </>
           )}
         </div>
 
