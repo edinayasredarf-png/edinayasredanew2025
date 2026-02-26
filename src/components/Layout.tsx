@@ -96,8 +96,8 @@ const CookieBanner: React.FC = () => {
         </div>
       </div>
 
-      {/* Мобайл — по центру снизу с крестиком */}
-      <div className="flex md:hidden fixed bottom-4 left-0 w-full justify-center z-[100] px-4">
+      {/* Мобайл — по центру снизу с крестиком, выше мобильного меню */}
+      <div className="flex md:hidden fixed bottom-24 left-0 w-full justify-center z-[130] px-4">
         <div className="bg-[#292c32] rounded-2xl px-4 py-[14px] flex items-center gap-3 shadow-xl w-full max-w-sm relative">
           <span className="text-white text-sm font-normal font-[Raleway] leading-[1.6] flex-1 pr-2">
             Пользуясь нашим сайтом, вы соглашаетесь с тем, что <a href="/documents" target="_blank" rel="noopener noreferrer" className="underline">мы используем cookies</a>
