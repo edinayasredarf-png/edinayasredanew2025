@@ -118,10 +118,18 @@ export default function NewsPageClient({ slug }: { slug: string }) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
         <TopBar />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4" />
-            <p className="text-gray-600">Загрузка новости...</p>
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+          <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
+            <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
+            <main className="flex-1 flex justify-center">
+              <div className="w-full max-w-[761px] flex items-center justify-center min-h-[60vh]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4" />
+                  <p className="text-gray-600">Загрузка новости...</p>
+                </div>
+              </div>
+            </main>
+            <RightSidebar />
           </div>
         </div>
       </div>
