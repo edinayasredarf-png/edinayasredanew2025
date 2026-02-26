@@ -24,6 +24,7 @@ import { authStore } from '@/lib/authStore';
 export default function NewsPageClient({ slug }: { slug: string }) {
   const router = useRouter();
   const [news, setNews] = useState<NewsItem | undefined>();
+  const [newsLoading, setNewsLoading] = useState(true);
   const [mine, setMine] = useState<string[]>([]);
   const [isEditor, setIsEditor] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>('feed');
@@ -105,12 +106,27 @@ export default function NewsPageClient({ slug }: { slug: string }) {
     (async ()=>{
       const n = await sb_getNewsBySlug(slug);
       setNews(n);
+      setNewsLoading(false);
       if (n) {
         await sb_incViews('news', n.slug);
         setMine(myReactions(n.id));
       }
     })();
   }, [slug]);
+
+  if (newsLoading) {
+    return (
+      <div className="bg-[#f2f3f7] min-h-screen">
+        <TopBar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4" />
+            <p className="text-gray-600">Загрузка новости...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!news) {
     return (

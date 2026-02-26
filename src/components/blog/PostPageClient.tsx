@@ -136,10 +136,12 @@ export default function PostPageClient({ slug }: { slug: string }) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
         <TopBar />
-        <section className="max-w-[900px] mx-auto px-5 py-16 text-center font-[Raleway]">
-          <h2 className="text-3xl font-semibold mb-3 text-[#313131]">Загрузка...</h2>
-          <Link href="/blog" className="text-[#2777ff] hover:underline">Назад к статьям</Link>
-        </section>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4" />
+            <p className="text-gray-600">Загрузка статьи...</p>
+          </div>
+        </div>
       </div>
     );
   }
