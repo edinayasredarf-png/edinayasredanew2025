@@ -65,7 +65,7 @@ export default function TopBar() {
 
   return (
     <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] font-[Raleway] font-medium pt-2">
-      <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center">
+      <div className="relative max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center">
         {/* ЛОГО слева */}
         <Link
           href="/"
