@@ -235,7 +235,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
               </section>
             </article>
 
-            <aside className="lg:pl-2">
+            <aside className="hidden lg:block lg:pl-2">
               <div className="bg-white rounded-3xl p-6 md:p-8 sticky top-6">
                 <h3 className="text-xl md:text-2xl font-semibold text-black">Содержание</h3>
                 {toc.length > 0 ? (
