@@ -17,6 +17,9 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
+// Модульный кэш — переживает навигацию между страницами
+let _postsCache: BlogPost[] | null = null;
+
 function BlogHomeInner() {
   const router = useRouter();
   const sp = useSearchParams();
@@ -25,18 +28,19 @@ function BlogHomeInner() {
   const tabFromUrl = (sp.get('tab') as 'feed' | 'subscriptions' | 'favorites') || 'feed';
 
   const [q, setQ] = useState(qFromUrl);
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>(_postsCache || []);
   const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>(tabFromUrl);
   const [favoritePostIds, setFavoritePostIds] = useState<string[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Загрузка постов
+  // Загрузка постов (с кэшем — при повторном визите данные уже есть)
   useEffect(() => {
     ensureDemo();
     (async () => {
       try {
         const fromSb = await sb_listPosts();
+        _postsCache = fromSb;
         setPosts(fromSb);
       } catch (error) {
         console.error('Failed to load posts from database:', error);
