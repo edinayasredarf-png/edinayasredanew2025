@@ -9,8 +9,10 @@ import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import { sb_listNews, NewsItem } from '@/lib/blogStore';
 
+let _newsListCache: NewsItem[] | null = null;
+
 export default function NewsListClient() {
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const [news, setNews] = useState<NewsItem[]>(_newsListCache || []);
   const router = useRouter();
 
   const [activeTab, setActiveTab] =
@@ -20,6 +22,7 @@ export default function NewsListClient() {
     (async () => {
       try {
         const newsData = await sb_listNews();
+        _newsListCache = newsData;
         setNews(newsData);
       } catch (e) {
         console.error('Failed to load news from database:', e);

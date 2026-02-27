@@ -9,8 +9,10 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+let _homeNewsCache: NewsItem[] | null = null;
+
 export default function HomeNews() {
-  const [items, setItems] = useState<NewsItem[]>([]);
+  const [items, setItems] = useState<NewsItem[]>(_homeNewsCache || []);
   const prevRef = useRef<HTMLButtonElement | null>(null);
   const nextRef = useRef<HTMLButtonElement | null>(null);
   const paginationRef = useRef<HTMLDivElement | null>(null);
@@ -23,6 +25,7 @@ export default function HomeNews() {
     (async () => {
       try {
         const all = await sb_listNews();
+        _homeNewsCache = all;
         setItems(all);
       } catch {
         setItems([]);

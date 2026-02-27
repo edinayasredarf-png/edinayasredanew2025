@@ -150,14 +150,17 @@ function AdsCarousel({ loading }: { loading?: boolean }) {
 }
 
 /* ================== Правый сайдбар ================== */
+let _newsCache: NewsItem[] | null = null;
+
 export default function RightSidebar() {
-  const [news, setNews] = React.useState<NewsItem[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [news, setNews] = React.useState<NewsItem[]>(_newsCache || []);
+  const [loading, setLoading] = React.useState(_newsCache === null);
 
   React.useEffect(() => {
     (async () => {
       try {
         const newsData = await sb_listNews();
+        _newsCache = newsData;
         setNews(newsData);
       } catch (e) {
         console.error('Failed to load news from database:', e);

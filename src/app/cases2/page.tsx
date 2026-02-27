@@ -18,10 +18,12 @@ type DynCase = {
 	createdAt: number;
 };
 
+let _cases2Cache: DynCase[] | null = null;
+
 export default function Cases2Page() {
 	const { openConsult } = useModal();
-	const [items, setItems] = useState<DynCase[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [items, setItems] = useState<DynCase[]>(_cases2Cache || []);
+	const [loading, setLoading] = useState(_cases2Cache === null);
 	const [selectedApplication, setSelectedApplication] = useState('Все типы');
 	const [applicationOpen, setApplicationOpen] = useState(false);
 
@@ -36,6 +38,7 @@ export default function Cases2Page() {
 						cover: c.cover, application: c.application || '', location: c.location || '',
 						createdAt: c.createdAt
 					}));
+				_cases2Cache = dyn;
 				setItems(dyn);
 			} finally {
 				setLoading(false);

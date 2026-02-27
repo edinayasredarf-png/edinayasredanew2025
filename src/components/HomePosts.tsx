@@ -5,15 +5,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { BlogPost, sb_listPosts } from '@/lib/blogStore';
 
+let _homePostsCache: BlogPost[] | null = null;
+
 export default function HomePosts() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>(_homePostsCache || []);
 
   useEffect(() => {
     (async () => {
       try {
         const all = await sb_listPosts();
+        const filtered = all.filter(p => (p.kind || 'post') !== 'case').slice(0, 3);
+        _homePostsCache = filtered;
         // Исключаем кейсы из блока «Последние статьи» на главной
-        setPosts(all.filter(p => (p.kind || 'post') !== 'case').slice(0, 3));
+        setPosts(filtered);
       } catch (e) {
         setPosts([]);
       }
