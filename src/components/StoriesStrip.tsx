@@ -7,8 +7,10 @@ import { listStories, incStoryViews, type Story } from "@/lib/storiesStore";
 
 const STORAGE_KEY = "viewed_stories_v1";
 
+let _storiesCache: Story[] | null = null;
+
 const StoriesStrip: React.FC = () => {
-  const [stories, setStories] = useState<Story[]>([]);
+  const [stories, setStories] = useState<Story[]>(_storiesCache || []);
   const [viewedIds, setViewedIds] = useState<string[]>([]);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
 
@@ -27,7 +29,10 @@ const StoriesStrip: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
     listStories().then((data) => {
-      if (!cancelled) setStories(data);
+      if (!cancelled) {
+        _storiesCache = data;
+        setStories(data);
+      }
     });
     return () => { cancelled = true; };
   }, []);
