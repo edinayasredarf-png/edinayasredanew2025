@@ -99,7 +99,7 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel={title}>
-      <div className="w-full md:w-1/2 mx-auto m-2 flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-lg animate-fade-in relative">
+      <div className="w-full md:w-1/2 mx-auto m-2 flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-lg animate-fade-in relative" onClick={e => e.stopPropagation()}>
 
         {/* Левая часть: фирменный блок (только на md+) */}
         <div className={`hidden md:flex md:w-1/2 ${leftBgColor} ${leftTextColor} flex-col justify-between p-4 md:p-6`}>
@@ -109,7 +109,7 @@ const Modal: React.FC<ModalProps> = ({
           </div>
           <div className="bg-white/10 rounded-2xl p-4 flex flex-col items-start mt-auto">
             <div className="flex items-center gap-3 mb-2">
-              <Image src="/img/box.png" alt="Бонус" width={160} height={160} className="w-40 h-40 object-contain" />
+              <Image src="/img/box.png" alt="Бонус" width={160} height={160} className="w-full h-20" />
             </div>
           </div>
         </div>
