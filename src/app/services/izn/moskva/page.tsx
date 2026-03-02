@@ -1,18 +1,18 @@
 "use client";
 import React from 'react';
 import Image from "next/image";
-import Layout from '../../../components/Layout';
-import DemoIframeSection from "../../../components/DemoIframeSection";
-import TwoColumnTextSection from '../../../components/services/izn/TwoColumnTextSection';
-import GreenDataSection from '../../../components/services/izn/GreenDataSection';
-import TasksSection from '../../../components/services/izn/TasksSection';
-import TargetAudienceSection from '../../../components/services/izn/TargetAudienceSection';
-import ServiceCardsSection from '../../../components/services/izn/ServiceCardsSection';
-import DigitalSystemSection from '../../../components/services/izn/DigitalSystemSection';
-import AdvantagesGridSection from '../../../components/services/izn/AdvantagesGridSection';
-import WorkflowStepsSection from '../../../components/services/izn/WorkflowStepsSection';
-import CTASection from '../../../components/services/izn/CTASection';
-import FAQSection from '../../../components/services/izn/FAQSection';
+import Layout from '../../../../components/Layout';
+import DemoIframeSection from "../../../../components/DemoIframeSection";
+import TwoColumnTextSection from '../../../../components/services/izn/TwoColumnTextSection';
+import GreenDataSection from '../../../../components/services/izn/GreenDataSection';
+import TasksSection from '../../../../components/services/izn/TasksSection';
+import TargetAudienceSection from '../../../../components/services/izn/TargetAudienceSection';
+import ServiceCardsSection from '../../../../components/services/izn/ServiceCardsSection';
+import DigitalSystemSection from '../../../../components/services/izn/DigitalSystemSection';
+import AdvantagesGridSection from '../../../../components/services/izn/AdvantagesGridSection';
+import WorkflowStepsSection from '../../../../components/services/izn/WorkflowStepsSection';
+import CTASection from '../../../../components/services/izn/CTASection';
+import FAQSection from '../../../../components/services/izn/FAQSection';
 
 export default function GreenInventoryPage() {
   const handleKP = () => {
@@ -32,7 +32,7 @@ export default function GreenInventoryPage() {
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
             <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
               <h1 className="text-4xl sm:text-5xl md:text-[68px] font-medium leading-tight">
-                Инвентаризация<br />зеленых насаждений
+                Инвентаризация<br />зеленых насаждений <span className="text-[#0277FF]">в Москве</span>
               </h1>
               <p className="mt-8 text-xl sm:text-[20px] text-gray-300 max-w-2xl">
 							Выполняем инвентаризация зеленых насаждений с созданием цифрового реестра территории. Проводим профессиональную инвентаризацию деревьев и кустарников с геопривязкой, фотофиксацией и подготовкой всей необходимой документации. </p>

@@ -3,20 +3,17 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { StoriesModal } from "@/components/StoriesModal";
+import type { Story } from "@/lib/storiesStore";
 
 const storiesData = [
-  {
-    url: "/img/es_interface1.webp",
-    header: { heading: "Инструкция 1", subheading: "", profileImage: "" },
-  },
-  {
-    url: "/img/es_interface2.webp",
-    header: { heading: "Инструкция 2", subheading: "", profileImage: "" },
-  },
-  {
-    url: "/img/es_interface3.webp",
-    header: { heading: "Инструкция 3", subheading: "", profileImage: "" },
-  },
+  "/img/demo/1.webp",
+  "/img/demo/2.webp",
+  "/img/demo/3.webp",
+  "/img/demo/4.webp",
+  "/img/demo/5.webp",
+  "/img/demo/6.webp",
+  "/img/demo/7.webp",
+  "/img/demo/8.webp",
 ];
 
 export default function DemoIframeSection() {
@@ -25,30 +22,51 @@ export default function DemoIframeSection() {
   const [isStoriesOpen, setIsStoriesOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const handleFullscreen = () => {
-    if (iframeRef.current) {
-      iframeRef.current.requestFullscreen?.();
-    }
+  const demoStory: Story = {
+    id: "demo-inline",
+    title: "Инструкция",
+    thumbnail: storiesData[0],
+    slides: storiesData.map((url, i) => ({
+      id: `demo-inline-${i}`,
+      type: "image",
+      url,
+      text: "",
+      textPosition: "bottom",
+      duration: 5000,
+    })),
+    createdAt: 0,
+    updatedAt: 0,
+    viewCount: 0,
   };
 
-  const exitFullscreen = () => document.exitFullscreen?.();
+  const handleFullscreen = () => {
+    iframeRef.current?.requestFullscreen?.();
+  };
+
+  const exitFullscreen = () => {
+    document.exitFullscreen?.();
+  };
 
   useEffect(() => {
-    const listener = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    const listener = () =>
+      setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", listener);
-    return () => document.removeEventListener("fullscreenchange", listener);
+    return () =>
+      document.removeEventListener("fullscreenchange", listener);
   }, []);
 
   return (
     <div className="max-w-[1480px] mx-auto px-4 py-10">
-			<div className="mb-6">
-							<h2 className="text-2xl md:text-3xl lg:text-4xl text-[#313131] font-medium">
-								Демо-интерфейс системы
-							</h2>
-							<p className="text-gray-600 text-sm md:text-base mt-2 max-w-2xl">
-								Нажмите кнопку Play, чтобы загрузить интерактивное демо.
-							</p>
-						</div>
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-6">
+          Демо-интерфейс системы
+        </h2>
+        <p className="text-[#7c8a9a] text-xl mt-6 mb-6 max-w-3xl ">
+          Нажмите кнопку Play, чтобы загрузить интерактивное демо.
+        </p>
+      </div>
+
       {/* Demo iframe */}
       <div className="relative w-full rounded-[20px] overflow-hidden shadow-[0_0_0_1px_rgba(15,23,42,0.06)] min-h-[560px]">
         {/* COVER */}
@@ -62,22 +80,23 @@ export default function DemoIframeSection() {
               className="hidden md:block object-cover"
             />
             <Image
-              src="/img/demo-cover-mobile.jpg"
+              src="/img/card3.webp"
               alt="Превью демо системы"
               fill
               priority
               className="md:hidden object-cover"
             />
             <div className="absolute inset-0 bg-black/40 z-10" />
+
             {/* Play button */}
             <div className="absolute inset-0 z-20 flex items-center justify-center">
               <button
                 onClick={() => setIsDemoLoaded(true)}
                 className="relative flex items-center justify-center w-32 h-32 group"
               >
-                <span className="absolute w-32 h-32 rounded-full bg-[#3D98FF]/20 transition-transform duration-500 group-hover:scale-110"></span>
-                <span className="absolute w-24 h-24 rounded-full bg-[#3D98FF]/30 transition-transform duration-500 group-hover:scale-125"></span>
-                <span className="absolute w-16 h-16 rounded-full bg-[#0077FF]"></span>
+                <span className="absolute w-32 h-32 rounded-full bg-[#3D98FF]/20 transition-transform duration-500 group-hover:scale-110" />
+                <span className="absolute w-24 h-24 rounded-full bg-[#3D98FF]/30 transition-transform duration-500 group-hover:scale-125" />
+                <span className="absolute w-16 h-16 rounded-full bg-[#0077FF]" />
                 <Image
                   src="/img/play.svg"
                   alt="Play demo"
@@ -102,7 +121,7 @@ export default function DemoIframeSection() {
               allow="clipboard-read; clipboard-write; fullscreen"
             />
 
-            {/* Fullscreen button */}
+            {/* Fullscreen */}
             <button
               onClick={handleFullscreen}
               className="absolute bottom-4 right-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
@@ -134,11 +153,14 @@ export default function DemoIframeSection() {
       </div>
 
       {/* Stories Modal */}
-      <StoriesModal
-        stories={storiesData}
-        isOpen={isStoriesOpen}
-        onClose={() => setIsStoriesOpen(false)}
-      />
+      {isStoriesOpen && (
+        <StoriesModal
+          allStories={[demoStory]}
+          startIndex={0}
+          isOpen
+          onClose={() => setIsStoriesOpen(false)}
+        />
+      )}
     </div>
   );
 }

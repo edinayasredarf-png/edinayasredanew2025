@@ -1,18 +1,18 @@
 "use client";
 
-import Layout from "../../../components/Layout";
+import Layout from "../../../../components/Layout";
 import Image from "next/image";
-import DemoIframeSection from "../../../components/DemoIframeSection";
+import DemoIframeSection from "../../../../components/DemoIframeSection";
 
 // Секции
-import AudienceSection from "../../../components/services/imz/AudienceSection";
-import TasksSection from "../../../components/services/imz/TasksSection";
-import AdvantagesSection from "../../../components/services/imz/AdvantagesSection";
-import ProcessSection from "../../../components/services/imz/ProcessSection";
-import ComplianceSection from "../../../components/services/imz/ComplianceSection";
-import ResultsSection from "../../../components/services/imz/ResultsSection";
-import ConsultationCTA from "../../../components/services/imz/ConsultationCTA";
-import FAQSection from "../../../components/services/imz/FAQSection";
+import AudienceSection from "../../../../components/services/imz/AudienceSection";
+import TasksSection from "../../../../components/services/imz/TasksSection";
+import AdvantagesSection from "../../../../components/services/imz/AdvantagesSection";
+import ProcessSection from "../../../../components/services/imz/ProcessSection";
+import ComplianceSection from "../../../../components/services/imz/ComplianceSection";
+import ResultsSection from "../../../../components/services/imz/ResultsSection";
+import ConsultationCTA from "../../../../components/services/imz/ConsultationCTA";
+import FAQSection from "../../../../components/services/imz/FAQSection";
 
 export default function InventoryBurialsPage() {
   const handleKP = () =>
@@ -33,12 +33,12 @@ export default function InventoryBurialsPage() {
               {/* Текст */}
               <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
                 <h1 className="text-4xl sm:text-5xl md:text-[68px] font-medium leading-tight">
-                  Инвентаризация<br /> мест захоронений
+                  Инвентаризация<br /> мест захоронений<br />  <span className="text-[#0277FF]">в Москве</span>
                 </h1>
 
                 <p className="mt-8 text-xl sm:text-[22px] text-gray-300 max-w-2xl">
                   Выполняем инвентаризацию кладбищ и инвентаризацию мест
-                  захоронений с созданием электронной карты, реестра захоронений и удобного
+                  захоронений в Москве с созданием электронной карты, реестра захоронений и удобного
                   поиска для муниципалитетов, операторов кладбищ и граждан.
                 </p>
 
