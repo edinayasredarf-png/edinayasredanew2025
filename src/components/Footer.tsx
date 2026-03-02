@@ -54,9 +54,9 @@ const Footer = () => {
             <h3 className="text-base md:text-xl lg:text-2xl font-medium text-[#313131] mb-3 md:mb-6 break-words leading-tight">Услуги</h3>
             <ul className="space-y-3">
               {/* ✅ Добавлено: страница со всеми услугами */}
-              <li><Link href="/services/inventory-burials" className="text-base font-medium text-[#313131] hover:text-azure">Инвентаризация мест захоронений</Link></li>
-              <li><Link href="/services/green-inventory" className="text-base font-medium text-[#313131] hover:text-azure">Инвентаризация зеленых насаждений</Link></li>
-              <li><Link href="/services/forest-management" className="text-base font-medium text-[#313131] hover:text-azure">Лесоустройство</Link></li>
+              <li><Link href="/services/imz" className="text-base font-medium text-[#313131] hover:text-azure">Инвентаризация мест захоронений</Link></li>
+              <li><Link href="/services/izn" className="text-base font-medium text-[#313131] hover:text-azure">Инвентаризация зеленых насаждений</Link></li>
+              <li><Link href="/services/les" className="text-base font-medium text-[#313131] hover:text-azure">Лесоустройство</Link></li>
 							<li><Link href="/services" className="text-base text-[#313131] font-medium hover:text-azure">Посмотреть все услуги</Link></li>
 
             </ul>

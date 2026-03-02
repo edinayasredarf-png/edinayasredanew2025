@@ -82,7 +82,7 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 							name: "Что получает заказчик по итогам работ?",
 							acceptedAnswer: {
 								"@type": "Answer",
-								text: "Цифровую базу насаждений, карту, паспорта объектов и комплект отчетной документации."
+								text: "Цифровую базу насаждений, карту, паспорта объектов и комплект отчетной документации"
 							}
 						}
 					]
