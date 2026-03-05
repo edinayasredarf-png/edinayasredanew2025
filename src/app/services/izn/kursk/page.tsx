@@ -65,7 +65,7 @@ export default function GreenInventoryPage() {
           <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[500px] h-auto pointer-events-none">
             <Image
                 src="/img/izn.png"
-								alt="Инвентаризация мест захоронений"
+								alt="Инвентаризация зеленых насаждений"
               width={500}
               height={400}
               className="w-full object-contain"
