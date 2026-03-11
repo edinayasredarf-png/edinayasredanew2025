@@ -20,6 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+		{
+      // Важный раздел, который может обновляться, но не каждый день
+      url: `${baseUrl}/blog`,
+      lastModified: '2025-10-29', // Установлена статичная дата
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
     {
       // Важный раздел, который может обновляться, но не каждый день
       url: `${baseUrl}/services`,
@@ -29,6 +36,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/services/forest-management`,
+      lastModified: '2025-10-29', // Установлена статичная дата
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+		{
+      url: `${baseUrl}/services/imz`,
+      lastModified: '2025-10-29', // Установлена статичная дата
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+		{
+      url: `${baseUrl}/services/izn`,
+      lastModified: '2025-10-29', // Установлена статичная дата
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+		{
+      url: `${baseUrl}/services/les`,
       lastModified: '2025-10-29', // Установлена статичная дата
       changeFrequency: 'monthly',
       priority: 0.8,

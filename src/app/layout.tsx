@@ -5,6 +5,7 @@ import { Raleway, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ModalProvider } from "@/components/ModalProvider";
 import { HashCleaner } from "@/components/HashCleaner";
+import { TypographyNoWidows } from "@/components/TypographyNoWidows";
 
 import Script from "next/script";
 import { SITE_CONFIG } from "@/lib/config";
@@ -250,6 +251,7 @@ export default function RootLayout({
           </div>
         </noscript>
 				<HashCleaner />
+        <TypographyNoWidows />
         <ModalProvider>
           {children}
         </ModalProvider>
