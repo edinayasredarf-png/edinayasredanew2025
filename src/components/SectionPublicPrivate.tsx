@@ -37,8 +37,8 @@ const SectionPublicPrivate: React.FC = () => {
         {/* ========================================
             ЛЕВАЯ КАРТОЧКА: Офлайн работа
             ======================================== */}
-        <article className="group bg-white rounded-[20px] p-8 pb-0 overflow-hidden flex flex-col md:flex-row min-h-[276px] transition-all duration-300  ">
-          <div className="flex-1 flex flex-col justify-between h-full pb-8">
+        <article className="group bg-white rounded-[20px] p-8 overflow-hidden flex flex-col md:flex-row min-h-[276px] transition-all duration-300">
+          <div className="flex-1 flex flex-col justify-between h-full">
             <h3 className="font-medium text-black text-lg md:text-xl lg:text-2xl leading-9 mb-2 transition-colors duration-300 group-hover:text-[#0077FF]">
               Можно работать с телефона<br />даже без интернета
             </h3>
@@ -61,16 +61,19 @@ const SectionPublicPrivate: React.FC = () => {
             </a>
           </div>
 
-          <div className="flex-shrink-0 flex justify-center md:justify-end items-end w-full md:w-auto mt-6 md:mt-0 md:ml-1">
-            <div className="relative w-[140px] h-[140px] sm:w-[168px] sm:h-[168px] md:w-[176px] md:h-[176px] lg:w-[292px] lg:h-[322px] transition-transform duration-500">
-              <Image
-                src="/img/no_wifi.webp"
-                alt="Телефон: офлайн-работа"
-                fill
-                sizes="(max-width: 767px) 140px, (max-width: 1023px) 168px, (max-width: 1279px) 176px, 292px"
-                className="object-contain transition-all duration-1500"
-                priority={false}
-              />
+          <div className="flex-shrink-0 w-full md:w-auto mt-6 md:mt-0 md:ml-1">
+            {/* Серый фон + одинаковый зазор до белой карточки со всех сторон */}
+            <div className="p-2 bg-[#F6F7F9] rounded-2xl flex justify-center md:justify-end items-end">
+              <div className="relative w-[140px] h-[140px] sm:w-[168px] sm:h-[168px] md:w-[176px] md:h-[176px] lg:w-[292px] lg:h-[322px] transition-transform duration-500">
+                <Image
+                  src="/img/no_wifi.webp"
+                  alt="Телефон: офлайн-работа"
+                  fill
+                  sizes="(max-width: 767px) 140px, (max-width: 1023px) 168px, (max-width: 1279px) 176px, 292px"
+                  className="object-contain transition-all duration-1500"
+                  priority={false}
+                />
+              </div>
             </div>
           </div>
         </article>
