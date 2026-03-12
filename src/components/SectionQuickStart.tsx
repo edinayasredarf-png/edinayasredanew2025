@@ -56,7 +56,8 @@ const QuickStartCard: React.FC<CardProps> = ({
         href={href}
         className="group block bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#0077ff] transition-colors overflow-hidden"
       >
-        <div className="p-[8px]">{children}</div>
+        {/* как в карточках с серым блоком: зазор между белым и серым = p-2 (8px) */}
+        <div className="p-2 h-full flex flex-col">{children}</div>
       </Link>
     ) : (
       <div
@@ -65,23 +66,36 @@ const QuickStartCard: React.FC<CardProps> = ({
           onClick ? 'cursor-pointer' : ''
         }`}
       >
-        <div className="p-[8px]">{children}</div>
+        {/* как в карточках с серым блоком: зазор между белым и серым = p-2 (8px) */}
+        <div className="p-2 h-full flex flex-col">{children}</div>
       </div>
     );
 
   return (
     <Wrapper>
-      <div className="bg-[#F6F7F9] rounded-2xl w-full h-full relative overflow-hidden px-6 md:px-8 py-6 md:py-8 flex flex-col min-h-[180px] md:min-h-[260px]">
-        {/* Текст */}
-        <div className="z-10 flex flex-col flex-grow">
-          <h3 className="text-[#313131] text-[26px] md:text-[34.7px] font-medium font-[Raleway] leading-[1.25] md:leading-[45px] max-w-[400px] mb-3">
+      <div className="bg-[#F6F7F9] rounded-2xl w-full h-full overflow-hidden p-8 min-h-[180px] md:min-h-[260px] md:grid md:grid-cols-[3fr_2fr] md:gap-6">
+        {/* Левая колонка: заголовок + описание + кнопка (≈ 60%) */}
+        <div className="min-h-0 min-w-0 flex flex-col">
+          <h3 className="text-[#313131] text-[26px] md:text-[34.7px] font-medium font-[Raleway] leading-[1.25] md:leading-[45px] max-w-[520px] mb-3">
             {title}
           </h3>
-          <p className="text-[#7c8a9a] text-[16.5px] md:text-[18.9px] font-medium font-[Raleway] leading-7 max-w-[440px] mb-8">
+          <p className="text-[#7c8a9a] text-[16.5px] md:text-[18.9px] font-medium font-[Raleway] leading-7 max-w-[560px]">
             {description}
           </p>
 
-          <div className="mt-auto">
+          {/* Мобильное изображение — ниже текста, над кнопкой */}
+          <div className="md:hidden flex justify-center mt-6">
+            <Image
+              src={image}
+              alt={imageAlt}
+              width={180}
+              height={180}
+              className="object-contain pointer-events-none select-none"
+            />
+          </div>
+
+          {/* Кнопка — прижимается к низу текста на десктопе */}
+          <div className="mt-auto pt-6 md:pt-8">
             {href ? (
               <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] hover:ring-1 hover:ring-[#0077FF] transition-colors w-full md:w-[201.5px]">
                 {buttonLabel}
@@ -92,15 +106,16 @@ const QuickStartCard: React.FC<CardProps> = ({
           </div>
         </div>
 
-        {/* Изображение — скрыто на мобильной версии */}
-        <div className="absolute right-8 bottom-6 hidden md:block">
-          <Image
-            src={image}
-            alt={imageAlt}
-            width={180}
-            height={180}
-            className="object-contain pointer-events-none select-none"
-          />
+        {/* Правая колонка: изображение (≈ 40% на десктопе) */}
+        <div className="hidden md:flex min-w-0 justify-end items-center">
+          <div className="relative w-full h-full max-w-[320px] max-h-[320px]">
+            <Image
+              src={image}
+              alt={imageAlt}
+              fill
+              className="object-contain pointer-events-none select-none"
+            />
+          </div>
         </div>
       </div>
     </Wrapper>

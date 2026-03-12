@@ -290,9 +290,9 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
                   </div>
                 </motion.div>
 
-             {/* IMAGE */}
-<div className="min-h-0 p-1 md:p-2 flex">
-  <div className="relative w-full h-[300px] sm:h-[360px] md:h-[480px] bg-[#f6f7f9] rounded-2xl overflow-hidden">
+                {/* IMAGE */}
+                <div className="min-h-0 p-1 md:p-2 flex">
+                  <div className="relative w-full h-[300px] sm:h-[360px] md:h-[480px] bg-[#f6f7f9] rounded-2xl overflow-hidden flex items-center justify-center pb-2">
     <Image
       src={items[index].image}
       alt={items[index].title}
@@ -302,8 +302,8 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
       priority={index === 0}
       style={{ objectPosition: 'bottom center' }}
     />
-  </div>
-</div>
+                  </div>
+                </div>
 
               </div>
             </motion.article>

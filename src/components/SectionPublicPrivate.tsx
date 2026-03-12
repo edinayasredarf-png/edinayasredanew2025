@@ -63,7 +63,7 @@ const SectionPublicPrivate: React.FC = () => {
 
           <div className="flex-shrink-0 w-full md:w-auto mt-6 md:mt-0 md:ml-1">
             {/* Серый фон + одинаковый зазор до белой карточки со всех сторон */}
-            <div className="p-2 bg-[#F6F7F9] rounded-2xl flex justify-center md:justify-end items-end">
+            <div className="p-2 bg-[#F6F7F9] rounded-2xl flex justify-center md:justify-end items-center">
               <div className="relative w-[140px] h-[140px] sm:w-[168px] sm:h-[168px] md:w-[176px] md:h-[176px] lg:w-[292px] lg:h-[322px] transition-transform duration-500">
                 <Image
                   src="/img/no_wifi.webp"
