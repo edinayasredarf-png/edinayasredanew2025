@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
@@ -21,6 +21,11 @@ const InterfaceSystem = dynamic(() => import('../components/InterfaceSystem'), {
 
 const VideoInvite = dynamic(() => import('../components/VideoInvite'), {
 	loading: () => <div className="h-32 bg-gray-100 animate-pulse rounded-2xl" />,
+	ssr: false
+});
+
+const SectionMainVideo = dynamic(() => import('../components/SectionMainVideo'), {
+	loading: () => <div className="h-[420px] bg-gray-100 animate-pulse rounded-2xl" />,
 	ssr: false
 });
 
@@ -128,6 +133,7 @@ export default function HomePage() {
 
 			{/* Слайдер интерфейса */}
 			<InterfaceSystem />
+
 			<VideoInvite />
 
 
@@ -137,6 +143,7 @@ export default function HomePage() {
 
 			{/* Все объекты */}
 			<SectionAllObjects />
+			<SectionMainVideo />
 
 			{/* Миграция */}
 			<SectionMigration />
