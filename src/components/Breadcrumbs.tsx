@@ -16,6 +16,14 @@ interface BreadcrumbsProps {
   customLabels?: Record<string, string>
 }
 
+const DEFAULT_SITE_URL = 'https://единаясреда.рф'
+
+const resolveSiteUrl = () => {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (!raw) return DEFAULT_SITE_URL
+  return raw.endsWith('/') ? raw.slice(0, -1) : raw
+}
+
 // Маппинг URL → человекопонятные названия
 const DEFAULT_LABELS: Record<string, string> = {
   '': 'Главная',
@@ -43,7 +51,7 @@ export default function Breadcrumbs({ items, customLabels }: BreadcrumbsProps) {
 
   // Если переданы кастомные items, используем их
   if (items && items.length > 0) {
-    return <BreadcrumbsDisplay items={items} pathname={pathname} />
+    return <BreadcrumbsDisplay items={items} />
   }
 
   // Автоматическая генерация из URL
@@ -69,11 +77,13 @@ export default function Breadcrumbs({ items, customLabels }: BreadcrumbsProps) {
     })
   })
 
-  return <BreadcrumbsDisplay items={breadcrumbItems} pathname={pathname} />
+  return <BreadcrumbsDisplay items={breadcrumbItems} />
 }
 
 // Компонент отображения
-function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], pathname: string }) {
+function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
+  const siteUrl = resolveSiteUrl()
+
   // JSON-LD для Schema.org
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -82,7 +92,7 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
       "@type": "ListItem",
       "position": index + 1,
       "name": item.label,
-      "item": `https://единаясреда.рф${item.href}`
+      "item": `${siteUrl}${item.href}`
     }))
   }
 
@@ -171,7 +181,7 @@ function BreadcrumbsDisplay({ items, pathname }: { items: BreadcrumbItem[], path
                         <span className="md:hidden">{getMobileLabel(item.label, item.href)}</span>
                       </span>
                       <meta itemProp="position" content={String(index + 1)} />
-                      <link itemProp="item" href={`https://единаясреда.рф${item.href}`} />
+                      <link itemProp="item" href={`${siteUrl}${item.href}`} />
                     </>
                   )}
                 </li>

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import Script from 'next/script';
 import Header from './Header';
 import Footer from './Footer';
+import Breadcrumbs from './Breadcrumbs';
 import Image from 'next/image';
 import Link from 'next/link';
 import AuthModal from './auth/AuthModal';
@@ -173,6 +174,7 @@ const Layout = ({ children }: LayoutProps) => {
           setIsMobileNavOpen={setIsMobileNavOpen}
         />
 	<StoriesStrip />
+        <Breadcrumbs />
         {/* ✅ МОБИЛЬНОЕ МЕНЮ */}
         {isMobileNavOpen && (
           <div className="relative z-50 w-full bg-black/95 rounded-b-2xl flex flex-col p-4 pt-2 shadow-2xl border border-white/10 animate-slide-down">
