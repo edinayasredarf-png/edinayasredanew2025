@@ -108,6 +108,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const normalizedSiteUrl = SITE_CONFIG.url.endsWith('/')
+    ? SITE_CONFIG.url.slice(0, -1)
+    : SITE_CONFIG.url;
+
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
@@ -122,14 +126,14 @@ export default function RootLayout({
               "@type": "Organization",
               "name": SITE_CONFIG.name,
               "alternateName": ["Единая среда РФ", "ЕдинаяСреда.рф"],
-              "url": SITE_CONFIG.url,
+              "url": normalizedSiteUrl,
               "logo": {
                 "@type": "ImageObject",
-                "url": `${SITE_CONFIG.url}/img/logo.png`,
+                "url": `${normalizedSiteUrl}/img/logo.png`,
                 "width": "200",
                 "height": "60"
               },
-              "image": `${SITE_CONFIG.url}/img/og-image.jpg`,
+              "image": `${normalizedSiteUrl}/img/og-image.jpg`,
               "description": "Цифровое управление территориями для муниципалитетов и городских служб. Учёт объектов городской среды, контроль подрядчиков, аналитика.",
               "foundingDate": "2026",
               "address": {
@@ -142,19 +146,12 @@ export default function RootLayout({
                   "contactType": "customer service",
                   "telephone": SITE_CONFIG.contact.phone,
                   "email": SITE_CONFIG.contact.email,
-                  "url": `${SITE_CONFIG.url}/contacts`,
+                  "url": `${normalizedSiteUrl}/contacts`,
                   "availableLanguage": ["Russian"],
                   "areaServed": "RU"
                 }
               ],
-              "sameAs": Object.values(SITE_CONFIG.social).filter(Boolean),
-              "applicationCategory": "BusinessApplication",
-              "operatingSystem": "Web",
-              "offers": {
-                "@type": "AggregateOffer",
-                "priceCurrency": "RUB",
-                "availability": "https://schema.org/InStock"
-              }
+              "sameAs": Object.values(SITE_CONFIG.social).filter(Boolean)
             })
           }}
         />
@@ -169,14 +166,13 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": SITE_CONFIG.name,
-              "url": SITE_CONFIG.url,
+              "url": normalizedSiteUrl,
               "potentialAction": {
                 "@type": "SearchAction",
                 "target": {
                   "@type": "EntryPoint",
-                  "urlTemplate": `${SITE_CONFIG.url}/search?q={search_term_string}`
-                },
-                "query-input": "required name=search_term_string"
+                  "urlTemplate": `${normalizedSiteUrl}/search?q={search_term_string}`
+                }
               }
             })
           }}

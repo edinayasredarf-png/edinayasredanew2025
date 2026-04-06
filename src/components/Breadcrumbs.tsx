@@ -29,11 +29,22 @@ const DEFAULT_LABELS: Record<string, string> = {
   '': 'Главная',
   'about': 'О компании',
   'cases': 'Кейсы',
+  'cases2': 'Кейсы',
   'pricing': 'Цены',
   'documents': 'Документация',
   'career': 'Карьера',
   'contacts': 'Контакты',
   'services': 'Услуги',
+  'news': 'Новости',
+  'blog': 'Блог',
+  'post': 'Публикации',
+  'n': 'Новости',
+  'b': 'Блог',
+  'imz': 'Инвентаризация мест захоронений',
+  'izn': 'Инвентаризация зеленых насаждений',
+  'auth': 'Авторизация',
+  'callback': 'Callback',
+  'test-auth': 'Тест авторизации',
   'inventory-burials': 'Инвентаризация мест захоронений',
   'green-inventory': 'Инвентаризация зелёных насаждений',
   'forest-management': 'Лесоустройство',
@@ -113,11 +124,7 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
       {/* Визуальные хлебные крошки */}
       <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper font-[Raleway]">
         <div className="max-w-[1480px] mx-auto px-3 sm:px-3 md:px-4 font-medium">
-          <ol
-            className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm "
-            itemScope
-            itemType="https://schema.org/BreadcrumbList"
-          >
+          <ol className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ">
             {items.map((item, index) => {
               const isLast = index === items.length - 1
               const isFirst = index === 0
@@ -125,21 +132,17 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
               return (
                 <li
                   key={item.href}
-                  itemProp="itemListElement"
-                  itemScope
-                  itemType="https://schema.org/ListItem"
                   className="flex items-center gap-1.5 sm:gap-2"
                 >
                   {!isLast ? (
                     <>
                       <Link
                         href={item.href}
-                        itemProp="item"
                         className="text-white/70 hover:text-white transition-colors text-xs sm:text-sm font-normal whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px] sm:max-w-[150px] md:max-w-none"
                         title={item.label}
                       >
                         {/* Десктоп: полное название */}
-                        <span itemProp="name" className="hidden md:inline">
+                        <span className="hidden md:inline">
                           {item.label}
                         </span>
                         {/* Мобильные: сокращённое название или иконка для "Главная" */}
@@ -158,7 +161,6 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
                           )}
                         </span>
                       </Link>
-                      <meta itemProp="position" content={String(index + 1)} />
                       <svg
                         className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/50 flex-shrink-0"
                         fill="none"
@@ -171,7 +173,6 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
                   ) : (
                     <>
                       <span
-                        itemProp="name"
                         className="text-white text-xs sm:text-sm font-medium max-w-[150px] sm:max-w-[200px] md:max-w-none whitespace-nowrap overflow-hidden text-ellipsis"
                         title={item.label}
                       >
@@ -180,8 +181,6 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
                         {/* Мобильные: сокращённое название */}
                         <span className="md:hidden">{getMobileLabel(item.label, item.href)}</span>
                       </span>
-                      <meta itemProp="position" content={String(index + 1)} />
-                      <link itemProp="item" href={`${siteUrl}${item.href}`} />
                     </>
                   )}
                 </li>
