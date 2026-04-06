@@ -7,6 +7,8 @@ import Button from './Button';
 import { useModal } from './ModalProvider';
 import { usePathname } from 'next/navigation';
 import ThemedIcon from '@/components/ThemedIcon';
+import { NavigationJsonLd } from './NavigationJsonLd';
+
 
 interface HeaderProps {
 	onRegisterClick?: () => void;
@@ -459,7 +461,7 @@ const Header: React.FC<HeaderProps> = ({
 								<li>
 									<Link
 										href="/blog"
-										className={`${navLinkBase} ${navText} ${navHover} ${isActive('/documents') ? activeBox : ''}`}
+										className={`${navLinkBase} ${navText} ${navHover} ${isActive('/blog') ? activeBox : ''}`}
 									>
 										Блог
 									</Link>
@@ -645,7 +647,7 @@ const Header: React.FC<HeaderProps> = ({
 									<Link
 										href="/blog"
 										onClick={() => setIsMobileNavOpen(false)}
-										className={`block text-[#212121] hover:bg-black/5 ${isActive('/documents') ? 'outline outline-1 outline-[#E3E8F2]' : ''} px-3 py-3 rounded-xl`}
+										className={`block text-[#212121] hover:bg-black/5 ${isActive('/blog') ? 'outline outline-1 outline-[#E3E8F2]' : ''} px-3 py-3 rounded-xl`}
 									>
 										Блог
 									</Link>
@@ -718,6 +720,7 @@ const Header: React.FC<HeaderProps> = ({
 			{/* ====== /ОВЕРЛЕЙ ====== */}
 		</>
 	);
+	<NavigationJsonLd />
 };
 
 export default Header;
