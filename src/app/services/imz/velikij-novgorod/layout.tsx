@@ -5,11 +5,11 @@ import Script from 'next/script';
 export const metadata: Metadata = {
 	title: 'Инвентаризация мест захоронений и оцифровка кладбищ в Великом Новгороде под ключ с созданием цифрового реестра',
 	description: 'Профессиональная инвентаризация мест захоронений в Великом Новгороде: сбор, оцифровка и аналитика данных. Соответствие требованиям и высокая точность.',
-	alternates: { canonical: '/services/imz' },
+	alternates: { canonical: '/services/imz/velikij-novgorod' },
 	openGraph: {
 		title: 'Инвентаризация мест захоронений в Великом Новгороде — Единая среда',
 		description: 'Сбор, оцифровка и аналитика данных о местах захоронений в Великом Новгороде. Точность и соответствие требованиям.',
-		url: '/services/imz',
+		url: '/services/imz/velikij-novgorod',
 		type: 'article',
 		images: [{ url: '/img/cemetery.png', width: 1200, height: 630, alt: 'Инвентаризация мест захоронений' }],
 	},
@@ -34,14 +34,14 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					name: "АИС «Единая среда»",
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
-					url: "https://единаясреда.рф/services/imz",
+					url: "https://единаясреда.рф/services/imz/velikij-novgorod",
 					screenshot: "https://единаясреда.рф/img/cemetery.png",
 					description: "Инвентаризация мест захоронений и кладбищ в Великом Новгороде с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
 						priceCurrency: "RUB",
-						url: "https://единаясреда.рф/services/imz"
+						url: "https://единаясреда.рф/services/imz/velikij-novgorod"
 					},
 					featureList: [
 						"Электронная карта кладбищ",

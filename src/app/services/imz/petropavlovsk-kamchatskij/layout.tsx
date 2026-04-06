@@ -5,11 +5,11 @@ import Script from 'next/script';
 export const metadata: Metadata = {
 	title: 'Инвентаризация мест захоронений и оцифровка кладбищ в Петропавловске-Камчатском под ключ с созданием цифрового реестра',
 	description: 'Профессиональная инвентаризация мест захоронений в Петропавловске-Камчатском: сбор, оцифровка и аналитика данных. Соответствие требованиям и высокая точность.',
-	alternates: { canonical: '/services/imz' },
+	alternates: { canonical: '/services/imz/petropavlovsk-kamchatskij' },
 	openGraph: {
 		title: 'Инвентаризация мест захоронений в Петропавловске-Камчатском — Единая среда',
 		description: 'Сбор, оцифровка и аналитика данных о местах захоронений в Петропавловске-Камчатском. Точность и соответствие требованиям.',
-		url: '/services/imz',
+		url: '/services/imz/petropavlovsk-kamchatskij',
 		type: 'article',
 		images: [{ url: '/img/cemetery.png', width: 1200, height: 630, alt: 'Инвентаризация мест захоронений' }],
 	},
@@ -34,14 +34,14 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					name: "АИС «Единая среда»",
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
-					url: "https://единаясреда.рф/services/imz",
+					url: "https://единаясреда.рф/services/imz/petropavlovsk-kamchatskij",
 					screenshot: "https://единаясреда.рф/img/cemetery.png",
 					description: "Инвентаризация мест захоронений и кладбищ в Петропавловске-Камчатском с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
 						priceCurrency: "RUB",
-						url: "https://единаясреда.рф/services/imz"
+						url: "https://единаясреда.рф/services/imz/petropavlovsk-kamchatskij"
 					},
 					featureList: [
 						"Электронная карта кладбищ",
