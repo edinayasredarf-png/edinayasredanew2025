@@ -105,7 +105,7 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 text-[#313131] text-lg">
           <div className="flex flex-col sm:flex-row items-center gap-4 font-medium text-center sm:text-left">
-            <span>© Единая Среда, 2025. Все права защищены.</span>
+            <span>© Единая Среда, 2026. Все права защищены.</span>
           </div>
           <div className="flex-1 text-center font-medium ">
             <Link href="/documents" className="hover:text-azure">Политика конфиденциальности</Link>
