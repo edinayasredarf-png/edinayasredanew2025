@@ -93,7 +93,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link href="/course" className="flex items-center gap-2 text-base font-medium text-[#313131] hover:text-azure">
-                  <Image src="/icons/play.svg" alt="" width={24} height={24} /> Видекурс
+                  <Image src="/icons/play.svg" alt="" width={24} height={24} /> Видеокурс
                 </Link>
               </li>
             </ul>
