@@ -206,6 +206,29 @@ export default function RootLayout({
           }}
         />
 
+        {/* ========================================
+            B242YA (передача Yandex ClientId в Bitrix24)
+            ======================================== */}
+        <Script
+          id="b242ya"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,u){
+                var s=d.createElement('script');s.defer=false;s.async=false;s.id='b242ya-script';s.src=u+'?'+(Date.now()/60000|0);
+                var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);
+              })(window,document,'https://67p.b242ya.ru/static/js/b242ya.js');
+              var b242yaScript = document.querySelector('#b242ya-script');
+              b242yaScript.addEventListener('load', function() {
+                B242YAInit({
+                  portal:'https://oooecostroy.bitrix24.ru/',
+                  pid:'6d58ab7105a24788c2a432f25d252c52'
+                }); 
+              });
+            `,
+          }}
+        />
+
 
 
 
