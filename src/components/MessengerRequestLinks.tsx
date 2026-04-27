@@ -14,7 +14,7 @@ type Props = {
 
 export default function MessengerRequestLinks({
   className = "",
-  title = "Оставить заявку в мессенджерах",
+  title = "Написать нам в мессенджерах",
 }: Props) {
   return (
     <div className={className}>
