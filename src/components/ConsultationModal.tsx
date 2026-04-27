@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ModalBase } from "./Modal";
+import MessengerRequestLinks from "./MessengerRequestLinks";
 
 interface ConsultationModalProps {
   open: boolean;
@@ -84,6 +85,7 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ open, onClose }) 
         {/* Form */}
         <div className="flex flex-col gap-4">
           <div id="b24-consult-form" />
+          <MessengerRequestLinks />
         </div>
       </div>
     </ModalBase>
