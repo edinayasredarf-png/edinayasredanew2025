@@ -65,8 +65,8 @@ interface ModalProps {
 const Modal: React.FC<ModalProps> = ({
   open,
   onClose,
-  title = "Регистрация",
-  description = "Укажите адрес электронной почты и пароль для доступа к платформе. Подтвердите ваш аккаунт и получите бонусы для старта!",
+  title = "Оставьте заявку",
+  description = "Заполните форму и менеджер свяжется с вами в ближайшее время для предоставления доступа к системе и уточнения деталей по услугам! ",
   bonusIcon = "/icons/bonus.svg",
   leftBgColor = "bg-[#0077FF]",
   leftTextColor = "text-white",
@@ -104,7 +104,6 @@ const Modal: React.FC<ModalProps> = ({
         {/* Левая часть: фирменный блок (только на md+) */}
         <div className={`hidden md:flex md:w-1/2 ${leftBgColor} ${leftTextColor} flex-col justify-between p-4 md:p-6`}>
           <div>
-            <h2 className="text-3xl md:text-4xl font-[Raleway] font-bold mb-4">{title}</h2>
             <p className="text-base md:text-lg mb-8">{description}</p>
           </div>
           <div className="bg-white/10 rounded-2xl p-4 flex flex-col items-start mt-auto">

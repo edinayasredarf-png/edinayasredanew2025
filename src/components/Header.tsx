@@ -144,7 +144,7 @@ const Header: React.FC<HeaderProps> = ({
 							/>
 						</Link>
 
-						{/* Правый блок: десктоп — 3 кнопки, мобайл — бургер + Регистрация */}
+						{/* Правый блок: десктоп — 3 кнопки, мобайл — бургер + Оставить заявку */}
 						<div className="flex items-center gap-2">
 							{/* Мобайл: бургер */}
 							<button
@@ -157,14 +157,14 @@ const Header: React.FC<HeaderProps> = ({
 								</svg>
 							</button>
 
-							{/* Мобайл: Регистрация */}
+							{/* Мобайл: Оставить заявку */}
 							<div className="md:hidden">
 								<Button
 									onClick={onRegisterClick ?? openRegister}
 									variant="primary"
 									className="!py-2"
 								>
-									Регистрация
+									Оставить заявку
 								</Button>
 							</div>
 
@@ -215,13 +215,13 @@ const Header: React.FC<HeaderProps> = ({
 							{!isAuthenticated && onAuthClick ? (
 								<div className="hidden md:block">
 									<Button onClick={onAuthClick} variant="primary">
-										Регистрация
+										Оставить заявку
 									</Button>
 								</div>
 							) : !isAuthenticated ? (
 								<div className="hidden md:block">
 									<Button onClick={onRegisterClick ?? openRegister} variant="primary" className="open-register-modal">
-										Регистрация
+										Оставить заявку
 									</Button>
 								</div>
 							) : null}
@@ -302,7 +302,7 @@ const Header: React.FC<HeaderProps> = ({
 								<span>Вход</span>
 							</a>
 							<Button onClick={onRegisterClick ?? openRegister} variant="primary" className="open-register-modal">
-								Регистрация
+								Оставить заявку
 							</Button>
 						</div>
 					</div>
@@ -508,7 +508,7 @@ const Header: React.FC<HeaderProps> = ({
 							</Link>
 							<div className="flex items-center gap-2">
 								<Button onClick={onRegisterClick ?? openRegister} variant="primary" className="!py-2">
-									Регистрация
+									Оставить заявку
 								</Button>
 								<button
 									aria-label="Закрыть меню"
@@ -709,7 +709,7 @@ const Header: React.FC<HeaderProps> = ({
 										variant="primary"
 										className="w-full mt-2"
 									>
-										Регистрация
+										Оставить заявку
 									</Button>
 								</li>
 							</ul>
