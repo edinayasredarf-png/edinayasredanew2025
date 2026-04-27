@@ -20,7 +20,7 @@ export default function BenefitsSection({
   leftBg = "bg-white",
   onRegisterClick,
   showTitle = true,
-  ctaText = "Зарегистрироваться",
+  ctaText = "Оставить заявку на регистрацию",
 }: {
   imageSrc?: string;
   imageAlt?: string;
