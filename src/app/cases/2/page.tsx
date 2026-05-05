@@ -113,7 +113,7 @@ const Case2Inner: React.FC = () => {
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={openRequest}
-                  className="bg-[#0077FF] text-white font-semibold px-6 py-4 rounded-xl hover:bg-[#0077FF]/90 transition-colors text-base md:text-lg"
+                  className="bg-[#029cda] text-white font-semibold px-6 py-4 rounded-xl hover:bg-[#029cda]/90 transition-colors text-base md:text-lg"
                 >
                   Запросить похожее решение
                 </button>
@@ -210,31 +210,31 @@ const Case2Inner: React.FC = () => {
               <h2 className="text-2xl md:text-3xl font-semibold text-black">Результат для клиента</h2>
               <ul className="mt-6 space-y-4 text-lg md:text-xl leading-relaxed text-gray-800">
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF] flex-none shrink-0" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda] flex-none shrink-0" />
                   <span>
                     <strong>Полный и актуальный цифровой реестр кладбищ</strong> — вся информация о захоронениях на территории муниципалитета собрана в единую систему.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF] flex-none shrink-0" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda] flex-none shrink-0" />
                   <span>
                     <strong>Детализированные данные о будущих местах захоронений</strong> — распланированные участки с учётом зонирования, кварталов и дорожных сетей.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF] flex-none shrink-0" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda] flex-none shrink-0" />
                   <span>
                     <strong>Рациональное использование земель</strong> — благодаря детальному планированию новые захоронения размещаются оптимально.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF] flex-none shrink-0" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda] flex-none shrink-0" />
                   <span>
                     <strong>Соответствие законодательству</strong> — выполнены требования Распоряжения Правительства РФ № 2424‑р от 02.09.2021.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF] flex-none shrink-0" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda] flex-none shrink-0" />
                   <span>
                     <strong>Удобное планирование и управление</strong> — интерактивные карты и структурированные данные обеспечивают быстрый доступ к информации.
                   </span>
@@ -245,7 +245,7 @@ const Case2Inner: React.FC = () => {
             {/* Отзыв */}
             <section aria-labelledby="testimonial" className="bg-white rounded-3xl p-6 md:p-8">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0077FF] flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-full bg-[#029cda] flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M7 7h4v10H5V9a2 2 0 012-2zm10 0h4v10h-6V9a2 2 0 012-2z" />
                   </svg>
@@ -270,19 +270,19 @@ const Case2Inner: React.FC = () => {
               <nav className="mt-4 space-y-3 text-gray-800">
                 <a
                   href="#task"
-                  className="block hover:text-[#0077FF] text-base md:text-lg transition-colors"
+                  className="block hover:text-[#029cda] text-base md:text-lg transition-colors"
                 >
                   Задача клиента
                 </a>
                 <a
                   href="#solution"
-                  className="block hover:text-[#0077FF] text-base md:text-lg transition-colors"
+                  className="block hover:text-[#029cda] text-base md:text-lg transition-colors"
                 >
                   Решение
                 </a>
                 <a
                   href="#result2"
-                  className="block hover:text-[#0077FF] text-base md:text-lg transition-colors"
+                  className="block hover:text-[#029cda] text-base md:text-lg transition-colors"
                 >
                   Результат для клиента
                 </a>
@@ -293,7 +293,7 @@ const Case2Inner: React.FC = () => {
                 <div className="text-base md:text-lg text-gray-700 mb-4">{caseData.application}</div>
                 <button
                   onClick={openRequest}
-                  className="w-full bg-[#0077FF] text-white font-semibold py-3.5 rounded-xl text-base hover:bg-[#0077FF]/90 transition-colors"
+                  className="w-full bg-[#029cda] text-white font-semibold py-3.5 rounded-xl text-base hover:bg-[#029cda]/90 transition-colors"
                 >
                   Запросить похожее решение
                 </button>
@@ -311,7 +311,7 @@ const Case2Inner: React.FC = () => {
             <Link
               key={m.id}
               href={`/cases/${m.id}`}
-              className="bg-white rounded-3xl p-6 hover:ring-1 hover:ring-[#0077FF] transition"
+              className="bg-white rounded-3xl p-6 hover:ring-1 hover:ring-[#029cda] transition"
             >
               <div className="w-full h-64 rounded-xl bg-[#F6F7F9] overflow-hidden flex items-center justify-center relative">
                 <Image
@@ -345,7 +345,7 @@ const Case2Inner: React.FC = () => {
           <div className="mt-8">
             <button
               onClick={openRequest}
-              className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-[#0077FF]/90 transition-colors"
+              className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-[#029cda]/90 transition-colors"
             >
               Запросить консультацию
             </button>

@@ -97,7 +97,7 @@ export default function DocumentsPage() {
                   key={doc.file}
                   onClick={() => handleDocClick(doc.file)}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center ${
-                    activeDoc === doc.file ? "bg-[#0077FF]/10 text-[#0077FF] font-medium" : "text-[#313131] hover:bg-[#F6F7F9]"
+                    activeDoc === doc.file ? "bg-[#029cda]/10 text-[#029cda] font-medium" : "text-[#313131] hover:bg-[#F6F7F9]"
                   }`}
                 >
                   <span className="inline-flex items-center mr-3">
@@ -151,7 +151,7 @@ export default function DocumentsPage() {
                 <a
                   href={activeUrl}
                   download
-                  className="inline-block px-6 py-3 bg-[#0077FF] text-white rounded-lg font-medium hover:bg-[#0077FF]/90 transition-colors"
+                  className="inline-block px-6 py-3 bg-[#029cda] text-white rounded-lg font-medium hover:bg-[#029cda]/90 transition-colors"
                 >
                   Скачать документ
                 </a>

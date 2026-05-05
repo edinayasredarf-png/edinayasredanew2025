@@ -22,7 +22,7 @@ export default function Error({
         <p className="text-gray-600 mb-8">Произошла ошибка при загрузке страницы.</p>
         <button
           onClick={reset}
-          className="bg-[#0077FF] text-white px-6 py-3 rounded-lg hover:bg-[#005fcc] transition-colors mr-4"
+          className="bg-[#029cda] text-white px-6 py-3 rounded-lg hover:bg-[#029cda]/90 transition-colors mr-4"
         >
           Попробовать снова
         </button>

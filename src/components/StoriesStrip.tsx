@@ -87,7 +87,7 @@ const StoriesStrip: React.FC = () => {
                   className={[
                     "relative w-20 h-20 bg-black rounded-full overflow-hidden p-1.5",
                     "border-2",
-                    isViewed ? "border-gray-400" : "border-[#0077FF]",
+                    isViewed ? "border-gray-400" : "border-[#029cda]",
                   ].join(" ")}
                 >
                   <div className="relative w-full h-full rounded-full overflow-hidden">
@@ -107,7 +107,7 @@ const StoriesStrip: React.FC = () => {
                   </div>
                   {/* Точка «новый» в углу */}
                   {!isViewed && (
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#0077FF] ring-2 ring-black" />
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#029cda] ring-2 ring-black" />
                   )}
                 </div>
               </button>

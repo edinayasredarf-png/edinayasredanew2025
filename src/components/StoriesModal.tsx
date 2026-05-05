@@ -387,7 +387,7 @@ export const StoriesModal: React.FC<StoriesModalProps> = ({
                       clearPollVote(currentPollData.storyId, currentPollData.slideId);
                       setPollRefresh((k) => k + 1);
                     }}
-                    className="block w-full text-center rounded-xl bg-[#0077FF] text-white px-5 py-3 text-base font-medium hover:bg-[#0077FF]/90 transition-colors"
+                    className="block w-full text-center rounded-xl bg-[#029cda] text-white px-5 py-3 text-base font-medium hover:bg-[#029cda]/90 transition-colors"
                   >
                     Переголосовать
                   </a>
@@ -409,7 +409,7 @@ export const StoriesModal: React.FC<StoriesModalProps> = ({
                       setPrevVotedForRevote(null);
                       setPollRefresh((k) => k + 1);
                     }}
-                    className="block w-full text-center rounded-xl bg-[#0077FF] text-white px-5 py-3.5 text-base font-medium hover:bg-[#0077FF]/90 active:bg-[#0066DD] transition-colors"
+                    className="block w-full text-center rounded-xl bg-[#029cda] text-white px-5 py-3.5 text-base font-medium hover:bg-[#029cda]/90 active:bg-[#0066DD] transition-colors"
                   >
                     {opt}
                   </a>
@@ -430,7 +430,7 @@ export const StoriesModal: React.FC<StoriesModalProps> = ({
                 e.preventDefault();
                 window.open(currentButton.url, '_blank', 'noopener,noreferrer');
               }}
-              className="block w-full inline-flex items-center justify-center rounded-xl bg-[#0077FF] text-white px-5 py-3.5 text-base font-medium hover:bg-[#0077FF]/90 active:bg-[#0066DD] transition-colors"
+              className="block w-full inline-flex items-center justify-center rounded-xl bg-[#029cda] text-white px-5 py-3.5 text-base font-medium hover:bg-[#029cda]/90 active:bg-[#0066DD] transition-colors"
             >
               {currentButton.label}
             </a>

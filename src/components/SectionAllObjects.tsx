@@ -40,7 +40,7 @@ const ObjectCard: React.FC<ObjectCardProps> = ({ icon, label, index, totalItems 
       `}
     >
       {/* Иконка */}
-      <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px]">
+      <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px]">
         <Image
           src={icon}
           alt={label}

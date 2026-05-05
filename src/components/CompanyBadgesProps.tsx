@@ -73,7 +73,7 @@ const CompanyBadges: React.FC<CompanyBadgesProps> = ({
         <Link
           href={ctaHref}
           prefetch
-          className="inline-flex px-5 py-3.5 bg-[#0077ff] text-white rounded-xl text-base md:text-xl font-medium leading-7 hover:bg-[#0a6ae0] active:bg-[#085bbf] transition-colors focus:outline-none focus:ring-2 focus:ring-[#0077ff]/40"
+          className="inline-flex px-5 py-3.5 bg-[#029cda] text-white rounded-xl text-base md:text-xl font-medium leading-7 hover:bg-[#029cda]/90 active:bg-[#085bbf] transition-colors focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
           aria-label={`${ctaLabel} — перейти на страницу`}
         >
           {ctaLabel}

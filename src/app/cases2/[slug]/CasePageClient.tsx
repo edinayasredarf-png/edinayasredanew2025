@@ -124,7 +124,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
       <Layout>
         <div className="bg-[#F6F7F9] min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4" />
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4" />
             <p className="text-gray-600">Загрузка кейса...</p>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
             <p className="text-gray-600 mb-8">Возможно, кейс был удалён или ссылка неверна</p>
             <Link
               href="/cases2"
-              className="inline-flex items-center gap-2 bg-[#0077FF] text-white px-6 py-3 rounded-xl hover:bg-[#0077FF]/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-[#029cda] text-white px-6 py-3 rounded-xl hover:bg-[#029cda]/90 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
                 <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -184,7 +184,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={openRequest}
-                    className="bg-[#0077FF] text-white font-semibold px-6 py-4 rounded-xl hover:bg-[#0077FF]/90 transition-colors text-base md:text-lg"
+                    className="bg-[#029cda] text-white font-semibold px-6 py-4 rounded-xl hover:bg-[#029cda]/90 transition-colors text-base md:text-lg"
                   >
                     Запросить похожее решение
                   </button>
@@ -245,7 +245,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
                         key={item.id}
                         type="button"
                         onClick={() => scrollToSection(item.id)}
-                        className={`block w-full text-left hover:text-[#0077FF] text-base md:text-lg transition-colors ${item.level === 3 ? 'pl-3' : ''}`}
+                        className={`block w-full text-left hover:text-[#029cda] text-base md:text-lg transition-colors ${item.level === 3 ? 'pl-3' : ''}`}
                       >
                         {item.text}
                       </button>
@@ -259,7 +259,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
                   <div className="text-sm text-gray-500 mb-4">Интересует похожее решение?</div>
                   <button
                     onClick={openRequest}
-                    className="w-full bg-[#0077FF] text-white font-semibold py-3.5 rounded-xl text-base hover:bg-[#0077FF]/90 transition-colors"
+                    className="w-full bg-[#029cda] text-white font-semibold py-3.5 rounded-xl text-base hover:bg-[#029cda]/90 transition-colors"
                   >
                     Запросить консультацию
                   </button>
@@ -277,7 +277,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
                 <Link
                   key={item.id}
                   href={`/cases2/${item.slug}`}
-                  className="bg-white rounded-3xl p-6 hover:ring-1 hover:ring-[#0077FF] transition"
+                  className="bg-white rounded-3xl p-6 hover:ring-1 hover:ring-[#029cda] transition"
                 >
                   <div className="w-full h-64 rounded-xl bg-[#F6F7F9] overflow-hidden flex items-center justify-center relative">
                     {item.cover ? (
@@ -320,7 +320,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
             <div className="mt-8">
               <button
                 onClick={openRequest}
-                className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-[#0077FF]/90 transition-colors"
+                className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-[#029cda]/90 transition-colors"
               >
                 Запросить консультацию
               </button>

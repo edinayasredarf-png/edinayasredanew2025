@@ -174,7 +174,7 @@ function BlogHomeInner() {
                     </div>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-                      className="px-6 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
+                      className="px-6 py-2 bg-[#029cda] text-white rounded-lg hover:bg-[#029cda]/90 transition-colors"
                     >
                       Войти
                     </button>

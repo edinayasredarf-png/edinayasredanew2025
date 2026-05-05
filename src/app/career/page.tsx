@@ -70,7 +70,7 @@ export default function CareerPage() {
               Почему стоит работать с нами
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
                   <Image src="/img/job/innovation_project.svg" alt="Инновации" width={32} height={32} className="object-contain" />
                 </div>
@@ -80,7 +80,7 @@ export default function CareerPage() {
                 </p>
               </div>
 
-              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
                   <Image src="/img/job/professional_rost.svg" alt="Развитие" width={32} height={32} className="object-contain" />
                 </div>
@@ -90,7 +90,7 @@ export default function CareerPage() {
                 </p>
               </div>
 
-              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
                   <Image src="/img/job/team.svg" alt="Команда" width={32} height={32} className="object-contain" />
                 </div>
@@ -110,7 +110,7 @@ export default function CareerPage() {
               Наши вакансии на HH.ru
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
                   <Image src="/img/job/actual_vacansy.svg" alt="HH.ru" width={32} height={32} className="object-contain" />
                 </div>
@@ -136,7 +136,7 @@ export default function CareerPage() {
                 </a>
               </div>
 
-              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center w-16 h-16 mb-4">
                   <Image src="/img/support.svg" alt="Преимущества" width={32} height={32} className="object-contain" />
                 </div>
@@ -172,7 +172,7 @@ export default function CareerPage() {
               Наши преимущества
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
                   <Image src="/img/job/concuterintional_zp.svg" alt="Зарплата" width={32} height={32} className="object-contain" />
                 </div>
@@ -180,7 +180,7 @@ export default function CareerPage() {
                 <p className="text-gray-500">Высокий уровень оплаты труда</p>
               </div>
 
-              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
                   <Image src="/img/job/study.svg" alt="Обучение" width={32} height={32} className="object-contain" />
                 </div>
@@ -188,7 +188,7 @@ export default function CareerPage() {
                 <p className="text-gray-500">Курсы, конференции, сертификации</p>
               </div>
 
-              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
                   <Image src="/img/job/grafic.svg" alt="Гибкость" width={32} height={32} className="object-contain" />
                 </div>
@@ -196,7 +196,7 @@ export default function CareerPage() {
                 <p className="text-gray-500">Удаленная работа и гибкие часы</p>
               </div>
 
-              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
+              <div className="bg-white rounded-4xl p-6 text-center hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 transition-all duration-300">
                 <div className="bg-gray-100 rounded-2xl flex items-center justify-center w-16 h-16 mx-auto mb-4">
                   <Image src="/img/job/dms.svg" alt="Медицина" width={32} height={32} className="object-contain" />
                 </div>

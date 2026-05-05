@@ -45,7 +45,7 @@ const GalleryViewer: React.FC = () => {
         onClick={close}
         aria-label="Закрыть"
         className="fixed top-4 right-4 z-[10000] inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 hover:bg-white
-                   shadow-lg transition outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]"
+                   shadow-lg transition outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M18 6L6 18M6 6l12 12" stroke="#111" strokeWidth="2" strokeLinecap="round" />
@@ -72,7 +72,7 @@ const GalleryViewer: React.FC = () => {
           type="button"
           aria-label="Предыдущий слайд"
           onClick={prev}
-          className="w-[50px] h-[60px] bg-[#0077FF] rounded-tl-[50px] rounded-bl-[50px] flex items-center justify-center hover:bg-[#0077FF]/90 transition"
+          className="w-[50px] h-[60px] bg-[#029cda] rounded-tl-[50px] rounded-bl-[50px] flex items-center justify-center hover:bg-[#029cda]/90 transition"
         >
           <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path d="M15 6l-6 6 6 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -82,7 +82,7 @@ const GalleryViewer: React.FC = () => {
           type="button"
           aria-label="Следующий слайд"
           onClick={next}
-          className="w-[50px] h-[60px] bg-[#0077FF] rounded-tr-[50px] rounded-br-[50px] flex items-center justify-center hover:bg-[#0077FF]/90 transition"
+          className="w-[50px] h-[60px] bg-[#029cda] rounded-tr-[50px] rounded-br-[50px] flex items-center justify-center hover:bg-[#029cda]/90 transition"
         >
           <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path d="M9 6l6 6-6 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

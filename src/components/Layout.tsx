@@ -91,7 +91,7 @@ const CookieBanner: React.FC = () => {
           </span>
           <button
             onClick={handleAgree}
-            className="px-5 py-3 bg-[#0077FF] rounded-xl text-white text-base font-normal font-[Raleway] leading-[18px] hover:bg-[#005fcc] transition-colors whitespace-nowrap"
+            className="px-5 py-3 bg-[#029cda] rounded-xl text-white text-base font-normal font-[Raleway] leading-[18px] hover:bg-[#029cda]/90 transition-colors whitespace-nowrap"
           >
             Принять
           </button>
@@ -249,7 +249,7 @@ const Layout = ({ children }: LayoutProps) => {
               </li>
             </ul>
             <div className="flex flex-col gap-3 w-full mt-6">
-              <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-[#0077FF] hover:bg-opacity-80 open-register-modal">Регистрация</button>
+              <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-[#029cda] hover:bg-opacity-80 open-register-modal">Регистрация</button>
               <a href="https://edinayasreda.ru/" className="inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-black hover:bg-opacity-80 transition-colors">Вход</a>
               <a href="#" className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-base font-[Raleway] font-medium rounded-xl border border-[#00D3E6] hover:bg-[#00d3e6]/10 open-consult-modal">Получить консультацию</a>
             </div>

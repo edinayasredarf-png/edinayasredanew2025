@@ -9,7 +9,7 @@ export default function NotFound() {
         <p className="text-gray-600 mb-8">Страница, которую вы ищете, не существует.</p>
         <Link 
           href="/" 
-          className="bg-[#0077FF] text-white px-6 py-3 rounded-lg hover:bg-[#005fcc] transition-colors"
+          className="bg-[#029cda] text-white px-6 py-3 rounded-lg hover:bg-[#029cda]/90 transition-colors"
         >
           Вернуться на главную
         </Link>

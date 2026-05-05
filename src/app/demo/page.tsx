@@ -101,7 +101,7 @@ export default function DemoPage() {
               <div className="mt-10">
                 <button
                   onClick={() => setIsStoriesOpen(true)}
-                  className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition"
+                  className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/90 transition"
                 >
                   Посмотреть инструкцию
                 </button>
@@ -150,7 +150,7 @@ export default function DemoPage() {
                       >
                         <span className="absolute w-32 h-32 rounded-full bg-[#3D98FF]/20 transition-transform duration-500 group-hover:scale-110"></span>
                         <span className="absolute w-24 h-24 rounded-full bg-[#3D98FF]/30 transition-transform duration-500 group-hover:scale-125"></span>
-                        <span className="absolute w-16 h-16 rounded-full bg-[#0077FF]"></span>
+                        <span className="absolute w-16 h-16 rounded-full bg-[#029cda]"></span>
                         <Image
                           src="/img/play.svg"
                           alt="Play demo"
@@ -178,7 +178,7 @@ export default function DemoPage() {
                     {/* Fullscreen button */}
                     <button
                       onClick={handleFullscreen}
-                      className="absolute bottom-4 right-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+                      className="absolute bottom-4 right-4 bg-white/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
                     >
                       Открыть на полный экран
                     </button>
@@ -187,7 +187,7 @@ export default function DemoPage() {
                     {isFullscreen && (
                       <button
                         onClick={exitFullscreen}
-                        className="absolute bottom-4 left-4 bg-white/90 text-[#0077FF] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+                        className="absolute bottom-4 left-4 bg-white/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
                       >
                         Вернуться на страницу
                       </button>
@@ -222,13 +222,13 @@ export default function DemoPage() {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={handleConsult}
-                className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition"
+                className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/90 transition"
               >
                 Запросить видеосозвон
               </button>
               <button
                 onClick={handleKP}
-                className="bg-white text-[#0077FF] border border-[#0077FF] px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/10 transition"
+                className="bg-white text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition"
               >
                 Получить коммерческое предложение
               </button>

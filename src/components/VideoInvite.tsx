@@ -38,7 +38,7 @@ const VideoInvite: React.FC<VideoInviteProps> = ({
               onClick={openDemo}
               variant="primary"
               size="large"
-              className="w-full md:w-[228px] h-[60px] px-2 py-2 bg-[#0077ff] hover:bg-[#0a6ae0] text-white rounded-xl font-medium leading-[44px] text-[16px] md:text-[19.38px]  "
+              className="w-full md:w-[228px] h-[60px] px-2 py-2 bg-[#029cda] hover:bg-[#029cda]/90 text-white rounded-xl font-medium leading-[44px] text-[16px] md:text-[19.38px]  "
             >
               {ctaLabel}
             </Button>

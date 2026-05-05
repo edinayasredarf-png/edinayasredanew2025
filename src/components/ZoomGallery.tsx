@@ -162,7 +162,7 @@ const ZoomGallery: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <button
                   ref={prevRef}
                   aria-label="Предыдущий слайд"
-                  className={`w-[50px] h-[60px] bg-[#0077FF] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center transition duration-200 hover:bg-opacity-90 ${
+                  className={`w-[50px] h-[60px] bg-[#029cda] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center transition duration-200 hover:bg-opacity-90 ${
                     isBeginning ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   disabled={isBeginning}
@@ -174,7 +174,7 @@ const ZoomGallery: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <button
                   ref={nextRef}
                   aria-label="Следующий слайд"
-                  className={`w-[50px] h-[60px] bg-[#0077FF] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center transition duration-200 hover:bg-opacity-90 ${
+                  className={`w-[50px] h-[60px] bg-[#029cda] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center transition duration-200 hover:bg-opacity-90 ${
                     isEnd ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   disabled={isEnd}

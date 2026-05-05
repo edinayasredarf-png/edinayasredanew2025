@@ -55,7 +55,7 @@ const PartnersModal: React.FC<PartnersModalProps> = ({ open, onClose }) => {
             <h2 className="text-2xl md:text-2xl font-medium text-gray-800 flex-1">Заявка на сотрудничество</h2>
             <button
               onClick={handleCloseClick}
-              className="text-gray-600 hover:text-[#0077FF] text-2xl md:text-3xl"
+              className="text-gray-600 hover:text-[#029cda] text-2xl md:text-3xl"
               aria-label="Закрыть модальное окно"
             >
               &times;
@@ -75,7 +75,7 @@ const PartnersModal: React.FC<PartnersModalProps> = ({ open, onClose }) => {
             <div className="flex gap-4 mt-2">
               <button
                 onClick={handleConfirmClose}
-                className="px-6 py-2 rounded-xl bg-[#0077FF] text-white font-medium hover:bg-[#005fcc]"
+                className="px-6 py-2 rounded-xl bg-[#029cda] text-white font-medium hover:bg-[#029cda]/90"
               >
                 Да, закрыть
               </button>

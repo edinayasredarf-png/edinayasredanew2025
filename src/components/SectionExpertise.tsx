@@ -28,7 +28,7 @@ const SectionExpertise = () => (
         {/* Left Big Card */}
         <a
           href="/about"
-          className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 border border-[#fff] hover:border-[#0077FF]"
+          className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 border border-[#fff] hover:border-[#029cda]"
           aria-label="Узнать больше о компании Единая среда — 15 лет технологической экспертизы"
         >
           <div className="relative z-10 flex flex-col flex-grow h-full w-full">
@@ -36,7 +36,7 @@ const SectionExpertise = () => (
               15+ лет<br />технологической<br />экспертизы
             </h2>
             <div className="flex-grow" />
-            <div className="mt-8 inline-flex items-center justify-center self-start px-8 py-3.5 bg-[#0077FF] text-white text-lg font-medium rounded-xl group-hover:bg-opacity-80 transition-all duration-300">
+            <div className="mt-8 inline-flex items-center justify-center self-start px-8 py-3.5 bg-[#029cda] text-white text-lg font-medium rounded-xl group-hover:bg-opacity-80 transition-all duration-300">
               Подробнее о нас
             </div>
           </div>
@@ -80,7 +80,7 @@ const SectionExpertise = () => (
                 key={idx}
                 className="group bg-white rounded-3xl p-5 flex flex-col gap-3 transition-all duration-300"
               >
-                <div className="w-16 h-16 rounded-2xl border border-[#E0E4EA] flex items-center justify-center transition-all duration-300 group-hover:border-[#0077FF]">
+                <div className="w-16 h-16 rounded-2xl border border-[#E0E4EA] flex items-center justify-center transition-all duration-300 group-hover:border-[#029cda]">
                   <Image
                     src={card.iconUrl}
                     alt={card.alt}

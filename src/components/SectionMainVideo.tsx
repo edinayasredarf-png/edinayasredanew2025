@@ -19,7 +19,7 @@ export default function SectionMainVideo({
       <div className="max-w-[1480px] mx-auto px-5 md:px-8">
         <div className="relative">
           {/* Видео: синяя “подложка” снизу как в Figma + уменьшенный max-размер */}
-          <div className="mx-auto w-full max-w-[1348px] rounded-3xl border-b-[10px] border-[#0077ff] overflow-hidden">
+          <div className="mx-auto w-full max-w-[1348px] rounded-3xl border-b-[10px] border-[#029cda] overflow-hidden">
             <div className="relative w-full bg-[#0b0b0b] h-[220px] sm:h-[320px] md:h-[480px] lg:h-[600px]">
               <iframe
                 src={embedUrl}
@@ -39,7 +39,7 @@ export default function SectionMainVideo({
             <button
               type="button"
               onClick={openRegister}
-              className="px-5 py-3.5 bg-[#0077ff] hover:bg-[#0a6ae0] text-white rounded-xl text-xl font-medium leading-7 transition-colors"
+              className="px-5 py-3.5 bg-[#029cda] hover:bg-[#029cda]/90 text-white rounded-xl text-xl font-medium leading-7 transition-colors"
             >
               Оставить заявку
             </button>

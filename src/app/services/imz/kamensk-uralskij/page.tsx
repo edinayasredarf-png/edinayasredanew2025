@@ -45,7 +45,7 @@ export default function InventoryBurialsPage() {
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={handleKP}
-                    className="inline-flex items-center justify-center bg-[#0077FF] text-white font-medium text-xl px-16 py-5 rounded-2xl hover:bg-[#0077FF]/90 transition"
+                    className="inline-flex items-center justify-center bg-[#029cda] text-white font-medium text-xl px-16 py-5 rounded-2xl hover:bg-[#029cda]/90 transition"
                   >
                     Получить КП
                   </button>

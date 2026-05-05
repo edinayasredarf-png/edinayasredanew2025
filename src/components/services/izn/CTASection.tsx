@@ -32,7 +32,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onButtonClick }) => {
           <div>
             <button
               onClick={onButtonClick}
-              className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
+              className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
             >
               {data.buttonText}
             </button>

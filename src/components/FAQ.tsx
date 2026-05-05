@@ -68,7 +68,7 @@ const Row: React.FC<{
         aria-controls={panelId}
         aria-expanded={isOpen}
         onClick={toggle}
-        className="group w-full flex items-center justify-between gap-4 p-5 md:p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/40 rounded-2xl"
+        className="group w-full flex items-center justify-between gap-4 p-5 md:p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]/40 rounded-2xl"
       >
         <span className="text-[#313131] text-[18px] md:text-[20px] font-medium font-[Raleway] leading-7 lining-nums">
           {title}
@@ -187,7 +187,7 @@ const FAQ: React.FC<FAQProps> = ({
                 <button
                   type="button"
                   onClick={handleContact}
-                  className="w-full md:w-auto px-5 py-3.5 bg-[#0077FF] text-white rounded-xl text-base md:text-lg font-medium hover:bg-[#0066DD] focus:outline-none focus:ring-4 focus:ring-[#0077FF]/30"
+                  className="w-full md:w-auto px-5 py-3.5 bg-[#029cda] text-white rounded-xl text-base md:text-lg font-medium hover:bg-[#0066DD] focus:outline-none focus:ring-4 focus:ring-[#029cda]/30"
                 >
                   {contactButtonText}
                 </button>

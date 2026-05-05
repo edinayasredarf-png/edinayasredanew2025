@@ -163,10 +163,10 @@ const SectionInterfaceDemoSplit70: React.FC = () => {
 
             {/* Стрелки — только md+ */}
             <div className="hidden md:flex items-center justify-center gap-0 pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
-              <button ref={prevRef} aria-label="Предыдущий слайд" className={`pointer-events-auto w-[50px] h-[56px] bg-[#0077FF] rounded-l-[50px] flex justify-center items-center transition hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-white/40 ${isBeginning ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={isBeginning}>
+              <button ref={prevRef} aria-label="Предыдущий слайд" className={`pointer-events-auto w-[50px] h-[56px] bg-[#029cda] rounded-l-[50px] flex justify-center items-center transition hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-white/40 ${isBeginning ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={isBeginning}>
                 <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden><path d="M15 6l-6 6 6 6" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
-              <button ref={nextRef} aria-label="Следующий слайд" className={`pointer-events-auto w-[50px] h-[56px] bg-[#0077FF] rounded-r-[50px] flex justify-center items-center transition hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-white/40 ${isEnd ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={isEnd}>
+              <button ref={nextRef} aria-label="Следующий слайд" className={`pointer-events-auto w-[50px] h-[56px] bg-[#029cda] rounded-r-[50px] flex justify-center items-center transition hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-white/40 ${isEnd ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={isEnd}>
                 <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden><path d="M9 6l6 6-6 6" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
@@ -174,14 +174,14 @@ const SectionInterfaceDemoSplit70: React.FC = () => {
         </div>
 
         {/* RIGHT 30% */}
-        <aside className="relative rounded-[20px] overflow-hidden bg-[#0077FF] text-white p-5 md:p-7 flex flex-col h-full">
+        <aside className="relative rounded-[20px] overflow-hidden bg-[#029cda] text-white p-5 md:p-7 flex flex-col h-full">
           <Image src="/img/ellipse.webp" alt="" fill className="object-cover opacity-55 pointer-events-none select-none" />
           <div className="relative z-10">
             <h3 className="text-2xl md:text-3xl font-semibold leading-tight">Бесплатная демонстрация системы</h3>
             <p className="mt-3 text-white/90">Посмотрим ваши процессы и покажем, как «Единая Среда» ускоряет инвентаризацию, контроль и отчётность.</p>
           </div>
           <div className="relative z-10 mt-auto pt-6">
-            <Button onClick={openDemo} variant="primary" size="large" className="w-full bg-white hover:bg-white/90 !text-[#0077FF] focus:outline-none focus:ring-4 focus:ring-white/40">Протестировать</Button>
+            <Button onClick={openDemo} variant="primary" size="large" className="w-full bg-white hover:bg-white/90 !text-[#029cda] focus:outline-none focus:ring-4 focus:ring-white/40">Протестировать</Button>
             <p className="mt-3 text-xs text-white/70 text-center">Демо 20–30 минут. Онлайн в удобной ВКС-платформе.</p>
           </div>
         </aside>

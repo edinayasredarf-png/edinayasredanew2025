@@ -33,7 +33,7 @@ export default function WelcomeBonusPage() {
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={openRegister}
-                    className="inline-flex items-center justify-center bg-[#0077FF] text-white font-semibold px-8 py-4 rounded-xl hover:bg-[#0062D8] transition-colors"
+                    className="inline-flex items-center justify-center bg-[#029cda] text-white font-semibold px-8 py-4 rounded-xl hover:bg-[#0062D8] transition-colors"
                   >
                     Получить бонус
                   </button>
@@ -109,7 +109,7 @@ export default function WelcomeBonusPage() {
                 },
               ].map((c, i) => (
                 <div key={i} className="p-6 rounded-2xl border border-[#E5E7EB] bg-white">
-                  <span className="inline-flex w-12 h-12 rounded-lg bg-[#0077FF] items-center justify-center">
+                  <span className="inline-flex w-12 h-12 rounded-lg bg-[#029cda] items-center justify-center">
                     <Image src={c.icon} alt="" width={20} height={20} />
                   </span>
                   <h3 className={`mt-4 text-xl ${headingBase} ${headingColor}`}>{c.title}</h3>
@@ -133,7 +133,7 @@ export default function WelcomeBonusPage() {
                 { step: "03", title: "Запуск", text: "Выдаем доступы, материалы и сопровождаем старт." },
               ].map((x, i) => (
                 <div key={i} className="p-6 rounded-2xl border border-[#E5E7EB] bg-white">
-                  <div className="text-[#0077FF] text-sm font-semibold">{x.step}</div>
+                  <div className="text-[#029cda] text-sm font-semibold">{x.step}</div>
                   <h3 className={`mt-2 text-xl ${headingBase} ${headingColor}`}>{x.title}</h3>
                   <p className={`mt-3 text-[15px] leading-6 ${paragraphMuted}`}>{x.text}</p>
                 </div>
@@ -143,7 +143,7 @@ export default function WelcomeBonusPage() {
             <div className="flex justify-center mt-10">
               <button
                 onClick={openRegister}
-                className="px-5 py-3.5 bg-[#0077FF] text-white text-lg font-medium rounded-xl hover:bg-[#0077FF]/90 transition-colors"
+                className="px-5 py-3.5 bg-[#029cda] text-white text-lg font-medium rounded-xl hover:bg-[#029cda]/90 transition-colors"
               >
                 Зарегистрироваться и получить бонус
               </button>
@@ -164,13 +164,13 @@ export default function WelcomeBonusPage() {
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={openRegister}
-                  className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#0062D8] transition-colors"
+                  className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#0062D8] transition-colors"
                 >
                   Получить бонус
                 </button>
                 <button
                   onClick={openConsult}
-                  className="px-8 py-4 rounded-xl border border-[#0077FF] text-[#0077FF] font-semibold hover:bg-[#0077FF] hover:text-white transition-colors"
+                  className="px-8 py-4 rounded-xl border border-[#029cda] text-[#029cda] font-semibold hover:bg-[#029cda] hover:text-white transition-colors"
                 >
                   Задать вопрос
                 </button>
@@ -237,7 +237,7 @@ export default function WelcomeBonusPage() {
                   <div className="mt-8">
                     <button
                       onClick={openConsult}
-                      className="inline-flex px-5 py-3.5 rounded-xl text-base font-medium text-[#0077FF] bg-[#F2F2F2] hover:bg-[#EBEBEB] transition"
+                      className="inline-flex px-5 py-3.5 rounded-xl text-base font-medium text-[#029cda] bg-[#F2F2F2] hover:bg-[#EBEBEB] transition"
                     >
                       Задать вопрос
                     </button>
@@ -264,13 +264,13 @@ export default function WelcomeBonusPage() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       onClick={openRegister}
-                      className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#0062D8] transition-colors"
+                      className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#0062D8] transition-colors"
                     >
                       Получить бонус
                     </button>
                     <a
                       href="mailto:iinfo@единаясреда.рф"
-                      className="px-8 py-4 rounded-xl border border-[#0077FF] text-[#0077FF] font-semibold hover:bg-[#0077FF] hover:text-white transition-colors text-center"
+                      className="px-8 py-4 rounded-xl border border-[#029cda] text-[#029cda] font-semibold hover:bg-[#029cda] hover:text-white transition-colors text-center"
                     >
                       Написать письмо
                     </a>

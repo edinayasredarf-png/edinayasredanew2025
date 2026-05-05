@@ -39,7 +39,7 @@ export default function GreenInventoryPage() {
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleKP}
-                  className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
                 >
                   Получить расчет
                 </button>

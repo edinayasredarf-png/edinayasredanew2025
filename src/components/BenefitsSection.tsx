@@ -40,7 +40,7 @@ export default function BenefitsSection({
         <header className="text-center mb-6 md:mb-8">
           <h2 className="font-[Raleway] font-medium leading-tight text-[26px] sm:text-[34px] md:text-[44px] text-[#313131]">
             6 веских причин зарегистрироваться в системе{" "}
-            <span className="text-[#0077FF]">Единая среда</span>
+            <span className="text-[#029cda]">Единая среда</span>
           </h2>
         </header>
       )}
@@ -102,7 +102,7 @@ export default function BenefitsSection({
         <button
           type="button"
           onClick={onRegisterClick ?? openRegister}
-          className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 rounded-xl bg-[#0077FF] hover:bg-[#005fd1] transition-colors text-white text-lg md:text-xl font-medium leading-7 font-[Raleway]"
+          className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 rounded-xl bg-[#029cda] hover:bg-[#029cda]/90 transition-colors text-white text-lg md:text-xl font-medium leading-7 font-[Raleway]"
         >
           {ctaText}
         </button>

@@ -16,7 +16,7 @@
 }
 
 .waving-flag {
-	background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
+	background: linear-gradient(120deg, #fff 0%, #029cda 50%, #ff2a2a 100%);
 	background-size: 200% 200%;
 	animation: waving-flag 1.2s linear infinite alternate;
 	will-change: background-position;
@@ -24,7 +24,7 @@
 
 /* Добавлено: анимация waving-flag по hover на .group */
 .group:hover .flag-animate {
-	background: linear-gradient(120deg, #fff 0%, #0077FF 50%, #ff2a2a 100%);
+	background: linear-gradient(120deg, #fff 0%, #029cda 50%, #ff2a2a 100%);
 	background-size: 200% 200%;
 	animation: waving-flag 1.2s linear infinite alternate;
 }

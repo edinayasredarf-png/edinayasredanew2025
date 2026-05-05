@@ -9,7 +9,7 @@ import { useModal } from "./ModalProvider";
 // Чипы в бегущей строке
 const Chip: React.FC<{ label: string }> = ({ label }) => (
   <div className="inline-flex items-center gap-4 rounded-3xl px-3 py-2 whitespace-nowrap bg-white/15 hover:bg-white/25 transition-colors">
-    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#0077FF] text-[13px] leading-7">#</span>
+    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#029cda] text-[13px] leading-7">#</span>
     <span className="text-white text-sm md:text-[15px] leading-6">{label}</span>
   </div>
 );
@@ -63,7 +63,7 @@ const ServiceCard: React.FC = () => (
     </p>
 
     <a href="/services" className="group mt-5 inline-flex">
-      <span className="inline-flex items-center justify-center self-start px-6 py-3 bg-[#F6F7F9] text-black text-lg font-medium rounded-xl border border-transparent group-hover:outline-1 group-hover:outline-[#0077FF]">
+      <span className="inline-flex items-center justify-center self-start px-6 py-3 bg-[#F6F7F9] text-black text-lg font-medium rounded-xl border border-transparent group-hover:outline-1 group-hover:outline-[#029cda]">
         Подробнее
       </span>
     </a>
@@ -138,7 +138,7 @@ const RevealPanel: React.FC<{
           <button
             type="button"
             onClick={onConsult}
-            className="open-consult-modal inline-flex items-center justify-center rounded-xl px-24 py-3 text-[15px] md:text-base font-medium bg-[#0077FF] text-white hover:bg-[#0077FF]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0077FF]"
+            className="open-consult-modal inline-flex items-center justify-center rounded-xl px-24 py-3 text-[15px] md:text-base font-medium bg-[#029cda] text-white hover:bg-[#029cda]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#029cda]"
           >
             Получить консультацию
           </button>
@@ -216,7 +216,7 @@ const SectionPlatformAndServices: React.FC = () => {
         {/* Левая большая карточка (синяя) */}
         <motion.div
           ref={leftRef}
-          className="relative rounded-2xl bg-[#0077FF] p-6 lg:p-8 overflow-hidden"
+          className="relative rounded-2xl bg-[#029cda] p-6 lg:p-8 overflow-hidden"
           onMouseEnter={() => setOpenPreview(true)}
           onMouseLeave={() => setOpenPreview(false)}
           onFocus={() => setOpenPreview(true)}

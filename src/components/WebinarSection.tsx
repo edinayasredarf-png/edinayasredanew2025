@@ -25,7 +25,7 @@ const WebinarSection: React.FC = () => {
             href="https://my.mts-link.ru/j/145854769/7497490787/"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full md:w-auto text-center px-5 py-3.5 bg-[#0077ff] rounded-xl text-white text-lg md:text-xl font-medium leading-7 font-[Raleway] hover:bg-[#005fd1] transition-colors"
+            className="w-full md:w-auto text-center px-5 py-3.5 bg-[#029cda] rounded-xl text-white text-lg md:text-xl font-medium leading-7 font-[Raleway] hover:bg-[#029cda]/90 transition-colors"
           >
             Записаться
           </a>

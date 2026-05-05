@@ -27,7 +27,7 @@ export default function AdvantagesSection({ onKP }: any) {
         </div>
 
         <div className="flex justify-center py-12">
-          <button onClick={onKP} className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+          <button onClick={onKP} className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
             Оставить заявку
           </button>
         </div>

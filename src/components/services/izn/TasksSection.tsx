@@ -68,7 +68,7 @@ const TasksSection: React.FC<TasksSectionProps> = ({ onButtonClick }) => {
           <div className="flex justify-center py-12">
             <button
               onClick={onButtonClick}
-              className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
+              className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
             >
               Оставить заявку
             </button>

@@ -23,7 +23,7 @@ export default function GlobalError({
             <p className="text-gray-600 mb-8">Произошла критическая ошибка в приложении.</p>
             <button
               onClick={reset}
-              className="bg-[#0077FF] text-white px-6 py-3 rounded-lg hover:bg-[#005fcc] transition-colors"
+              className="bg-[#029cda] text-white px-6 py-3 rounded-lg hover:bg-[#029cda]/90 transition-colors"
             >
               Попробовать снова
             </button>

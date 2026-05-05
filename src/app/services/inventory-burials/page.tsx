@@ -49,7 +49,7 @@ export default function InventoryBurialsPage() {
   const AdvantageCard: React.FC<{ icon: string; label: string; description: string; withRightBorder?: boolean; withBottomBorder?: boolean }> = ({ icon, label, description, withRightBorder, withBottomBorder }) => (
     <div className={`flex flex-col h-auto p-8 ${withRightBorder ? 'border-r border-grey-92' : ''} ${withBottomBorder ? 'border-b border-grey-92' : ''}`}>
       <div className="flex items-start mb-4">
-        <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px] mr-4 flex-shrink-0">
+        <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mr-4 flex-shrink-0">
           <Image src={icon} alt="" width={28} height={28} className="w-7 h-7" />
         </div>
         <div className="flex-1">
@@ -84,13 +84,13 @@ export default function InventoryBurialsPage() {
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleKP}
-                  className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
                 >
                   Получить КП
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-block bg-white text-[#0077FF] border border-[#0077FF] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/10 transition-colors"
+                  className="inline-block bg-white text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/10 transition-colors"
                 >
                   Получить консультацию
                 </button>
@@ -158,14 +158,14 @@ export default function InventoryBurialsPage() {
               4 шага до полной инвентаризации
             </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 01.png" alt="Выбор программного продукта" width={240} height={160} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 p-4 md:p-8">
                     <h4 className="text-black text-base md:text-lg lg:text-xl font-normal leading-7 mb-3">
-                      <span className="text-[#0077FF] font-medium">Шаг 1.</span> Выбор программного продукта
+                      <span className="text-[#029cda] font-medium">Шаг 1.</span> Выбор программного продукта
                     </h4>
                     <p className="text-gray-600 text-sm md:text-base leading-6">
                       Выбор АИС «Единая среда» для хранения, обработки и актуализации информации
@@ -174,14 +174,14 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 02.png" alt="Внесение имеющихся данных" width={240} height={160} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 p-4 md:p-8">
                     <h4 className="text-black text-base md:text-lg lg:text-xl font-normal leading-7 mb-3">
-                      <span className="text-[#0077FF] font-medium">Шаг 2.</span> Внесение имеющихся данных
+                      <span className="text-[#029cda] font-medium">Шаг 2.</span> Внесение имеющихся данных
                     </h4>
                     <p className="text-gray-600 text-sm md:text-base leading-6">
                       Оцифровка существующих архивов и начало ведения цифрового учета
@@ -190,14 +190,14 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 03.png" alt="Подготовительные и полевые работы" width={240} height={160} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 p-4 md:p-8">
                     <h4 className="text-black text-base md:text-lg lg:text-xl font-normal leading-7 mb-3">
-                      <span className="text-[#0077FF] font-medium">Шаг 3.</span> Подготовительные и полевые работы
+                      <span className="text-[#029cda] font-medium">Шаг 3.</span> Подготовительные и полевые работы
                     </h4>
                     <p className="text-gray-600 text-sm md:text-base leading-6">
                       Визуальное обследование, лазерное сканирование, определение координат
@@ -206,14 +206,14 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 04.png" alt="Камеральные работы" width={240} height={160} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 p-4 md:p-8">
                     <h4 className="text-black text-base md:text-lg lg:text-xl font-normal leading-7 mb-3">
-                      <span className="text-[#0077FF] font-medium">Шаг 4.</span> Камеральные работы
+                      <span className="text-[#029cda] font-medium">Шаг 4.</span> Камеральные работы
                     </h4>
                     <p className="text-gray-600 text-sm md:text-base leading-6">
                       Анализ результатов, перевод в электронный вид, создание ГИС-карт
@@ -230,8 +230,8 @@ export default function InventoryBurialsPage() {
               Возможности системы
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97">
-                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px] mb-4 mx-auto">
+              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
                   <Image src="/icons/information.svg" alt="Полная информация" width={28} height={28} className="w-7 h-7" />
                 </div>
                 <div className="flex flex-col justify-center h-full pl-2 md:pl-4">
@@ -244,8 +244,8 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97">
-                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px] mb-4 mx-auto">
+              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
 								<Image src="/icons/Eye.svg" alt="Контроль и безопасность" width={28} height={28} className="w-7 h-7" />
 
                 </div>
@@ -259,8 +259,8 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97">
-                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px] mb-4 mx-auto">
+              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
 								<Image src="/icons/Statistic.svg" alt="Статистика" width={28} height={28} className="w-7 h-7" />
 
                 </div>
@@ -274,8 +274,8 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97">
-                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px] mb-4 mx-auto">
+              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+                <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
 								<Image src="/icons/Actual.svg" alt="Актуальные данные" width={28} height={28} className="w-7 h-7" />
 
                 </div>
@@ -321,7 +321,7 @@ export default function InventoryBurialsPage() {
               </p>
               <button
                 onClick={handleKP}
-                className="inline-flex items-center justify-center bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                className="inline-flex items-center justify-center bg-[#029cda] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
               >
                 Получить коммерческое предложение
               </button>

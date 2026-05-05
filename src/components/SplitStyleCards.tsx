@@ -244,13 +244,13 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
         >
           {/* Стрелки */}
           <button
-            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] hover:bg-[#005fcc] text-white"
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#029cda] hover:bg-[#029cda]/90 text-white"
             onClick={() => onPrevRef.current()}
           >
             ‹
           </button>
           <button
-            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -right-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#0077FF] hover:bg-[#005fcc] text-white"
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -right-12 z-20 h-20 w-10 items-center justify-center rounded-full bg-[#029cda] hover:bg-[#029cda]/90 text-white"
             onClick={() => onNextRef.current()}
           >
             ›
@@ -320,7 +320,7 @@ const FeaturesCarousel: React.FC<FeaturesCarouselProps> = ({
               key={i}
               aria-label={`К карточке ${i + 1}`}
               aria-current={i === index ? 'true' : undefined}
-              className={`h-2.5 rounded-full transition-[width,opacity] ${i === index ? 'w-6 bg-[#0077FF]' : 'w-2.5 bg-black/25'}`}
+              className={`h-2.5 rounded-full transition-[width,opacity] ${i === index ? 'w-6 bg-[#029cda]' : 'w-2.5 bg-black/25'}`}
               onClick={() => setIndex(i)}
             />
           ))}

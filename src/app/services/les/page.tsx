@@ -107,7 +107,7 @@ export default function ForestManagementPage() {
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleKP}
-                  className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
                 >
                   Получить расчет
                 </button>
@@ -303,7 +303,7 @@ export default function ForestManagementPage() {
     <div className="flex justify-center">
       <button
         onClick={handleKP}
-        className="bg-[#0077ff] hover:bg-[#0066db] text-white text-xl font-medium px-8 py-4 rounded-xl transition"
+        className="bg-[#029cda] hover:bg-[#0066db] text-white text-xl font-medium px-8 py-4 rounded-xl transition"
       >
         Оставить заявку
       </button>
@@ -347,7 +347,7 @@ export default function ForestManagementPage() {
 							<div className="flex justify-center py-12">
 								<button
 									onClick={handleKP}
-									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
+									className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
 								>
 									Оставить заявку
 								</button>
@@ -413,7 +413,7 @@ export default function ForestManagementPage() {
 					<div className="flex justify-center mt-12">
 						<button
 							onClick={handleConsult}
-							className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition hover:scale-[1.03]"
+							className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition hover:scale-[1.03]"
 						>
 							Получить консультацию
 						</button>
@@ -544,7 +544,7 @@ export default function ForestManagementPage() {
 							<div>
 								<button
 									onClick={handleKP}
-									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+									className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
 									Оставить заявку
 								</button>
 							</div>

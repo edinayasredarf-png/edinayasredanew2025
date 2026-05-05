@@ -21,9 +21,9 @@ const sizeVariants = {
 
 const variants = {
   primary:
-    'bg-[#0077FF] text-white hover:bg-[#0077FF]/90',
+    'bg-[#029cda] text-white hover:bg-[#029cda]/90',
   secondary:
-    'bg-white text-[#0077FF] border border-[#0077FF] hover:bg-[#0077FF]/10',
+    'bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10',
 };
 
 const Button: React.FC<ButtonProps> = ({

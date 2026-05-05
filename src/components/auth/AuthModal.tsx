@@ -92,7 +92,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-3 py-2 border border-[#D6D7DB] rounded-lg focus:ring-1 focus:ring-[#0077FF] text-[#7C8A9A] "
+                className="w-full px-3 py-2 border border-[#D6D7DB] rounded-lg focus:ring-1 focus:ring-[#029cda] text-[#7C8A9A] "
                 placeholder="Иван Иванов"
               />
             </div>
@@ -106,7 +106,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-[#D6D7DB] rounded-lg focus:ring-1 focus:ring-[#0077FF] text-[#7C8A9A] "
+              className="w-full px-3 py-2 border border-[#D6D7DB] rounded-lg focus:ring-1 focus:ring-[#029cda] text-[#7C8A9A] "
               placeholder="ваша_почта@email.ru"
               required
             />
@@ -120,7 +120,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-[#D6D7DB] rounded-lg focus:ring-1 focus:ring-[#0077FF] text-[#7C8A9A]"
+              className="w-full px-3 py-2 border border-[#D6D7DB] rounded-lg focus:ring-1 focus:ring-[#029cda] text-[#7C8A9A]"
               placeholder="••••••••"
               required
             />
@@ -129,7 +129,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#0077FF] text-white py-2 px-4 rounded-lg hover:bg-[#1f66de] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#029cda] text-white py-2 px-4 rounded-lg hover:bg-[#1f66de] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Загрузка...' : (mode === 'signin' ? 'Войти' : 'Зарегистрироваться')}
           </button>
@@ -191,7 +191,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         <div className="mt-6 text-center">
           <button
             onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-            className="text-[#0077FF] hover:text-[#1f66de] text-sm"
+            className="text-[#029cda] hover:text-[#1f66de] text-sm"
           >
             {mode === 'signin' ? 'Нет аккаунта? Зарегистрироваться' : 'Есть аккаунт? Войти'}
           </button>

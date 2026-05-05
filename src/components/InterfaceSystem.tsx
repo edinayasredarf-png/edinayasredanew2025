@@ -82,7 +82,7 @@ const SectionInterfaceByFigma: React.FC = () => {
               <button
                 ref={prevRef}
                 aria-label="Предыдущий слайд"
-                className="w-[50px] h-[60px] bg-[#0077ff] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center hover:bg-[#0a6ae0]"
+                className="w-[50px] h-[60px] bg-[#029cda] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center hover:bg-[#029cda]/90"
               >
                 <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden>
                   <path d="M15 6l-6 6 6 6" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -91,7 +91,7 @@ const SectionInterfaceByFigma: React.FC = () => {
               <button
                 ref={nextRef}
                 aria-label="Следующий слайд"
-                className="w-[50px] h-[60px] bg-[#0077ff] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center hover:bg-[#0a6ae0]"
+                className="w-[50px] h-[60px] bg-[#029cda] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center hover:bg-[#029cda]/90"
               >
                 <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden>
                   <path d="M9 6l6 6-6 6" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

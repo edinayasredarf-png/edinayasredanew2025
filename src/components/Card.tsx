@@ -16,7 +16,7 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ size = 'small', imageSrc, imageAlt, title, description, textColor = 'text-black-solid', descColor = 'text-grey-600' }) => {
   return (
     <div
-      className={`bg-white rounded-4xl p-3 md:p-4 h-auto flex ${size === 'big' ? 'flex-col md:flex-row md:col-span-2 lg:col-span-2 gap-2' : 'flex-col gap-2'} transition-all duration-300 hover:ring-1 hover:ring-[#0077FF] hover:ring-offset-2 hover:ring-offset-grey-97`}
+      className={`bg-white rounded-4xl p-3 md:p-4 h-auto flex ${size === 'big' ? 'flex-col md:flex-row md:col-span-2 lg:col-span-2 gap-2' : 'flex-col gap-2'} transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97`}
     >
       {imageSrc && (
         <div className="bg-[#F6F7F9] rounded-xl md:rounded-2xl flex items-center justify-center w-full h-28 md:w-32 md:h-32 flex-shrink-0 mx-[1px] md:mx-0 mt-0 mb-0">

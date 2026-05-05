@@ -12,7 +12,7 @@ export default function ConsultationCTA({ onKP }: any) {
           <p className="text-[#7c8a9a] text-lg leading-relaxed mb-8">
             Стоимость зависит от площади кладбищ, состояния архивов и необходимого объема работ.
           </p>
-          <button onClick={onKP} className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+          <button onClick={onKP} className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
             Оставить заявку
           </button>
         </div>

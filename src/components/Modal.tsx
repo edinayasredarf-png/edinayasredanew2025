@@ -69,7 +69,7 @@ const Modal: React.FC<ModalProps> = ({
   title = "Оставьте заявку",
   description = "Заполните форму и менеджер свяжется с вами в ближайшее время для предоставления доступа к системе и уточнения деталей по услугам! ",
   bonusIcon = "/icons/bonus.svg",
-  leftBgColor = "bg-[#0077FF]",
+  leftBgColor = "bg-[#029cda]",
   leftTextColor = "text-white",
   children,
 }) => {
@@ -160,7 +160,7 @@ const Modal: React.FC<ModalProps> = ({
             Есть аккаунт?{' '}
             <a
               href="https://edinayasreda.ru/"
-              className="text-[#0077FF] font-medium hover:underline"
+              className="text-[#029cda] font-medium hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >

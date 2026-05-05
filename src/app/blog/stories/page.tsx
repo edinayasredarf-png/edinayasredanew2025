@@ -172,7 +172,7 @@ export default function BlogStoriesPage() {
             <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#313131]" placeholder="Логин" value={login} onChange={(e) => setLogin(e.target.value)} />
             <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#313131]" placeholder="Пароль" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
             <div className="flex gap-2">
-              <button onClick={() => auth.login(login, pass) && setAuthed(true)} className="bg-[#0077FF] text-white px-5 py-2.5 rounded-lg">Войти</button>
+              <button onClick={() => auth.login(login, pass) && setAuthed(true)} className="bg-[#029cda] text-white px-5 py-2.5 rounded-lg">Войти</button>
               <Link href="/blog" className="px-5 py-2.5 rounded-lg border text-[#313131]">В блог</Link>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function BlogStoriesPage() {
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             В блог
           </Link>
-          <button onClick={startCreate} className="px-5 py-2.5 rounded-lg bg-[#0077FF] text-white">
+          <button onClick={startCreate} className="px-5 py-2.5 rounded-lg bg-[#029cda] text-white">
             + Новый сторис
           </button>
         </div>
@@ -217,7 +217,7 @@ export default function BlogStoriesPage() {
                   <div className="text-sm text-gray-500">Просмотры: {s.viewCount ?? 0}</div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button onClick={() => startEdit(s)} className="px-3 py-1.5 rounded-lg bg-[#0077FF] text-white text-sm">Редактировать</button>
+                  <button onClick={() => startEdit(s)} className="px-3 py-1.5 rounded-lg bg-[#029cda] text-white text-sm">Редактировать</button>
                   <button onClick={() => handleDelete(s.id)} className="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 text-sm hover:bg-red-50">Удалить</button>
                 </div>
               </li>
@@ -254,7 +254,7 @@ export default function BlogStoriesPage() {
 
             <div className="mb-2 flex items-center justify-between">
               <label className="text-sm font-medium text-[#313131]">Слайды</label>
-              <button type="button" onClick={addSlide} className="px-3 py-1.5 rounded-lg bg-[#0077FF] text-white font-medium  text-sm">+ Слайд</button>
+              <button type="button" onClick={addSlide} className="px-3 py-1.5 rounded-lg bg-[#029cda] text-white font-medium  text-sm">+ Слайд</button>
             </div>
 
             <div className="space-y-6">
@@ -271,7 +271,7 @@ export default function BlogStoriesPage() {
                       <select
                         value={slide.type}
                         onChange={(e) => updateSlide(idx, { type: e.target.value as 'image' | 'video' | 'text' })}
-                        className="ml-2 bg-white border border-[#0077FF]  rounded px-2 py-1 text-[#313131]"
+                        className="ml-2 bg-white border border-[#029cda]  rounded px-2 py-1 text-[#313131]"
                       >
                         <option value="image">Картинка</option>
                         <option value="video">Видео</option>
@@ -451,7 +451,7 @@ export default function BlogStoriesPage() {
             </div>
 
             <div className="mt-6 flex gap-2">
-              <button onClick={saveStory} className="px-5 py-2.5 rounded-lg bg-[#0077FF] text-white">Сохранить сторис</button>
+              <button onClick={saveStory} className="px-5 py-2.5 rounded-lg bg-[#029cda] text-white">Сохранить сторис</button>
               <button onClick={() => { setEditingId(null); setFormSlides([]); }} className="px-5 py-2.5 rounded-lg border text-[#313131]">Отмена</button>
             </div>
           </div>

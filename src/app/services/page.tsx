@@ -119,7 +119,7 @@ export default function ServicesPage() {
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleKP}
-                  className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
                 >
                   Запросить КП
                 </button>
@@ -191,7 +191,7 @@ export default function ServicesPage() {
                   </Link>
                   <button
                     onClick={handleOpenKP}
-                    className="w-full bg-white text-[#0077FF] border border-[#0077FF] hover:bg-[#0077FF]/10 font-bold py-4 rounded-2xl text-base transition-colors"
+                    className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-4 rounded-2xl text-base transition-colors"
                   >
                     Оставить заявку
                   </button>
@@ -236,7 +236,7 @@ export default function ServicesPage() {
 
                     <button
                       onClick={handleOpenKP}
-                      className="w-full bg-white text-[#0077FF] border border-[#0077FF] hover:bg-[#0077FF]/10 font-bold py-4 rounded-2xl text-base transition-colors"
+                      className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-4 rounded-2xl text-base transition-colors"
                     >
                       Оставить заявку
                     </button>
@@ -250,7 +250,7 @@ export default function ServicesPage() {
           <div className="flex justify-center mt-10">
             <button
               onClick={handleOpenKP}
-              className="px-5 py-3.5 bg-[#0077FF] text-white text-lg font-medium rounded-xl hover:bg-[#0077FF]/90 transition-colors"
+              className="px-5 py-3.5 bg-[#029cda] text-white text-lg font-medium rounded-xl hover:bg-[#029cda]/90 transition-colors"
             >
               Обсудить проект
             </button>
@@ -291,7 +291,7 @@ export default function ServicesPage() {
 							<div className="flex justify-center py-12">
 								<button
 									onClick={handleKP}
-									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
+									className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition"
 								>
 									Оставить заявку
 								</button>
@@ -320,7 +320,7 @@ export default function ServicesPage() {
 							<div>
 								<button
 									onClick={handleKP}
-									className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+									className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
 									Оставить заявку
 								</button>
 							</div>

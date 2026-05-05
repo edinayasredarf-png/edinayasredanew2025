@@ -51,7 +51,7 @@ const SectionMigration = () => {
                 <button
                   type="button"
                   onClick={openConsult}
-									className="w-full lg:w-auto px-5 py-3.5 bg-[#0077FF] text-white rounded-xl text-base lg:text-lg font-medium hover:bg-[#0066DD] transition-colors"
+									className="w-full lg:w-auto px-5 py-3.5 bg-[#029cda] text-white rounded-xl text-base lg:text-lg font-medium hover:bg-[#0066DD] transition-colors"
 									>
                   Получить консультацию
                 </button>

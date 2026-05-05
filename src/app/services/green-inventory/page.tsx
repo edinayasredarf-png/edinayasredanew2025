@@ -115,13 +115,13 @@ export default function GreenInventoryPage() {
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleKP}
-                  className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
                 >
                   Получить КП
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-block bg-white text-[#0077FF] border border-[#0077FF] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#0077FF]/10 transition-colors"
+                  className="inline-block bg-white text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/10 transition-colors"
                 >
                   Получить консультацию
                 </button>
@@ -177,7 +177,7 @@ export default function GreenInventoryPage() {
               {workSteps.map((step, idx) => (
                 <div key={step.label} className={`flex flex-col h-auto p-8 ${idx % 4 !== 3 && idx !== workSteps.length - 1 ? 'border-r border-grey-92' : ''} ${idx < 4 ? 'border-b border-grey-92' : ''}`}>
                   <div className="flex items-center mb-4">
-                    <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#0077FF] rounded-[20px] mr-4">
+                    <div className="w-[60px] h-[60px] min-w-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mr-4">
                       <Image src={step.icon} alt="" width={28} height={28} className="w-7 h-7" />
                     </div>
                     <div className="text-black text-base md:text-lg lg:text-xl font-normal leading-7">
@@ -214,13 +214,13 @@ export default function GreenInventoryPage() {
           <div className="max-w-[1480px] mx-auto px-5 md:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Left Big Card */}
-              <a href="/about" className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#0077FF]">
+              <a href="/about" className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]">
                 <div className="relative z-10 flex flex-col flex-grow h-full w-full">
                   <h3 className="text-3xl md:text-4xl lg:text-[40px] font-medium text-black leading-tight">
                     17 лет<br />помогаем муниципалитетам<br />в управлении зелеными насаждениями
                   </h3>
                   <div className="flex-grow"></div>
-                  <div className="mt-8 inline-flex items-center justify-center self-start px-8 py-3.5 bg-[#0077FF] text-white text-lg font-medium rounded-xl group-hover:bg-opacity-80 transition-all duration-300">
+                  <div className="mt-8 inline-flex items-center justify-center self-start px-8 py-3.5 bg-[#029cda] text-white text-lg font-medium rounded-xl group-hover:bg-opacity-80 transition-all duration-300">
                     Подробнее о нас
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function GreenInventoryPage() {
               {/* Right Column */}
               <div className="flex flex-col gap-5 h-full">
                 {/* Top Card */}
-                <div className="group bg-white rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center gap-8 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#0077FF] flex-grow">
+                <div className="group bg-white rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center gap-8 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda] flex-grow">
                   <div className="order-2 md:order-1 w-full md:w-auto">
                     <h4 className="text-2xl font-normal text-black leading-snug mb-4 md:mb-0">
                       Лидер в инвентаризации зелёных насаждений – точность, качество, технологии по всей России.
@@ -263,9 +263,9 @@ export default function GreenInventoryPage() {
                   ].map((card, idx) => (
                     <div
                       key={idx}
-                      className="group bg-white rounded-3xl p-5 flex flex-col gap-4 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#0077FF]"
+                      className="group bg-white rounded-3xl p-5 flex flex-col gap-4 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]"
                     >
-                      <div className="w-16 h-16 bg-[#F6F7F9] rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-[#0077FF]/10">
+                      <div className="w-16 h-16 bg-[#F6F7F9] rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-[#029cda]/10">
                         {card.icon}
                       </div>
                       <p className="text-base text-gray-400">
@@ -321,7 +321,7 @@ export default function GreenInventoryPage() {
                         <h3 className="text-lg font-medium text-black pr-8">{faq.question}</h3>
                         <div className="flex-shrink-0">
                           <svg
-                            className={`w-6 h-6 text-black group-hover:text-[#0077FF] transition-all duration-300 ${
+                            className={`w-6 h-6 text-black group-hover:text-[#029cda] transition-all duration-300 ${
                               openItems.includes(index) ? 'rotate-45' : ''
                             }`}
                             fill="none"
@@ -356,7 +356,7 @@ export default function GreenInventoryPage() {
                   <p className="text-gray-600 mb-6">Задайте его нам на портале поддержки, и мы оперативно ответим.</p>
                   <a
                     href="mailto:info@единаясреда.рф?subject=Вопрос"
-                    className="text-[#0077FF] hover:text-[#0056CC] transition-colors font-medium"
+                    className="text-[#029cda] hover:text-[#0056CC] transition-colors font-medium"
                   >
                     Задать вопрос
                   </a>
@@ -368,7 +368,7 @@ export default function GreenInventoryPage() {
 
         {/* CTA Section */}
         <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16 mb-16">
-          <div className="bg-[#0077FF] rounded-[20px] md:rounded-[30px] p-6 md:p-12 text-center text-white">
+          <div className="bg-[#029cda] rounded-[20px] md:rounded-[30px] p-6 md:p-12 text-center text-white">
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8">
               Рассчитайте стоимость инвентаризации для своего объекта
             </h2>
@@ -377,7 +377,7 @@ export default function GreenInventoryPage() {
             </p>
             <button
               onClick={handleKP}
-              className="inline-flex items-center justify-center bg-white text-[#0077FF] px-6 md:px-10 py-3 md:py-5 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none"
+              className="inline-flex items-center justify-center bg-white text-[#029cda] px-6 md:px-10 py-3 md:py-5 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none"
             >
               Рассчитать стоимость
             </button>

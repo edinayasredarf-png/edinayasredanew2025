@@ -143,7 +143,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
             <main className="flex-1 flex justify-center">
               <div className="w-full max-w-[761px] flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4" />
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4" />
                   <p className="text-gray-600">Загрузка статьи...</p>
                 </div>
               </div>

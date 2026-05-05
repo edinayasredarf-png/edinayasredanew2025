@@ -131,7 +131,7 @@ export default function ProfilePage() {
             </p>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-              className="px-6 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
+              className="px-6 py-2 bg-[#029cda] text-white rounded-lg hover:bg-[#029cda]/90 transition-colors"
             >
               Войти
             </button>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
       <ProfileLayout>
         <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077FF] mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4"></div>
             <p className="text-gray-600">Загрузка профиля...</p>
           </div>
         </div>
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                         type="text"
                         value={editData.full_name}
                         onChange={(e) => setEditData({...editData, full_name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077FF] focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#029cda] focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -194,13 +194,13 @@ export default function ProfilePage() {
                         type="text"
                         value={editData.organization}
                         onChange={(e) => setEditData({...editData, organization: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077FF] focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#029cda] focus:border-transparent"
                       />
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={handleSaveProfile}
-                        className="px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
+                        className="px-4 py-2 bg-[#029cda] text-white rounded-lg hover:bg-[#029cda]/90 transition-colors"
                       >
                         Сохранить
                       </button>
@@ -235,7 +235,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
+                      className="px-4 py-2 bg-[#029cda] text-white rounded-lg hover:bg-[#029cda]/90 transition-colors"
                     >
                       Редактировать
                     </button>
@@ -277,14 +277,14 @@ export default function ProfilePage() {
                         value={requestMessage}
                         onChange={(e) => setRequestMessage(e.target.value)}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077FF] focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#029cda] focus:border-transparent"
                         placeholder="Опишите ваш опыт работы, сферу деятельности организации и почему вы хотите стать редактором..."
                       />
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={handleRequestAuthorRole}
-                        className="px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors"
+                        className="px-4 py-2 bg-[#029cda] text-white rounded-lg hover:bg-[#029cda]/90 transition-colors"
                       >
                         Отправить заявку
                       </button>
@@ -355,7 +355,7 @@ export default function ProfilePage() {
                 <p className="text-gray-600 text-sm mb-4">
                   Получите доступ к цифровой платформе для управления территориями
                 </p>
-                <button className="w-full px-4 py-2 bg-[#0077FF] text-white rounded-lg hover:bg-[#0077FF]/90 transition-colors">
+                <button className="w-full px-4 py-2 bg-[#029cda] text-white rounded-lg hover:bg-[#029cda]/90 transition-colors">
                   Заказать платформу
                 </button>
               </div>

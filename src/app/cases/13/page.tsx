@@ -112,7 +112,7 @@ const Case13Inner: React.FC = () => {
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={openRequest}
-                  className="bg-[#0077FF] text-white font-semibold px-6 py-4 rounded-xl hover:bg-[#0077FF]/90 transition-colors text-base md:text-lg"
+                  className="bg-[#029cda] text-white font-semibold px-6 py-4 rounded-xl hover:bg-[#029cda]/90 transition-colors text-base md:text-lg"
                 >
                   Запросить похожее решение
                 </button>
@@ -203,35 +203,35 @@ const Case13Inner: React.FC = () => {
 
               <ul className="mt-6 space-y-4 text-lg md:text-xl leading-relaxed text-gray-800">
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>
                     <strong>Экологический и ландшафтный анализ</strong> факторов, влияющих на формирование
                     ландшафтно-архитектурного комплекса и схемы озеленения/благоустройства.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>
                     <strong>Дендрологические и фитопатологические исследования</strong> для уточнения видового состава и
                     физиологического состояния коллекций.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>
                     <strong>Научно обоснованные рекомендации</strong> по содержанию, лечению, восстановлению и
                     приумножению коллекции с учётом ЗОУИТ.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>
                     <strong>Определение очередности работ</strong>: фитосанитарные мероприятия, благоустройство,
                     ремонт/организация дорожно-тропиночной сети, реконструкция коллекций и создание новых.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>
                     <strong>Дорожная карта развития</strong> дендрологического парка и подготовка сметной документации.
                   </span>
@@ -248,11 +248,11 @@ const Case13Inner: React.FC = () => {
               </h3>
               <ul className="mt-3 space-y-4 text-lg md:text-xl leading-relaxed text-gray-800">
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Обеспечено сохранение и пополнение уникального семенного фонда дендропарка.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Созданы условия для поддержания биологического разнообразия.</span>
                 </li>
               </ul>
@@ -262,15 +262,15 @@ const Case13Inner: React.FC = () => {
               </h3>
               <ul className="mt-3 space-y-4 text-lg md:text-xl leading-relaxed text-gray-800">
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Проведён экологический и ландшафтный анализ территории.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Подготовлены научно обоснованные регламенты ухода за зелёными насаждениями.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Создана система мониторинга состояния коллекции дендрария.</span>
                 </li>
               </ul>
@@ -278,15 +278,15 @@ const Case13Inner: React.FC = () => {
               <h3 className="mt-6 text-xl md:text-2xl font-semibold text-black">Развитие инфраструктуры</h3>
               <ul className="mt-3 space-y-4 text-lg md:text-xl leading-relaxed text-gray-800">
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Подготовлен комплексный проект реконструкции парка и очередность его реализации.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Сметы и целевое выделение бюджетных средств на развитие дендропарка.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Привлечение средств инвесторов под проекты благоустройства и коллекций.</span>
                 </li>
               </ul>
@@ -294,11 +294,11 @@ const Case13Inner: React.FC = () => {
               <h3 className="mt-6 text-xl md:text-2xl font-semibold text-black">Дополнительные результаты</h3>
               <ul className="mt-3 space-y-4 text-lg md:text-xl leading-relaxed text-gray-800">
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Методические материалы для просветительских программ и школьных маршрутов.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#0077FF]" />
+                  <span className="mt-2 inline-block w-2 h-2 rounded-full bg-[#029cda]" />
                   <span>Пилотные сценарии экотроп и детских образовательных активностей.</span>
                 </li>
               </ul>
@@ -307,7 +307,7 @@ const Case13Inner: React.FC = () => {
             {/* Отзыв */}
             <section aria-labelledby="testimonial" className="bg-white rounded-3xl p-6 md:p-8">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0077FF] flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-full bg-[#029cda] flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M7 7h4v10H5V9a2 2 0 012-2zm10 0h4v10h-6V9a2 2 0 012-2z" />
                   </svg>
@@ -330,13 +330,13 @@ const Case13Inner: React.FC = () => {
             <div className="bg-white rounded-3xl p-6 md:p-8 sticky top-6">
               <h3 className="text-xl md:text-2xl font-semibold text-black">Содержание</h3>
               <nav className="mt-4 space-y-3 text-gray-800">
-                <a href="#task" className="block hover:text-[#0077FF] text-base md:text-lg transition-colors">
+                <a href="#task" className="block hover:text-[#029cda] text-base md:text-lg transition-colors">
                   Задача
                 </a>
-                <a href="#solution" className="block hover:text-[#0077FF] text-base md:text-lg transition-colors">
+                <a href="#solution" className="block hover:text-[#029cda] text-base md:text-lg transition-colors">
                   Решение
                 </a>
-                <a href="#result13" className="block hover:text-[#0077FF] text-base md:text-lg transition-colors">
+                <a href="#result13" className="block hover:text-[#029cda] text-base md:text-lg transition-colors">
                   Результаты
                 </a>
               </nav>
@@ -346,7 +346,7 @@ const Case13Inner: React.FC = () => {
                 <div className="text-base md:text-lg text-gray-700 mb-4">{caseData.application}</div>
                 <button
                   onClick={openRequest}
-                  className="w-full bg-[#0077FF] text-white font-semibold py-3.5 rounded-xl text-base hover:bg-[#0077FF]/90 transition-colors"
+                  className="w-full bg-[#029cda] text-white font-semibold py-3.5 rounded-xl text-base hover:bg-[#029cda]/90 transition-colors"
                 >
                   Запросить похожее решение
                 </button>
@@ -364,7 +364,7 @@ const Case13Inner: React.FC = () => {
             <Link
               key={m.id}
               href={`/cases/${m.id}`}
-              className="bg-white rounded-3xl p-6 hover:ring-1 hover:ring-[#0077FF] transition"
+              className="bg-white rounded-3xl p-6 hover:ring-1 hover:ring-[#029cda] transition"
             >
               <div className="w-full h-64 rounded-xl bg-[#F6F7F9] overflow-hidden flex items-center justify-center relative">
                 <Image
@@ -396,7 +396,7 @@ const Case13Inner: React.FC = () => {
           <div className="mt-8">
             <button
               onClick={openRequest}
-              className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-[#0077FF]/90 transition-colors"
+              className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-[#029cda]/90 transition-colors"
             >
               Запросить консультацию
             </button>

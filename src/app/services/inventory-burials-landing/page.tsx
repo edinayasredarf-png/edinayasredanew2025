@@ -31,13 +31,13 @@ export default function InventoryBurialsLandingPage() {
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleKP}
-                  className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
                 >
                   Получить КП на инвентаризацию
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-flex items-center justify-center bg-white text-[#0077FF] border border-[#0077FF] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/10 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-white text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
                 >
                   Обсудить проект инвентаризации
                 </button>
@@ -117,7 +117,7 @@ export default function InventoryBurialsLandingPage() {
                 >
                   <div className="flex items-start gap-4 md:gap-6 bg-white rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
                     <div className="flex flex-col items-center md:items-start">
-                      <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-[#0077FF] text-white flex items-center justify-center text-xs md:text-base font-semibold">
+                      <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-[#029cda] text-white flex items-center justify-center text-xs md:text-base font-semibold">
                         {item.step}
                       </div>
                     </div>
@@ -261,13 +261,13 @@ export default function InventoryBurialsLandingPage() {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={handleKP}
-                className="inline-flex items-center justify-center bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+                className="inline-flex items-center justify-center bg-[#029cda] text-white px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
               >
                 Получить коммерческое предложение
               </button>
               <button
                 onClick={handleConsult}
-                className="inline-flex items-center justify-center bg-white text-[#0077FF] border border-[#0077FF] px-8 py-4 rounded-xl font-medium hover:bg-[#0077FF]/10 transition-colors duration-200 focus:outline-none"
+                className="inline-flex items-center justify-center bg-white text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
               >
                 Задать вопросы по проекту
               </button>

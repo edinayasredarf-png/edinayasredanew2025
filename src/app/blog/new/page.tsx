@@ -534,7 +534,7 @@ export default function NewPostPage() {
                 <svg className="w-5 h-5 color-whte" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Назад
               </Link>
-              <Link href="/blog/stories" className="rounded-xl border border-[#0077FF] px-4 py-2 text-[#0077FF] hover:bg-[#0077FF]  hover:text-white">Сторисы</Link>
+              <Link href="/blog/stories" className="rounded-xl border border-[#029cda] px-4 py-2 text-[#029cda] hover:bg-[#029cda]  hover:text-white">Сторисы</Link>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               {editSlug && editType && (
@@ -542,13 +542,13 @@ export default function NewPostPage() {
               )}
               <button
                 onClick={() => setShowScheduled(!showScheduled)}
-                className="px-4 py-2 rounded-xl border border-[#0077FF] text-[#0077FF] hover:bg-[#0077FF]/20"
+                className="px-4 py-2 rounded-xl border border-[#029cda] text-[#029cda] hover:bg-[#029cda]/20"
               >
                 {showScheduled ? 'Скрыть' : 'Показать'} отложенные ({scheduledPosts.length + scheduledNews.length})
               </button>
               <button
                 onClick={()=> setStep(s=> Math.min(s+1,3))}
-                className="px-5 py-2 rounded-xl bg-[#0077FF] text-white hover:bg-[#0077FF]/90">{step<3?'Далее':'Готово'}</button>
+                className="px-5 py-2 rounded-xl bg-[#029cda] text-white hover:bg-[#029cda]/90">{step<3?'Далее':'Готово'}</button>
             </div>
           </div>
 
@@ -557,7 +557,7 @@ export default function NewPostPage() {
             <div className="mb-6 flex flex-wrap items-center gap-2 text-sm overflow-x-auto">
               {[0,1,2,3].map(i=>(
                 <button key={i} onClick={()=>setStep(i)}
-                  className={`h-8 px-3 rounded-lg  ${step===i?'bg-[#2777ff] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#0077FF]/10 text-[#313131]'}`}>
+                  className={`h-8 px-3 rounded-lg  ${step===i?'bg-[#2777ff] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#029cda]/10 text-[#313131]'}`}>
                   {i===0?'Тип':i===1?'Заголовок':i===2?'Контент':'Обложка/теги'}
                 </button>
               ))}
@@ -631,7 +631,7 @@ export default function NewPostPage() {
                   ].map(x=>(
                     <button key={x.k}
                       onClick={()=>setKind(x.k as any)}
-                      className={`h-12 rounded-xl   ${kind===x.k?'bg-[#0077FF] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#0077FF]/10 text-[#313131]'}`}>
+                      className={`h-12 rounded-xl   ${kind===x.k?'bg-[#029cda] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#029cda]/10 text-[#313131]'}`}>
                       {x.label}
                     </button>
                   ))}

@@ -50,7 +50,7 @@ const SectionBestSolution: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         {/* Блок 1: Большой */}
         <div className="outline outline-[6px] outline-white rounded-3xl flex flex-col md:flex-row items-center p-4 h-full lg:col-span-2 md:col-span-1 group">
-          <div className="bg-[#0077FF] flag-animate rounded-xl md:rounded-2xl flex items-center justify-center w-28 h-28 md:w-36 md:h-36 flex-shrink-0 m-2">
+          <div className="bg-[#029cda] flag-animate rounded-xl md:rounded-2xl flex items-center justify-center w-28 h-28 md:w-36 md:h-36 flex-shrink-0 m-2">
             <Image
               src="/icons/logo-small.svg"
               alt="Проверка подрядчиков"

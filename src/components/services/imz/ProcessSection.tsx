@@ -29,7 +29,7 @@ export default function ProcessSection({ onConsult }: any) {
       </div>
 
       <div className="flex justify-center mt-12">
-        <button onClick={onConsult} className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition hover:scale-[1.03]">
+        <button onClick={onConsult} className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition hover:scale-[1.03]">
           Получить консультацию
         </button>
       </div>

@@ -39,7 +39,7 @@ const SectionPublicPrivate: React.FC = () => {
             ======================================== */}
         <article className="group bg-white rounded-[20px] p-8 overflow-hidden flex flex-col md:flex-row min-h-[276px] transition-all duration-300">
           <div className="flex-1 flex flex-col justify-between h-full">
-            <h3 className="font-medium text-black text-lg md:text-xl lg:text-2xl leading-9 mb-2 transition-colors duration-300 group-hover:text-[#0077FF]">
+            <h3 className="font-medium text-black text-lg md:text-xl lg:text-2xl leading-9 mb-2 transition-colors duration-300 group-hover:text-[#029cda]">
               Можно работать с телефона<br />даже без интернета
             </h3>
             <p className="text-black/70 leading-snug text-[15px] sm:text-[16px] md:text-[16px] transition-colors duration-300 group-hover:text-black/90">
@@ -102,14 +102,14 @@ const SectionPublicPrivate: React.FC = () => {
                     <span
                       className={`absolute bottom-0 left-0 h-0.5 transition-all duration-300 ${
                         activeTab === 'problems'
-                          ? 'bg-[#0077FF]'
+                          ? 'bg-[#029cda]'
                           : 'bg-[#E2E2E2] group-hover/tab:bg-[#C4C4C4]'
                       }`}
                       style={{ right: '-16px' }}
                     />
                     {/* Hover эффект: подсветка снизу */}
                     {activeTab !== 'problems' && (
-                      <span className="absolute bottom-0 left-0 right-[-16px] h-0.5 bg-[#0077FF]/0 group-hover/tab:bg-[#0077FF]/20 transition-all duration-300" />
+                      <span className="absolute bottom-0 left-0 right-[-16px] h-0.5 bg-[#029cda]/0 group-hover/tab:bg-[#029cda]/20 transition-all duration-300" />
                     )}
                   </button>
 
@@ -127,14 +127,14 @@ const SectionPublicPrivate: React.FC = () => {
                     <span
                       className={`absolute bottom-0 right-0 h-0.5 transition-all duration-300 ${
                         activeTab === 'solutions'
-                          ? 'bg-[#0077FF]'
+                          ? 'bg-[#029cda]'
                           : 'bg-[#E2E2E2] group-hover/tab:bg-[#C4C4C4]'
                       }`}
                       style={{ left: '-16px' }}
                     />
                     {/* Hover эффект: подсветка снизу */}
                     {activeTab !== 'solutions' && (
-                      <span className="absolute bottom-0 left-[-16px] right-0 h-0.5 bg-[#0077FF]/0 group-hover/tab:bg-[#0077FF]/20 transition-all duration-300" />
+                      <span className="absolute bottom-0 left-[-16px] right-0 h-0.5 bg-[#029cda]/0 group-hover/tab:bg-[#029cda]/20 transition-all duration-300" />
                     )}
                   </button>
                 </div>
@@ -170,8 +170,8 @@ const SectionPublicPrivate: React.FC = () => {
                         animationFillMode: 'forwards'
                       }}
                     >
-                      <div className="w-2 h-2 rounded-full bg-[#0077FF] flex-shrink-0 mt-2 transition-all duration-300 group-hover/item:bg-[#00A3FF] " />
-                      <p className="text-black text-base leading-relaxed transition-all duration-300 group-hover/item:text-[#0077FF] ">
+                      <div className="w-2 h-2 rounded-full bg-[#029cda] flex-shrink-0 mt-2 transition-all duration-300 group-hover/item:bg-[#00A3FF] " />
+                      <p className="text-black text-base leading-relaxed transition-all duration-300 group-hover/item:text-[#029cda] ">
                         {item.solution}
                       </p>
                     </div>

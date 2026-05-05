@@ -56,7 +56,7 @@ export default function ContactsPage() {
               <div className="mb-12">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-3xl font-bold text-[#0077FF]">+7 (800) 550-56-12</p>
+                    <p className="text-3xl font-bold text-[#029cda]">+7 (800) 550-56-12</p>
                     <p className="text-lg text-[#7C8A9A] mt-2">Телефон отдела продаж</p>
                   </div>
                   <div>
@@ -84,7 +84,7 @@ export default function ContactsPage() {
               <div className="flex flex-col space-y-4">
                 <a
                   href="tel:+78005505612"
-                  className="w-full px-8 py-4 border-2 border-[#0077FF] text-[#0077FF] text-lg font-medium rounded-xl hover:bg-[#0077FF] hover:text-white transition-colors text-center block"
+                  className="w-full px-8 py-4 border-2 border-[#029cda] text-[#029cda] text-lg font-medium rounded-xl hover:bg-[#029cda] hover:text-white transition-colors text-center block"
                 >
                   Позвонить нам
                 </a>

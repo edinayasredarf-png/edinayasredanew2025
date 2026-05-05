@@ -79,7 +79,7 @@ const InterfaceSlider: React.FC<InterfaceSliderProps> = ({ title, subtitle, imag
           <button
             ref={prevRef}
             aria-label="Предыдущий слайд"
-            className={`slider-prev w-[50px] h-[60px] bg-[#0077FF] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center group transition-transform duration-200 hover:bg-opacity-90 ${isBeginning ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`slider-prev w-[50px] h-[60px] bg-[#029cda] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center group transition-transform duration-200 hover:bg-opacity-90 ${isBeginning ? 'opacity-50 cursor-not-allowed' : ''}`}
             disabled={isBeginning}
           >
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ const InterfaceSlider: React.FC<InterfaceSliderProps> = ({ title, subtitle, imag
           <button
             ref={nextRef}
             aria-label="Следующий слайд"
-            className={`slider-next w-[50px] h-[60px] bg-[#0077FF] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center group transition-transform duration-200 hover:bg-opacity-90 ${isEnd ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`slider-next w-[50px] h-[60px] bg-[#029cda] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center group transition-transform duration-200 hover:bg-opacity-90 ${isEnd ? 'opacity-50 cursor-not-allowed' : ''}`}
             disabled={isEnd}
           >
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24">

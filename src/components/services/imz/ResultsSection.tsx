@@ -24,7 +24,7 @@ export default function ResultsSection({ onConsult }: any) {
       </div>
 
       <div className="flex justify-center mt-12">
-        <button onClick={onConsult} className="bg-[#0077FF] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
+        <button onClick={onConsult} className="bg-[#029cda] hover:bg-[#0066db] text-white text-lg font-medium px-8 py-4 rounded-xl transition">
           Получить консультацию
         </button>
       </div>

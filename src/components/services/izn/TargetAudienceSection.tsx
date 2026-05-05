@@ -80,7 +80,7 @@ const TargetAudienceSection: React.FC<TargetAudienceSectionProps> = ({ onButtonC
         <div className="flex justify-center">
           <button
             onClick={onButtonClick}
-            className="bg-[#0077ff] hover:bg-[#0066db] text-white text-xl font-medium px-8 py-4 rounded-xl transition"
+            className="bg-[#029cda] hover:bg-[#0066db] text-white text-xl font-medium px-8 py-4 rounded-xl transition"
           >
             Оставить заявку
           </button>

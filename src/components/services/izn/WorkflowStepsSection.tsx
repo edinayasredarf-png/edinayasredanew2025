@@ -68,7 +68,7 @@ const WorkflowStepsSection: React.FC = () => {
                   `}
                 >
                   {/* Номер */}
-                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-[#0077ff] text-white text-xl font-medium rounded-2xl">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-[#029cda] text-white text-xl font-medium rounded-2xl">
                     {i + 1}
                   </div>
 

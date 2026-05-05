@@ -224,7 +224,7 @@ export default function RightSidebar() {
                   </div>
                   <Link
                     href={`/news/${n.slug}`}
-                    className="text-base text-[#313131] leading-snug hover:text-[#0077FF]"
+                    className="text-base text-[#313131] leading-snug hover:text-[#029cda]"
                   >
                     {n.title}
                   </Link>

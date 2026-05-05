@@ -250,7 +250,7 @@ const ProductsTeamsSection = () => {
                   </div>
                   <Link
                     href={slides[activeSlide].url}
-                    className="bg-[#0077FF] rounded-full shrink-0 w-11 h-11 md:w-12 md:h-12 flex items-center justify-center hover:opacity-90 transition"
+                    className="bg-[#029cda] rounded-full shrink-0 w-11 h-11 md:w-12 md:h-12 flex items-center justify-center hover:opacity-90 transition"
                     aria-label={`Перейти на сайт: ${slides[activeSlide].name}`}
                     target="_blank"
                     rel="noopener noreferrer"

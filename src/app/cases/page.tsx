@@ -130,7 +130,7 @@ const CasesPage: React.FC = () => {
         <div className="mt-10">
           <button
             onClick={openConsult}
-            className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/90 transition-colors duration-200 focus:outline-none"
+            className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
           >
             Получить консультацию
           </button>
@@ -252,7 +252,7 @@ const CasesPage: React.FC = () => {
             <p className="text-[#7C8A9A] mb-8">Попробуйте изменить параметры фильтрации</p>
               <button
                 onClick={resetFilters}
-              className="inline-block bg-[#0077FF] text-white px-8 py-3 rounded-lg hover:bg-[#0077FF]/90 transition-colors"
+              className="inline-block bg-[#029cda] text-white px-8 py-3 rounded-lg hover:bg-[#029cda]/90 transition-colors"
               >
                 Сбросить фильтры
               </button>
@@ -291,7 +291,7 @@ const CasesPage: React.FC = () => {
                     href={href}
                     className={`group ${isWide ? 'md:col-span-2 lg:col-span-2 xl:col-span-2' : ''}`}
                   >
-                                    <div className="bg-white rounded-2xl p-2 flex h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#0077FF]">
+                                    <div className="bg-white rounded-2xl p-2 flex h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#029cda]">
                   <div className={`bg-[#F6F7F9] rounded-xl p-4 flex flex-col ${isWide ? 'md:flex-row' : ''} h-full items-stretch relative overflow-hidden min-h-[450px] ${isWide ? 'md:min-h-[380px]' : ''}`}>
                     {/* Изображение */}
                     <div className={`w-full mb-4 ${isWide ? 'md:w-1/2 md:flex md:justify-center md:items-center md:ml-4 md:order-2' : ''}`}>
@@ -310,7 +310,7 @@ const CasesPage: React.FC = () => {
                     <div className={`flex flex-col justify-between flex-1 ${isWide ? 'md:w-1/2 md:order-1' : ''}`}>
                       <div>
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="bg-[#0077FF] text-white px-2 py-1 rounded-lg text-xs font-medium">
+                          <span className="bg-[#029cda] text-white px-2 py-1 rounded-lg text-xs font-medium">
                             {caseItem.application}
                           </span>
                         </div>
@@ -322,7 +322,7 @@ const CasesPage: React.FC = () => {
                         </p>
                         {!!caseItem.location && (
                         <div className="flex items-center gap-1 mb-3">
-                          <svg className="w-4 h-4 text-[#0077FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-[#029cda]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           </svg>
                           <span className="text-sm text-[#7C8A9A]">{caseItem.location}</span>
@@ -331,8 +331,8 @@ const CasesPage: React.FC = () => {
 
                       </div>
                       <div className="mt-auto">
-                        <span className="group inline-flex items-center justify-center w-12 h-12 bg-white rounded-lg border border-transparent group-hover:border-[#0077FF] transition-all duration-300">
-                          <svg className="w-5 h-5 text-[#313131] group-hover:text-[#0077FF] transition-colors duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <span className="group inline-flex items-center justify-center w-12 h-12 bg-white rounded-lg border border-transparent group-hover:border-[#029cda] transition-all duration-300">
+                          <svg className="w-5 h-5 text-[#313131] group-hover:text-[#029cda] transition-colors duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M14.43 5.92999L20.5 12L14.43 18.07" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
                             <path d="M3.5 12H20.33" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
                           </svg>
@@ -361,7 +361,7 @@ const CasesPage: React.FC = () => {
             </p>
             <button
               onClick={openConsult}
-              className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-medium text-lg hover:bg-[#0077FF]/90 transition-colors"
+              className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-medium text-lg hover:bg-[#029cda]/90 transition-colors"
             >
               Получить консультацию
             </button>

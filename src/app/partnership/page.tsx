@@ -102,7 +102,7 @@ export default function PartnershipPage() {
                 <div className="mt-10">
                   <button
                     onClick={() => setPartnersOpen(true)}
-                    className="inline-flex items-center justify-center bg-[#0077FF] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#0077FF]/90 transition-colors"
+                    className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/90 transition-colors"
                   >
                     Стать партнёром
                   </button>
@@ -191,7 +191,7 @@ export default function PartnershipPage() {
               <button
                 type="button"
                 onClick={() => setPartnersOpen(true)}
-                className="px-5 py-3.5 bg-[#0077FF] text-white text-xl font-medium rounded-xl hover:bg-[#0077FF]/90 transition-colors"
+                className="px-5 py-3.5 bg-[#029cda] text-white text-xl font-medium rounded-xl hover:bg-[#029cda]/90 transition-colors"
               >
                 Оставить заявку
               </button>
@@ -249,7 +249,7 @@ export default function PartnershipPage() {
                 <div className="px-2 pt-2">
                   <button
                     onClick={() => setPartnersOpen(true)}
-                    className="w-full px-5 py-3.5 rounded-xl bg-white text-[#0077FF] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
+                    className="w-full px-5 py-3.5 rounded-xl bg-white text-[#029cda] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
                   >
                     Стать партнёром
                   </button>
@@ -298,7 +298,7 @@ export default function PartnershipPage() {
                 <div className="px-2 pt-2">
                   <button
                     onClick={() => setPartnersOpen(true)}
-                    className="w-full px-5 py-3.5 rounded-xl bg-white text-[#0077FF] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
+                    className="w-full px-5 py-3.5 rounded-xl bg-white text-[#029cda] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
                   >
                     Стать агентом
                   </button>
@@ -330,7 +330,7 @@ export default function PartnershipPage() {
                   { icon: "/icons/partners/1.svg", text: "Маркетинговая поддержка" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <span className="inline-flex w-12 h-12 rounded-lg bg-[#0077FF] items-center justify-center shrink-0">
+                    <span className="inline-flex w-12 h-12 rounded-lg bg-[#029cda] items-center justify-center shrink-0">
                       <Image src={item.icon} alt="" width={20} height={20} />
                     </span>
                     <p className="text-[19px] leading-7 text-[#101828]">{item.text}</p>
@@ -545,7 +545,7 @@ export default function PartnershipPage() {
                   <div className="mt-8">
                     <button
                       onClick={openConsult}
-                      className="inline-flex px-5 py-3.5 rounded-xl text-base font-medium text-[#0077FF] bg-[#F2F2F2] hover:bg-[#EBEBEB] transition"
+                      className="inline-flex px-5 py-3.5 rounded-xl text-base font-medium text-[#029cda] bg-[#F2F2F2] hover:bg-[#EBEBEB] transition"
                     >
                       Задать вопрос
                     </button>
@@ -575,13 +575,13 @@ export default function PartnershipPage() {
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => setPartnersOpen(true)}
-              className="bg-[#0077FF] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#0062D8] transition-colors"
+              className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#0062D8] transition-colors"
             >
               Подать заявку
             </button>
             <a
               href="mailto:info@единаясреда.рф"
-              className="px-8 py-4 rounded-xl border border-[#0077FF] text-[#0077FF] font-semibold hover:bg-[#0077FF] hover:text-white transition-colors text-center"
+              className="px-8 py-4 rounded-xl border border-[#029cda] text-[#029cda] font-semibold hover:bg-[#029cda] hover:text-white transition-colors text-center"
             >
               Написать письмо
             </a>

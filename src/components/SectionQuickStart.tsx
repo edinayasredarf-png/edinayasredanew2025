@@ -14,7 +14,7 @@ const ButtonLike: React.FC<
 > = (props) => {
   const base =
     'inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] ' +
-    'hover:ring-1 hover:ring-[#0077FF] transition-colors ' +
+    'hover:ring-1 hover:ring-[#029cda] transition-colors ' +
     'w-full md:w-[201.5px]'; // на мобильных — 100% ширины
 
   if (props.as === 'button') {
@@ -54,7 +54,7 @@ const QuickStartCard: React.FC<CardProps> = ({
     href ? (
       <Link
         href={href}
-        className="group block bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#0077ff] transition-colors overflow-hidden"
+        className="group block bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#029cda] transition-colors overflow-hidden"
       >
         {/* как в карточках с серым блоком: зазор между белым и серым = p-2 (8px) */}
         <div className="p-2 h-full flex flex-col">{children}</div>
@@ -62,7 +62,7 @@ const QuickStartCard: React.FC<CardProps> = ({
     ) : (
       <div
         onClick={onClick}
-        className={`group bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#0077ff] transition-colors overflow-hidden ${
+        className={`group bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#029cda] transition-colors overflow-hidden ${
           onClick ? 'cursor-pointer' : ''
         }`}
       >
@@ -97,7 +97,7 @@ const QuickStartCard: React.FC<CardProps> = ({
           {/* Кнопка — прижимается к низу текста на десктопе */}
           <div className="mt-auto pt-6 md:pt-8">
             {href ? (
-              <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] hover:ring-1 hover:ring-[#0077FF] transition-colors w-full md:w-[201.5px]">
+              <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] hover:ring-1 hover:ring-[#029cda] transition-colors w-full md:w-[201.5px]">
                 {buttonLabel}
               </span>
             ) : (

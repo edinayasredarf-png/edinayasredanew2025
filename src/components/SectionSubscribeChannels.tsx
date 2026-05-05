@@ -118,7 +118,7 @@ const SectionSubscribeChannels = () => {
                     href={ch.buttonHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group mt-auto self-start inline-flex items-center gap-2 text-[#0077FF] font-medium"
+                    className="group mt-auto self-start inline-flex items-center gap-2 text-[#029cda] font-medium"
                   >
                     <span>{ch.buttonText}</span>
                     <svg
@@ -142,7 +142,7 @@ const SectionSubscribeChannels = () => {
             <button
               ref={prevRef}
               aria-label="Предыдущий слайд"
-							className="w-[50px] h-[60px] bg-[#0077ff] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center hover:bg-[#0a6ae0]"
+							className="w-[50px] h-[60px] bg-[#029cda] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center hover:bg-[#029cda]/90"
               disabled={isBeginning}
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@ const SectionSubscribeChannels = () => {
             <button
               ref={nextRef}
               aria-label="Следующий слайд"
-							className="w-[50px] h-[60px] bg-[#0077ff] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center hover:bg-[#0a6ae0]"
+							className="w-[50px] h-[60px] bg-[#029cda] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center hover:bg-[#029cda]/90"
               disabled={isEnd}
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">

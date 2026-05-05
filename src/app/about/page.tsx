@@ -80,19 +80,19 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     type="button"
                     onMouseEnter={() => handleMenuHover('company')}
                     onClick={() => handleMenuClick('company')}
-                    className={`transition-all duration-300 ease-out flex items-center gap-1 text-base font-medium h-20 px-4 ${fixedHoverMenu === 'company' ? 'text-[#005fcc]' : 'text-[#0077FF] hover:text-[#005fcc]'}`}
+                    className={`transition-all duration-300 ease-out flex items-center gap-1 text-base font-medium h-20 px-4 ${fixedHoverMenu === 'company' ? 'text-[#029cda]/90' : 'text-[#029cda] hover:text-[#029cda]/90'}`}
                   >
                     Компания
                     <svg className="w-4 h-4 transition-all duration-300 ease-out" style={{ transform: (openMenu === 'company' || fixedHoverMenu === 'company') ? 'rotate(180deg)' : undefined }} viewBox="0 0 17 17" fill="none"><path d="M12.4911 6.20898L8.50013 10.1999L4.50928 6.20898" stroke="currentColor" strokeWidth="1.38889" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
                 </div>
-                <Link href="/cases" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Кейсы</Link>
+                <Link href="/cases" className="text-[#313131] hover:text-[#029cda] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Кейсы</Link>
                 <div className="relative">
                   <button
                     type="button"
                     onMouseEnter={() => handleMenuHover('platform')}
                     onClick={() => handleMenuClick('platform')}
-                    className={`transition-all duration-300 ease-out flex items-center gap-1 text-base font-medium h-20 px-4 ${fixedHoverMenu === 'platform' ? 'text-[#0077FF]' : 'text-[#313131] hover:text-[#0077FF]'}`}
+                    className={`transition-all duration-300 ease-out flex items-center gap-1 text-base font-medium h-20 px-4 ${fixedHoverMenu === 'platform' ? 'text-[#029cda]' : 'text-[#313131] hover:text-[#029cda]'}`}
                   >
                     Платформа
                     <svg className="w-4 h-4 transition-all duration-300 ease-out" style={{ transform: (openMenu === 'platform' || fixedHoverMenu === 'platform') ? 'rotate(180deg)' : undefined }} viewBox="0 0 17 17" fill="none"><path d="M12.4911 6.20898L8.50013 10.1999L4.50928 6.20898" stroke="currentColor" strokeWidth="1.38889" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -103,16 +103,16 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     type="button"
                     onMouseEnter={() => handleMenuHover('services')}
                     onClick={() => handleMenuClick('services')}
-                    className={`transition-all duration-300 ease-out flex items-center gap-1 text-base font-medium h-20 px-4 ${fixedHoverMenu === 'services' ? 'text-[#0077FF]' : 'text-[#313131] hover:text-[#0077FF]'}`}
+                    className={`transition-all duration-300 ease-out flex items-center gap-1 text-base font-medium h-20 px-4 ${fixedHoverMenu === 'services' ? 'text-[#029cda]' : 'text-[#313131] hover:text-[#029cda]'}`}
                   >
                     Услуги
                     <svg className="w-4 h-4 transition-all duration-300 ease-out" style={{ transform: (openMenu === 'services' || fixedHoverMenu === 'services') ? 'rotate(180deg)' : undefined }} viewBox="0 0 17 17" fill="none"><path d="M12.4911 6.20898L8.50013 10.1999L4.50928 6.20898" stroke="currentColor" strokeWidth="1.38889" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
                 </div>
-                <Link href="/pricing" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Цены</Link>
-                <Link href="/documents" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Документация</Link>
-                <Link href="/contacts" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Контакты</Link>
-                <a href="/partnership" className="text-[#313131] hover:text-[#0077FF] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Партнерство</a>
+                <Link href="/pricing" className="text-[#313131] hover:text-[#029cda] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Цены</Link>
+                <Link href="/documents" className="text-[#313131] hover:text-[#029cda] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Документация</Link>
+                <Link href="/contacts" className="text-[#313131] hover:text-[#029cda] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Контакты</Link>
+                <a href="/partnership" className="text-[#313131] hover:text-[#029cda] transition-colors text-base font-medium h-20 px-4 flex items-center" onMouseEnter={() => setOpenMenu(null)}>Партнерство</a>
               </nav>
 
               {/* Правая часть с иконками */}
@@ -131,7 +131,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 {/* Иконка заявки */}
                 <button
                   onClick={openConsult}
-                  className="hidden lg:flex items-center justify-center w-12 h-12 bg-[#0077FF] rounded-xl hover:bg-[#005fcc] transition-all duration-300 ease-out "
+                  className="hidden lg:flex items-center justify-center w-12 h-12 bg-[#029cda] rounded-xl hover:bg-[#029cda]/90 transition-all duration-300 ease-out "
                 >
                 <Image
           src="/icons/shop.svg"
@@ -168,13 +168,13 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         >
           <div className="max-w-[1480px] mx-auto px-5">
             <div className="space-y-4">
-              <a href="/career" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <a href="/career" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Карьера</div>
                   <div className="text-sm text-[#7C8A9A]">Присоединяйтесь к нашей команде</div>
                 </div>
               </a>
-              <a href="/partnership" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <a href="/partnership" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Партнерство</div>
                   <div className="text-sm text-[#7C8A9A]">Станьте нашим партнером</div>
@@ -195,19 +195,19 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         >
           <div className="max-w-[1480px] mx-auto px-5">
             <div className="space-y-4">
-              <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Войти в ЛК</div>
                   <div className="text-sm text-[#7C8A9A]">Личный кабинет пользователя</div>
                 </div>
               </a>
-              <a href="#" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <a href="#" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Тех. характеристики</div>
                   <div className="text-sm text-[#7C8A9A]">Техническая документация</div>
                 </div>
               </a>
-              <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Мобильное приложение</div>
                   <div className="text-sm text-[#7C8A9A]">Скачать для Android</div>
@@ -228,19 +228,19 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         >
           <div className="max-w-[1480px] mx-auto px-5">
             <div className="space-y-4">
-              <Link href="/services/inventory-burials" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <Link href="/services/inventory-burials" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Инвентаризация мест захоронений</div>
                   <div className="text-sm text-[#7C8A9A]">Учет и мониторинг кладбищ</div>
                 </div>
               </Link>
-              <Link href="/services/green-inventory" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <Link href="/services/green-inventory" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Инвентаризация зеленых насаждений</div>
                   <div className="text-sm text-[#7C8A9A]">Учет деревьев и кустарников</div>
                 </div>
               </Link>
-              <Link href="/services/forest-management" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#0077FF] transition-colors text-xl">
+              <Link href="/services/forest-management" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
                   <div className="font-medium">Лесоустройство</div>
                   <div className="text-sm text-[#7C8A9A]">Планирование лесного хозяйства</div>
@@ -272,7 +272,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div className="relative">
               <button
                 onClick={() => handleMobileSubmenu('company')}
-                className="w-full flex items-center justify-between py-3 text-[#0077FF] font-medium text-lg"
+                className="w-full flex items-center justify-between py-3 text-[#029cda] font-medium text-lg"
               >
                 <span>Компания</span>
                 <svg className={`w-5 h-5 transition-transform duration-200 ease-out ${openMobileSubmenu === 'company' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,10 +281,10 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
               {openMobileSubmenu === 'company' && (
                 <div className="ml-4 space-y-2 mt-2 transition-all duration-200 ease-out transform opacity-100 translate-y-0">
-                  <a href="/career" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <a href="/career" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Карьера
                   </a>
-                  <a href="#" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <a href="#" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Партнерство
                   </a>
                 </div>
@@ -292,7 +292,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
 
             {/* Кейсы */}
-            <Link href="/cases" className="block py-3 text-[#313131] hover:text-[#0077FF] transition-colors text-lg font-medium">Кейсы</Link>
+            <Link href="/cases" className="block py-3 text-[#313131] hover:text-[#029cda] transition-colors text-lg font-medium">Кейсы</Link>
 
             {/* Платформа */}
             <div className="relative">
@@ -307,13 +307,13 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
               {openMobileSubmenu === 'platform' && (
                 <div className="ml-4 space-y-2 mt-2 transition-all duration-200 ease-out transform opacity-100 translate-y-0">
-                  <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Войти в ЛК
                   </a>
-                  <a href="#" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <a href="#" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Тех. характеристики
                   </a>
-                  <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Мобильное приложение
                   </a>
                 </div>
@@ -333,23 +333,23 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
               {openMobileSubmenu === 'services' && (
                 <div className="ml-4 space-y-2 mt-2 transition-all duration-200 ease-out transform opacity-100 translate-y-0">
-                  <Link href="/services/inventory-burials" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <Link href="/services/inventory-burials" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Инвентаризация мест захоронений
                   </Link>
-                  <Link href="/services/green-inventory" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <Link href="/services/green-inventory" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Инвентаризация зеленых насаждений
                   </Link>
-                  <Link href="/services/forest-management" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#0077FF] transition-colors">
+                  <Link href="/services/forest-management" className="flex items-center gap-3 py-2 text-[#313131] hover:text-[#029cda] transition-colors">
                     Лесоустройство
                   </Link>
                 </div>
               )}
             </div>
 
-            <Link href="/pricing" className="block py-3 text-[#313131] hover:text-[#0077FF] transition-colors text-lg font-medium">Цены</Link>
-            <Link href="/documents" className="block py-3 text-[#313131] hover:text-[#0077FF] transition-colors text-lg font-medium">Документация</Link>
-            <Link href="/contacts" className="block py-3 text-[#313131] hover:text-[#0077FF] transition-colors text-lg font-medium">Контакты</Link>
-            <a href="#" className="block py-3 text-[#313131] hover:text-[#0077FF] transition-colors text-lg font-medium">Партнерство</a>
+            <Link href="/pricing" className="block py-3 text-[#313131] hover:text-[#029cda] transition-colors text-lg font-medium">Цены</Link>
+            <Link href="/documents" className="block py-3 text-[#313131] hover:text-[#029cda] transition-colors text-lg font-medium">Документация</Link>
+            <Link href="/contacts" className="block py-3 text-[#313131] hover:text-[#029cda] transition-colors text-lg font-medium">Контакты</Link>
+            <a href="#" className="block py-3 text-[#313131] hover:text-[#029cda] transition-colors text-lg font-medium">Партнерство</a>
 
             {/* Мобильные иконки */}
             <div className="flex items-center gap-4 pt-4 border-t border-gray-200 mt-4">
@@ -364,7 +364,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   setIsMobileNavOpen(false);
                   openConsult();
                 }}
-                className="flex items-center justify-center w-12 h-12 bg-[#0077FF] rounded-xl hover:bg-[#005fcc] transition-colors"
+                className="flex items-center justify-center w-12 h-12 bg-[#029cda] rounded-xl hover:bg-[#029cda]/90 transition-colors"
               >
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -437,7 +437,7 @@ export default function AboutPage() {
     <AboutLayout>
       <div className="pt-20">
             {/* Hero Section */}
-      <section className="bg-[#0077FF] text-white relative overflow-hidden min-h-[200px]">
+      <section className="bg-[#029cda] text-white relative overflow-hidden min-h-[200px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 relative z-10">
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
             <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20 order-1 lg:order-1">
@@ -454,7 +454,7 @@ export default function AboutPage() {
                 alt="Единая Среда"
                 width={300}
                 height={200}
-                className="w-full max-w-[100px] lg:max-w-[120px] h-auto object-contain"
+                className="w-full max-w-[100px] lg:max-w-[120px] h-auto object-contain opacity-20"
                 priority
                 style={{ height: 'auto' }}
               />
@@ -529,7 +529,7 @@ export default function AboutPage() {
         {/* Единая Среда */}
         <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
           <Link href="https://edinayasreda.ru/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
-            <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#0077FF] transition-colors">
+            <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#029cda] transition-colors">
               Единая Среда
             </h3>
             <div className="w-[42px] h-[42px] rounded-lg flex items-center justify-center">
@@ -581,7 +581,7 @@ export default function AboutPage() {
         {/* MyRoots */}
         <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
           <Link href="https://myroots.pro/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
-            <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#0077FF] transition-colors">
+            <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#029cda] transition-colors">
               MyRoots
             </h3>
             <div className="w-[42px] h-[42px] rounded-lg flex items-center justify-center">
@@ -633,7 +633,7 @@ export default function AboutPage() {
         {/* Область Развития */}
         <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
           <Link href="https://oblastrazvitia.ru/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
-            <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#0077FF] transition-colors">
+            <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#029cda] transition-colors">
               Область Развития
             </h3>
             <div className="w-[64px] h-[42px] rounded-lg flex items-center justify-center">
@@ -678,7 +678,7 @@ export default function AboutPage() {
         </div>
 
         {/* Блок с изображением */}
-        <div className="relative bg-[#0077FF] p-2 overflow-hidden">
+        <div className="relative bg-[#029cda] p-2 overflow-hidden">
           <div className="relative h-full flex flex-col">
             {/* Сменяющиеся изображения */}
             <div className="relative flex-1  overflow-hidden rounded-lg">
@@ -784,7 +784,7 @@ export default function AboutPage() {
 
 
       {/* History */}
-			<section className="py-8 md:py-12 bg-[#0077FF] text-white">
+			<section className="py-8 md:py-12 bg-[#029cda] text-white">
   <div className="container mx-auto px-4 sm:px-6 lg:px-8">
     <div className="w-auto mx-auto">
       {/* Заголовки с левым выравниванием */}

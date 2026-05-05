@@ -81,7 +81,7 @@ export default function HomeNews() {
                 {/* ЕДИНЫЙ РАЗМЕР БЛОКА: совпадает с блоком «Открыть все новости» */}
                 <Link
                   href={`/news/${n.slug}`}
-                  className="bg-white rounded-3xl p-8 border border-[#ffff] hover:border-[#0077FF] transition-colors min-h-[200px] h-full flex flex-col"
+                  className="bg-white rounded-3xl p-8 border border-[#ffff] hover:border-[#029cda] transition-colors min-h-[200px] h-full flex flex-col"
                 >
                   <p className="text-sm md:text-medium text-[#313131] mb-2">
                     {new Date(n.createdAt).toLocaleDateString('ru-RU')}
@@ -96,7 +96,7 @@ export default function HomeNews() {
                       ))}
                     </div>
                   )}
-                  <span className="mt-4 inline-flex items-center gap-2 text-[#0077FF] font-medium">
+                  <span className="mt-4 inline-flex items-center gap-2 text-[#029cda] font-medium">
                     <span>Читать</span>
                     <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -110,7 +110,7 @@ export default function HomeNews() {
             <SwiperSlide>
               <Link
                 href="/news"
-                className="bg-[#0077FF] rounded-3xl p-8 text-white text-lg md:text-xl font-medium hover:bg-[#0a6ae0] transition-colors min-h-[200px] h-full flex items-center justify-center"
+                className="bg-[#029cda] rounded-3xl p-8 text-white text-lg md:text-xl font-medium hover:bg-[#029cda]/90 transition-colors min-h-[200px] h-full flex items-center justify-center"
               >
                 Открыть все новости
               </Link>
@@ -128,7 +128,7 @@ export default function HomeNews() {
             <button
               ref={prevRef}
               aria-label="Предыдущий слайд"
-              className={`w-[50px] h-[60px] bg-[#0077FF] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center transition-colors hover:bg-opacity-90 ${isBeginning ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-[50px] h-[60px] bg-[#029cda] rounded-tl-[50px] rounded-bl-[50px] flex justify-center items-center transition-colors hover:bg-opacity-90 ${isBeginning ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isBeginning}
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -138,7 +138,7 @@ export default function HomeNews() {
             <button
               ref={nextRef}
               aria-label="Следующий слайд"
-              className={`w-[50px] h-[60px] bg-[#0077FF] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center transition-colors hover:bg-opacity-90 ${isEnd ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-[50px] h-[60px] bg-[#029cda] rounded-tr-[50px] rounded-br-[50px] flex justify-center items-center transition-colors hover:bg-opacity-90 ${isEnd ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isEnd}
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
