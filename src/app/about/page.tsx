@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useModal } from '@/components/ModalProvider';
 import Footer from '@/components/Footer';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 // Специальный Layout с белым header для страницы about
 const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -257,6 +258,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Footer */}
       <Footer />
+      <MobileBottomNav />
 
       {/* Мобильное меню с плавными анимациями */}
       <div

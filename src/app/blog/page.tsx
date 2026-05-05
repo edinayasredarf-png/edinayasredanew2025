@@ -25,6 +25,7 @@ function BlogHomeInner() {
   const sp = useSearchParams();
   const qFromUrl = sp.get('q') || '';
   const tag = sp.get('tag') || '';
+  const sortFromUrl = (sp.get('sort') as 'popular' | 'fresh') || 'popular';
   const tabFromUrl = (sp.get('tab') as 'feed' | 'subscriptions' | 'favorites') || 'feed';
 
   const [q, setQ] = useState(qFromUrl);
@@ -127,8 +128,15 @@ function BlogHomeInner() {
         );
       }
     }
+    arr = [...arr].sort((a, b) => {
+      if (sortFromUrl === 'popular') {
+        return (b.views || 0) - (a.views || 0);
+      }
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+
     return arr;
-  }, [posts, q, tag, activeTab, favoritePostIds, isAuthenticated]);
+  }, [posts, q, tag, activeTab, favoritePostIds, isAuthenticated, sortFromUrl]);
 
   // Разделение на две колонки
   const cols = useMemo(() => {
@@ -203,7 +211,7 @@ function BlogHomeInner() {
           </div>
         </div>
       </div>
-      <MobileBottomNav />
+      <MobileBottomNav mode="blog" blogSort={sortFromUrl} />
     </BlogLayout>
   );
 }
