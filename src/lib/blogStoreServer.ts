@@ -75,9 +75,10 @@ async function withTimeout<T>(ms: number, run: (signal: AbortSignal) => Promise<
 export async function serverListPosts(): Promise<ServerBlogPost[]> {
   try {
     const sb = getSupabaseServer();
-    const { data, error } = await withTimeout(4500, (signal) =>
+    const result = await withTimeout<any>(4500, (signal) =>
       sb.from('posts').select('*').order('createdat', { ascending: false }).abortSignal(signal)
     );
+    const { data, error } = result;
     if (error) throw error;
     return (data || []).map(mapPostRow);
   } catch (error) {
@@ -89,9 +90,10 @@ export async function serverListPosts(): Promise<ServerBlogPost[]> {
 export async function serverListNews(): Promise<ServerNewsItem[]> {
   try {
     const sb = getSupabaseServer();
-    const { data, error } = await withTimeout(4500, (signal) =>
+    const result = await withTimeout<any>(4500, (signal) =>
       sb.from('news').select('*').order('createdat', { ascending: false }).abortSignal(signal)
     );
+    const { data, error } = result;
     if (error) throw error;
     return (data || []).map(mapNewsRow);
   } catch (error) {
@@ -103,9 +105,10 @@ export async function serverListNews(): Promise<ServerNewsItem[]> {
 export async function serverGetPostBySlug(slug: string): Promise<ServerBlogPost | undefined> {
   try {
     const sb = getSupabaseServer();
-    const { data, error } = await withTimeout(4500, (signal) =>
+    const result = await withTimeout<any>(4500, (signal) =>
       sb.from('posts').select('*').eq('slug', slug).maybeSingle().abortSignal(signal)
     );
+    const { data, error } = result;
     if (error) throw error;
     return data ? mapPostRow(data) : undefined;
   } catch (error) {
