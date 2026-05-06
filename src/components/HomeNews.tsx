@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { NewsItem, sb_listNews } from '@/lib/blogStore';
+import { NewsItem } from '@/lib/blogStore';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -13,6 +13,7 @@ let _homeNewsCache: NewsItem[] | null = null;
 
 export default function HomeNews() {
   const [items, setItems] = useState<NewsItem[]>(_homeNewsCache || []);
+  const [hasLoadError, setHasLoadError] = useState(false);
   const prevRef = useRef<HTMLButtonElement | null>(null);
   const nextRef = useRef<HTMLButtonElement | null>(null);
   const paginationRef = useRef<HTMLDivElement | null>(null);
@@ -24,11 +25,16 @@ export default function HomeNews() {
   useEffect(() => {
     (async () => {
       try {
-        const all = await sb_listNews();
+        const res = await fetch('/api/content/news', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json() as { items?: NewsItem[] };
+        const all = data.items || [];
         _homeNewsCache = all;
         setItems(all);
+        setHasLoadError(false);
       } catch {
         setItems([]);
+        setHasLoadError(true);
       }
     })();
   }, []);
@@ -48,7 +54,18 @@ export default function HomeNews() {
     return () => { swiperInstance.off('slideChange', update); };
   }, [swiperInstance]);
 
-  if (!items.length) return null;
+  if (!items.length) {
+    if (!hasLoadError) return null;
+    return (
+      <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
+        <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="bg-white rounded-3xl border border-[#DCDDE1] p-6 text-[#52555a]">
+            Новости временно недоступны. Попробуйте обновить страницу немного позже.
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-10 lg:py-20 font-[Raleway] lining-nums">

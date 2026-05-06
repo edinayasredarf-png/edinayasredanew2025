@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { sb_listNews, NewsItem } from '@/lib/blogStore';
+import { NewsItem } from '@/lib/blogStore';
 
 // MUI Skeleton
 import Skeleton from '@mui/material/Skeleton';
@@ -155,15 +155,25 @@ let _newsCache: NewsItem[] | null = null;
 export default function RightSidebar() {
   const [news, setNews] = React.useState<NewsItem[]>(_newsCache || []);
   const [loading, setLoading] = React.useState(_newsCache === null);
+  const [hasLoadError, setHasLoadError] = React.useState(false);
+
+  const loadNews = React.useCallback(async () => {
+    const res = await fetch('/api/content/news', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json() as { items?: NewsItem[] };
+    return data.items || [];
+  }, []);
 
   React.useEffect(() => {
     (async () => {
       try {
-        const newsData = await sb_listNews();
+        const newsData = await loadNews();
         _newsCache = newsData;
         setNews(newsData);
+        setHasLoadError(false);
       } catch (e) {
-        console.error('Failed to load news from database:', e);
+        console.error('Failed to load news from API:', e);
+        setHasLoadError(true);
       } finally {
         setLoading(false);
       }
@@ -171,10 +181,12 @@ export default function RightSidebar() {
 
     const refresh = async () => {
       try {
-        const newsData = await sb_listNews();
+        const newsData = await loadNews();
         setNews(newsData);
+        setHasLoadError(false);
       } catch (e) {
-        console.error('Failed to refresh news from database:', e);
+        console.error('Failed to refresh news from API:', e);
+        setHasLoadError(true);
       }
     };
     window.addEventListener('focus', refresh);
@@ -183,7 +195,7 @@ export default function RightSidebar() {
       window.removeEventListener('focus', refresh);
       window.removeEventListener('newsUpdated', refresh as any);
     };
-  }, []);
+  }, [loadNews]);
 
   return (
     <aside className="w-[287px] shrink-0 hidden xl:block">
@@ -231,7 +243,9 @@ export default function RightSidebar() {
                 </div>
               ))}
               {!news.length && (
-                <div className="text-sm text-[#52555a]">Еще нет новостей</div>
+                <div className="text-sm text-[#52555a]">
+                  {hasLoadError ? 'Новости временно недоступны' : 'Еще нет новостей'}
+                </div>
               )}
             </div>
           )}

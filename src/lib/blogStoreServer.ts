@@ -17,6 +17,19 @@ export type ServerBlogPost = {
   reactions?: { heart: number; fire: number; smile: number };
 };
 
+export type ServerNewsItem = {
+  id: string;
+  slug: string;
+  title: string;
+  cover?: string;
+  contentHtml?: string;
+  tags?: string[];
+  createdAt: number;
+  updatedAt?: number;
+  views?: number;
+  reactions?: { heart: number; fire: number; smile: number };
+};
+
 function mapPostRow(row: any): ServerBlogPost {
   return {
     id: row.id,
@@ -27,6 +40,21 @@ function mapPostRow(row: any): ServerBlogPost {
     contentHtml: row.contenthtml ?? row.contentHtml,
     tags: row.tags ?? [],
     kind: row.kind ?? undefined,
+    createdAt: row.createdat ?? row.createdAt,
+    updatedAt: row.updatedat ?? row.updatedAt,
+    views: row.views ?? 0,
+    reactions: row.reactions ?? { heart: 0, fire: 0, smile: 0 },
+  };
+}
+
+function mapNewsRow(row: any): ServerNewsItem {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    cover: row.cover ?? undefined,
+    contentHtml: row.contenthtml ?? row.contentHtml,
+    tags: row.tags ?? [],
     createdAt: row.createdat ?? row.createdAt,
     updatedAt: row.updatedat ?? row.updatedAt,
     views: row.views ?? 0,
@@ -54,6 +82,20 @@ export async function serverListPosts(): Promise<ServerBlogPost[]> {
     return (data || []).map(mapPostRow);
   } catch (error) {
     console.error('serverListPosts failed:', error);
+    return [];
+  }
+}
+
+export async function serverListNews(): Promise<ServerNewsItem[]> {
+  try {
+    const sb = getSupabaseServer();
+    const { data, error } = await withTimeout(4500, (signal) =>
+      sb.from('news').select('*').order('createdat', { ascending: false }).abortSignal(signal)
+    );
+    if (error) throw error;
+    return (data || []).map(mapNewsRow);
+  } catch (error) {
+    console.error('serverListNews failed:', error);
     return [];
   }
 }

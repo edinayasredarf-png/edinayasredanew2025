@@ -7,12 +7,13 @@ import Link from 'next/link';
 import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
-import { sb_listNews, NewsItem } from '@/lib/blogStore';
+import { NewsItem } from '@/lib/blogStore';
 
 let _newsListCache: NewsItem[] | null = null;
 
 export default function NewsListClient() {
   const [news, setNews] = useState<NewsItem[]>(_newsListCache || []);
+  const [hasLoadError, setHasLoadError] = useState(false);
   const router = useRouter();
 
   const [activeTab, setActiveTab] =
@@ -21,11 +22,17 @@ export default function NewsListClient() {
   useEffect(() => {
     (async () => {
       try {
-        const newsData = await sb_listNews();
+        const res = await fetch('/api/content/news', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json() as { items?: NewsItem[] };
+        const newsData = data.items || [];
         _newsListCache = newsData;
         setNews(newsData);
+        setHasLoadError(false);
       } catch (e) {
-        console.error('Failed to load news from database:', e);
+        console.error('Failed to load news from API:', e);
+        setNews([]);
+        setHasLoadError(true);
       }
     })();
   }, []);
@@ -65,6 +72,11 @@ export default function NewsListClient() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-1 gap-4">
+                  {hasLoadError && (
+                    <div className="rounded-2xl border border-[#FFD4D4] bg-[#FFF4F4] p-4 text-[#9A2C2C]">
+                      Не удалось загрузить новости. Проверьте подключение и попробуйте обновить страницу.
+                    </div>
+                  )}
                   {news.map((n) => (
                     <Link
                       key={n.id}

@@ -3,28 +3,45 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BlogPost, sb_listPosts } from '@/lib/blogStore';
+import { BlogPost } from '@/lib/blogStore';
 
 let _homePostsCache: BlogPost[] | null = null;
 
 export default function HomePosts() {
   const [posts, setPosts] = useState<BlogPost[]>(_homePostsCache || []);
+  const [hasLoadError, setHasLoadError] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const all = await sb_listPosts();
+        const res = await fetch('/api/content/posts', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json() as { items?: BlogPost[] };
+        const all = data.items || [];
         const filtered = all.filter(p => (p.kind || 'post') !== 'case').slice(0, 3);
         _homePostsCache = filtered;
         // Исключаем кейсы из блока «Последние статьи» на главной
         setPosts(filtered);
-      } catch (e) {
+        setHasLoadError(false);
+      } catch {
         setPosts([]);
+        setHasLoadError(true);
       }
     })();
   }, []);
 
-  if (!posts.length) return null;
+  if (!posts.length) {
+    if (!hasLoadError) return null;
+    return (
+      <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
+        <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="bg-white rounded-3xl border border-[#DCDDE1] p-6 text-[#52555a]">
+            Статьи временно недоступны. Попробуйте обновить страницу немного позже.
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
