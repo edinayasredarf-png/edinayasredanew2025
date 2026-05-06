@@ -27,13 +27,15 @@ const nextConfig: NextConfig = {
       {
         source: '/icons/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          // Иконки могут обновляться без смены имени файла — не кэшируем агрессивно
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
         ],
       },
       {
         source: '/img/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          // Картинки могут обновляться без смены имени файла — не кэшируем агрессивно
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
         ],
       },
     ];
