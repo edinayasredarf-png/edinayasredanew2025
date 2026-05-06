@@ -105,10 +105,7 @@ export async function serverListNews(): Promise<ServerNewsItem[]> {
 export async function serverGetPostBySlug(slug: string): Promise<ServerBlogPost | undefined> {
   try {
     const sb = getSupabaseServer();
-    const result = await withTimeout<any>(4500, async (signal) =>
-      await sb.from('posts').select('*').eq('slug', slug).maybeSingle().abortSignal(signal)
-    );
-    const { data, error } = result;
+    const { data, error } = await sb.from('posts').select('*').eq('slug', slug).maybeSingle();
     if (error) throw error;
     return data ? mapPostRow(data) : undefined;
   } catch (error) {
