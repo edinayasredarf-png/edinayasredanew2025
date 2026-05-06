@@ -1,0 +1,73 @@
+import 'server-only';
+
+import { getSupabaseServer } from '@/lib/supabaseServer';
+
+export type ServerBlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  cover?: string;
+  contentHtml: string;
+  tags?: string[];
+  kind?: 'post' | 'news' | 'lesson' | 'case';
+  createdAt: number;
+  updatedAt: number;
+  views?: number;
+  reactions?: { heart: number; fire: number; smile: number };
+};
+
+function mapPostRow(row: any): ServerBlogPost {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    subtitle: row.subtitle ?? undefined,
+    cover: row.cover ?? undefined,
+    contentHtml: row.contenthtml ?? row.contentHtml,
+    tags: row.tags ?? [],
+    kind: row.kind ?? undefined,
+    createdAt: row.createdat ?? row.createdAt,
+    updatedAt: row.updatedat ?? row.updatedAt,
+    views: row.views ?? 0,
+    reactions: row.reactions ?? { heart: 0, fire: 0, smile: 0 },
+  };
+}
+
+async function withTimeout<T>(ms: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), ms);
+  try {
+    return await run(controller.signal);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export async function serverListPosts(): Promise<ServerBlogPost[]> {
+  try {
+    const sb = getSupabaseServer();
+    const { data, error } = await withTimeout(4500, (signal) =>
+      sb.from('posts').select('*').order('createdat', { ascending: false }).abortSignal(signal)
+    );
+    if (error) throw error;
+    return (data || []).map(mapPostRow);
+  } catch (error) {
+    console.error('serverListPosts failed:', error);
+    return [];
+  }
+}
+
+export async function serverGetPostBySlug(slug: string): Promise<ServerBlogPost | undefined> {
+  try {
+    const sb = getSupabaseServer();
+    const { data, error } = await withTimeout(4500, (signal) =>
+      sb.from('posts').select('*').eq('slug', slug).maybeSingle().abortSignal(signal)
+    );
+    if (error) throw error;
+    return data ? mapPostRow(data) : undefined;
+  } catch (error) {
+    console.error('serverGetPostBySlug failed:', error);
+    return undefined;
+  }
+}
