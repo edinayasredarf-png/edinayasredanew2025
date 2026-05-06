@@ -137,7 +137,7 @@ function CaseSlider({ items }: { items: CaseItem[] }) {
       <div className="mt-6 flex items-center justify-end gap-3">
         <button
           onClick={() => snapTo(i - 1)}
-          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-white text-[#2777ff] disabled:opacity-40"
+          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-white text-[#029cda] disabled:opacity-40"
           disabled={i <= 0}
           aria-label="Назад"
         >
@@ -145,7 +145,7 @@ function CaseSlider({ items }: { items: CaseItem[] }) {
         </button>
         <button
           onClick={() => snapTo(i + 1)}
-          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-white text-[#2777ff] disabled:opacity-40"
+          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-white text-[#029cda] disabled:opacity-40"
           disabled={i >= max}
           aria-label="Вперёд"
         >
@@ -217,7 +217,7 @@ function TopSheetMenu({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onClose}
-                className="group flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-[#f9faff] px-4 py-3 text-[#2777ff] transition hover:bg-[#f2f6ff]"
+                className="group flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-[#f9faff] px-4 py-3 text-[#029cda] transition hover:bg-[#f2f6ff]"
               >
                 <Image src="/icons/whatsapp_blue.svg" alt="WhatsApp" width={20} height={20} />
                 <span className="text-[15px] font-extrabold">открыть чат (WhatsApp)</span>
@@ -229,7 +229,7 @@ function TopSheetMenu({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onClose}
-                className="group flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-[#f9faff] px-4 py-3 text-[#2777ff] transition hover:bg-[#f2f6ff]"
+                className="group flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-[#f9faff] px-4 py-3 text-[#029cda] transition hover:bg-[#f2f6ff]"
               >
                 <Image src="/icons/telegram_blue.svg" alt="Telegram" width={20} height={20} />
                 <span className="text-[15px] font-extrabold">написать в Telegram</span>
@@ -239,9 +239,9 @@ function TopSheetMenu({
               <a
                 href="mailto:info@единаясреда.рф"
                 onClick={onClose}
-                className="flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-white px-4 py-3 text-[#2777ff] underline transition hover:bg-[#f7f8fc]"
+                className="flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-white px-4 py-3 text-[#029cda] underline transition hover:bg-[#f7f8fc]"
               >
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-[#2777ff]/10 text-[#2777ff]">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-[#029cda]/10 text-[#029cda]">
                   ✉
                 </span>
                 info@единаясреда.рф
@@ -251,10 +251,10 @@ function TopSheetMenu({
               <Link
                 href="#form"
                 onClick={onClose}
-                className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#2777ff] px-4 py-3 text-white"
+                className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#029cda] px-4 py-3 text-white"
               >
                 Оставить заявку{" "}
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[#2777ff]">+</span>
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[#029cda]">+</span>
               </Link>
 
               {/* Быстрые ссылки */}
@@ -462,7 +462,7 @@ export default function ImplementationsPage() {
           <div className="relative grid grid-cols-[1fr_auto_1fr] items-center">
             {/* Левая область (десктоп) */}
             <div className="hidden items-center justify-start sm:flex">
-              <div className="inline-flex items-center gap-3 rounded-[100px] bg-[#f2f3f8] px-4 py-2 text-[#2777ff]">
+              <div className="inline-flex items-center gap-3 rounded-[100px] bg-[#f2f3f8] px-4 py-2 text-[#029cda]">
                 <Link
                   href={WHATSAPP_URL}
                   target="_blank"
@@ -485,7 +485,7 @@ export default function ImplementationsPage() {
             <div className="flex items-stretch justify-center">
               <a
                 href="/"
-                className="inline-flex items-center gap-2 rounded-b-xl bg-[#2777ff] px-5 py-3"
+                className="inline-flex items-center gap-2 rounded-b-xl bg-[#029cda] px-5 py-3"
                 aria-label="На главную"
               >
                 <Image src="/img/logo.svg" width={120} height={36} alt="единая среда.рф" className="h-9 w-auto" />
@@ -495,9 +495,9 @@ export default function ImplementationsPage() {
 
             {/* Правая область (десктоп): CTA */}
             <div className="hidden items-center justify-end sm:flex">
-              <a href="#form" className="inline-flex items-center gap-2 rounded-[12px] bg-[#2777ff] px-4 py-2 text-white">
+              <a href="#form" className="inline-flex items-center gap-2 rounded-[12px] bg-[#029cda] px-4 py-2 text-white">
                 Оставить заявку
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[#2777ff]">+</span>
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[#029cda]">+</span>
               </a>
             </div>
 
@@ -534,7 +534,7 @@ export default function ImplementationsPage() {
         <Container>
           <h1 className="text-center text-[34px] font-extrabold leading-tight text-[#2D2D2D] md:text-[54px]">
             Единая среда — эффективный инструмент{" "}
-            <span className="text-[#2777ff]">управления и контроля подрядчиков для муниципалитетов</span>
+            <span className="text-[#029cda]">управления и контроля подрядчиков для муниципалитетов</span>
           </h1>
         </Container>
       </Section>
@@ -618,7 +618,7 @@ export default function ImplementationsPage() {
       {/* Ситуации (3 большие изображения, без открытия по клику) */}
       <Section id="cases" className="bg-[#F3F6F9] py-14">
         <Container>
-          <h2 className="mb-6 text-[42px] font-extrabold text-[#2777ff] md:text-[54px]">Ситуации</h2>
+          <h2 className="mb-6 text-[42px] font-extrabold text-[#029cda] md:text-[54px]">Ситуации</h2>
 
           <div className="grid gap-6 md:grid-cols-3">
             {/* item 1 */}
@@ -667,7 +667,7 @@ export default function ImplementationsPage() {
       {/* Форма (Bitrix24) */}
       <Section id="form" className="py-16">
         <Container>
-          <h2 className="text-center text-[42px] font-extrabold text-[#2777ff] md:text-[64px]">Попробуй сейчас</h2>
+          <h2 className="text-center text-[42px] font-extrabold text-[#029cda] md:text-[64px]">Попробуй сейчас</h2>
 
           <div id="b24-form-wrapper" className="mx-auto mt-10 max-w-[760px] rounded-[20px] bg-white p-4 md:p-6">
             <div id="b24-form-anchor" />
@@ -701,7 +701,7 @@ export default function ImplementationsPage() {
                 aria-label="Написать в WhatsApp"
               >
                 <Image src="/icons/whatsapp_blue.svg" alt="WhatsApp" width={24} height={24} />
-                <span className="text-[18px] font-bold lowercase text-[#2777ff] group-hover:underline">whatsapp</span>
+                <span className="text-[18px] font-bold lowercase text-[#029cda] group-hover:underline">whatsapp</span>
               </Link>
 
               <Link
@@ -712,11 +712,11 @@ export default function ImplementationsPage() {
                 aria-label="Написать в Telegram"
               >
                 <Image src="/icons/telegram_blue.svg" alt="Telegram" width={24} height={24} />
-                <span className="text-[18px] font-bold lowercase text-[#2777ff] group-hover:underline">telegram</span>
+                <span className="text-[18px] font-bold lowercase text-[#029cda] group-hover:underline">telegram</span>
               </Link>
 
               <a className="inline-flex items-center gap-2 rounded-[100px] border border-[#afb4c4] px-4 py-2 transition hover:bg-[#f7f8fc]" href="mailto:info@единаясреда.рф">
-                <span className="text-[18px] font-extrabold lowercase text-[#2777ff] underline">info@единаясреда.рф</span>
+                <span className="text-[18px] font-extrabold lowercase text-[#029cda] underline">info@единаясреда.рф</span>
               </a>
             </div>
 

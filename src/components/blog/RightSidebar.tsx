@@ -140,7 +140,7 @@ function AdsCarousel({ loading }: { loading?: boolean }) {
               aria-label={`Перейти к баннеру ${i + 1}`}
               onClick={() => goTo(i)}
               className={`w-2.5 h-2.5 rounded-full transition
-                ${i === index ? 'bg-[#2777ff]' : 'bg-black/30 hover:bg-black/50'}`}
+                ${i === index ? 'bg-[#029cda]' : 'bg-black/30 hover:bg-black/50'}`}
             />
           ))}
         </div>

@@ -66,7 +66,7 @@ export default function MobileSearch({ isOpen, onClose, initialQuery = '' }: Mob
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Введите запрос..."
-              className="w-full px-4 py-3  rounded-lg focus:ring-2 focus:ring-[#2777ff] "
+              className="w-full px-4 py-3  rounded-lg focus:ring-2 focus:ring-[#029cda] "
               autoFocus
             />
           </div>
@@ -86,7 +86,7 @@ export default function MobileSearch({ isOpen, onClose, initialQuery = '' }: Mob
                   onClick={() => setContentType(type.value as any)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                     contentType === type.value
-                      ? 'bg-[#2777ff] text-white'
+                      ? 'bg-[#029cda] text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -98,7 +98,7 @@ export default function MobileSearch({ isOpen, onClose, initialQuery = '' }: Mob
 
           <button
             onClick={handleSearch}
-            className="w-full bg-[#2777ff] text-white py-3 rounded-lg font-medium hover:bg-[#1e5bb8] transition"
+            className="w-full bg-[#029cda] text-white py-3 rounded-lg font-medium hover:bg-[#1e5bb8] transition"
           >
             Найти
           </button>

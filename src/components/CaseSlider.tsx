@@ -141,7 +141,7 @@ export default function CaseSlider({
         <button
           type="button"
           onClick={() => snapTo(index - 1)}
-          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-white text-[#2777ff] disabled:opacity-40"
+          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-white text-[#029cda] disabled:opacity-40"
           aria-label="Назад"
           disabled={index <= 0}
         >
@@ -150,7 +150,7 @@ export default function CaseSlider({
         <button
           type="button"
           onClick={() => snapTo(index + 1)}
-          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-white text-[#2777ff] disabled:opacity-40"
+          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-white text-[#029cda] disabled:opacity-40"
           aria-label="Вперёд"
           disabled={index >= max}
         >
@@ -166,7 +166,7 @@ export default function CaseSlider({
             aria-label={`Перейти к слайду ${i + 1}`}
             onClick={() => snapTo(i)}
             className={`h-2.5 rounded-full transition-all ${
-              i === index ? "w-6 bg-[#2777ff]" : "w-2.5 bg-[#e4e7f1]"
+              i === index ? "w-6 bg-[#029cda]" : "w-2.5 bg-[#e4e7f1]"
             }`}
           />
         ))}

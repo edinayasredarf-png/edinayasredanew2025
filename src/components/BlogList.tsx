@@ -56,7 +56,7 @@ const BlogList = () => {
                 <p className="text-[#676e7e] text-base mb-4">{post.description}</p>
                 <Link
                   href={`/blog/${post.id}`}
-                  className="inline-flex items-center text-[#2777ff] hover:underline"
+                  className="inline-flex items-center text-[#029cda] hover:underline"
                 >
                   Читать далее
                   <svg className="ml-2 w-4 h-4" viewBox="0 0 16 16" fill="none">

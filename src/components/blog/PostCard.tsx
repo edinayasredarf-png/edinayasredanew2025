@@ -42,7 +42,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
       {!!(p.tags?.length) && (
         <div className="mt-3 flex flex-wrap gap-2">
           {p.tags!.map(t => (
-            <Link key={t} href={`/blog?tag=${encodeURIComponent(t)}`} className="text-sm text-[#2777ff]">#{t}</Link>
+            <Link key={t} href={`/blog?tag=${encodeURIComponent(t)}`} className="text-sm text-[#029cda]">#{t}</Link>
           ))}
         </div>
       )}

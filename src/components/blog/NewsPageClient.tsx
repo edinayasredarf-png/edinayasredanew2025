@@ -168,7 +168,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
             <main className="flex-1 flex justify-center">
               <div className="w-full max-w-[761px] text-center py-16">
                 <h1 className="text-3xl font-semibold mb-3 text-[#313131]">Новость не найдена</h1>
-                <Link href="/news" className="text-[#2777ff] hover:underline">К новостям</Link>
+                <Link href="/news" className="text-[#029cda] hover:underline">К новостям</Link>
               </div>
             </main>
             <RightSidebar />
@@ -215,7 +215,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                 {!!(news.tags?.length) && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {news.tags!.map(t => (
-                      <Link key={t} href={`/news?tag=${encodeURIComponent(t)}`} className="text-sm text-[#2777ff]">
+                      <Link key={t} href={`/news?tag=${encodeURIComponent(t)}`} className="text-sm text-[#029cda]">
                         #{t}
                       </Link>
                     ))}

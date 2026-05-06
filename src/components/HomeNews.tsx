@@ -92,7 +92,7 @@ export default function HomeNews() {
                   {!!(n.tags?.length) && (
                     <div className="mt-auto pt-2 flex flex-wrap gap-2">
                       {n.tags!.map((t) => (
-                        <span key={t} className="text-sm text-[#2777ff]">#{t}</span>
+                        <span key={t} className="text-sm text-[#029cda]">#{t}</span>
                       ))}
                     </div>
                   )}

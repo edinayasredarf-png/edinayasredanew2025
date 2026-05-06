@@ -9,7 +9,7 @@
 .prose em { font-style: italic; }
 .prose s { text-decoration: line-through; }
 .prose u { text-decoration: underline; }
-.prose a { color: #2777ff; text-decoration: underline; }
+.prose a { color: #029cda; text-decoration: underline; }
 
 /* Списки — важно перебить сброс Tailwind prose */
 .prose ul,

@@ -242,7 +242,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                 {!!(post.tags?.length) && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {post.tags!.map(t => (
-                      <Link key={t} href={`/blog?tag=${encodeURIComponent(t)}`} className="text-sm text-[#2777ff]">
+                      <Link key={t} href={`/blog?tag=${encodeURIComponent(t)}`} className="text-sm text-[#029cda]">
                         #{t}
                       </Link>
                     ))}
@@ -307,7 +307,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
                       <Link
                         key={m.id}
                         href={`/blog/${m.slug}`}
-                        className="bg-white rounded-3xl p-4  hover:border-[#2777ff] transition block"
+                        className="bg-white rounded-3xl p-4  hover:border-[#029cda] transition block"
                       >
                         <div className="w-full aspect-[16/10] rounded-2xl bg-[#F6F7F9] overflow-hidden relative">
                           <Image

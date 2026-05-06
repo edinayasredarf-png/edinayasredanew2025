@@ -69,7 +69,7 @@ export default function NewsListClient() {
                     <Link
                       key={n.id}
                       href={`/news/${encodeURIComponent(n.slug)}`}
-                      className="rounded-2xl border border-[#DCDDE1] p-4 hover:border-[#2777ff] bg-white"
+                      className="rounded-2xl border border-[#DCDDE1] p-4 hover:border-[#029cda] bg-white"
                     >
                       <div className="text-sm text-[#52555a]">
                         {new Date(n.createdAt).toLocaleDateString('ru-RU')}

@@ -507,7 +507,7 @@ export default function NewPostPage() {
             <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#313131]" placeholder="Логин" value={login} onChange={e=>setLogin(e.target.value)} />
             <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#313131]" placeholder="Пароль" type="password" value={pass} onChange={e=>setPass(e.target.value)} />
             <div className="flex gap-2">
-              <button onClick={doLogin} className="bg-[#2777ff] text-white px-5 py-2.5 rounded-lg">Войти</button>
+              <button onClick={doLogin} className="bg-[#029cda] text-white px-5 py-2.5 rounded-lg">Войти</button>
               <Link href="/blog" className="px-5 py-2.5 rounded-lg border  text-[#313131]">Назад</Link>
             </div>
           </div>
@@ -557,7 +557,7 @@ export default function NewPostPage() {
             <div className="mb-6 flex flex-wrap items-center gap-2 text-sm overflow-x-auto">
               {[0,1,2,3].map(i=>(
                 <button key={i} onClick={()=>setStep(i)}
-                  className={`h-8 px-3 rounded-lg  ${step===i?'bg-[#2777ff] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#029cda]/10 text-[#313131]'}`}>
+                  className={`h-8 px-3 rounded-lg  ${step===i?'bg-[#029cda] text-white border-[#029cda]':'bg-[#F6F7FB] hover:bg-[#029cda]/10 text-[#313131]'}`}>
                   {i===0?'Тип':i===1?'Заголовок':i===2?'Контент':'Обложка/теги'}
                 </button>
               ))}
@@ -631,7 +631,7 @@ export default function NewPostPage() {
                   ].map(x=>(
                     <button key={x.k}
                       onClick={()=>setKind(x.k as any)}
-                      className={`h-12 rounded-xl   ${kind===x.k?'bg-[#029cda] text-white border-[#2777ff]':'bg-[#F6F7FB] hover:bg-[#029cda]/10 text-[#313131]'}`}>
+                      className={`h-12 rounded-xl   ${kind===x.k?'bg-[#029cda] text-white border-[#029cda]':'bg-[#F6F7FB] hover:bg-[#029cda]/10 text-[#313131]'}`}>
                       {x.label}
                     </button>
                   ))}
@@ -768,7 +768,7 @@ export default function NewPostPage() {
 
                 <div className="pt-2 flex flex-wrap gap-3">
                   <button onClick={publish} disabled={!canPublish}
-                    className={`px-6 py-3 rounded-xl text-white ${canPublish ? 'bg-[#2777ff] hover:bg-[#1f66de]' : 'bg-gray-300 cursor-not-allowed'} transition-colors`}>
+                    className={`px-6 py-3 rounded-xl text-white ${canPublish ? 'bg-[#029cda] hover:bg-[#1f66de]' : 'bg-gray-300 cursor-not-allowed'} transition-colors`}>
                     Опубликовать
                   </button>
                   <button onClick={()=>{ clearDraft(); setTitle(''); setSubtitle(''); setCover(undefined); setBlocks([]); setTags([]); setStep(0); }}

@@ -772,7 +772,7 @@ export default function AboutPage() {
 
         {/* Кнопка заказа услуг */}
         <div className="flex items-center justify-center py-8">
-          <button className="px-6 py-3 border border-[#050b15] text-[#313131] rounded-lg hover:bg-[#2777ff] hover:text-white transition-all duration-300 flex items-center">
+          <button className="px-6 py-3 border border-[#050b15] text-[#313131] rounded-lg hover:bg-[#029cda] hover:text-white transition-all duration-300 flex items-center">
             <span className="mr-2 text-base">Заказать услуги</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />

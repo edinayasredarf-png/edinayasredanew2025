@@ -126,7 +126,7 @@ export default function TopBar() {
                       onClick={() => { setContentType(key as any); goSearch(q, key); }}
                       className={`px-3 py-2 text-sm rounded-lg transition ${
                         contentType === key
-                          ? 'bg-[#2777ff] text-white'
+                          ? 'bg-[#029cda] text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -161,7 +161,7 @@ export default function TopBar() {
           {isEditor ? (
             <Link
               href="/blog/new"
-              className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
+              className="w-[40px] h-[40px] rounded-xl bg-[#029cda] text-white flex items-center justify-center hover:bg-[#029cda]/90 transition"
               aria-label="Написать"
             >
 	<Image
@@ -174,7 +174,7 @@ export default function TopBar() {
           ) : !isAuthed ? (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-              className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
+              className="w-[40px] h-[40px] rounded-xl bg-[#029cda] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
 
               aria-label="Войти"
             ><Image
@@ -189,7 +189,7 @@ export default function TopBar() {
           ) : (
             <Link
               href="/profile"
-              className="w-[40px] h-[40px] rounded-xl bg-[#2777ff] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
+              className="w-[40px] h-[40px] rounded-xl bg-[#029cda] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
               aria-label="Профиль"
             >
            	<Image
@@ -298,7 +298,7 @@ export default function TopBar() {
         {/* ПРАВЫЕ КНОПКИ (desktop) */}
         <div className="hidden md:flex items-center gap-3 ml-4">
           {isEditor && (
-            <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition">
+            <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#029cda] text-white hover:bg-[#1f66de] transition">
               <span className="hidden sm:inline">Написать</span>
               	<Image
           src="/icons/plus.svg"
@@ -313,7 +313,7 @@ export default function TopBar() {
           {!isAuthed ? (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-              className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#2777ff] text-white hover:bg-[#1f66de] transition"
+              className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#029cda] text-white hover:bg-[#1f66de] transition"
             >
               <span className="hidden sm:inline">Войти</span>
 							<Image
@@ -403,7 +403,7 @@ export default function TopBar() {
             href="/blog"
             className={`h-10 rounded-xl text-sm font-medium flex items-center justify-center transition ${
               pathname === '/blog'
-                ? 'bg-white border-2 border-[#2777ff] text-[#2777ff] shadow-sm'
+                ? 'bg-white border-2 border-[#029cda] text-[#029cda] shadow-sm'
                 : 'bg-transparent border border-[#e1e2e5] text-[#52555a] hover:bg-gray-50'
             }`}
           >
@@ -413,7 +413,7 @@ export default function TopBar() {
             href="/news"
             className={`h-10 rounded-xl text-sm font-medium flex items-center justify-center transition ${
               pathname === '/news'
-                ? 'bg-white border-2 border-[#2777ff] text-[#2777ff] shadow-sm'
+                ? 'bg-white border-2 border-[#029cda] text-[#029cda] shadow-sm'
                 : 'bg-transparent border border-[#e1e2e5] text-[#52555a] hover:bg-gray-50'
             }`}
           >
