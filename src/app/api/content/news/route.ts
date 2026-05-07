@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbDeleteById, dbGetNewsBySlug, dbListNews, dbUpsertNews } from '@/lib/contentDb';
-import { serverListNews } from '@/lib/blogStoreServer';
 
 export const revalidate = 120;
 
@@ -14,14 +13,14 @@ export async function GET(request: NextRequest) {
     const items = await dbListNews();
     return NextResponse.json({ items }, { status: 200 });
   } catch (error) {
-    console.error('GET /api/content/news from Postgres failed:', error);
-    try {
-      const fallbackItems = await serverListNews();
-      return NextResponse.json({ items: fallbackItems, source: 'supabase-fallback' }, { status: 200 });
-    } catch (fallbackError) {
-      console.error('GET /api/content/news fallback failed:', fallbackError);
-      return NextResponse.json({ items: [], error: 'NEWS_UNAVAILABLE' }, { status: 200 });
-    }
+    console.error('GET /api/content/news from Timeweb failed:', error);
+    return NextResponse.json(
+      {
+        items: [],
+        error: 'TIMEWEB_DB_FAILED',
+      },
+      { status: 200 }
+    );
   }
 }
 
