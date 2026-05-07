@@ -45,13 +45,20 @@ function parseJsonbArray(value: unknown): string[] {
 }
 
 function getPool(): Pool | undefined {
-  const connectionString = process.env.TIMEWEB_POSTGRES_URL || process.env.DATABASE_URL;
-  if (!connectionString) return undefined;
+  const rawConnectionString = process.env.TIMEWEB_POSTGRES_URL || process.env.DATABASE_URL;
+  if (!rawConnectionString) return undefined;
 
   if (pool) return pool;
 
+  // На Vercel + Timeweb часто приходит self-signed chain.
+  // Нормализуем строку подключения и включаем libpq-compatible require mode.
+  const normalized = new URL(rawConnectionString);
+  normalized.searchParams.set('sslmode', 'require');
+  normalized.searchParams.set('uselibpqcompat', 'true');
+  normalized.searchParams.delete('sslrootcert');
+
   pool = new Pool({
-    connectionString,
+    connectionString: normalized.toString(),
     ssl: { rejectUnauthorized: false },
     max: 5,
   });
