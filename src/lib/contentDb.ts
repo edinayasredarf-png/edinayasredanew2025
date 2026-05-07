@@ -213,12 +213,12 @@ export async function dbUpsertPost(item: ServerBlogPost): Promise<void> {
   if (!db) throw new Error('TIMEWEB_POSTGRES_URL is not set');
   await db.query(
     `INSERT INTO posts (id, slug, title, subtitle, cover, contenthtml, tags, kind, createdat, updatedat, views, reactions)
-     VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12::jsonb)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb)
      ON CONFLICT (id) DO UPDATE SET
        slug=EXCLUDED.slug,title=EXCLUDED.title,subtitle=EXCLUDED.subtitle,cover=EXCLUDED.cover,
        contenthtml=EXCLUDED.contenthtml,tags=EXCLUDED.tags,kind=EXCLUDED.kind,
        createdat=EXCLUDED.createdat,updatedat=EXCLUDED.updatedat,views=EXCLUDED.views,reactions=EXCLUDED.reactions`,
-    [item.id, item.slug, item.title, item.subtitle ?? null, item.cover ?? null, item.contentHtml, JSON.stringify(item.tags ?? []), item.kind ?? 'post', item.createdAt, item.updatedAt, item.views ?? 0, JSON.stringify(item.reactions ?? { heart: 0, fire: 0, smile: 0 })]
+    [item.id, item.slug, item.title, item.subtitle ?? null, item.cover ?? null, item.contentHtml, item.tags ?? [], item.kind ?? 'post', item.createdAt, item.updatedAt, item.views ?? 0, JSON.stringify(item.reactions ?? { heart: 0, fire: 0, smile: 0 })]
   );
 }
 
@@ -227,11 +227,11 @@ export async function dbUpsertNews(item: ServerNewsItem): Promise<void> {
   if (!db) throw new Error('TIMEWEB_POSTGRES_URL is not set');
   await db.query(
     `INSERT INTO news (id, slug, title, cover, contenthtml, tags, createdat, updatedat, views, reactions)
-     VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10::jsonb)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)
      ON CONFLICT (id) DO UPDATE SET
        slug=EXCLUDED.slug,title=EXCLUDED.title,cover=EXCLUDED.cover,contenthtml=EXCLUDED.contenthtml,
        tags=EXCLUDED.tags,createdat=EXCLUDED.createdat,updatedat=EXCLUDED.updatedat,views=EXCLUDED.views,reactions=EXCLUDED.reactions`,
-    [item.id, item.slug, item.title, item.cover ?? null, item.contentHtml ?? null, JSON.stringify(item.tags ?? []), item.createdAt, item.updatedAt ?? null, item.views ?? 0, JSON.stringify(item.reactions ?? { heart: 0, fire: 0, smile: 0 })]
+    [item.id, item.slug, item.title, item.cover ?? null, item.contentHtml ?? null, item.tags ?? [], item.createdAt, item.updatedAt ?? null, item.views ?? 0, JSON.stringify(item.reactions ?? { heart: 0, fire: 0, smile: 0 })]
   );
 }
 
@@ -240,12 +240,12 @@ export async function dbUpsertCase(item: ServerCaseItem): Promise<void> {
   if (!db) throw new Error('TIMEWEB_POSTGRES_URL is not set');
   await db.query(
     `INSERT INTO cases (id, slug, title, subtitle, cover, contenthtml, tags, application, location, createdat, updatedat, views, reactions)
-     VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12,$13::jsonb)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb)
      ON CONFLICT (id) DO UPDATE SET
        slug=EXCLUDED.slug,title=EXCLUDED.title,subtitle=EXCLUDED.subtitle,cover=EXCLUDED.cover,contenthtml=EXCLUDED.contenthtml,
        tags=EXCLUDED.tags,application=EXCLUDED.application,location=EXCLUDED.location,
        createdat=EXCLUDED.createdat,updatedat=EXCLUDED.updatedat,views=EXCLUDED.views,reactions=EXCLUDED.reactions`,
-    [item.id, item.slug, item.title, item.subtitle ?? null, item.cover ?? null, item.contentHtml, JSON.stringify(item.tags ?? []), item.application ?? null, item.location ?? null, item.createdAt, item.updatedAt, item.views ?? 0, JSON.stringify(item.reactions ?? { heart: 0, fire: 0, smile: 0 })]
+    [item.id, item.slug, item.title, item.subtitle ?? null, item.cover ?? null, item.contentHtml, item.tags ?? [], item.application ?? null, item.location ?? null, item.createdAt, item.updatedAt, item.views ?? 0, JSON.stringify(item.reactions ?? { heart: 0, fire: 0, smile: 0 })]
   );
 }
 
