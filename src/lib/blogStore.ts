@@ -441,100 +441,112 @@ function caseToPayload(c: CaseItem): any {
 
 // -------- SUPABASE ASYNC API (optional) ----------
 export async function sb_listPosts(): Promise<BlogPost[]> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('posts').select('*').order('createdat', { ascending: false });
-  if (error) throw error;
-  return (data || []).map(mapPostRow);
+  const res = await fetch('/api/content/posts', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to load posts: ${res.status}`);
+  const data = await res.json() as { items?: any[] };
+  return (data.items || []).map(mapPostRow);
 }
 export async function sb_getPostBySlug(slug: string): Promise<BlogPost | undefined> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('posts').select('*').eq('slug', slug).maybeSingle();
-  if (error) throw error;
-  return data ? mapPostRow(data) : undefined;
+  const res = await fetch(`/api/content/posts?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to load post: ${res.status}`);
+  const data = await res.json() as { item?: any | null };
+  return data.item ? mapPostRow(data.item) : undefined;
 }
 export async function sb_upsertPost(p: BlogPost): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('posts').upsert(postToPayload(p), { onConflict: 'id' });
-  if (error) throw error;
+  const res = await fetch('/api/content/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(postToPayload(p)),
+  });
+  if (!res.ok) throw new Error(`Failed to save post: ${res.status}`);
 }
 export async function sb_deletePostById(id: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('posts').delete().eq('id', id);
-  if (error) throw error;
+  const res = await fetch('/api/content/posts', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) throw new Error(`Failed to delete post: ${res.status}`);
 }
 
 export async function sb_listNews(): Promise<NewsItem[]> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('news').select('*').order('createdat', { ascending: false });
-  if (error) throw error;
-  return (data || []).map(mapNewsRow);
+  const res = await fetch('/api/content/news', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to load news: ${res.status}`);
+  const data = await res.json() as { items?: any[] };
+  return (data.items || []).map(mapNewsRow);
 }
 export async function sb_getNewsBySlug(slug: string): Promise<NewsItem | undefined> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('news').select('*').eq('slug', slug).maybeSingle();
-  if (error) throw error;
-  return data ? mapNewsRow(data) : undefined;
+  const res = await fetch(`/api/content/news?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to load news item: ${res.status}`);
+  const data = await res.json() as { item?: any | null };
+  return data.item ? mapNewsRow(data.item) : undefined;
 }
 export async function sb_upsertNews(n: NewsItem): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('news').upsert(newsToPayload(n), { onConflict: 'id' });
-  if (error) throw error;
+  const res = await fetch('/api/content/news', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newsToPayload(n)),
+  });
+  if (!res.ok) throw new Error(`Failed to save news: ${res.status}`);
 }
 export async function sb_deleteNewsById(id: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('news').delete().eq('id', id);
-  if (error) throw error;
+  const res = await fetch('/api/content/news', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) throw new Error(`Failed to delete news: ${res.status}`);
 }
 
 export async function sb_listCases(): Promise<CaseItem[]> {
-  const sb = getSupabase();
-  if (!sb) return listCases();
   try {
-    const { data, error } = await sb.from('cases').select('*').order('createdat', { ascending: false });
-    if (error) throw error;
-    return (data || []).map(mapCaseRow);
+    const res = await fetch('/api/content/cases', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Failed to load cases: ${res.status}`);
+    const data = await res.json() as { items?: any[] };
+    return (data.items || []).map(mapCaseRow);
   } catch (e) {
-    console.log('Supabase list cases failed, using local fallback:', e);
+    console.log('Timeweb list cases failed, using local fallback:', e);
     return listCases();
   }
 }
 
 export async function sb_getCaseBySlug(slug: string): Promise<CaseItem | undefined> {
-  const sb = getSupabase();
-  if (!sb) return getCaseBySlug(slug);
   try {
-    const { data, error } = await sb.from('cases').select('*').eq('slug', slug).maybeSingle();
-    if (error) throw error;
-    return data ? mapCaseRow(data) : undefined;
+    const res = await fetch(`/api/content/cases?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Failed to load case: ${res.status}`);
+    const data = await res.json() as { item?: any | null };
+    return data.item ? mapCaseRow(data.item) : undefined;
   } catch (e) {
-    console.log('Supabase get case failed, using local fallback:', e);
+    console.log('Timeweb get case failed, using local fallback:', e);
     return getCaseBySlug(slug);
   }
 }
 
 export async function sb_upsertCase(c: CaseItem): Promise<void> {
-  const sb = getSupabase();
-  if (!sb) { upsertCase(c); return; }
   try {
-    // Не задаём onConflict вручную: Supabase использует первичный ключ таблицы.
-    const { error } = await sb.from('cases').upsert(caseToPayload(c));
-    if (error) throw error;
+    const res = await fetch('/api/content/cases', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(caseToPayload(c)),
+    });
+    if (!res.ok) throw new Error(`Failed to save case: ${res.status}`);
   } catch (e) {
-    console.log('Supabase upsert case failed, using local fallback:', e);
+    console.log('Timeweb upsert case failed, using local fallback:', e);
     upsertCase(c);
-    // Пробрасываем ошибку дальше — UI покажет, что это локальный фоллбек (см. editor)
     throw e;
   }
 }
 
 export async function sb_deleteCaseById(id: string): Promise<void> {
-  const sb = getSupabase();
-  if (!sb) { deleteCaseById(id); return; }
   try {
-    const { error } = await sb.from('cases').delete().eq('id', id);
-    if (error) throw error;
+    const res = await fetch('/api/content/cases', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    if (!res.ok) throw new Error(`Failed to delete case: ${res.status}`);
   } catch (e) {
-    console.log('Supabase delete case failed, using local fallback:', e);
+    console.log('Timeweb delete case failed, using local fallback:', e);
     deleteCaseById(id);
     throw e;
   }
