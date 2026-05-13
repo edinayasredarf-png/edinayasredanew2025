@@ -10,6 +10,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Единая ширина основного контента (Full HD и шире — без «растянутого» вида) */
+  --max-width-page: 1200px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +25,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* Шапка/подвал и лендинги на `container` — та же ширина, что и у `max-w-page` */
+.container {
+  max-width: var(--max-width-page);
 }
 
 /* VK Style - Минималистичные анимации */

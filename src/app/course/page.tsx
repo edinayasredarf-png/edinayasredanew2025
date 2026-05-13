@@ -25,7 +25,7 @@ export default function CoursePage() {
 
       {/* Course Content */}
       <section className="py-16 md:py-24">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+        <div className="max-w-page mx-auto px-5 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
             {/* Video Player */}
             <div className="lg:col-span-2">

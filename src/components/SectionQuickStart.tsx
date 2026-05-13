@@ -148,7 +148,7 @@ const SectionQuickStart: React.FC = () => {
 
   return (
     <section className="py-16 md:py-24 font-[Raleway]">
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+      <div className="max-w-page mx-auto px-5 md:px-8">
         <h2 className="text-center text-[#313131] text-[32px] md:text-[39.38px] font-medium leading-[44px] mb-12">
           Быстрый старт
         </h2>

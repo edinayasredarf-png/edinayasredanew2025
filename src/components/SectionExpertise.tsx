@@ -23,7 +23,7 @@ const smallCards = [
 
 const SectionExpertise = () => (
   <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
-    <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+    <div className="max-w-page mx-auto px-5 md:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         {/* Left Big Card */}
         <a

@@ -126,7 +126,7 @@ export default function Cases2Page() {
 
 				{/* Filters Section — как на /cases */}
 				<section className="py-8 font-[Raleway] font-medium lining-nums">
-					<div className="max-w-[1480px] mx-auto px-5 md:px-8">
+					<div className="max-w-page mx-auto px-5 md:px-8">
 						<div className="mb-4">
 							<p className="text-gray-500 text-sm">Фильтруйте кейсы по типу услуги для быстрого поиска нужных решений</p>
 						</div>
@@ -172,7 +172,7 @@ export default function Cases2Page() {
 				</section>
 
 				{/* Grid — шрифт и стили как на /cases */}
-				<section className="max-w-[1480px] mx-auto px-5 md:px-8 py-8 font-[Raleway] font-medium lining-nums">
+				<section className="max-w-page mx-auto px-5 md:px-8 py-8 font-[Raleway] font-medium lining-nums">
 					{loading ? (
 						<div className="text-center py-20 text-gray-600">Загрузка…</div>
 					) : filteredItems.length === 0 ? (
@@ -240,7 +240,7 @@ export default function Cases2Page() {
 
 				{/* CTA */}
 				<section className="bg-[#F6F7F9] py-16">
-					<div className="max-w-[1480px] mx-auto px-5 md:px-8">
+					<div className="max-w-page mx-auto px-5 md:px-8">
 						<div className="max-w-4xl mx-auto text-center">
 							<h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Готовы реализовать похожий проект?</h2>
 							<p className="text-xl text-gray-600 mb-8">Свяжитесь с нами для обсуждения ваших задач и получения персонального предложения</p>

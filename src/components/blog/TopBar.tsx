@@ -65,7 +65,7 @@ export default function TopBar() {
 
   return (
     <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] font-[Raleway] font-medium pt-2">
-      <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center">
+      <div className="relative max-w-page mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center">
         {/* ЛОГО слева */}
         <Link
           href="/"
@@ -397,7 +397,7 @@ export default function TopBar() {
       </div>
 
       {/* мобильные вкладки */}
-      <div className="md:hidden max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-3">
+      <div className="md:hidden max-w-page mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-3">
         <div className="grid grid-cols-2 gap-2">
           <Link
             href="/blog"

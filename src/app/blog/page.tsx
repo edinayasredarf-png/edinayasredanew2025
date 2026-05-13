@@ -169,7 +169,7 @@ function BlogHomeInner() {
           </div>
         )}
 
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+        <div className="max-w-page mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={setActiveTab} />
             <main className="flex-1 flex justify-center">

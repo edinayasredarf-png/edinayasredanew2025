@@ -44,7 +44,7 @@ const InterfaceSlider: React.FC<InterfaceSliderProps> = ({ title, subtitle, imag
   }, [swiperInstance]);
 
   return (
-    <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16 text-black">
+    <section className="max-w-page mx-auto px-5 md:px-8 mt-16 text-black">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
                   <h2 className="font-medium text-black text-4xl md:text-4xl lg:text-2xl xl:text-4xl leading-tight">
             {title}
@@ -53,7 +53,7 @@ const InterfaceSlider: React.FC<InterfaceSliderProps> = ({ title, subtitle, imag
             {subtitle}
           </div>
       </div>
-      <div className="relative w-full max-w-[1480px] mx-auto rounded-[20px] overflow-hidden">
+      <div className="relative w-full max-w-page mx-auto rounded-[20px] overflow-hidden">
         <Swiper
           key={navReady ? 'ready' : 'not-ready'}
           modules={[Navigation, Pagination]}

@@ -136,7 +136,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
     return (
       <Layout>
         <div className="bg-[#F6F7F9] min-h-screen">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8 py-16 text-center">
+          <div className="max-w-page mx-auto px-5 md:px-8 py-16 text-center">
             <div className="text-gray-400 text-6xl mb-6">🔍</div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Кейс не найден</h1>
             <p className="text-gray-600 mb-8">Возможно, кейс был удалён или ссылка неверна</p>
@@ -159,7 +159,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
     <Layout>
       <div className="bg-[#F6F7F9] min-h-screen font-[Raleway] font-medium lining-nums">
         <section className="bg-white text-[#19191a] rounded-b-[20px] relative overflow-hidden">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8 py-10 md:py-16">
+          <div className="max-w-page mx-auto px-5 md:px-8 py-10 md:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
               <div className="lg:col-span-7">
                 <Link
@@ -207,7 +207,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
           </div>
         </section>
 
-        <section className="max-w-[1480px] mx-auto px-5 md:px-8 py-10 md:py-14">
+        <section className="max-w-page mx-auto px-5 md:px-8 py-10 md:py-14">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-8">
             <article className="space-y-10">
               <section>
@@ -270,7 +270,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
         </section>
 
         {relatedCases.length > 0 && (
-          <section className="max-w-[1480px] mx-auto px-5 md:px-8 pb-14">
+          <section className="max-w-page mx-auto px-5 md:px-8 pb-14">
             <h3 className="text-center text-2xl md:text-4xl text-black font-semibold">Читайте ещё</h3>
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
               {relatedCases.map((item) => (
@@ -309,7 +309,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
           </section>
         )}
 
-        <section className="max-w-[1480px] mx-auto px-5 md:px-8 pb-16">
+        <section className="max-w-page mx-auto px-5 md:px-8 pb-16">
           <div className="bg-white rounded-[20px] p-8 md:p-12 text-center">
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-semibold text-black">
               Готовы реализовать похожий проект?

@@ -136,7 +136,7 @@ export default function PartnershipPage() {
 
         {/* Настройте партнёрскую программу */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="text-center mb-12 md:mb-16">
               <h2 className={`text-3xl md:text-4xl lg:text-[48px] ${headingBase} ${headingColor}`}>
                 Настройте партнёрскую программу так, как выгодно вам
@@ -187,7 +187,7 @@ export default function PartnershipPage() {
               </div>
             </div>
 
-            <div className="max-w-[1480px] mx-auto flex justify-center mt-10">
+            <div className="max-w-page mx-auto flex justify-center mt-10">
               <button
                 type="button"
                 onClick={() => setPartnersOpen(true)}
@@ -201,7 +201,7 @@ export default function PartnershipPage() {
 
         {/* Варианты участия в программе */}
         <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <h2 className={`text-3xl md:text-4xl lg:text-5xl text-center mb-16 ${headingBase} ${headingColor}`}>
               Варианты участия в программе
             </h2>
@@ -310,7 +310,7 @@ export default function PartnershipPage() {
 
         {/* Преимущества */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <h2 className={`text-3xl md:text-4xl lg:text-[48px] text-center mb-10 ${headingBase} ${headingColor}`}>
               Преимущества
             </h2>
@@ -343,7 +343,7 @@ export default function PartnershipPage() {
 
         {/* Кому подойдёт программа */}
         <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="bg-white rounded-3xl px-9 pt-14 pb-5">
               <h2 className={`text-3xl md:text-4xl lg:text-[48px] text-center mb-12 ${headingBase} ${headingColor}`}>
                 Кому подойдёт программа
@@ -365,7 +365,7 @@ export default function PartnershipPage() {
 
         {/* Почему продавать облачные решения перспективно — с изображениями графиков */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="text-center max-w-2xl mx-auto mb-10">
               <h2 className={`text-3xl md:text-4xl lg:text-[38.9px] ${headingBase} ${headingColor}`}>
                 Почему продавать облачные решения перспективно
@@ -414,7 +414,7 @@ export default function PartnershipPage() {
         {/* Программа технологической сертификации ПО — редизайн */}
       {/* Программа технологической сертификации ПО — редизайн */}
 <section className="py-16 md:py-24">
-  <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+  <div className="max-w-page mx-auto px-5 md:px-8">
     <div className="w-full max-w-[960px] mx-auto text-center mb-12">
       <h2 className={`text-[28px] md:text-[38.9px] ${headingBase} ${headingColor}`}>
 Узнайте больше о сервисе и услугах     </h2>
@@ -495,7 +495,7 @@ export default function PartnershipPage() {
 
         {/* FAQ — новый стиль */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 lg:gap-12 items-start">
               <div className="relative">
                 <div className="mb-8">
@@ -561,7 +561,7 @@ export default function PartnershipPage() {
         {/* CTA финальный */}
 
 <section className="py-16 md:py-24 bg-[#F6F7F9]">
-  <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+  <div className="max-w-page mx-auto px-5 md:px-8">
     <div className="rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2">
         {/* Лево: заголовок, текст и кнопки */}

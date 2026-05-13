@@ -58,7 +58,7 @@ export default function HomeNews() {
     if (!hasLoadError) return null;
     return (
       <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+        <div className="max-w-page mx-auto px-5 md:px-8">
           <div className="bg-white rounded-3xl border border-[#DCDDE1] p-6 text-[#52555a]">
             Новости временно недоступны. Попробуйте обновить страницу немного позже.
           </div>
@@ -69,7 +69,7 @@ export default function HomeNews() {
 
   return (
     <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+      <div className="max-w-page mx-auto px-5 md:px-8">
         {/* Заголовок — как в предыдущей секции */}
         <div className="mb-8 md:mb-10">
           <h2 className="text-[#313131] font-medium leading-[44px] text-[32px] md:text-[39.38px]">

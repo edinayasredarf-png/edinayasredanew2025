@@ -167,7 +167,7 @@ const CasesPage: React.FC = () => {
 
         {/* Filters Section */}
       <section className="py-8 font-[Raleway] font-medium lining-nums">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+        <div className="max-w-page mx-auto px-5 md:px-8">
           <div className="mb-4">
             <p className="text-gray-500 text-sm">Фильтруйте кейсы по отрасли и типу услуги для быстрого поиска нужных решений</p>
           </div>
@@ -244,7 +244,7 @@ const CasesPage: React.FC = () => {
 
 
         {/* Cases Grid */}
-      <section id="cases-grid" className="max-w-[1480px] mx-auto px-5 md:px-8 py-4 font-[Raleway] font-medium lining-nums">
+      <section id="cases-grid" className="max-w-page mx-auto px-5 md:px-8 py-4 font-[Raleway] font-medium lining-nums">
           {filteredCases.length === 0 ? (
             <div className="text-center py-20">
             <div className="text-gray-400 text-6xl mb-6">🔍</div>
@@ -351,7 +351,7 @@ const CasesPage: React.FC = () => {
 
       {/* CTA Section */}
       <section className="bg-[#F6F7F9] py-16 font-[Raleway] font-medium lining-nums">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6">
               Готовы реализовать похожий проект?

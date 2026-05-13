@@ -75,7 +75,7 @@ const SectionSubscribeChannels = () => {
 
   return (
     <section className="py-10 lg:py-20 font-[Raleway]">
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+      <div className="max-w-page mx-auto px-5 md:px-8">
         {/* Header */}
         <div className="text-center mb-10 lg:mb-12">
           <h2 className="text-center text-[#313131] text-2xl md:text-4xl lg:text-[50px] font-medium leading-[1.1] mb-0">

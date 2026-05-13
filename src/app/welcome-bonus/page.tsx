@@ -75,7 +75,7 @@ export default function WelcomeBonusPage() {
 
         {/* Что входит в бонус */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="text-center mb-12 md:mb-16">
               <h2 className={`text-3xl md:text-4xl lg:text-[48px] ${headingBase} ${headingColor}`}>
                 Что входит в приветственный бонус
@@ -122,7 +122,7 @@ export default function WelcomeBonusPage() {
 
         {/* Как получить — шаги */}
         <section className="py-8 md:py-10">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <h2 className={`text-3xl md:text-4xl lg:text-[48px] text-center mb-10 ${headingBase} ${headingColor}`}>
               Как получить бонус
             </h2>
@@ -153,7 +153,7 @@ export default function WelcomeBonusPage() {
 
         {/* Условия акции */}
         <section id="terms" className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="bg-white rounded-3xl p-8 md:p-12">
               <h2 className={`text-3xl md:text-4xl ${headingBase} ${headingColor}`}>Условия акции</h2>
               <ul className={`mt-6 space-y-3 text-lg ${paragraphMuted}`}>
@@ -181,7 +181,7 @@ export default function WelcomeBonusPage() {
 
         {/* FAQ (минималистично) */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 lg:gap-12 items-start">
               <div className="relative">
                 <div className="mb-8">
@@ -250,7 +250,7 @@ export default function WelcomeBonusPage() {
 
         {/* CTA финальный — слева текст/кнопки, справа картинка */}
         <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 {/* Лево */}

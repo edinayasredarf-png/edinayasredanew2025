@@ -15,7 +15,7 @@ const WorkflowStepsSection: React.FC = () => {
 
   return (
     <section className="py-24 bg-[#f5f7fa]">
-      <div className="max-w-[1480px] mx-auto px-4 flex flex-col items-center gap-12">
+      <div className="max-w-page mx-auto px-4 flex flex-col items-center gap-12">
 			<h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-6">
 			{data.title}
         </h2>

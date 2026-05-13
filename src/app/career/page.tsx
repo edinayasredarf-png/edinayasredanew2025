@@ -64,8 +64,8 @@ export default function CareerPage() {
         </section>
 
         {/* Why Work With Us Section */}
-        <section className="max-w-[1400px] mx-auto mt-8">
-          <div className="max-w-[1400px] mx-auto px-2 py-2">
+        <section className="max-w-page mx-auto mt-8">
+          <div className="max-w-page mx-auto px-2 py-2">
             <h2 className="text-4xl text-black font-medium mb-12 text-left">
               Почему стоит работать с нами
             </h2>
@@ -104,8 +104,8 @@ export default function CareerPage() {
         </section>
 
         {/* HH.ru Integration Section */}
-        <section className="max-w-[1400px] mx-auto mt-8">
-          <div className="max-w-[1400px] mx-auto px-2 py-2">
+        <section className="max-w-page mx-auto mt-8">
+          <div className="max-w-page mx-auto px-2 py-2">
             <h2 className="text-4xl text-black font-medium mb-12 text-left">
               Наши вакансии на HH.ru
             </h2>
@@ -166,8 +166,8 @@ export default function CareerPage() {
         </section>
 
         {/* Benefits Section */}
-        <section className="max-w-[1400px] mx-auto mt-8">
-          <div className="max-w-[1400px] mx-auto px-2 py-2">
+        <section className="max-w-page mx-auto mt-8">
+          <div className="max-w-page mx-auto px-2 py-2">
             <h2 className="text-4xl text-black font-medium mb-12 text-left">
               Наши преимущества
             </h2>

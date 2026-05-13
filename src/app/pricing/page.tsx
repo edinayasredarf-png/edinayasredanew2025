@@ -53,8 +53,8 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
-      <section className="max-w-[1400px] mx-auto mt-8">
-        <div className="max-w-[1400px] mx-auto px-2 py-2">
+      <section className="max-w-page mx-auto mt-8">
+        <div className="max-w-page mx-auto px-2 py-2">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
             <h2 className="text-4xl text-black font-medium text-left">
               Тарифы и услуги

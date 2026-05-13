@@ -16,7 +16,7 @@ export default function SectionMainVideo({
 
   return (
     <section className={`py-10 md:py-14 font-[Raleway] ${className}`}>
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+      <div className="max-w-page mx-auto px-5 md:px-8">
         <div className="relative">
           {/* Видео: синяя “подложка” снизу как в Figma + уменьшенный max-размер */}
           <div className="mx-auto w-full max-w-[1348px] rounded-3xl border-b-[10px] border-[#029cda] overflow-hidden">

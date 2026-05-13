@@ -211,7 +211,7 @@ const SectionPlatformAndServices: React.FC = () => {
   const leftRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <section className="mx-auto w-full max-w-[1480px] px-4 py-8 lg:py-12">
+    <section className="mx-auto w-full max-w-page px-4 py-8 lg:py-12">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-4">
         {/* Левая большая карточка (синяя) */}
         <motion.div

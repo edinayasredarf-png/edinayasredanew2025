@@ -29,7 +29,7 @@ const SectionInterfaceByFigma: React.FC = () => {
 
   return (
     <section className="font-[Raleway]">
-      <div className="relative w-full max-w-[1480px] mx-auto px-4 sm:px-5 md:px-22 mt-16 md:mt-[120px]">
+      <div className="relative w-full max-w-page mx-auto px-4 sm:px-5 md:px-22 mt-16 md:mt-[120px]">
         {/* Header */}
         <div className="w-full grid grid-cols-1 md:grid-cols-[1fr_1fr] md:items-start md:gap-[60px] lg:gap-[80px]">
           <h2 className="text-[#313131] font-medium leading-[44px] text-[32px] md:text-[39.38px]">

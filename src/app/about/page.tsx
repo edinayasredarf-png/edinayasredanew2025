@@ -62,7 +62,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           ? 'border-b border-gray-300 backdrop-blur-lg bg-white/98'
           : 'border-b border-gray-200'
       }`}>
-        <div className="max-w-[1480px] mx-auto px-4 md:px-0 ">
+        <div className="max-w-page mx-auto px-4 md:px-0 ">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center">
               {/* Десктопный логотип */}
@@ -167,7 +167,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           onMouseEnter={() => handleSubmenuEnter('company')}
           onMouseLeave={handleSubmenuLeave}
         >
-          <div className="max-w-[1480px] mx-auto px-5">
+          <div className="max-w-page mx-auto px-5">
             <div className="space-y-4">
               <a href="/career" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
@@ -194,7 +194,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           onMouseEnter={() => handleSubmenuEnter('platform')}
           onMouseLeave={handleSubmenuLeave}
         >
-          <div className="max-w-[1480px] mx-auto px-5">
+          <div className="max-w-page mx-auto px-5">
             <div className="space-y-4">
               <a href="https://edinayasreda.ru/" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
@@ -227,7 +227,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           onMouseEnter={() => handleSubmenuEnter('services')}
           onMouseLeave={handleSubmenuLeave}
         >
-          <div className="max-w-[1480px] mx-auto px-5">
+          <div className="max-w-page mx-auto px-5">
             <div className="space-y-4">
               <Link href="/services/inventory-burials" className="flex items-center gap-3 py-3 px-8 rounded-lg hover:text-[#029cda] transition-colors text-xl">
                 <div>
@@ -268,7 +268,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             : 'opacity-0 -translate-y-2 scale-99 pointer-events-none'
         }`}
       >
-        <div className="max-w-[1480px] mx-auto px-5">
+        <div className="max-w-page mx-auto px-5">
           <nav className="py-4 space-y-2">
             {/* Компания */}
             <div className="relative">

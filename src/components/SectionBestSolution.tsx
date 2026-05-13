@@ -42,7 +42,7 @@ const StackCard = ({ icon, text }: StackCardProps) => (
 const SectionBestSolution: React.FC = () => {
   const { openDemo } = useModal();
   return (
-    <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16">
+    <section className="max-w-page mx-auto px-5 md:px-8 mt-16">
       <h2 className="text-center text-black text-2xl md:text-4xl lg:text-[50px] font-medium leading-[1.1] mb-12">
         Единая Среда лучшее решение
       </h2>

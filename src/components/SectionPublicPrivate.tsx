@@ -32,7 +32,7 @@ const SectionPublicPrivate: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'problems' | 'solutions'>('problems');
 
   return (
-    <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-4">
+    <section className="max-w-page mx-auto px-5 md:px-8 mt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* ========================================
             ЛЕВАЯ КАРТОЧКА: Офлайн работа

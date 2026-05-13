@@ -62,8 +62,8 @@ var features = [
     },
 ];
 var SectionFeatures = function () {
-    return (<section className="max-w-[1400px] mx-auto mt-8">
-      <div className="max-w-[1400px] mx-auto px-2 py-2">
+    return (<section className="max-w-page mx-auto mt-8">
+      <div className="max-w-page mx-auto px-2 py-2">
         <h2 className="text-4xl text-black font-medium mb-12 text-left">
           Всё для удобного цифрового контроля и учёта вашей территории
         </h2>

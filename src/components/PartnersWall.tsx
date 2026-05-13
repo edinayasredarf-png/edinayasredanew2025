@@ -132,7 +132,7 @@ const RowMarqueeH: React.FC<{
 const PartnersWallTwoCols: React.FC = () => {
   return (
     <section className="w-full py-16 md:py-24">
-      <div className="mx-auto w-full max-w-[1480px] px-4 md:px-8">
+      <div className="mx-auto w-full max-w-page px-4 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           {/* Заголовок/текст слева */}
           <div className="lg:col-span-5">

@@ -93,7 +93,7 @@ const SectionInterfaceDemoSplit70: React.FC = () => {
   }, [isLightboxOpen, closeLightbox]);
 
   return (
-    <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16 text-black">
+    <section className="max-w-page mx-auto px-5 md:px-8 mt-16 text-black">
       {/* Заголовок */}
       <div className="max-w-3xl mb-8">
         <h2 className="font-medium text-3xl md:text-4xl leading-tight">Понятный интерфейс</h2>

@@ -76,7 +76,7 @@ const Case10Inner: React.FC = () => {
     <>
       {/* HERO */}
       <section className="bg-white text-[#19191a] rounded-b-[20px] relative overflow-hidden">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8 py-10 md:py-16">
+        <div className="max-w-page mx-auto px-5 md:px-8 py-10 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
             <div className="lg:col-span-7">
               <Link
@@ -132,7 +132,7 @@ const Case10Inner: React.FC = () => {
       </section>
 
       {/* CONTENT */}
-      <section className="max-w-[1480px] mx-auto px-5 md:px-8 py-10 md:py-14">
+      <section className="max-w-page mx-auto px-5 md:px-8 py-10 md:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-8">
           {/* LEFT */}
           <article className="space-y-10">
@@ -282,7 +282,7 @@ const Case10Inner: React.FC = () => {
       </section>
 
       {/* READ MORE */}
-      <section className="max-w-[1480px] mx-auto px-5 md:px-8 pb-14">
+      <section className="max-w-page mx-auto px-5 md:px-8 pb-14">
         <h3 className="text-center text-2xl md:text-4xl text-black">Читайте ещё</h3>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           {related.map((m) => (
@@ -312,7 +312,7 @@ const Case10Inner: React.FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="max-w-[1480px] mx-auto px-5 md:px-8 pb-16">
+      <section className="max-w-page mx-auto px-5 md:px-8 pb-16">
         <div className="bg-white rounded-[20px] p-8 md:p-12 text-center">
           <h2 className="text-2xl md:text-4xl lg:text-5xl font-semibold text-black">Готовы реализовать похожий проект?</h2>
           <p className="mt-4 text-lg md:text-xl text-gray-700">

@@ -25,7 +25,7 @@ export default function SupportersSection({
   logos?: Logo[];
 }) {
   return (
-    <section className="w-full mx-auto max-w-[1480px] px-4 py-10 md:py-14">
+    <section className="w-full mx-auto max-w-page px-4 py-10 md:py-14">
       {/* Заголовок */}
       <div className="flex flex-col items-center text-center mb-8 md:mb-10">
         <h2 className="text-[#313131] font-[Raleway] font-medium text-[30px] sm:text-[40px] md:text-[48px] leading-[1.2]">

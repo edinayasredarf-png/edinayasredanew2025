@@ -60,7 +60,7 @@ const CompanyBadges: React.FC<CompanyBadgesProps> = ({
       className="w-full flex flex-col items-center justify-center gap-4 py-6 md:py-10 font-[Raleway] mt-20"
       aria-label="Факты о компании"
     >
-      <div className="w-full max-w-[1480px] px-2">
+      <div className="w-full max-w-page px-2">
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-2 items-stretch justify-center">
           <Card {...items[0]} />
           <Card {...items[1]} />

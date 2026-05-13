@@ -33,7 +33,7 @@ export default function BenefitsSection({
 
   return (
     <section
-      className="mx-auto w-full max-w-[1480px] px-4 py-8 md:py-10 mt-10 md:mt-14 lg:mt-20"
+      className="mx-auto w-full max-w-page px-4 py-8 md:py-10 mt-10 md:mt-14 lg:mt-20"
       aria-label="Преимущества системы"
     >
       {showTitle && (

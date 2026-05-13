@@ -42,7 +42,7 @@ export default function TerritoryControlSection({
   cards?: Card[];
 }) {
   return (
-    <section className="w-full mx-auto max-w-[1480px] px-4 py-12 md:py-16">
+    <section className="w-full mx-auto max-w-page px-4 py-12 md:py-16">
       <header className="flex flex-col items-center text-center mb-10 md:mb-14">
         <h2 className="text-[#313131] font-[Raleway] font-medium leading-[1.1] text-[32px] sm:text-[40px] md:text-[52px]">
           {title}

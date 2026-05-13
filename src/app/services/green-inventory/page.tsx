@@ -152,8 +152,8 @@ export default function GreenInventoryPage() {
       </section>
 
         {/* Features Section - как на главной */}
-        <section className="max-w-[1400px] mx-auto mt-8">
-          <div className="max-w-[1400px] mx-auto px-2 py-2">
+        <section className="max-w-page mx-auto mt-8">
+          <div className="max-w-page mx-auto px-2 py-2">
             <h2 className="text-4xl text-black font-medium mb-12 text-left">
               Всё для удобного цифрового контроля и учёта зеленых насаждений
             </h2>
@@ -167,7 +167,7 @@ export default function GreenInventoryPage() {
 
         {/* Work Steps - как SectionAllObjects */}
         <section className="w-full flex flex-col items-center mt-16">
-          <div className="max-w-[1480px] w-full flex flex-col items-start gap-16 px-5 md:px-8">
+          <div className="max-w-page w-full flex flex-col items-start gap-16 px-5 md:px-8">
             <div className="w-full flex flex-col items-center">
               <h2 className="text-center font-medium text-black text-lg md:text-2xl lg:text-4xl leading-tight">
                 Схема работы
@@ -191,7 +191,7 @@ export default function GreenInventoryPage() {
         </section>
 
         {/* Advantages - как SectionBestSolution */}
-        <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16">
+        <section className="max-w-page mx-auto px-5 md:px-8 mt-16">
           <h2 className="text-center text-black text-2xl md:text-4xl lg:text-[50px] font-medium leading-[1.1] mb-12">
             Что вы получаете
           </h2>
@@ -211,7 +211,7 @@ export default function GreenInventoryPage() {
 
         {/* Company Info - в стиле SectionExpertise */}
         <section className="py-10 lg:py-20">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Left Big Card */}
               <a href="/about" className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]">
@@ -281,7 +281,7 @@ export default function GreenInventoryPage() {
 
                 {/* FAQ Section */}
         <section className="py-10 lg:py-20">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-page mx-auto px-5 md:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - FAQ */}
               <div className="lg:col-span-2">
@@ -367,7 +367,7 @@ export default function GreenInventoryPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="max-w-[1480px] mx-auto px-5 md:px-8 mt-16 mb-16">
+        <section className="max-w-page mx-auto px-5 md:px-8 mt-16 mb-16">
           <div className="bg-[#029cda] rounded-[20px] md:rounded-[30px] p-6 md:p-12 text-center text-white">
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8">
               Рассчитайте стоимость инвентаризации для своего объекта

@@ -33,7 +33,7 @@ const BlueTrustWithScreen: React.FC<{
   sideBgRight,
 }) => {
   return (
-    <section className="mx-auto w-full max-w-[1480px] px-4 py-8 lg:py-12">
+    <section className="mx-auto w-full max-w-page px-4 py-8 lg:py-12">
       <div className="relative rounded-2xl bg-[#029cda] overflow-hidden">
         {/* Боковые фоновые изображения на всю высоту (опционально, скрываем на мобиле) */}
         {sideBgLeft && (

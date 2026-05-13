@@ -145,7 +145,7 @@ export default function ForestManagementPage() {
 
 
 			<section className="py-24 bg-[#f5f7fa]">
-  <div className="max-w-[1480px] mx-auto px-4">
+  <div className="max-w-page mx-auto px-4">
 
     {/* Заголовок */}
     <h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
@@ -234,7 +234,7 @@ export default function ForestManagementPage() {
 
 
 <section className="py-24 bg-[#f5f7fa]">
-  <div className="max-w-[1480px] mx-auto px-4">
+  <div className="max-w-page mx-auto px-4">
 
     {/* Заголовок */}
     <h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
@@ -314,7 +314,7 @@ export default function ForestManagementPage() {
 
 
 <section className="bg-[#f5f7fa] py-24" >
-					<div className="max-w-[1480px] mx-auto px-4">
+					<div className="max-w-page mx-auto px-4">
 
 						<h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
 						Какие задачи решает лесоустройство
@@ -421,7 +421,7 @@ export default function ForestManagementPage() {
 				</section>
 
 
-				<section className="max-w-[1480px] mx-auto px-4 py-24">
+				<section className="max-w-page mx-auto px-4 py-24">
 
 {/* Заголовок */}
 <h2 className="text-center text-[#313131] text-4xl md:text-[52px] leading-tight">

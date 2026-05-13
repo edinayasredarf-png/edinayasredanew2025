@@ -56,7 +56,7 @@ export default function DemoIframeSection() {
   }, []);
 
   return (
-    <div className="max-w-[1480px] mx-auto px-4 py-10">
+    <div className="max-w-page mx-auto px-4 py-10">
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-6">
