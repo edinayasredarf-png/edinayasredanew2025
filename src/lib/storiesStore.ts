@@ -1,6 +1,6 @@
 'use client';
 
-import { getSupabase } from './supabase';
+import { dataFetch } from './dataApi';
 
 /** Позиция текста поверх слайда */
 export type StoryTextPosition = 'top' | 'center' | 'bottom';
@@ -105,20 +105,13 @@ function toPayload(s: Story): Record<string, unknown> {
 // -------- Async API (Supabase + localStorage fallback) --------
 
 export async function loadStories(): Promise<Story[]> {
-  const sb = getSupabase();
-  if (sb) {
-    try {
-      const { data, error } = await sb
-        .from('stories')
-        .select('*')
-        .order('updated_at', { ascending: false });
-      if (error) throw error;
-      return (data || []).map(mapRow);
-    } catch (e) {
-      console.warn('Supabase load stories failed, using local fallback:', e);
-    }
+  try {
+    const rows = (await dataFetch('/stories')) as Record<string, unknown>[];
+    return (rows || []).map(mapRow);
+  } catch (e) {
+    console.warn('load stories API failed, using local fallback:', e);
+    return readLocal<Story[]>(K_STORIES, []);
   }
-  return readLocal<Story[]>(K_STORIES, []);
 }
 
 export async function listStories(): Promise<Story[]> {
@@ -127,26 +120,17 @@ export async function listStories(): Promise<Story[]> {
 }
 
 export async function getStoryById(id: string): Promise<Story | undefined> {
-  const sb = getSupabase();
-  if (sb) {
-    try {
-      const { data, error } = await sb
-        .from('stories')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
-      if (error) throw error;
-      return data ? mapRow(data) : undefined;
-    } catch (e) {
-      console.warn('Supabase get story failed, using local fallback:', e);
-    }
+  try {
+    const row = (await dataFetch('/stories?id=' + encodeURIComponent(id))) as Record<string, unknown> | null;
+    if (row) return mapRow(row);
+  } catch (e) {
+    console.warn('get story API failed, using local fallback:', e);
   }
   const list = readLocal<Story[]>(K_STORIES, []);
   return list.find((s) => s.id === id);
 }
 
 export async function upsertStory(s: Story): Promise<void> {
-  const sb = getSupabase();
   const now = Date.now();
   const toSave: Story = {
     ...s,
@@ -155,21 +139,19 @@ export async function upsertStory(s: Story): Promise<void> {
     viewCount: s.viewCount ?? 0,
   };
 
-  if (sb) {
-    try {
-      const existing = await getStoryById(s.id);
-      if (existing) {
-        toSave.createdAt = existing.createdAt;
-        toSave.viewCount = existing.viewCount;
-      }
-      const { error } = await sb
-        .from('stories')
-        .upsert(toPayload(toSave), { onConflict: 'id' });
-      if (error) throw error;
-      return;
-    } catch (e) {
-      console.warn('Supabase upsert story failed, using local fallback:', e);
+  try {
+    const existing = await getStoryById(s.id);
+    if (existing) {
+      toSave.createdAt = existing.createdAt;
+      toSave.viewCount = existing.viewCount;
     }
+    await dataFetch('/stories', {
+      method: 'POST',
+      body: JSON.stringify(toPayload(toSave)),
+    });
+    return;
+  } catch (e) {
+    console.warn('upsert story API failed, using local fallback:', e);
   }
 
   const list = readLocal<Story[]>(K_STORIES, []);
@@ -185,15 +167,11 @@ export async function upsertStory(s: Story): Promise<void> {
 }
 
 export async function deleteStory(id: string): Promise<void> {
-  const sb = getSupabase();
-  if (sb) {
-    try {
-      const { error } = await sb.from('stories').delete().eq('id', id);
-      if (error) throw error;
-      return;
-    } catch (e) {
-      console.warn('Supabase delete story failed, using local fallback:', e);
-    }
+  try {
+    await dataFetch('/stories?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    return;
+  } catch (e) {
+    console.warn('delete story API failed, using local fallback:', e);
   }
   const list = readLocal<Story[]>(K_STORIES, []).filter((s) => s.id !== id);
   writeLocal(K_STORIES, list);
@@ -201,21 +179,14 @@ export async function deleteStory(id: string): Promise<void> {
 
 /** Увеличить счётчик просмотров при открытии сториса */
 export async function incStoryViews(id: string): Promise<void> {
-  const sb = getSupabase();
-  if (sb) {
-    try {
-      const { data, error } = await sb
-        .from('stories')
-        .select('view_count')
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-      const count = (data?.view_count ?? 0) + 1;
-      await sb.from('stories').update({ view_count: count, updated_at: Date.now() }).eq('id', id);
-      return;
-    } catch (e) {
-      console.warn('Supabase inc views failed, using local fallback:', e);
-    }
+  try {
+    await dataFetch('/story-views', {
+      method: 'POST',
+      body: JSON.stringify({ id }),
+    });
+    return;
+  } catch (e) {
+    console.warn('inc story views API failed, using local fallback:', e);
   }
   const list = readLocal<Story[]>(K_STORIES, []);
   const idx = list.findIndex((s) => s.id === id);

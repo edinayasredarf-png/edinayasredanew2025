@@ -1,10 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { dbUpsertUserProfile } from "@/lib/server/dataDb";
 
-/**
- * API route для создания пользователя через OAuth провайдеров
- * Использует Supabase Admin API для создания пользователя без пароля
- */
+async function syncProfileToTimeweb(row: {
+  id: string;
+  email: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  role?: string;
+}) {
+  try {
+    await dbUpsertUserProfile({
+      id: row.id,
+      email: row.email,
+      full_name: row.full_name ?? null,
+      avatar_url: row.avatar_url ?? null,
+      organization: null,
+      role: row.role ?? "user",
+    });
+  } catch (e) {
+    console.warn("Timeweb user_profiles sync:", e);
+  }
+}
 export async function POST(request: NextRequest) {
   try {
     const { email, name, avatar_url, provider, provider_id } = await request.json();
@@ -63,15 +80,12 @@ export async function POST(request: NextRequest) {
         console.error('Error updating user:', updateError);
       }
 
-      // Обновляем профиль
-      await supabaseAdmin
-        .from('user_profiles')
-        .upsert({
-          id: existingUser.id,
-          email: email,
-          full_name: name || existingUser.user_metadata?.full_name,
-          avatar_url: avatar_url || existingUser.user_metadata?.avatar_url,
-        });
+      await syncProfileToTimeweb({
+        id: existingUser.id,
+        email,
+        full_name: name || existingUser.user_metadata?.full_name,
+        avatar_url: avatar_url || existingUser.user_metadata?.avatar_url,
+      });
 
       return NextResponse.json({
         user: updateData?.user || existingUser,
@@ -110,17 +124,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Профиль будет создан автоматически через триггер handle_new_user
-    // Но на всякий случай обновим его
-    await supabaseAdmin
-      .from('user_profiles')
-      .upsert({
-        id: newUser.user.id,
-        email: email,
-        full_name: name,
-        avatar_url: avatar_url,
-        role: email === 'proeco09@yandex.ru' ? 'admin' : 'user',
-      });
+    await syncProfileToTimeweb({
+      id: newUser.user.id,
+      email,
+      full_name: name,
+      avatar_url: avatar_url,
+      role: email === "proeco09@yandex.ru" ? "admin" : "user",
+    });
 
     return NextResponse.json({
       user: newUser.user,

@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { sb_listNews, NewsItem } from '@/lib/blogStore';
+import { formatContentDate } from '@/lib/contentDates';
 
 // MUI Skeleton
 import Skeleton from '@mui/material/Skeleton';
@@ -220,7 +221,7 @@ export default function RightSidebar() {
               {news.slice(0, 6).map((n) => (
                 <div key={n.id} className="space-y-1">
                   <div className="text-sm text-[#52555a]">
-                    {new Date(n.createdAt).toLocaleDateString('ru-RU')}
+                    {formatContentDate(n.createdAt, n.updatedAt)}
                   </div>
                   <Link
                     href={`/news/${n.slug}`}

@@ -9,14 +9,13 @@ export const editorAuth = {
   isAuthed() {
     return auth.isAuthed();
   },
-  login(login: string, pass: string) {
+  async login(login: string, pass: string) {
     if (login === LOGIN && pass === PASS) {
-      // делегируем существующей системе авторизации
       return auth.login(LOGIN, PASS);
     }
     return false;
   },
-  logout() {
-    auth.logout();
+  async logout() {
+    await auth.logout();
   },
 };

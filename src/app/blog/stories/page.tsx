@@ -172,7 +172,16 @@ export default function BlogStoriesPage() {
             <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#313131]" placeholder="Логин" value={login} onChange={(e) => setLogin(e.target.value)} />
             <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#313131]" placeholder="Пароль" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
             <div className="flex gap-2">
-              <button onClick={() => auth.login(login, pass) && setAuthed(true)} className="bg-[#029cda] text-white px-5 py-2.5 rounded-lg">Войти</button>
+              <button
+                onClick={async () => {
+                  const ok = await auth.login(login, pass);
+                  if (ok) setAuthed(true);
+                  else alert('Неверный логин/пароль');
+                }}
+                className="bg-[#029cda] text-white px-5 py-2.5 rounded-lg"
+              >
+                Войти
+              </button>
               <Link href="/blog" className="px-5 py-2.5 rounded-lg border text-[#313131]">В блог</Link>
             </div>
           </div>

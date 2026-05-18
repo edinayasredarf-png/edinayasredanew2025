@@ -2,6 +2,7 @@
 
 import { getSupabase } from './supabase';
 import type { User } from '@supabase/supabase-js';
+import { dataFetch } from './dataApi';
 
 export type UserRole = 'user' | 'author' | 'admin';
 export type UserProfile = {
@@ -82,96 +83,57 @@ export class AuthStore {
 
   private async loadProfile() {
     if (!this.user) return;
-    
-    const sb = getSupabase();
-    if (!sb) return;
 
     try {
-      const { data, error } = await sb
-        .from('user_profiles')
-        .select('*')
-        .eq('id', this.user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Failed to load profile:', error);
+      let data = (await dataFetch("/profile")) as UserProfile | null;
+      if (!data) {
+        await this.createProfile();
         return;
       }
-
-      // Check if this is the editor email and update role if needed
-      if (this.user.email === 'proeco09@yandex.ru' && data && data.role !== 'admin') {
-        console.log('Updating editor role for:', this.user.email);
+      if (this.user.email === "proeco09@yandex.ru" && data.role !== "admin") {
+        console.log("Updating editor role for:", this.user.email);
         await this.updateEditorRole();
         return;
       }
-
-      this.profile = data || {
-        id: this.user.id,
-        email: this.user.email || '',
-        full_name: this.user.user_metadata?.full_name || '',
-        avatar_url: this.user.user_metadata?.avatar_url || '',
-        organization: '',
-        role: this.user.email === 'proeco09@yandex.ru' ? 'admin' : 'user',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      // If profile doesn't exist, create it
-      if (!data && error?.code === 'PGRST116') {
-        await this.createProfile();
-      }
+      this.profile = data;
     } catch (error) {
-      console.error('Profile load error:', error);
+      console.error("Profile load error:", error);
     }
   }
 
   private async createProfile() {
     if (!this.user) return;
 
-    const sb = getSupabase();
-    if (!sb) return;
-
     try {
-      const isEditor = this.user.email === 'proeco09@yandex.ru';
-      
-      const { data, error } = await sb
-        .from('user_profiles')
-        .insert({
-          id: this.user.id,
-          email: this.user.email || '',
-          full_name: this.user.user_metadata?.full_name || this.user.email?.split('@')[0] || 'Пользователь',
-          role: isEditor ? 'admin' : 'user',
-          avatar_url: this.user.user_metadata?.avatar_url,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      await dataFetch("/profile", { method: "POST" });
+      let data = (await dataFetch("/profile")) as UserProfile;
+      if (this.user.email === "proeco09@yandex.ru" && data.role !== "admin") {
+        await dataFetch("/profile", {
+          method: "PATCH",
+          body: JSON.stringify({ role: "admin" }),
+        });
+        data = (await dataFetch("/profile")) as UserProfile;
+      }
       this.profile = data;
+      this.notifyListeners();
     } catch (error) {
-      console.error('Error creating profile:', error);
+      console.error("Error creating profile:", error);
     }
   }
 
   private async updateEditorRole() {
     if (!this.user) return;
 
-    const sb = getSupabase();
-    if (!sb) return;
-
     try {
-      const { data, error } = await sb
-        .from('user_profiles')
-        .update({ role: 'admin' })
-        .eq('id', this.user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      this.profile = data;
-      console.log('Editor role updated successfully');
+      await dataFetch("/profile", {
+        method: "PATCH",
+        body: JSON.stringify({ role: "admin" }),
+      });
+      this.profile = (await dataFetch("/profile")) as UserProfile;
+      console.log("Editor role updated successfully");
+      this.notifyListeners();
     } catch (error) {
-      console.error('Error updating editor role:', error);
+      console.error("Error updating editor role:", error);
     }
   }
 
@@ -329,21 +291,11 @@ export class AuthStore {
   async updateProfile(updates: Partial<UserProfile>) {
     if (!this.user || !this.profile) throw new Error('Not authenticated');
 
-    const sb = getSupabase();
-    if (!sb) throw new Error('Supabase not initialized');
+    const data = (await dataFetch('/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    })) as UserProfile;
 
-    const { data, error } = await sb
-      .from('user_profiles')
-      .upsert({
-        ...this.profile,
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    
     this.profile = data;
     this.notifyListeners();
     return data;

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "next build"
+    "export": "next build",
+    "db:check-timeweb": "node scripts/check-timeweb-pg.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -50,6 +51,7 @@
     "lucide-react": "^0.563.0",
     "mammoth": "^1.11.0",
     "next": "^15.4.8",
+    "pg": "^8.20.0",
     "react": "19.1.2",
     "react-dom": "19.1.2",
     "react-fast-compare": "^3.2.2",
@@ -64,6 +66,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

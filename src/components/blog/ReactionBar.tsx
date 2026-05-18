@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { NewsItem, sb_listNews } from '@/lib/blogStore';
+import { formatContentDate } from '@/lib/contentDates';
 
 export default function RightSidebar() {
   const [news, setNews] = React.useState<NewsItem[]>([]);
@@ -43,7 +44,7 @@ export default function RightSidebar() {
           <div className="space-y-4">
             {news.slice(0,6).map(n => (
               <div key={n.id} className="space-y-1">
-                <div className="text-sm text-[#52555a]">{new Date(n.createdAt).toLocaleDateString('ru-RU')}</div>
+                <div className="text-sm text-[#52555a]">{formatContentDate(n.createdAt, n.updatedAt)}</div>
                 <Link href={`/news/${n.slug}`} className="text-base text-[#111] leading-snug hover:underline">
                   {n.title}
                 </Link>

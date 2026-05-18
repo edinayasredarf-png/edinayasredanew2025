@@ -22,6 +22,7 @@ import { authStore } from '@/lib/authStore';
 import { sb_isFavorite, sb_toggleFavorite } from '@/lib/commentsStore';
 import CommentSection from '@/components/blog/CommentSection';
 import AuthModal from '@/components/auth/AuthModal';
+import { formatContentDate } from '@/lib/contentDates';
 
 export default function NewsPageClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -239,7 +240,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
                     <Image src="/icons/favorite.svg" alt="Избранное" width={30} height={30} className="object-contain" />
                   </button>
                   <div className="text-[#676E7E] text-sm font-medium">
-                    {new Date(news.createdAt).toLocaleDateString('ru-RU')}
+                    {formatContentDate(news.createdAt, news.updatedAt)}
                   </div>
                   <div className="ml-auto flex items-center gap-1">
                     <Image src="/icons/views.svg" alt="Просмотры" width={20} height={20} className="object-contain" />

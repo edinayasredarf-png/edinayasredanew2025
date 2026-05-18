@@ -1,7 +1,8 @@
 'use client';
 
 import type { Metadata } from "next";
-import { getSupabase } from './supabase';
+import { dataFetch } from "./dataApi";
+import { parseContentTimestamp } from "./contentDates";
 
 export type Align = 'left' | 'center' | 'right';
 
@@ -87,15 +88,41 @@ function read<T>(key: string, fallback: T): T {
 }
 function write<T>(key: string, data: T) { localStorage.setItem(key, JSON.stringify(data)); }
 
-// -------- AUTH ----------
+// -------- AUTH (редактор → cookie для записи в Timeweb) ----------
 export const auth = {
-  login(user: string, pass: string) {
-    const ok = user === 'proeco09@yandex.ru' && pass === 'ecostroy2013';
-    if (ok) write(K_AUTH, { authed: true });
-    return ok;
+  async login(user: string, pass: string): Promise<boolean> {
+    try {
+      const res = await fetch("/api/editor/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user, password: pass }),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        write(K_AUTH, { authed: false });
+        return false;
+      }
+      write(K_AUTH, { authed: true });
+      return true;
+    } catch {
+      write(K_AUTH, { authed: false });
+      return false;
+    }
   },
-  logout() { write(K_AUTH, { authed: false }); },
-  isAuthed() { return !!read(K_AUTH, { authed: false }).authed; },
+  async logout(): Promise<void> {
+    try {
+      await fetch("/api/editor/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      /* ignore */
+    }
+    write(K_AUTH, { authed: false });
+  },
+  isAuthed() {
+    return !!read(K_AUTH, { authed: false }).authed;
+  },
 };
 
 // -------- TAGS ----------
@@ -184,26 +211,14 @@ export function clearTestNews() {
 }
 
 export async function sb_clearTestNews(): Promise<number> {
-  const sb = getSupabase(); 
-  if (!sb) return clearTestNews();
-  
-  const testTitles = [
-    'Релиз новой версии АИС «Единая Среда»',
-    'Конкурс айдентики для городского фестиваля'
-  ];
-  
   try {
-    const { data, error } = await sb.from('news').select('id, title').in('title', testTitles);
-    if (error) throw error;
-    
-    if (data && data.length > 0) {
-      const ids = data.map(item => item.id);
-      await sb.from('news').delete().in('id', ids);
-      return data.length;
-    }
-    return 0;
+    const r = (await dataFetch("/news", {
+      method: "POST",
+      body: JSON.stringify({ clearTestNews: true }),
+    })) as { deleted?: number };
+    return r?.deleted ?? 0;
   } catch (error) {
-    console.log('Supabase clear test news failed:', error);
+    console.log("clear test news (API) failed:", error);
     return clearTestNews();
   }
 }
@@ -349,8 +364,8 @@ function mapPostRow(row: any): BlogPost {
     contentHtml: row.contenthtml ?? row.contentHtml, // на случай уже правильного нейминга
     tags: row.tags ?? [],
     kind: row.kind ?? undefined,
-    createdAt: row.createdat ?? row.createdAt,
-    updatedAt: row.updatedat ?? row.updatedAt,
+    createdAt: parseContentTimestamp(row.createdat, row.createdAt, row.updatedat, row.updatedAt),
+    updatedAt: parseContentTimestamp(row.updatedat, row.updatedAt, row.createdat, row.createdAt),
     views: row.views ?? 0,
     reactions: row.reactions ?? { heart:0, fire:0, smile:0 },
   };
@@ -364,8 +379,8 @@ function mapNewsRow(row: any): NewsItem {
     cover: row.cover ?? undefined,
     contentHtml: row.contenthtml ?? row.contentHtml,
     tags: row.tags ?? [],
-    createdAt: row.createdat ?? row.createdAt,
-    updatedAt: row.updatedat ?? row.updatedAt,
+    createdAt: parseContentTimestamp(row.createdat, row.createdAt, row.updatedat, row.updatedAt),
+    updatedAt: parseContentTimestamp(row.updatedat, row.updatedAt, row.createdat, row.createdAt),
     views: row.views ?? 0,
     reactions: row.reactions ?? { heart:0, fire:0, smile:0 },
   };
@@ -382,8 +397,8 @@ function mapCaseRow(row: any): CaseItem {
     tags: row.tags ?? [],
     application: row.application ?? undefined,
     location: row.location ?? undefined,
-    createdAt: row.createdat ?? row.createdAt,
-    updatedAt: row.updatedat ?? row.updatedAt,
+    createdAt: parseContentTimestamp(row.createdat, row.createdAt, row.updatedat, row.updatedAt),
+    updatedAt: parseContentTimestamp(row.updatedat, row.updatedAt, row.createdat, row.createdAt),
     views: row.views ?? 0,
     reactions: row.reactions ?? { heart:0, fire:0, smile:0 },
   };
@@ -439,143 +454,94 @@ function caseToPayload(c: CaseItem): any {
   };
 }
 
-// -------- SUPABASE ASYNC API (optional) ----------
+// -------- API Timeweb (/api/data) ----------
 export async function sb_listPosts(): Promise<BlogPost[]> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('posts').select('*').order('createdat', { ascending: false });
-  if (error) throw error;
-  return (data || []).map(mapPostRow);
+  const rows = (await dataFetch("/posts")) as Record<string, unknown>[];
+  return (rows || []).map(mapPostRow);
 }
 export async function sb_getPostBySlug(slug: string): Promise<BlogPost | undefined> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('posts').select('*').eq('slug', slug).maybeSingle();
-  if (error) throw error;
-  return data ? mapPostRow(data) : undefined;
+  const row = (await dataFetch(
+    "/posts?slug=" + encodeURIComponent(slug)
+  )) as Record<string, unknown> | null;
+  if (!row) return undefined;
+  return mapPostRow(row);
 }
 export async function sb_upsertPost(p: BlogPost): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('posts').upsert(postToPayload(p), { onConflict: 'id' });
-  if (error) throw error;
+  await dataFetch("/posts", {
+    method: "POST",
+    body: JSON.stringify(postToPayload(p)),
+  });
 }
 export async function sb_deletePostById(id: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('posts').delete().eq('id', id);
-  if (error) throw error;
+  await dataFetch("/posts?id=" + encodeURIComponent(id), { method: "DELETE" });
 }
 
 export async function sb_listNews(): Promise<NewsItem[]> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('news').select('*').order('createdat', { ascending: false });
-  if (error) throw error;
-  return (data || []).map(mapNewsRow);
+  const rows = (await dataFetch("/news")) as Record<string, unknown>[];
+  return (rows || []).map(mapNewsRow);
 }
 export async function sb_getNewsBySlug(slug: string): Promise<NewsItem | undefined> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { data, error } = await sb.from('news').select('*').eq('slug', slug).maybeSingle();
-  if (error) throw error;
-  return data ? mapNewsRow(data) : undefined;
+  const row = (await dataFetch(
+    "/news?slug=" + encodeURIComponent(slug)
+  )) as Record<string, unknown> | null;
+  if (!row) return undefined;
+  return mapNewsRow(row);
 }
 export async function sb_upsertNews(n: NewsItem): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('news').upsert(newsToPayload(n), { onConflict: 'id' });
-  if (error) throw error;
+  await dataFetch("/news", {
+    method: "POST",
+    body: JSON.stringify(newsToPayload(n)),
+  });
 }
 export async function sb_deleteNewsById(id: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const { error } = await sb.from('news').delete().eq('id', id);
-  if (error) throw error;
+  await dataFetch("/news?id=" + encodeURIComponent(id), { method: "DELETE" });
 }
 
 export async function sb_listCases(): Promise<CaseItem[]> {
-  const sb = getSupabase();
-  if (!sb) return listCases();
-  try {
-    const { data, error } = await sb.from('cases').select('*').order('createdat', { ascending: false });
-    if (error) throw error;
-    return (data || []).map(mapCaseRow);
-  } catch (e) {
-    console.log('Supabase list cases failed, using local fallback:', e);
-    return listCases();
-  }
+  const rows = (await dataFetch("/cases")) as Record<string, unknown>[];
+  return (rows || []).map(mapCaseRow);
 }
 
 export async function sb_getCaseBySlug(slug: string): Promise<CaseItem | undefined> {
-  const sb = getSupabase();
-  if (!sb) return getCaseBySlug(slug);
-  try {
-    const { data, error } = await sb.from('cases').select('*').eq('slug', slug).maybeSingle();
-    if (error) throw error;
-    return data ? mapCaseRow(data) : undefined;
-  } catch (e) {
-    console.log('Supabase get case failed, using local fallback:', e);
-    return getCaseBySlug(slug);
-  }
+  const row = (await dataFetch(
+    "/cases?slug=" + encodeURIComponent(slug)
+  )) as Record<string, unknown> | null;
+  if (!row) return undefined;
+  return mapCaseRow(row);
 }
 
 export async function sb_upsertCase(c: CaseItem): Promise<void> {
-  const sb = getSupabase();
-  if (!sb) { upsertCase(c); return; }
-  try {
-    // Не задаём onConflict вручную: Supabase использует первичный ключ таблицы.
-    const { error } = await sb.from('cases').upsert(caseToPayload(c));
-    if (error) throw error;
-  } catch (e) {
-    console.log('Supabase upsert case failed, using local fallback:', e);
-    upsertCase(c);
-    // Пробрасываем ошибку дальше — UI покажет, что это локальный фоллбек (см. editor)
-    throw e;
-  }
+  await dataFetch("/cases", {
+    method: "POST",
+    body: JSON.stringify(caseToPayload(c)),
+  });
 }
 
 export async function sb_deleteCaseById(id: string): Promise<void> {
-  const sb = getSupabase();
-  if (!sb) { deleteCaseById(id); return; }
-  try {
-    const { error } = await sb.from('cases').delete().eq('id', id);
-    if (error) throw error;
-  } catch (e) {
-    console.log('Supabase delete case failed, using local fallback:', e);
-    deleteCaseById(id);
-    throw e;
-  }
+  await dataFetch("/cases?id=" + encodeURIComponent(id), { method: "DELETE" });
 }
 
-export async function sb_incViews(kind: 'post'|'news', slug: string): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const table = kind === 'post' ? 'posts' : 'news';
-  const { error } = await sb.rpc('inc_views', { t_name: table, p_slug: slug });
-  if (error) throw error;
+export async function sb_incViews(kind: "post" | "news", slug: string): Promise<void> {
+  await dataFetch("/views", {
+    method: "POST",
+    body: JSON.stringify({ kind, slug }),
+  });
 }
 
-// -------- REACTIONS WITH SUPABASE SYNC ----------
-export async function sb_react(kind: 'post'|'news', id: string, type: Rx): Promise<void> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const table = kind === 'post' ? 'posts' : 'news';
-
-  // 1) Пытаемся выполнить атомарное обновление через RPC (предпочтительно)
-  try {
-    const { error: rpcError } = await sb.rpc('inc_reaction', { t_name: table, p_id: id, p_type: type });
-    if (rpcError) throw rpcError;
-  } catch (_rpcErr) {
-    // 2) Фоллбэк: читаем + обновляем поле reactions обычным апдейтом
-    const { data, error: fetchError } = await sb.from(table).select('reactions').eq('id', id).single();
-    if (fetchError) throw fetchError;
-    const currentReactions = data?.reactions || { heart: 0, fire: 0, smile: 0 };
-    const newReactions = { ...currentReactions, [type]: (currentReactions[type] || 0) + 1 };
-    const { error: updateError } = await sb.from(table).update({ reactions: newReactions }).eq('id', id);
-    if (updateError) throw updateError;
-  }
-
-  // Также обновляем локально для мгновенного UI-отклика
+// -------- REACTIONS (Timeweb) ----------
+export async function sb_react(kind: "post" | "news", id: string, type: Rx): Promise<void> {
+  await dataFetch("/reactions", {
+    method: "POST",
+    body: JSON.stringify({ kind, id, type }),
+  });
   react(kind, id, type);
 }
 
-export async function sb_getReactions(kind: 'post'|'news', id: string): Promise<{ heart: number; fire: number; smile: number }> {
-  const sb = getSupabase(); if (!sb) throw new Error('Supabase not initialized');
-  const table = kind === 'post' ? 'posts' : 'news';
-  
-  const { data, error } = await sb.from(table).select('reactions').eq('id', id).single();
-  if (error) throw error;
-  
-  return data?.reactions || { heart: 0, fire: 0, smile: 0 };
+export async function sb_getReactions(
+  kind: "post" | "news",
+  id: string
+): Promise<{ heart: number; fire: number; smile: number }> {
+  return (await dataFetch(
+    "/reactions?kind=" + encodeURIComponent(kind) + "&id=" + encodeURIComponent(id)
+  )) as { heart: number; fire: number; smile: number };
 }

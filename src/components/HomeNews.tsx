@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { NewsItem, sb_listNews } from '@/lib/blogStore';
+import { formatContentDate } from '@/lib/contentDates';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -84,7 +85,7 @@ export default function HomeNews() {
                   className="bg-white rounded-3xl p-8 border border-[#ffff] hover:border-[#029cda] transition-colors min-h-[200px] h-full flex flex-col"
                 >
                   <p className="text-sm md:text-medium text-[#313131] mb-2">
-                    {new Date(n.createdAt).toLocaleDateString('ru-RU')}
+                    {formatContentDate(n.createdAt, n.updatedAt)}
                   </p>
                   <h3 className="text-xl md:text-2xl font-medium text-[#313131] mb-4 line-clamp-3">
                     {n.title}

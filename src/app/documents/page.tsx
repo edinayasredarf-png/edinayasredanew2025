@@ -32,17 +32,15 @@ export default function DocumentsPage() {
 
   };
 
-  // Публичные URL Supabase для документов
-  const docUrls: Record<string, string> = {
-    "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_ispolzovaniya_failov_kukis_SFERA.pdf",
-    "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf",
-    "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf",
-    "rukovodstvo-polzovatelya.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/rukovodstvo-polzovatelya.pdf",
-    "Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_fiz_litsa_na_razmeshchenie_informatsii_v_Internete_SFERA.pdf",
-    "Soglasie_na_obrabotku_dannikh_SFERA.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Soglasie_na_obrabotku_dannikh_SFERA.pdf",
-    "Vipiska_iz_reestra_akkreditovannikh_organizatsii (1).pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Vipiska_iz_reestra_akkreditovannikh_organizatsii%20(1).pdf",
-		"Saas-ES.pdf": "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Saas-ES.pdf",
-  };
+  // Публичные URL PDF: задайте NEXT_PUBLIC_DOCS_BASE_URL (например CDN Timeweb / S3), иначе — Supabase Storage
+  const docsBase =
+    process.env.NEXT_PUBLIC_DOCS_BASE_URL?.replace(/\/$/, "") ??
+    "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs";
+
+  const docUrls: Record<string, string> = {};
+  for (const key of Object.keys(docDescriptions)) {
+    docUrls[key] = `${docsBase}/${encodeURIComponent(key)}`;
+  }
 
   // Список документов (имя файла должно соответствовать ключу в docUrls)
   const docFiles = [

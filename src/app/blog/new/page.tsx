@@ -198,8 +198,9 @@ export default function NewPostPage() {
     }
   }, [authed]);
 
-  const doLogin = () => {
-    if (auth.login(login, pass)) setAuthed(true);
+  const doLogin = async () => {
+    const ok = await auth.login(login, pass);
+    if (ok) setAuthed(true);
     else alert('Неверный логин/пароль');
   };
 
@@ -326,14 +327,7 @@ export default function NewPostPage() {
           views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
         };
 
-        // Пытаемся сохранить в Supabase
-        try {
-          await sb_upsertPost(p);
-          console.log('Post saved to Supabase successfully');
-        } catch (error) {
-          console.error('Supabase save failed, using local fallback:', error);
-          upsertPost(p);
-        }
+        await sb_upsertPost(p);
 
         clearDraft();
 
@@ -351,57 +345,21 @@ export default function NewPostPage() {
         const prevCase = editSlug && editType === 'case' ? await sb_getCaseBySlug(editSlug) : undefined;
         const caseSlug = prevCase?.slug || slug;
 
-        try {
-          await sb_upsertCase({
-            id: prevCase?.id || crypto.randomUUID(),
-            slug: caseSlug,
-            title,
-            subtitle,
-            cover,
-            contentHtml: html,
-            tags,
-            application: caseApplication || undefined,
-            location: caseLocation || undefined,
-            createdAt: prevCase?.createdAt || now,
-            updatedAt: now,
-            views: prevCase?.views || 0,
-            reactions: prevCase?.reactions || { heart:0, fire:0, smile:0 }
-          });
-          console.log('Case saved to Supabase successfully');
-        } catch (error) {
-          console.error('Supabase save failed:', error, formatError(error));
-          // Если ошибка связана с отсутствием колонок application/location, попробуем сохранить без них
-          const errorMsg = error && typeof error === 'object' && 'message' in error ? String(error.message) : '';
-          if (errorMsg.includes('application') || errorMsg.includes('location') || errorMsg.includes('column')) {
-            console.warn('Retrying without application/location fields...');
-            try {
-              await sb_upsertCase({
-                id: prevCase?.id || crypto.randomUUID(),
-                slug: caseSlug,
-                title,
-                subtitle,
-                cover,
-                contentHtml: html,
-                tags,
-                createdAt: prevCase?.createdAt || now,
-                updatedAt: now,
-                views: prevCase?.views || 0,
-                reactions: prevCase?.reactions || { heart:0, fire:0, smile:0 }
-              });
-              console.log('Case saved without application/location fields');
-              showNotificationToast('Кейс сохранён, но поля "Тип" и "Место" не сохранены. Добавьте колонки application и location в таблицу cases в Supabase.');
-            } catch (retryError) {
-              console.error('Retry also failed:', retryError);
-              showNotificationToast('Ошибка при сохранении. Проверьте консоль.');
-              return; // Не продолжаем, если повторная попытка тоже не удалась
-            }
-          } else {
-            // Важное: sb_upsertCase уже сохранил локально как fallback (см. blogStore),
-            // поэтому показываем понятное сообщение, что Supabase отказал (RLS/права/схема).
-            showNotificationToast('Supabase отклонил сохранение, но кейс сохранён локально (в этом браузере). Проверьте права/RLS таблицы cases в Supabase.');
-            return; // Не продолжаем при других ошибках
-          }
-        }
+        await sb_upsertCase({
+          id: prevCase?.id || crypto.randomUUID(),
+          slug: caseSlug,
+          title,
+          subtitle,
+          cover,
+          contentHtml: html,
+          tags,
+          application: caseApplication || undefined,
+          location: caseLocation || undefined,
+          createdAt: prevCase?.createdAt || now,
+          updatedAt: now,
+          views: prevCase?.views || 0,
+          reactions: prevCase?.reactions || { heart:0, fire:0, smile:0 }
+        });
 
         clearDraft();
         if (isScheduled) {
@@ -419,14 +377,7 @@ export default function NewPostPage() {
           views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
         };
 
-        // Пытаемся сохранить в Supabase
-        try {
-          await sb_upsertNews(n);
-          console.log('News saved to Supabase successfully');
-        } catch (error) {
-          console.error('Supabase save failed, using local fallback:', error);
-          upsertNews(n);
-        }
+        await sb_upsertNews(n);
 
         clearDraft();
 
@@ -441,7 +392,12 @@ export default function NewPostPage() {
       }
     } catch (error) {
       console.error('Publish failed:', error);
-      showNotificationToast('Ошибка при сохранении. Проверьте консоль.');
+      const msg = error instanceof Error ? error.message : String(error);
+      showNotificationToast(
+        msg.includes('Unauthorized')
+          ? 'Войдите в редактор заново (логин/пароль на этой странице).'
+          : `Ошибка сохранения в базу: ${msg}`
+      );
     }
   };
 

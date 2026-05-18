@@ -8,6 +8,7 @@ import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import { sb_listNews, NewsItem } from '@/lib/blogStore';
+import { formatContentDate } from '@/lib/contentDates';
 
 let _newsListCache: NewsItem[] | null = null;
 
@@ -72,7 +73,7 @@ export default function NewsListClient() {
                       className="rounded-2xl border border-[#DCDDE1] p-4 hover:border-[#029cda] bg-white"
                     >
                       <div className="text-sm text-[#52555a]">
-                        {new Date(n.createdAt).toLocaleDateString('ru-RU')}
+                        {formatContentDate(n.createdAt, n.updatedAt)}
                       </div>
                       <div className="mt-1 text-base font-semibold text-[#313131] leading-snug">
                         {n.title}
