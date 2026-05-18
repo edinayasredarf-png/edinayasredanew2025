@@ -39,6 +39,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
       return 'Не удалось связаться с сервером. Проверьте, что сайт запущен, и попробуйте снова.';
     }
+    if (/self-signed certificate|certificate in certificate chain|UNABLE_TO_VERIFY/i.test(msg)) {
+      return 'Ошибка SSL к базе Timeweb на сервере. На Vercel задайте DATABASE_SSL_CA_PEM и DATABASE_SSL_SERVERNAME (*.twc1.net), затем Redeploy.';
+    }
     return msg;
   };
 

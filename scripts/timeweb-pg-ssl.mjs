@@ -61,8 +61,11 @@ export function resolveSslCaContent() {
     return { content: explicit.replace(/\\n/g, "\n"), path: "(inline PEM)" };
   }
 
+  const bundled = path.join(process.cwd(), "certs", "timeweb-cloud-ca.pem");
+
   const candidates = [
     explicit,
+    bundled,
     path.join(os.homedir(), ".cloud-certs", "root.crt"),
   ].filter(Boolean);
 

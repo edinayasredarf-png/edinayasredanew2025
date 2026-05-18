@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Pool } from "pg";
+import { TIMEWEB_CLOUD_CA_PEM } from "@/lib/timewebCloudCa";
 
 let pool: Pool | undefined;
 
@@ -52,8 +53,11 @@ function resolveSslCa(): string | undefined {
     return explicit.replace(/\\n/g, "\n");
   }
 
+  const bundled = path.join(process.cwd(), "certs", "timeweb-cloud-ca.pem");
+
   const candidates = [
     explicit,
+    bundled,
     path.join(os.homedir(), ".cloud-certs", "root.crt"),
   ].filter(Boolean) as string[];
 
@@ -67,7 +71,7 @@ function resolveSslCa(): string | undefined {
       /* пробуем следующий путь */
     }
   }
-  return undefined;
+  return TIMEWEB_CLOUD_CA_PEM;
 }
 
 function buildSslForPool(connectionString: string):
@@ -86,10 +90,7 @@ function buildSslForPool(connectionString: string):
   const sn = servername ? ({ servername } as const) : {};
 
   const ca = resolveSslCa();
-  if (ca) {
-    return { rejectUnauthorized: true, ca, ...sn };
-  }
-  return { rejectUnauthorized: true, ...sn };
+  return { rejectUnauthorized: true, ca, ...sn };
 }
 
 /**
