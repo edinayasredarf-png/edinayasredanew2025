@@ -1,29 +1,12 @@
 "use client";
 
-import { getSupabase } from "./supabase";
-
-async function mergeAuthHeaders(headers: Headers) {
-  const sb = getSupabase();
-  if (sb) {
-    const { data } = await sb.auth.getSession();
-    if (data.session?.access_token) {
-      headers.set("Authorization", `Bearer ${data.session.access_token}`);
-    }
-  }
-}
-
-/** Запросы к `/api/data/*` (PostgreSQL Timeweb). JWT Supabase передаётся в Authorization. */
-export async function dataFetch(
-  path: string,
-  init: RequestInit = {}
-): Promise<unknown> {
+async function apiFetch(path: string, init: RequestInit = {}): Promise<unknown> {
   const headers = new Headers(init.headers);
-  await mergeAuthHeaders(headers);
   if (init.body != null && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`/api/data${path}`, {
+  const res = await fetch(`/api${path}`, {
     ...init,
     headers,
     credentials: "include",
@@ -42,4 +25,16 @@ export async function dataFetch(
   }
   if (!text) return null;
   return JSON.parse(text) as unknown;
+}
+
+/** Запросы к `/api/data/*` (контент в Timeweb). */
+export function dataFetch(path: string, init: RequestInit = {}) {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return apiFetch(`/data${p}`, init);
+}
+
+/** Запросы к `/api/auth/*` (вход / регистрация). */
+export function authFetch(path: string, init: RequestInit = {}) {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return apiFetch(`/auth${p}`, init);
 }

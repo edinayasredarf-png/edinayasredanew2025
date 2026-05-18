@@ -7,10 +7,10 @@ export function getSupabase(): SupabaseClient | undefined {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
-  console.log('Supabase config:', { 
-    url: url ? 'SET' : 'NOT SET', 
-    key: key ? 'SET' : 'NOT SET' 
-  });
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    const ref = url?.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+    console.info('Supabase:', ref ? `project ${ref}` : url ? 'custom URL' : 'NOT CONFIGURED');
+  }
   
   if (!url || !key) {
     console.error('Supabase environment variables not set');

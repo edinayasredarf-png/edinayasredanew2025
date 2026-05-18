@@ -18,6 +18,30 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const mapAuthError = (err: unknown): string => {
+    const msg =
+      err && typeof err === 'object' && 'message' in err
+        ? String((err as { message: string }).message)
+        : String(err ?? 'Произошла ошибка');
+
+    if (/Invalid login credentials|Неверный email или пароль/i.test(msg)) {
+      return 'Неверный email или пароль.';
+    }
+    if (/уже существует/i.test(msg)) {
+      return msg;
+    }
+    if (/User already registered|already registered/i.test(msg)) {
+      return 'Этот email уже зарегистрирован. Войдите или восстановите пароль.';
+    }
+    if (/Supabase not initialized/i.test(msg)) {
+      return 'Сайт открыт со старой версии. Перезапустите npm run dev (остановите все процессы на порту 3000) и обновите страницу.';
+    }
+    if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+      return 'Не удалось связаться с сервером. Проверьте, что сайт запущен, и попробуйте снова.';
+    }
+    return msg;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -31,8 +55,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       }
       onSuccess?.();
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Произошла ошибка');
+    } catch (err: unknown) {
+      setError(mapAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -46,8 +70,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       await authStore.signInWithProvider(provider);
       onSuccess?.();
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Произошла ошибка');
+    } catch (err: unknown) {
+      setError(mapAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -68,7 +92,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           >
          <Image
           src="/icons/close.svg"
-          alt="Все новости"
+          alt="Закрыть"
           width={20}
           height={20}
           className="object-contain"

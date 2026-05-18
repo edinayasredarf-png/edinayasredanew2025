@@ -399,25 +399,26 @@ export async function dbUpsertUserProfile(row: Record<string, unknown>) {
   );
 }
 
-/** Создать строку профиля, если её ещё нет (после OAuth / первого входа). */
+/** Профиль по id сессии (если строка пропала). */
 export async function dbEnsureUserProfile(user: {
   id: string;
   email?: string | null;
-  user_metadata?: { full_name?: string; avatar_url?: string };
+  full_name?: string | null;
+  avatar_url?: string | null;
 }) {
   const existing = await dbGetUserProfile(user.id);
   if (existing) return existing;
-  const email = user.email || "";
-  const isEditor = email === "proeco09@yandex.ru";
+  const email = (user.email || "").trim().toLowerCase();
+  const editorEmail = (process.env.EDITOR_EMAIL || "proeco09@yandex.ru")
+    .trim()
+    .toLowerCase();
   await dbUpsertUserProfile({
     id: user.id,
     email,
-    full_name:
-      user.user_metadata?.full_name ||
-      (email ? email.split("@")[0] : "Пользователь"),
-    avatar_url: user.user_metadata?.avatar_url ?? null,
+    full_name: user.full_name || (email ? email.split("@")[0] : "Пользователь"),
+    avatar_url: user.avatar_url ?? null,
     organization: null,
-    role: isEditor ? "admin" : "user",
+    role: email === editorEmail ? "admin" : "user",
   });
   return dbGetUserProfile(user.id);
 }
