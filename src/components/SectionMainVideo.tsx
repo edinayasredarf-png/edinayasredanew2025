@@ -16,10 +16,10 @@ export default function SectionMainVideo({
 
   return (
     <section className={`py-10 md:py-14 font-[Raleway] ${className}`}>
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <div className="relative">
           {/* Видео: синяя “подложка” снизу как в Figma + уменьшенный max-размер */}
-          <div className="mx-auto w-full max-w-[1348px] rounded-3xl border-b-[10px] border-[#029cda] overflow-hidden">
+          <div className="mx-auto w-full max-w-[1200px] rounded-3xl border-b-[10px] border-[#029cda] overflow-hidden">
             <div className="relative w-full bg-[#0b0b0b] h-[220px] sm:h-[320px] md:h-[480px] lg:h-[600px]">
               <iframe
                 src={embedUrl}
