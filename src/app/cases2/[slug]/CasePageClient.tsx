@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useModal } from '@/components/ModalProvider';
 import { sb_getCaseBySlug, sb_listCases, type CaseItem } from '@/lib/blogStore';
 import { authStore } from '@/lib/authStore';
+import { htmlInnerTextToPlain } from '@/lib/htmlText';
 
 type TocItem = { id: string; text: string; level: 2 | 3 };
 
@@ -20,7 +21,7 @@ function parseTocAndInjectIds(html: string): { html: string; toc: TocItem[] } {
   let index = 0;
   const regex = /<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi;
   const withIds = html.replace(regex, (_, level, attrs, inner) => {
-    const text = inner.replace(/<[^>]+>/g, '').trim();
+    const text = htmlInnerTextToPlain(inner);
     const id = `section-${index}`;
     toc.push({ id, text, level: level === '2' ? 2 : 3 });
     index++;
