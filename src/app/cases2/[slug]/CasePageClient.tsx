@@ -1,9 +1,6 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import 'reactjs-tiptap-editor/style.css';
-import 'prism-code-editor-lightweight/layout.css';
-import 'prism-code-editor-lightweight/themes/github-dark.css';
 import '@/styles/article-content.css';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
@@ -213,7 +210,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
             <article className="space-y-10">
               <section>
                 <div
-                  className="prose prose-lg max-w-none text-[#313131] article-content article-toc-targets"
+                  className="prose prose-lg max-w-none text-[#313131] font-[Raleway] font-medium article-content article-toc-targets"
                   dangerouslySetInnerHTML={{ __html: contentWithIds }}
                 />
 

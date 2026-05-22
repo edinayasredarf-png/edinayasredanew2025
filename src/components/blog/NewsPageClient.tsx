@@ -1,9 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import 'reactjs-tiptap-editor/style.css';
-import 'prism-code-editor-lightweight/layout.css';
-import 'prism-code-editor-lightweight/themes/github-dark.css';
 import '@/styles/article-content.css';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -193,7 +190,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
               <section>
                 <h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{news.title}</h1>
 
-                <article className="prose prose-lg max-w-none mx-auto text-[#313131] article-content" dir="ltr">
+                <article className="prose prose-lg max-w-none mx-auto text-[#313131] font-[Raleway] font-medium article-content" dir="ltr">
                   <div dangerouslySetInnerHTML={{ __html: news.contentHtml || '<p>Подробностей нет.</p>' }} />
                 </article>
 

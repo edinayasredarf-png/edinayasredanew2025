@@ -1,5 +1,22 @@
 /* Стили для отображения контента из редактора reactjs-tiptap-editor */
 
+/* Raleway — как на остальном сайте (перебивает prose и стили редактора) */
+.prose.article-content,
+.article-content.prose,
+.article-content {
+  font-family: var(--font-geist-sans), "Raleway", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+}
+
+.prose.article-content :where(h1, h2, h3, h4, h5, h6, p, li, a, blockquote, td, th, figcaption, span, div),
+.article-content :where(h1, h2, h3, h4, h5, h6, p, li, a, blockquote, td, th, figcaption) {
+  font-family: inherit;
+}
+
+.article-content [style*="font-family"] {
+  font-family: inherit !important;
+}
+
 .article-content { direction: ltr; }
 .article-toc-targets h2, .article-toc-targets h3 { scroll-margin-top: 1.5rem; }
 
