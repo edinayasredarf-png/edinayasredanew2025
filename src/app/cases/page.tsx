@@ -1,376 +1,118 @@
-"use client";
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '@/components/Layout';
-import Image from 'next/image';
-import Link from 'next/link';
+import { resolveCaseCover } from '@/lib/caseCover';
 import { useModal } from '@/components/ModalProvider';
-import { cases, type Case } from '@/data/cases';
-import { sb_listPosts, type BlogPost } from '@/lib/blogStore';
+import { CASE_APPLICATION_OPTIONS, sb_listCases } from '@/lib/blogStore';
+import {
+  CaseCard,
+  CasesCta,
+  CasesEmptyState,
+  CasesFilterBar,
+  CasesHero,
+  type CaseCardItem,
+} from '@/components/redesign/cases';
+import '@/styles/redesign.css';
 
-const CasesPage: React.FC = () => {
-  const [selectedIndustry, setSelectedIndustry] = useState('Все отрасли');
-  const [selectedApplication, setSelectedApplication] = useState('Все типы');
-  const [industryOpen, setIndustryOpen] = useState(false);
-  const [applicationOpen, setApplicationOpen] = useState(false);
+type DynCase = {
+	id: string;
+	slug: string;
+	title: string;
+	subtitle: string;
+	cover?: string;
+	contentHtml?: string;
+	application?: string;
+	location?: string;
+	createdAt: number;
+};
+
+let _casesCache: DynCase[] | null = null;
+
+export default function CasesPage() {
   const { openConsult } = useModal();
-
-  const industries = [
-    'Все отрасли',
-    'Ритейл и FMCG',
-    'Информационные технологии',
-    'Транспорт и логистика',
-    'Медицина и фармацевтика',
-    'Финансы и страхование',
-    'Образование и наука',
-    'Промышленность и производство',
-    'Государственное управление',
-    'Медиа и развлечения',
-    'Туризм и отдых'
-  ];
-
-  const applications = [
-    'Все типы',
-    'Единая Среда',
-    'Инвентаризация зеленых насаждений',
-    'Инвентаризация мест захоронений',
-    'Лесоустройство',
-    'Мелиорация',
-    'Волонтерство',
-  ];
-
-  const [dynamicCases, setDynamicCases] = useState<Case[]>([]);
-  const [slugMap, setSlugMap] = useState<Record<number, string>>({});
+  const [items, setItems] = useState<DynCase[]>(_casesCache || []);
+  const [loading, setLoading] = useState(_casesCache === null);
+  const [selectedApplication, setSelectedApplication] = useState('Все типы');
 
   useEffect(() => {
     (async () => {
       try {
-        const posts = await sb_listPosts();
-        const onlyCases = (posts || []).filter(p => (p.kind === 'case'));
-        const startId = 100000; // чтобы не конфликтовать со статическими id
-        const map: Record<number, string> = {};
-        const dyn: Case[] = onlyCases.map((p, idx) => {
-          const id = startId + idx;
-          map[id] = p.slug;
-          // Быстрое извлечение краткого описания из subtitle или HTML
-          const extract = (html?: string) => {
-            if (!html) return '';
-            return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
-          };
-          return {
-            id,
-            location: '',
-            title: p.title,
-            description: p.subtitle || extract(p.contentHtml),
-            industry: 'Все отрасли',
-            application: 'Кейс',
-            services: [],
-            image: p.cover || '/img/cases/case1.jpg',
-            company: '',
-            contact: '',
-            budget: '',
-            duration: '',
-            results: [],
-            description_html: p.contentHtml
-          } as Case;
-        });
-        setDynamicCases(dyn);
-        setSlugMap(map);
-      } catch {
-        setDynamicCases([]);
+        const cases = await sb_listCases();
+        const dyn = (cases || [])
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .map((c) => ({
+            id: c.id,
+            slug: c.slug,
+            title: c.title,
+            subtitle: c.subtitle || '',
+            cover: c.cover,
+            contentHtml: c.contentHtml,
+            application: c.application || '',
+            location: c.location || '',
+            createdAt: c.createdAt,
+          }));
+        _casesCache = dyn;
+        setItems(dyn);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
 
-  const allCases = [...dynamicCases, ...cases];
+  const applications = useMemo(() => ['Все типы', ...CASE_APPLICATION_OPTIONS], []);
 
-  const filteredCases = allCases.filter(caseItem => {
-    const industryMatch = selectedIndustry === 'Все отрасли' || caseItem.industry === selectedIndustry;
-    const applicationMatch = selectedApplication === 'Все типы' || caseItem.application === selectedApplication;
-    return industryMatch && applicationMatch;
-  });
+  const filteredItems = useMemo(() => {
+    if (selectedApplication === 'Все типы') return items;
+    return items.filter((c) => (c.application || '') === selectedApplication);
+  }, [items, selectedApplication]);
 
-  const resetFilters = () => {
-    setSelectedIndustry('Все отрасли');
-    setSelectedApplication('Все типы');
-    setIndustryOpen(false);
-    setApplicationOpen(false);
-  };
+  const cardItems: CaseCardItem[] = useMemo(
+    () =>
+      filteredItems.map((it) => ({
+        id: it.id,
+        href: `/cases/${it.slug}`,
+        title: it.title,
+        description: it.subtitle || undefined,
+        image: resolveCaseCover(it.cover, it.contentHtml),
+        application: it.application || undefined,
+        location: it.location || undefined,
+        date: it.createdAt,
+      })),
+    [filteredItems],
+  );
 
-  // Закрытие выпадающих списков при клике вне их области
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.filter-dropdown')) {
-        setIndustryOpen(false);
-        setApplicationOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  const resetFilters = () => setSelectedApplication('Все типы');
 
   return (
     <Layout>
-      <div className="bg-[#F6F7F9] min-h-screen">
-        {/* Hero Section */}
-<section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[400px] font-[Raleway] font-medium lining-nums">
-  <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
-    <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
-      <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-        <h1 className="text-4xl sm:text-5xl md:text-[78px] font-medium leading-tight">
-          Кейсы
-        </h1>
-        <p className="mt-8 text-xl sm:text-[27px] text-grey-92 max-w-2xl">
-Реальные проекты и решения, которые мы реализовали для наших клиентов
+      <div className="redesign bg-[var(--rd-bg)]">
+        <CasesHero onConsult={openConsult} caseCount={items.length} />
 
-        </p>
-        <div className="mt-10">
-          <button
-            onClick={openConsult}
-            className="inline-flex items-center justify-center bg-[#029cda] text-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
-          >
-            Получить консультацию
-          </button>
-        </div>
-      </div>
-
-      {/* Мобильное изображение */}
-      <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">
-        <Image
-          src="/img/cases/cases-hero.svg"
-          alt="Иллюстрация кейсов"
-          width={500}
-          height={400}
-          className="w-full max-w-[500px] object-contain"
-          style={{ height: 'auto' }}
+        <CasesFilterBar
+          applications={applications}
+          selectedApplication={selectedApplication}
+          onApplicationChange={setSelectedApplication}
+          onReset={resetFilters}
+          resultCount={filteredItems.length}
         />
-      </div>
-    </div>
 
-    {/* Десктопное изображение справа */}
-    <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[40%] max-w-[450px] h-auto pointer-events-none">
-      <Image
-        src="/img/cases/cases-hero.svg"
-        alt="Иллюстрация кейсов"
-        width={450}
-        height={360}
-        className="w-full object-contain"
-        style={{ height: 'auto' }}
-      />
-    </div>
-  </div>
-</section>
-
-
-        {/* Filters Section */}
-      <section className="py-8 font-[Raleway] font-medium lining-nums">
-        <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-          <div className="mb-4">
-            <p className="text-gray-500 text-sm">Фильтруйте кейсы по отрасли и типу услуги для быстрого поиска нужных решений</p>
-          </div>
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-              <div className="relative group w-full sm:w-80 filter-dropdown">
-                <button
-                  onClick={() => setIndustryOpen(!industryOpen)}
-                  className="w-full px-6 py-3 border-0 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 transition-all duration-200 cursor-pointer flex items-center justify-between"
-                >
-                  <span>{selectedIndustry}</span>
-                  <svg className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${industryOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {industryOpen && (
-                  <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-10 w-full">
-                    {industries.map((industry) => (
-                      <button
-                        key={industry}
-                        onClick={() => {
-                          setSelectedIndustry(industry);
-                          setIndustryOpen(false);
-                        }}
-                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                          selectedIndustry === industry ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
-                        }`}
-                      >
-                        {industry}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="relative group w-full sm:w-80 filter-dropdown">
-                <button
-                  onClick={() => setApplicationOpen(!applicationOpen)}
-                  className="w-full px-6 py-3 border-0 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 transition-all duration-200 cursor-pointer flex items-center justify-between"
-                >
-                  <span>{selectedApplication}</span>
-                  <svg className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${applicationOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {applicationOpen && (
-                  <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-10 w-full">
-                    {applications.map((application) => (
-                      <button
-                        key={application}
-                        onClick={() => {
-                          setSelectedApplication(application);
-                          setApplicationOpen(false);
-                        }}
-                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                          selectedApplication === application ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
-                        }`}
-                      >
-                        {application}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-                          <button
-                onClick={resetFilters}
-                className="w-full sm:w-80 px-6 py-3 bg-white text-gray-900 border-0 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Сбросить фильтры
-              </button>
-            </div>
-          </div>
-        </section>
-
-
-        {/* Cases Grid */}
-      <section id="cases-grid" className="max-w-[1480px] mx-auto px-5 md:px-8 py-4 font-[Raleway] font-medium lining-nums">
-          {filteredCases.length === 0 ? (
-            <div className="text-center py-20">
-            <div className="text-gray-400 text-6xl mb-6">🔍</div>
-            <h3 className="text-2xl font-medium text-gray-900 mb-4">По выбранным фильтрам кейсы не найдены</h3>
-            <p className="text-[#7C8A9A] mb-8">Попробуйте изменить параметры фильтрации</p>
-              <button
-                onClick={resetFilters}
-              className="inline-block bg-[#029cda] text-white px-8 py-3 rounded-lg hover:bg-[#029cda]/90 transition-colors"
-              >
-                Сбросить фильтры
-              </button>
-            </div>
+        <section id="cases-grid" className="case-page-column pb-8 lining-nums">
+          {loading ? (
+            <div className="text-center py-24 text-[var(--rd-muted,#667085)]">Загрузка…</div>
+          ) : cardItems.length === 0 ? (
+            <CasesEmptyState onReset={resetFilters} />
           ) : (
-            <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                       {filteredCases.filter(c => !c.featured).map((caseItem, index) => {
-           // Каждая 5-я карточка будет занимать место как 2 карточки (разнобой)
-           const isWide = (index + 1) % 5 === 0;
-
-                // Массив изображений для кейсов
-                const caseImages = [
-                  '/img/cases/case1.png',
-                  '/img/cases/case2.png',
-                  '/img/cases/case3.png',
-                  '/img/cases/case4.png',
-                  '/img/cases/case5.png',
-                  '/img/cases/case6.png',
-                  '/img/cases/case7.png',
-                  '/img/cases/case8.png',
-                  '/img/cases/case9.png',
-                  '/img/cases/case10.png',
-                  '/img/cases/case11.png',
-                  '/img/cases/case12.png',
-                  '/img/cases/case13.png',
-                  '/img/cases/case9.png'
-                ];
-
-                const isDynamic = caseItem.id >= 100000;
-                const href = `/cases/${caseItem.id}`;
-                const dynImg = isDynamic ? (dynamicCases.find(c=>c.id===caseItem.id)?.image) : undefined;
-                return (
-                  <Link
-                    key={caseItem.id}
-                    href={href}
-                    className={`group ${isWide ? 'md:col-span-2 lg:col-span-2 xl:col-span-2' : ''}`}
-                  >
-                                    <div className="bg-white rounded-2xl p-2 flex h-full transition-all duration-300 border border-[#E5E7EB] hover:border-[#029cda]">
-                  <div className={`bg-[#F6F7F9] rounded-xl p-4 flex flex-col ${isWide ? 'md:flex-row' : ''} h-full items-stretch relative overflow-hidden min-h-[450px] ${isWide ? 'md:min-h-[380px]' : ''}`}>
-                    {/* Изображение */}
-                    <div className={`w-full mb-4 ${isWide ? 'md:w-1/2 md:flex md:justify-center md:items-center md:ml-4 md:order-2' : ''}`}>
-                      <div className={`relative w-full h-auto rounded-xl flex items-center justify-center overflow-hidden ${isWide ? 'md:w-full md:h-auto' : ''}`}>
-                        <Image
-                          src={(dynImg) || (caseImages[caseItem.id - 1] || caseImages[0]) || '/img/cases/case1.png'}
-                          alt={caseItem.title}
-                          width={600}
-                          height={400}
-                          className="w-full h-full object-cover"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                        />
-                      </div>
-                    </div>
-                    {/* Контент */}
-                    <div className={`flex flex-col justify-between flex-1 ${isWide ? 'md:w-1/2 md:order-1' : ''}`}>
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="bg-[#029cda] text-white px-2 py-1 rounded-lg text-xs font-medium">
-                            {caseItem.application}
-                          </span>
-                        </div>
-                        <h3 className={`text-xl font-medium text-[#313131] leading-tight mb-3 ${isWide ? 'md:text-2xl' : ''}`}>
-                          {caseItem.title}
-                        </h3>
-                        <p className={`text-sm text-[#7C8A9A] mb-4 line-clamp-2 ${isWide ? 'md:text-base md:line-clamp-3' : ''}`}>
-                          {caseItem.description}
-                        </p>
-                        {!!caseItem.location && (
-                        <div className="flex items-center gap-1 mb-3">
-                          <svg className="w-4 h-4 text-[#029cda]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          </svg>
-                          <span className="text-sm text-[#7C8A9A]">{caseItem.location}</span>
-                        </div>
-                        )}
-
-                      </div>
-                      <div className="mt-auto">
-                        <span className="group inline-flex items-center justify-center w-12 h-12 bg-white rounded-lg border border-transparent group-hover:border-[#029cda] transition-all duration-300">
-                          <svg className="w-5 h-5 text-[#313131] group-hover:text-[#029cda] transition-colors duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M14.43 5.92999L20.5 12L14.43 18.07" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
-                            <path d="M3.5 12H20.33" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
-                          </svg>
-                            </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                  </Link>
-                );
-              })}
-              </div>
-            </>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+              {cardItems.map((item) => (
+                <CaseCard key={item.id} item={item} />
+              ))}
+            </div>
           )}
         </section>
 
-      {/* CTA Section */}
-      <section className="bg-[#F6F7F9] py-16 font-[Raleway] font-medium lining-nums">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6">
-              Готовы реализовать похожий проект?
-            </h2>
-            <p className="text-xl text-[#7C8A9A] mb-8">
-              Свяжитесь с нами для обсуждения ваших задач и получения персонального предложения
-            </p>
-            <button
-              onClick={openConsult}
-              className="bg-[#029cda] text-white px-8 py-4 rounded-xl font-medium text-lg hover:bg-[#029cda]/90 transition-colors"
-            >
-              Получить консультацию
-            </button>
-          </div>
-          </div>
-        </section>
+        <CasesCta onConsult={openConsult} />
       </div>
     </Layout>
   );
-};
-
-export default CasesPage;
+}

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { fileToDataURL } from '@/lib/blogStore';
+import { uploadEditorImage } from '@/lib/imageUpload';
 
 export default function CoverPicker({ value, onChange }: { value?: string; onChange: (v?: string)=>void; }) {
   const pick = async () => {
@@ -9,8 +9,8 @@ export default function CoverPicker({ value, onChange }: { value?: string; onCha
     input.type = 'file'; input.accept = 'image/*';
     input.onchange = async () => {
       const f = input.files?.[0]; if (!f) return;
-      const data = await fileToDataURL(f);
-      onChange(data);
+      const url = await uploadEditorImage(f);
+      onChange(url);
     };
     input.click();
   };

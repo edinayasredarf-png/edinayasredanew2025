@@ -468,3 +468,37 @@ export async function dbListFavorites(userId: string) {
   );
   return rows;
 }
+
+/** Изображения редактора (bytea), в контенте ссылка /api/media/{id} */
+export async function dbInsertEditorMedia(
+  id: string,
+  mimeType: string,
+  data: Buffer
+) {
+  const pool = getTimewebPool();
+  await pool.query(
+    "insert into editor_media (id, mime_type, data, size_bytes) values ($1,$2,$3,$4)",
+    [id, mimeType, data, data.length]
+  );
+}
+
+export async function dbGetEditorMedia(id: string): Promise<{
+  mimeType: string;
+  data: Buffer;
+  sizeBytes: number;
+} | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "select mime_type, data, size_bytes from editor_media where id = $1",
+    [id]
+  );
+  const row = rows[0] as
+    | { mime_type: string; data: Buffer; size_bytes: number }
+    | undefined;
+  if (!row) return null;
+  return {
+    mimeType: row.mime_type,
+    data: row.data,
+    sizeBytes: row.size_bytes,
+  };
+}

@@ -10,7 +10,7 @@ interface HeroSectionProps {
 const HeroSection: React.FC = () => {
 	const { openRegister } = useModal();
 	return (
-		<section className="bg-black text-white rounded-b-[20px] relative overflow-hidden min-h-[400px]">
+		<section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
 				<div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
 					{/* Левая часть: текст (шире) */}
@@ -18,7 +18,7 @@ const HeroSection: React.FC = () => {
 						<h1 className="text-4xl sm:text-5xl md:text-[72px] font-[Raleway] font-medium leading-tight">
 							Цифровое управление<br />территориями
 						</h1>
-						<p className="mt-8 text-xl sm:text-[27px] text-[#E3E8F2] max-w-2xl font-[Raleway] font-medium">
+						<p className="mt-8 text-xl sm:text-[27px] text-[#667085] max-w-2xl font-[Raleway] font-medium">
 							Платформа для эффективного учёта, управления и мониторинга территорий и объектов в организациях любого типа и масштаба
 						</p>
 						<div className="mt-10">

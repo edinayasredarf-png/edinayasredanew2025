@@ -272,7 +272,7 @@ const HeroSection: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="bg-black text-white rounded-b-[20px] relative  min-h-[400px]"
+      className="page-hero rounded-b-[20px] relative min-h-[400px]"
     >
       <canvas
         ref={canvasRef}

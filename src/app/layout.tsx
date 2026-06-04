@@ -1,8 +1,11 @@
 // Файл: app/layout.tsx
 
 import type { Metadata } from "next";
-import { Raleway, Geist_Mono } from "next/font/google";
+import { Inter, Raleway, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@/styles/involve-font.css";
+import "@/styles/typography.css";
+import "@/styles/page-hero.css";
 import { ModalProvider } from "@/components/ModalProvider";
 import { HashCleaner } from "@/components/HashCleaner";
 import { TypographyNoWidows } from "@/components/TypographyNoWidows";
@@ -14,6 +17,13 @@ import { BitrixScript } from "./bitrix-script";
 // ========================================
 // ОПТИМИЗАЦИЯ ШРИФТОВ
 // ========================================
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  preload: true,
+});
+
 const raleway = Raleway({
   variable: "--font-geist-sans",
   subsets: ["latin", "cyrillic"],
@@ -295,7 +305,7 @@ export default function RootLayout({
       </head>
 
       <body
-        className={`${raleway.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${raleway.variable} ${geistMono.variable} antialiased redesign`}
       >
         {/* Яндекс.Метрика noscript */}
         <noscript>

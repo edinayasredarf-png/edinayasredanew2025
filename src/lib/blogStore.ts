@@ -257,60 +257,7 @@ export function saveDraft(d: BlogDraft) { write(K_DRAFT, d); }
 export function loadDraft(): BlogDraft | undefined { return read<BlogDraft | undefined>(K_DRAFT, undefined); }
 export function clearDraft() { localStorage.removeItem(K_DRAFT); }
 
-// -------- HELPERS (сжатие изображений) ----------
-function readFileAsDataURL(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const fr = new FileReader();
-    fr.onerror = () => rej(fr.error);
-    fr.onload = () => res(String(fr.result));
-    fr.readAsDataURL(file);
-  });
-}
-
-async function compressImageDataURL(
-  inputDataUrl: string,
-  mimeOut: 'image/webp'|'image/jpeg' = 'image/webp',
-  quality = 0.85,
-  maxSide = 1600
-): Promise<string> {
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  const p = new Promise<string>((resolve, reject) => {
-    img.onload = () => {
-      const { width, height } = img;
-      const k = Math.min(1, maxSide / Math.max(width, height));
-      const w = Math.max(1, Math.round(width * k));
-      const h = Math.max(1, Math.round(height * k));
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { reject(new Error('Canvas context')); return; }
-      ctx.drawImage(img, 0, 0, w, h);
-      const out = canvas.toDataURL(mimeOut, quality);
-      resolve(out);
-    };
-    img.onerror = () => reject(new Error('Image decode failed'));
-  });
-  img.src = inputDataUrl;
-  return p;
-}
-
-/**
- * «Умная» конвертация файла в dataURL:
- * - если файл изображение — сжимает (max 1600px, WEBP/JPEG ~0.85)
- * - иначе — просто читает как base64
- */
-export async function fileToDataURL(file: File): Promise<string> {
-  const raw = await readFileAsDataURL(file);
-  if (file.type.startsWith('image/')) {
-    try {
-      return await compressImageDataURL(raw, 'image/webp', 0.85, 1600);
-    } catch {
-      return await compressImageDataURL(raw, 'image/jpeg', 0.85, 1600);
-    }
-  }
-  return raw;
-}
+export { fileToDataURL } from "@/lib/imageCompress";
 
 export function genSlug(title: string): string {
   const map: Record<string,string> = {

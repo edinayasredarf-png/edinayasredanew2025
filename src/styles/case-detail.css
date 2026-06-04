@@ -1,0 +1,155 @@
+/* Страница кейса — типографика по макету Figma */
+.case-detail-content {
+  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: #2c2d2e;
+}
+
+.case-detail-content h2 {
+  font-size: 1.69375rem;
+  line-height: 2.25rem;
+  font-weight: 500;
+  color: #2c2d2e;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  scroll-margin-top: 6rem;
+}
+
+.case-detail-content h3 {
+  font-size: 1.69375rem;
+  line-height: 2.25rem;
+  font-weight: 500;
+  color: #2c2d2e;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  scroll-margin-top: 6rem;
+}
+
+.case-detail-content p {
+  margin-bottom: 1rem;
+}
+
+/* Списки — круглые маркеры (вместо крестиков/квадратов редактора) */
+.case-detail-content ul,
+.case-detail-content ul.case-bullet-list,
+.case-detail-content.article-content ul,
+.article-content.case-detail-content ul {
+  list-style: none !important;
+  margin-bottom: 1rem;
+  padding-left: 0 !important;
+}
+
+.case-detail-content ul > li,
+.case-detail-content.article-content ul > li,
+.article-content.case-detail-content ul > li {
+  position: relative;
+  margin-bottom: 0.5rem;
+  padding-left: 1.25rem;
+  display: block;
+}
+
+.case-detail-content ul > li::before,
+.case-detail-content.article-content ul > li::before,
+.article-content.case-detail-content ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #029cda;
+}
+
+.case-detail-content ul > li::marker {
+  content: none;
+}
+
+.case-detail-content ul > li > p {
+  margin-bottom: 0.25rem;
+}
+
+.case-detail-content ul > li > p::before,
+.case-detail-content ul > li > p::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Старый HTML с flex и декоративным div вместо маркера */
+.case-detail-content ul > li.flex {
+  display: block;
+  padding-left: 1.25rem;
+}
+
+.case-detail-content ul > li.flex > div:first-child {
+  display: none;
+}
+
+.case-detail-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.35rem;
+  list-style-type: decimal;
+}
+
+.case-detail-content ol > li {
+  margin-bottom: 0.35rem;
+  padding-left: 0.25rem;
+}
+
+.case-detail-content a {
+  color: #2688eb;
+  text-decoration: underline;
+}
+
+.case-detail-content img,
+.case-detail-content .image-view {
+  max-width: 100%;
+  border-radius: 1rem;
+  margin: 1.5rem 0;
+}
+
+.case-detail-content blockquote,
+.case-detail-content [data-callout='highlight'] {
+  background: rgba(38, 136, 235, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+  color: #2688eb;
+  margin: 2rem 0;
+}
+
+.case-detail-content [data-callout='muted'],
+.case-detail-content .case-muted-box {
+  background: #f2f3f5;
+  border-radius: 1rem;
+  padding: 2rem;
+  color: #202020;
+  margin: 2rem 0;
+}
+
+.case-detail-title {
+  font-family: var(--font-involve);
+  font-weight: 500;
+}
+
+.case-detail-content h2,
+.case-detail-content h3 {
+  font-family: var(--font-involve);
+  font-weight: 500;
+}
+
+/* CTA в конце статьи */
+.case-detail-cta {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-top: 3rem;
+}
+
+@media (min-width: 768px) {
+  .case-detail-cta {
+    padding: 2.5rem 3rem;
+  }
+}

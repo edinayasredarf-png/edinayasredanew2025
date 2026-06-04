@@ -1,0 +1,46 @@
+/* Единый hero: без фона и сетки, тёмный текст */
+.page-hero {
+  background: transparent;
+  color: #2c2d2e;
+}
+
+.page-hero h1,
+.page-hero .font-involve {
+  color: #101828;
+}
+
+.page-hero p,
+.page-hero .text-gray-300,
+.page-hero .text-grey-92,
+.page-hero .text-\[\#E3E8F2\],
+.page-hero .text-white\/75,
+.page-hero .text-white\/70,
+.page-hero .text-white\/50 {
+  color: #667085 !important;
+}
+
+.page-hero .text-\[\#029cda\] {
+  color: #029cda !important;
+}
+
+/* Вторичная кнопка на светлом hero */
+.page-hero button.border-white,
+.page-hero a.border-white,
+.page-hero .border-white.text-white {
+  color: #202020 !important;
+  border-color: #d0d5dd !important;
+}
+
+.page-hero button.border-white:hover,
+.page-hero a.border-white:hover,
+.page-hero .hover\:bg-white\/10:hover {
+  background-color: #f2f3f5 !important;
+}
+
+.page-hero .text-white {
+  color: #2c2d2e !important;
+}
+
+.page-hero .text-white\/90 {
+  color: #202020 !important;
+}

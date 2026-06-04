@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
     ],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
   },
+  async redirects() {
+    return [
+      { source: '/cases2', destination: '/cases', permanent: true },
+      { source: '/cases2/:slug', destination: '/cases/:slug', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

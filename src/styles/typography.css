@@ -1,0 +1,47 @@
+/* Глобальная типографика: Involve — заголовки, Inter — текст */
+
+body {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  color: #2c2d2e;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-involve);
+  font-weight: 500;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  font-family: var(--font-involve);
+  font-weight: 500;
+}
+
+.prose,
+.article-content,
+p,
+li,
+td,
+th,
+label,
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}

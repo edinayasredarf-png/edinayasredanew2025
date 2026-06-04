@@ -88,7 +88,7 @@ export default function DemoPage() {
     <Layout>
       <div className="font-[Raleway] font-medium lining-nums">
         {/* Hero */}
-        <section className="bg-black text-white rounded-b-[20px] relative overflow-hidden">
+        <section className="page-hero rounded-b-[20px] relative overflow-hidden">
           <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-4 py-10 md:py-16">
             <div className="max-w-4xl">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-medium leading-tight">

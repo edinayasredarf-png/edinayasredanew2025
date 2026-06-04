@@ -18,8 +18,12 @@ import {
   sb_getPostBySlug, sb_getNewsBySlug, sb_upsertPost, sb_upsertNews,
   sb_getCaseBySlug, sb_upsertCase, sb_deleteCaseById,
   sb_deletePostById, sb_deleteNewsById,
-  CASE_APPLICATION_OPTIONS
+  CASE_APPLICATION_OPTIONS,
 } from '@/lib/blogStore';
+import {
+  externalizeContentImages,
+  uploadDataUrlIfNeeded,
+} from '@/lib/imageUpload';
 
 // ---------- типы блоков ----------
 type Align = 'left'|'center'|'right';
@@ -307,10 +311,16 @@ export default function NewPostPage() {
     const slug = (prevPost?.slug || prevNews?.slug) || genSlug(title);
 
     // CORE: получаем HTML из единственного текстового блока (TipTap)
-    const html =
+    const rawHtml =
       blocks.length && (blocks[0] as TextBlock).type === 'text'
         ? (blocks[0] as TextBlock).text
         : renderBlocks(blocks);
+
+    showNotificationToast('Подготовка изображений…');
+    const [html, coverUrl] = await Promise.all([
+      externalizeContentImages(rawHtml),
+      uploadDataUrlIfNeeded(cover),
+    ]);
 
     // Check if scheduled publishing
     const publishTime = scheduledDate ? new Date(scheduledDate).getTime() : now;
@@ -322,7 +332,7 @@ export default function NewPostPage() {
         const p: BlogPost = {
           id: prev?.id || crypto.randomUUID(),
           slug, title, subtitle: (kind==='post'?subtitle:undefined),
-          cover, contentHtml: html, tags, kind,
+          cover: coverUrl, contentHtml: html, tags, kind,
           createdAt: prev?.createdAt || publishTime, updatedAt: now,
           views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
         };
@@ -350,7 +360,7 @@ export default function NewPostPage() {
           slug: caseSlug,
           title,
           subtitle,
-          cover,
+          cover: coverUrl,
           contentHtml: html,
           tags,
           application: caseApplication || undefined,
@@ -366,13 +376,13 @@ export default function NewPostPage() {
           showNotificationToast(`Кейс запланирован на ${new Date(publishTime).toLocaleString('ru-RU')}`);
         } else {
           showNotificationToast('Кейс опубликован!');
-          window.location.href = `/cases2/${caseSlug}`;
+          window.location.href = `/cases/${caseSlug}`;
         }
       } else {
         const prev = prevNews;
         const n: NewsItem = {
           id: prev?.id || crypto.randomUUID(),
-          slug, title, cover, contentHtml: html || undefined, tags,
+          slug, title, cover: coverUrl, contentHtml: html || undefined, tags,
           createdAt: prev?.createdAt || publishTime, updatedAt: now,
           views: prev?.views || 0, reactions: prev?.reactions || {heart:0,fire:0,smile:0}
         };
@@ -422,7 +432,7 @@ export default function NewPostPage() {
         // удаляем по slug из таблицы cases
         const c = await sb_getCaseBySlug(editSlug);
         if (c) await sb_deleteCaseById(c.id);
-        window.location.href = '/cases2';
+        window.location.href = '/cases';
       } else {
         const n = await sb_getNewsBySlug(editSlug).catch(() => undefined) || getNewsBySlug(editSlug);
         if (n) {

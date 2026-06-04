@@ -1,0 +1,2 @@
+Involve font — SIL Open Font License 1.1
+Copyright (c) Stefan Peev. See https://github.com/StefanPeev/Involve

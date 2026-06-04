@@ -68,6 +68,7 @@ import 'prism-code-editor-lightweight/layout.css';
 import 'prism-code-editor-lightweight/themes/github-dark.css';
 
 import { EditorContent, useEditor } from '@tiptap/react';
+import { uploadEditorImage } from '@/lib/imageUpload';
 
 const DocumentColumn = Document.extend({
   content: '(block|columns)+',
@@ -116,12 +117,7 @@ const extensions = [
   TaskList,
   Link,
   Image.configure({
-    upload: (file: File) =>
-      new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-      }),
+    upload: (file: File) => uploadEditorImage(file),
   }),
   Video.configure({
     upload: (file: File) =>
