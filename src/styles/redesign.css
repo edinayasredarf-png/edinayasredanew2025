@@ -1,36 +1,39 @@
-/* Design tokens — глобальный редизайн (v1) */
+/* Design tokens — глобальный редизайн v2 */
 .redesign {
-	--rd-bg: #F2F3F5;
+	--rd-bg: #ffffff;
+	--rd-block: #f6f7f9;
 	--rd-surface: #ffffff;
 	--rd-ink: #101828;
+	--rd-text: #000000;
 	--rd-muted: #667085;
 	--rd-border: #e4e7ec;
 	--rd-accent: #029cda;
 	--rd-accent-soft: #e6f6fc;
-  --rd-hero-from: #f2f3f5;
-  --rd-hero-to: #e8ecf5;
-  --rd-hero-cta-from: #0a0f1a;
-  --rd-hero-cta-to: #152238;
+	--rd-content-max: 1200px;
+	--rd-hero-from: #ffffff;
+	--rd-hero-to: #ffffff;
+	--rd-hero-cta-from: #0a0f1a;
+	--rd-hero-cta-to: #152238;
 	--rd-radius-lg: 1.5rem;
 	--rd-radius-xl: 2rem;
 	--rd-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.06);
 	--rd-shadow-hover: 0 12px 32px rgba(2, 156, 218, 0.12);
 }
 
-/* Hero секции — светлый фон */
-.redesign-hero-light {
-  background:
-    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(2, 156, 218, 0.1), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 0% 0%, rgba(2, 156, 218, 0.05), transparent 50%),
-    linear-gradient(165deg, var(--rd-hero-from) 0%, var(--rd-hero-to) 100%);
+/* Серая подложка для секций и карточек */
+.rd-block {
+	background-color: var(--rd-block);
 }
 
-/* Тёмный mesh — только для CTA-блоков */
+.redesign-hero-light {
+	background: var(--rd-bg);
+}
+
 .redesign-hero-mesh {
-  background:
-    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(2, 156, 218, 0.22), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 0% 0%, rgba(2, 156, 218, 0.08), transparent 50%),
-    linear-gradient(165deg, var(--rd-hero-cta-from) 0%, var(--rd-hero-cta-to) 100%);
+	background:
+		radial-gradient(ellipse 80% 60% at 100% 100%, rgba(2, 156, 218, 0.22), transparent 55%),
+		radial-gradient(ellipse 50% 40% at 0% 0%, rgba(2, 156, 218, 0.08), transparent 50%),
+		linear-gradient(165deg, var(--rd-hero-cta-from) 0%, var(--rd-hero-cta-to) 100%);
 }
 
 .redesign-card-image::after {

@@ -4,144 +4,391 @@ import Link from 'next/link';
 
 export function RedesignFooter() {
 	return (
-		<footer className="w-full bg-black text-white mt-auto overflow-hidden font-[Inter]">
-			<div className="redesign-site-shell py-8 md:py-10">
-				<div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 pb-8 border-b border-[#202020]">
+		<footer className=" font-involve">
+			<div className="mx-auto max-w-[1200px] px-5 lg:px-10">
+				{/* top border */}
+				<div className="border-t border-[#E7E7E7]" />
+
+				{/* logo */}
+				<div className="pt-14 pb-20">
 					<Link href="/">
-						<Image src="/img/logo_footer.svg" alt="Единая Среда" width={208} height={51} className="w-40 md:w-52 h-auto" />
+						<Image
+							src="/img/logo_footer.svg"
+							alt="Единая Среда"
+							width={150}
+							height={42}
+							className="h-auto"
+						/>
 					</Link>
-					<span className="text-lg uppercase text-white/80 self-start md:self-center">ru</span>
 				</div>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 py-10">
-					<div className="sm:col-span-2 lg:col-span-1">
-						<h3 className="text-xl mb-4">О компании</h3>
-						<p className="text-[17px] leading-[25px] text-white/90 max-w-md">
-							Единая среда — платформа для эффективного учёта, управления и мониторинга территорий и объектов
-							в организациях любого типа и масштаба. Также наша команда выполняет услуги под ключ
-							инвентаризации и оцифровки.
-						</p>
-						<Link
-							href="https://edinayasreda.ru/"
-							className="inline-flex mt-6 px-4 py-3 bg-[#F2F3F5] text-[#202020] rounded-lg text-base hover:bg-white transition-colors"
-						>
-							Регистрация
+				{/* ===================== */}
+				{/* DESKTOP */}
+				{/* ===================== */}
+				<div className="hidden lg:block">
+					<div className="grid grid-cols-4 gap-x-24">
+						{/* col 1 */}
+						<div>
+							<ul className="space-y-6 text-[18px] leading-[1.35]">
+								<li>
+									<Link
+										href="/products"
+										className="text-[#8C8C8C] transition-colors hover:text-black"
+									>
+										Все продукты
+									</Link>
+								</li>
+
+								<li>
+									<Link
+										href="/partnership"
+										className="text-[#8C8C8C] transition-colors hover:text-black"
+									>
+										Партнерство
+									</Link>
+								</li>
+
+								<li>
+									<Link
+										href="/about"
+										className="text-[#8C8C8C] transition-colors hover:text-black"
+									>
+										О компании
+									</Link>
+								</li>
+							</ul>
+						</div>
+
+						{/* col 2 */}
+						<div>
+							<ul className="space-y-6 text-[18px] leading-[1.35] text-[#222]">
+								<li>
+									<Link href="/cases">
+										Кейсы
+									</Link>
+								</li>
+
+								<li>
+									<Link href="/pricing">
+										Все тарифы
+									</Link>
+								</li>
+
+								<li>
+									<Link href="/blog">
+										Блог
+									</Link>
+								</li>
+
+								<li>
+									<Link href="/news">
+										Новости
+									</Link>
+								</li>
+							</ul>
+						</div>
+
+						{/* col 3 */}
+						<div>
+							<ul className="space-y-6 text-[18px] leading-[1.35] text-[#222]">
+								<li>
+									<Link href="/documents">
+										Документация
+									</Link>
+								</li>
+
+								<li>
+									<Link href="/services">
+										Услуги
+									</Link>
+								</li>
+
+								<li>
+									<Link href="/welcome-bonus">
+										Попробовать
+									</Link>
+								</li>
+							</ul>
+						</div>
+
+						{/* col 4 */}
+						<div>
+							<ul className="space-y-6 text-[18px] leading-[1.35] text-[#222]">
+								<li>Центр поддержки</li>
+
+								<li>
+									<a
+										href="tel:88005505612"
+										className="transition-colors hover:text-black"
+									>
+										8 800 500-56-12
+									</a>
+								</li>
+
+								<li>
+									<Link href="/contacts">
+										Заказать звонок
+									</Link>
+								</li>
+
+								<li>
+									<a
+										href="https://t.me/es_faq"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										Написать в чат
+									</a>
+								</li>
+
+								<li>
+									<Link href="/help">
+										Помощь
+									</Link>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					{/* bottom */}
+					<div className="grid grid-cols-[1fr_260px_260px] items-start gap-16 pt-28 pb-20">
+						{/* legal */}
+						<div>
+							<p className="mb-8 text-[18px] text-[#777]">
+								© 2026 Единая Среда
+							</p>
+
+							<p className="max-w-[720px] text-[15px] leading-8 text-[#8A8A8A]">
+								Используем cookies для корректной работы сайта,
+								персонализации пользователей и других целей,
+								предусмотренных{' '}
+								<Link
+									href="/privacy"
+									className="underline"
+								>
+									политикой обработки персональных данных
+								</Link>
+								
+								</p>
+						</div>
+
+						{/* qr */}
+						<div className="flex items-center gap-4">
+							<Image
+								src="/img/qr_apps.svg"
+								alt="QR код приложения"
+								width={90}
+								height={90}
+							/>
+
+							<div className="text-[18px] leading-[1.3] text-[#8A8A8A]">
+							<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer">Скачать
+								<br />
+								приложение</a>	
+							</div>
+						</div>
+
+						{/* socials */}
+						<div className="flex items-center gap-3">
+						<a
+								href="https://max.ru/id6150100608_biz"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/max.svg"
+									alt="VK"
+									width={32}
+									height={32}
+								/>
+							</a>
+							
+							
+							<a
+								href="https://vk.com/edinayasredarf"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/vk.svg"
+									alt="VK"
+									width={32}
+									height={32}
+								/>
+							</a>
+
+						
+
+							<a
+								href="https://dzen.ru/edinayasreda"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/dzen.svg"
+									alt="Youtube"
+									width={32}
+									height={32}
+								/>
+							</a>
+
+							<a
+								href="https://t.me/edinayasredarf"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/tg.svg"
+									alt="Telegram"
+									width={32}
+									height={32}
+								/>
+							</a>
+						</div>
+					</div>
+				</div>
+
+				{/* ===================== */}
+				{/* MOBILE */}
+				{/* ===================== */}
+				<div className="pb-10 lg:hidden">
+					<div className="space-y-4 text-[16px] text-[#222]">
+						<Link href="/products" className="block">
+							Все продукты
+						</Link>
+
+						<Link href="/partnership" className="block">
+							Партнерство
+						</Link>
+
+						<Link href="/about" className="block">
+							О компании
+						</Link>
+
+						<Link href="/cases" className="block">
+							Кейсы
+						</Link>
+
+						<Link href="/pricing" className="block">
+							Все тарифы
+						</Link>
+
+						<Link href="/blog" className="block">
+							Блог
+						</Link>
+
+						<Link href="/news" className="block">
+							Новости
+						</Link>
+
+						<Link href="/documents" className="block">
+							Документы
+						</Link>
+
+						<Link href="/services" className="block">
+							Услуги
+						</Link>
+
+						<Link href="/welcome-bonus" className="block">
+							Попробовать
 						</Link>
 					</div>
 
-					<div>
-						<h3 className="text-xl mb-4">Обучение</h3>
-						<ul className="space-y-3 text-base">
-							<li>
-								<Link href="/documents" className="hover:text-[#029cda] transition-colors">
-									Документация
-								</Link>
-							</li>
-							<li>
-								<Link href="/course" className="hover:text-[#029cda] transition-colors">
-									Видеокурсы
-								</Link>
-							</li>
-						</ul>
-					</div>
+					
 
-					<div>
-						<h3 className="text-xl mb-4">Клиентам</h3>
-						<ul className="space-y-3 text-base">
+						<ul className="space-y-4 text-[16px]">
 							<li>
-								<a href="https://edinayasreda.ru/" className="hover:text-[#029cda] transition-colors">
-									Войти в ЛК
+								<a href="tel:88005505612">
+									8 800 550-56-12
 								</a>
 							</li>
+
 							<li>
-								<Link href="/cases" className="hover:text-[#029cda] transition-colors">
-									Кейсы
+								<Link href="/contacts">
+									Заказать звонок
 								</Link>
 							</li>
+
 							<li>
-								<a
-									href="https://www.rustore.ru/catalog/app/ru.edinayasreda"
-									className="hover:text-[#029cda] transition-colors"
-								>
-									Мобильное приложение
+								<a href="https://t.me/es_faq">
+									Написать в чат
 								</a>
 							</li>
+
 							<li>
-								<Link href="/documents" className="hover:text-[#029cda] transition-colors">
-									Документы
+								<Link href="/help">
+									Помощь
 								</Link>
 							</li>
 						</ul>
+				
+
+					<div className="mt-8 flex gap-3">
+					<a
+								href="https://max.ru/id6150100608_biz"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/max.svg"
+									alt="VK"
+									width={32}
+									height={32}
+								/>
+							</a>
+							
+							
+							<a
+								href="https://vk.com/edinayasredarf"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/vk.svg"
+									alt="VK"
+									width={32}
+									height={32}
+								/>
+							</a>
+
+						
+
+							<a
+								href="https://dzen.ru/edinayasreda"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/dzen.svg"
+									alt="Youtube"
+									width={32}
+									height={32}
+								/>
+							</a>
+
+							<a
+								href="https://t.me/edinayasredarf"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image
+									src="/icons/tg.svg"
+									alt="Telegram"
+									width={32}
+									height={32}
+								/>
+							</a>
 					</div>
 
-					<div>
-						<h3 className="text-xl mb-4">Услуги</h3>
-						<ul className="space-y-3 text-base">
-							<li>
-								<Link href="/services/imz" className="hover:text-[#029cda] transition-colors">
-									Инвентаризация мест захоронений
-								</Link>
-							</li>
-							<li>
-								<Link href="/services/izn" className="hover:text-[#029cda] transition-colors">
-									Инвентаризация зеленых насаждений
-								</Link>
-							</li>
-							<li>
-								<Link href="/services/les" className="hover:text-[#029cda] transition-colors">
-									Лесоустройство
-								</Link>
-							</li>
-						</ul>
-					</div>
+					<div className="mt-8">
+						<p className="mb-4 text-sm text-[#777]">
+							© 2026 Единая Среда
+						</p>
 
-					<div>
-						<h3 className="text-xl mb-4">О компании</h3>
-						<ul className="space-y-3 text-base">
-							<li>
-								<Link href="/contacts" className="hover:text-[#029cda] transition-colors">
-									Контакты
-								</Link>
-							</li>
-							<li>
-								<Link href="/partnership" className="hover:text-[#029cda] transition-colors">
-									Партнерство
-								</Link>
-							</li>
-						</ul>
+						<p className="text-xs leading-6 text-[#8A8A8A]">
+							Используем cookies для корректной работы сайта.
+						</p>
 					</div>
-				</div>
-
-				<div className="border-t border-[#202020] pt-8 flex flex-col lg:flex-row lg:items-center gap-6">
-					<Link
-						href="/welcome-bonus"
-						className="inline-flex items-center gap-3 text-white text-lg font-medium font-[Raleway] hover:opacity-80"
-					>
-						<Image src="/icons/icon6.svg" alt="" width={24} height={24} />
-						Приветственный бонус
-					</Link>
-					<div className="flex items-center gap-4 lg:ml-auto">
-						<a href="https://t.me/edinayasredarf" title="Telegram">
-							<Image src="/icons/tg.svg" alt="Telegram" width={22} height={22} className="invert" />
-						</a>
-						<a href="https://vk.com/edinayasredarf" title="VK">
-							<Image src="/icons/vk.svg" alt="VK" width={22} height={22} className="invert" />
-						</a>
-						<a href="https://dzen.ru/edinayasreda" title="Дзен">
-							<Image src="/icons/dzen.svg" alt="Дзен" width={22} height={22} className="invert" />
-						</a>
-						<a href="https://www.youtube.com/@edinayasreda" title="YouTube">
-							<Image src="/icons/youtube.svg" alt="YouTube" width={22} height={22} className="invert" />
-						</a>
-					</div>
-				</div>
-
-				<div className="mt-8 pt-6 border-t border-[#202020] flex flex-col md:flex-row md:flex-wrap gap-4 text-[#7c8a9a] text-[15px]">
-					<span>© Единая Среда, {new Date().getFullYear()}. Все права защищены.</span>
-					<Link href="/documents" className="hover:text-white transition-colors md:mx-auto">
-						Политика конфиденциальности
-					</Link>
-					<span className="md:ml-auto">Ростов-на-Дону, Комарова 28/2</span>
 				</div>
 			</div>
 		</footer>

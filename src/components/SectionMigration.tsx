@@ -8,15 +8,13 @@ const SectionMigration = () => {
   const { openConsult } = useModal();
 
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-[1280px] mx-auto px-5 md:px-8 font-[Raleway]">
-        {/* Заголовок */}
-        <h2 className="text-[32px] md:text-[48px] font-medium text-[#313131] leading-tight text-center mb-8 md:mb-12 max-w-[560px] mx-auto">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16">
+      <div className="rd-content-column font-[Raleway]">
+        <h2 className="font-involve text-[#313131] text-center text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] mb-8 md:mb-12 max-w-[560px] mx-auto">
           Бесплатный перенос данных в платформу
         </h2>
 
-        {/* Белая карточка с padding */}
-        <div className="bg-white rounded-[20px] p-2 md:p-2">
+        <div className="bg-white rounded-2xl p-2">
           <div className="flex flex-col lg:flex-row gap-6">
 
             {/* Левая часть */}
@@ -26,7 +24,7 @@ const SectionMigration = () => {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-3 py-1.5 bg-[#F6F7F9] rounded-md text-black text-sm font-medium"
+                    className="px-3 py-1.5 rd-block rounded-md text-black text-sm font-medium"
                   >
                     {tag}
                   </span>
@@ -59,7 +57,7 @@ const SectionMigration = () => {
             </div>
 
             {/* Правая часть - серый блок */}
-            <div className="w-full lg:w-[722px] bg-[#F6F7F9] rounded-[18px] p-8 lg:p-12 flex items-center justify-center min-h-[350px] lg:min-h-[414px]">
+            <div className="w-full lg:w-[722px] rd-block rounded-2xl p-8 lg:p-12 flex items-center justify-center min-h-[350px] lg:min-h-[414px]">
               <Image
                 src="/img/migrations.png"
                 alt="Миграция серверов"

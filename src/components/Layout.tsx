@@ -6,7 +6,6 @@ import AuthModal from './auth/AuthModal';
 import StoriesStrip from './StoriesStrip';
 import Breadcrumbs from './Breadcrumbs';
 import MobileBottomNav from './MobileBottomNav';
-import { RedesignPromoBar } from '@/components/redesign/RedesignPromoBar';
 import { RedesignHeader } from '@/components/redesign/RedesignHeader';
 import { RedesignFooter } from '@/components/redesign/RedesignFooter';
 
@@ -113,9 +112,8 @@ const Layout = ({ children }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
+    <div className="redesign min-h-screen w-full flex flex-col bg-white">
       <HashCleaner />
-      <RedesignPromoBar />
       <RedesignHeader />
       <StoriesStrip />
       <Breadcrumbs />

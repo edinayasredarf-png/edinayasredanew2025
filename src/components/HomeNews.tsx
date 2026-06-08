@@ -52,11 +52,10 @@ export default function HomeNews() {
   if (!items.length) return null;
 
   return (
-    <section className="py-10 lg:py-20 font-[Raleway] lining-nums">
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-        {/* Заголовок — как в предыдущей секции */}
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] lining-nums">
+      <div className="rd-content-column">
         <div className="mb-8 md:mb-10">
-          <h2 className="text-[#313131] font-medium leading-[44px] text-[32px] md:text-[39.38px]">
+          <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2]">
             Новости
           </h2>
         </div>
@@ -82,7 +81,7 @@ export default function HomeNews() {
                 {/* ЕДИНЫЙ РАЗМЕР БЛОКА: совпадает с блоком «Открыть все новости» */}
                 <Link
                   href={`/news/${n.slug}`}
-                  className="bg-white rounded-3xl p-8 border border-[#ffff] hover:border-[#029cda] transition-colors min-h-[200px] h-full flex flex-col"
+                  className="rd-block rounded-2xl p-8 border border-transparent hover:ring-1 hover:ring-[#029cda] transition-colors min-h-[200px] h-full flex flex-col"
                 >
                   <p className="text-sm md:text-medium text-[#313131] mb-2">
                     {formatContentDate(n.createdAt, n.updatedAt)}

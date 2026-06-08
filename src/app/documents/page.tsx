@@ -9,6 +9,12 @@ export default function DocumentsPage() {
 
   // Описания документов
   const docDescriptions: Record<string, string> = {
+		"Rekvizity_OOO_Sfera_2026.pdf": "Реквизиты ООО Сфера 2026",
+		"Tehnicheskoe_opisaniye_AIS_Edinaya_sreda.pdf": "Техническое описание АИС Единая среда",
+		"Licenzionnoe_soglasie_o_predostavlenii_neisklyuchitelnogo_prava_polzovaniya_programmnogo_obespecheniya_AIS_Edinaya_sreda.pdf": "Лицензионное соглашение о предоставлении неисключительного права пользования программного обеспечения АИС Единая среда",
+		"Vipiska_iz_reestra_13314.pdf": "Выписка из реестра №13314",
+		"Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf": "Выписка из реестра участников проекта СКОЛКОВО",
+		"Svidetelstvo_o_gosudarstvennoy_registracii_AIS_Edinaya_sreda.pdf": "Свидетельство о государственной регистрации АИС Единая среда",
     "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "Политика использования файлов кукис СФЕРА.",
     "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "Политика обработки персональных данных посетителей сайта.",
     "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "Политика оператора в отношении обработки персональных данных.",
@@ -21,6 +27,12 @@ export default function DocumentsPage() {
 
   // Названия для отображения
   const docTitles: Record<string, string> = {
+		"Rekvizity_OOO_Sfera_2026.pdf": "Реквизиты ООО Сфера 2026",
+		"Tehnicheskoe_opisaniye_AIS_Edinaya_sreda.pdf": "Техническое описание АИС Единая среда",
+		"Licenzionnoe_soglasie_o_predostavlenii_neisklyuchitelnogo_prava_polzovaniya_programmnogo_obespecheniya_AIS_Edinaya_sreda.pdf": "Лицензионное соглашение о предоставлении неисключительного права пользования программного обеспечения АИС Единая среда",
+		"Vipiska_iz_reestra_13314.pdf": "Выписка из реестра №13314",
+		"Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf": "Выписка из реестра участников проекта СКОЛКОВО",
+		"Svidetelstvo_o_gosudarstvennoy_registracii_AIS_Edinaya_sreda.pdf": "Свидетельство о государственной регистрации АИС Единая среда",
     "Politika_ispolzovaniya_failov_kukis_SFERA.pdf": "Политика использования файлов кукис (PDF)",
     "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf": "Политика обработки данных посетителей сайта (PDF)",
     "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf": "Политика оператора по персональным данным (PDF)",
@@ -44,6 +56,12 @@ export default function DocumentsPage() {
 
   // Список документов (имя файла должно соответствовать ключу в docUrls)
   const docFiles = [
+		{ file: "Rekvizity_OOO_Sfera_2026.pdf", title: docTitles["Rekvizity_OOO_Sfera_2026.pdf"] },
+		{ file: "Licenzionnoe_soglasie_o_predostavlenii_neisklyuchitelnogo_prava_polzovaniya_programmnogo_obespecheniya_AIS_Edinaya_sreda.pdf", title: docTitles["Licenzionnoe_soglasie_o_predostavlenii_neisklyuchitelnogo_prava_polzovaniya_programmnogo_obespecheniya_AIS_Edinaya_sreda.pdf"] },
+		{ file: "Tehnicheskoe_opisaniye_AIS_Edinaya_sreda.pdf", title: docTitles["Tehnicheskoe_opisaniye_AIS_Edinaya_sreda.pdf"] },
+    { file: "Vipiska_iz_reestra_13314.pdf", title: docTitles["Vipiska_iz_reestra_13314.pdf"] },
+    { file: "Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf", title: docTitles["Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf"] },
+    { file: "Svidetelstvo_o_gosudarstvennoy_registracii_AIS_Edinaya_sreda.pdf", title: docTitles["Svidetelstvo_o_gosudarstvennoy_registracii_AIS_Edinaya_sreda.pdf"] },
     { file: "Politika_ispolzovaniya_failov_kukis_SFERA.pdf", title: docTitles["Politika_ispolzovaniya_failov_kukis_SFERA.pdf"] },
     { file: "Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf", title: docTitles["Politika_obrabotki_personalnikh_dannikh_posetitelei_saita.pdf"] },
     { file: "Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf", title: docTitles["Politika_operatora_v_otnoshenii_obrabotki_personalnikh_dannikh.pdf"] },

@@ -6,6 +6,7 @@ import "./globals.css";
 import "@/styles/involve-font.css";
 import "@/styles/typography.css";
 import "@/styles/page-hero.css";
+import "@/styles/redesign.css";
 import { ModalProvider } from "@/components/ModalProvider";
 import { HashCleaner } from "@/components/HashCleaner";
 import { TypographyNoWidows } from "@/components/TypographyNoWidows";

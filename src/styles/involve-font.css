@@ -24,23 +24,25 @@
   font-weight: 500;
 }
 
-/* Шапка и подвал: max 1920px, на 1920 — отступы 60px */
+/* Контент и шапка: max 1200px (макет Figma) */
 .redesign-site-shell,
-.redesign-header-shell {
+.redesign-header-shell,
+.case-page-column,
+.rd-content-column {
   width: 100%;
-  max-width: 1920px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: clamp(1rem, 3.125vw, 60px);
-  padding-right: clamp(1rem, 3.125vw, 60px);
+  padding-left: clamp(1rem, 4vw, 1.5rem);
+  padding-right: clamp(1rem, 4vw, 1.5rem);
 }
 
-/* Общая колонка кейса: hero-текст и статья с одним левым краем (макет 1120px) */
-.case-page-column {
+/* Подвал на всю ширину внутри оболочки сайта */
+.redesign-footer-shell {
   width: 100%;
-  max-width: 1120px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: clamp(1rem, 4vw, 2rem);
-  padding-right: clamp(1rem, 4vw, 2rem);
+  padding-left: clamp(1rem, 4vw, 1.5rem);
+  padding-right: clamp(1rem, 4vw, 1.5rem);
 }

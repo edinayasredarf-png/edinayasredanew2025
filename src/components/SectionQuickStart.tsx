@@ -54,7 +54,7 @@ const QuickStartCard: React.FC<CardProps> = ({
     href ? (
       <Link
         href={href}
-        className="group block bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#029cda] transition-colors overflow-hidden"
+        className="group block bg-white rounded-2xl outline outline-1 outline-[#fff] hover:outline-[#029cda] transition-colors overflow-hidden"
       >
         {/* как в карточках с серым блоком: зазор между белым и серым = p-2 (8px) */}
         <div className="p-2 h-full flex flex-col">{children}</div>
@@ -62,7 +62,7 @@ const QuickStartCard: React.FC<CardProps> = ({
     ) : (
       <div
         onClick={onClick}
-        className={`group bg-white rounded-3xl outline outline-1 outline-[#fff] hover:outline-[#029cda] transition-colors overflow-hidden ${
+        className={`group bg-white rounded-2xl outline outline-1 outline-[#fff] hover:outline-[#029cda] transition-colors overflow-hidden ${
           onClick ? 'cursor-pointer' : ''
         }`}
       >
@@ -73,7 +73,7 @@ const QuickStartCard: React.FC<CardProps> = ({
 
   return (
     <Wrapper>
-      <div className="bg-[#F6F7F9] rounded-2xl w-full h-full overflow-hidden p-8 min-h-[180px] md:min-h-[260px] md:grid md:grid-cols-[3fr_2fr] md:gap-6">
+      <div className="rd-block rounded-2xl w-full h-full overflow-hidden p-8 min-h-[180px] md:min-h-[260px] md:grid md:grid-cols-[3fr_2fr] md:gap-6">
         {/* Левая колонка: заголовок + описание + кнопка (≈ 60%) */}
         <div className="min-h-0 min-w-0 flex flex-col">
           <h3 className="text-[#313131] text-[26px] md:text-[34.7px] font-medium font-[Raleway] leading-[1.25] md:leading-[45px] max-w-[520px] mb-3">
@@ -147,13 +147,13 @@ const SectionQuickStart: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 md:py-24 font-[Raleway]">
-      <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-        <h2 className="text-center text-[#313131] text-[32px] md:text-[39.38px] font-medium leading-[44px] mb-12">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
+      <div className="rd-content-column">
+        <h2 className="text-center font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] mb-10 md:mb-12">
           Быстрый старт
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2.5">
           {cards.map((card, idx) => (
             <QuickStartCard key={idx} {...card} />
           ))}

@@ -20,12 +20,12 @@ const VideoInvite: React.FC<VideoInviteProps> = ({
   const { openDemo } = useModal();
 
   return (
-    <section className={`w-full flex justify-center items-center py-10 md:py-14 font-[Raleway] ${className}`}>
-      <div className="w-full max-w-[1160px] px-2 mx-auto">
-        <div className="w-full px-6 md:px-9 pt-[35px] pb-9 bg-white rounded-[20px] flex flex-col md:flex-row justify-between items-center gap-8 md:gap-10">
+    <section className={`bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] ${className}`}>
+      <div className="rd-content-column">
+        <div className="w-full px-6 md:px-9 pt-8 md:pt-9 pb-8 md:pb-9 rd-block rounded-2xl flex flex-col md:flex-row justify-between items-center gap-8 md:gap-10">
           {/* Текст */}
           <div className="flex-1 flex flex-col items-start text-center md:text-left gap-4">
-            <h2 className="text-[#313131] text-[24px] md:text-[26.8px] font-medium leading-9">
+            <h2 className="font-involve text-[#313131] text-[clamp(1.25rem,3vw,1.7rem)] leading-[1.3]">
               {title}
             </h2>
             <p className="text-[#7c8a9a] text-[16.5px] md:text-[18.91px] font-medium leading-7">

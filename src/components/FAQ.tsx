@@ -62,7 +62,7 @@ const Row: React.FC<{
   };
 
   return (
-    <div className="rounded-2xl bg-white font-medium">
+    <div className="rounded-2xl rd-block font-medium">
       <button
         id={triggerId}
         aria-controls={panelId}
@@ -121,7 +121,7 @@ const FAQ: React.FC<FAQProps> = ({
   contactButtonText = 'Задать вопрос',
   onContactClick,
   singleOpen = false,
-  maxW = 'max-w-[1280px]',
+  maxW,
 }) => {
   const { openConsult } = useModal();
   const [openIndex, setOpenIndex] = useState<number>(0); // по умолчанию открыт первый
@@ -135,11 +135,10 @@ const FAQ: React.FC<FAQProps> = ({
   };
 
   return (
-    <section className="py-12 md:py-20 font-[Raleway]">
-      <div className={`${maxW} mx-auto px-5 md:px-8`}>
-        {/* Заголовок */}
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
+      <div className={maxW ?? 'rd-content-column'}>
         <div className="text-center mb-8 md:mb-10">
-          <h2 className="text-[#313131] font-medium leading-[44px] text-[32px] md:text-[39.38px] lining-nums">
+          <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] lining-nums">
             {title}
           </h2>
           {subtitle && (
@@ -176,7 +175,7 @@ const FAQ: React.FC<FAQProps> = ({
         {/* Контактная карточка (опционально) */}
         {showContactCard && (
           <div className="mt-6 md:mt-8">
-            <div className="rounded-2xl bg-white p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="rounded-2xl rd-block p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h3 className="text-[#313131] text-[18px] md:text-[20px] font-medium leading-7">
                   {contactCardTitle}

@@ -60,15 +60,13 @@ const ObjectCard: React.FC<ObjectCardProps> = ({ icon, label, index, totalItems 
 
 const SectionAllObjects: React.FC = () => {
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-[1200px] mx-auto px-5 md:px-8">
-        {/* Заголовок */}
-        <h2 className="text-[#313131] text-center font-medium font-[Raleway] text-[28px] md:text-[36px] lg:text-[48px] leading-tight mb-12 md:mb-16">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16">
+      <div className="rd-content-column">
+        <h2 className="font-involve text-[#313131] text-center text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] mb-10 md:mb-14">
           Все объекты в одной системе
         </h2>
 
-        {/* Сетка объектов */}
-        <div className="w-full  rounded-[20px] border border-[#DCDCDC] grid grid-cols-1 md:grid-cols-3 overflow-hidden">
+        <div className="w-full rounded-2xl border border-[#e4e7ec] grid grid-cols-1 md:grid-cols-3 overflow-hidden bg-white">
           {objects.map((obj, idx) => (
             <ObjectCard
               key={`${obj.icon}-${idx}`}

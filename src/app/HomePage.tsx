@@ -6,6 +6,12 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
+import TrustSection from '../components/TrustSection';
+import ResourcesAndContactSection from '../components/ResourcesAndContactSection';
+import HomeCases from '../components/HomeCases';
+
+
+
 import SupportersSection from '../components/SupportersSection';
 import TerritoryControlSection from '../components/TerritoryControlSection';
 import SplitStyleCards from '../components/SplitStyleCards';
@@ -127,6 +133,9 @@ export default function HomePage() {
 
 			{/* Карточки с разделением стилей */}
 			<SplitStyleCards />
+			<TrustSection/>
+			<ResourcesAndContactSection/>
+			<HomeCases/>
 			<CompanyBadgesProps />
 
 

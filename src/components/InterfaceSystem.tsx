@@ -36,11 +36,11 @@ const SectionInterfaceByFigma: React.FC = () => {
   }, []);
 
   return (
-    <section className="font-[Raleway]">
-      <div className="relative w-full max-w-[1200px] mx-auto px-4 sm:px-5 md:px-22 mt-16 md:mt-[120px]">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
+      <div className="rd-content-column">
         {/* Header */}
         <div className="w-full grid grid-cols-1 md:grid-cols-[1fr_1fr] md:items-start md:gap-[60px] lg:gap-[80px]">
-          <h2 className="text-[#313131] font-medium leading-[44px] text-[32px] md:text-[39.38px]">
+          <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] md:leading-[44px]">
             Понятный интерфейс
           </h2>
 
@@ -53,7 +53,7 @@ const SectionInterfaceByFigma: React.FC = () => {
         {/* Viewer */}
         <div className="w-full mt-8 md:mt-10 overflow-hidden">
           <div className="relative w-full">
-            <div className="relative w-full rounded-[20px] overflow-hidden bg-[#F4F5F7]">
+            <div className="relative w-full rounded-2xl overflow-hidden rd-block">
               {/* Контейнер слайдера */}
               <div className="relative w-full aspect-[1477/985] lg:h-[560px] xl:h-[720px]">
                 <Swiper
