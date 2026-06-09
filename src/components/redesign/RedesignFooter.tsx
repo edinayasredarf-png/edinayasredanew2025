@@ -121,7 +121,7 @@ export function RedesignFooter() {
 										href="tel:88005505612"
 										className="transition-colors hover:text-black"
 									>
-										8 800 500-56-12
+										8 800 550-56-12
 									</a>
 								</li>
 

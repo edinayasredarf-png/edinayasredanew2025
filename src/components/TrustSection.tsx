@@ -7,6 +7,7 @@ type Card = {
   description: string;
   button: string;
   icon: string;
+  link: string;
   variant?: "blue" | "light";
 };
 
@@ -16,7 +17,8 @@ const cards: Card[] = [
     description:
       "Единая среда внесен в реестр отечественного ПО и отвечает требованиям, предъявляемым к нему.",
     button: "Посмотреть",
-    icon: "/icons/check-square.svg",
+    icon: "../../icons/check-square.svg",
+    link: "https://reestr.digital.gov.ru/reestr/685429/",
     variant: "blue",
   },
   {
@@ -24,7 +26,8 @@ const cards: Card[] = [
     description:
       "Компании «Сфера» и «Экострой», входящие в ГК «Единая среда», более 15 лет выполняют государственные и коммерческие контракты, подтверждая надежность и высокое качество работ.",
     button: "Подробнее о проектах",
-    icon: "/icons/gov.svg",
+    icon: "../../icons/gov.svg",
+    link: "https://www.tbank.ru/business/contractor/legal/1106195006378/contracts/1/", 
     variant: "light",
   },
   {
@@ -32,7 +35,8 @@ const cards: Card[] = [
     description:
       "Статус резидента «Сколково» и участие в инициативах АСИ подтверждают инновационный подход компании и соответствие высоким стандартам развития цифровых решений.",
     button: "Узнать подробнее",
-    icon: "/icons/skolkovo1.svg",
+    icon: "../../icons/skolkovo1.svg",
+    link: "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf", 
     variant: "light",
   },
 ];
@@ -60,7 +64,11 @@ export default function TrustSection() {
                   p-8
                   flex flex-col justify-between
                   transition-all duration-300
-                  ${isBlue ? "bg-[#029cda] text-white" : "bg-[#f6f6f6] text-[#222222]"}
+                  ${
+                    isBlue
+                      ? "bg-[#029cda] text-white"
+                      : "bg-[#f6f6f6] text-[#222222]"
+                  }
                 `}
               >
                 {/* ICON */}
@@ -86,7 +94,9 @@ export default function TrustSection() {
 
                 {/* BUTTON */}
                 <a
-                  href={isBlue ? "/about" : "#"}
+                  href={card.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`
                     mt-8 inline-flex text-lg font-bold transition-opacity
                     ${isBlue ? "text-white" : "text-[#029cda]"}
