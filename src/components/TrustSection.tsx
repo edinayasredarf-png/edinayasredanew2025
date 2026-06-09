@@ -17,7 +17,7 @@ const cards: Card[] = [
     description:
       "АИС «Единая среда» внесена в реестр отечественного ПО и полностью соответствует требованиям, предъявляемым к российскому программному обеспечению.",
     button: "Посмотреть",
-    icon: "/icons/check-square.svg",
+    icon: "/icons/check-square1.svg",
     link: "https://reestr.digital.gov.ru/reestr/685429/",
     variant: "blue",
   },
@@ -26,7 +26,7 @@ const cards: Card[] = [
     description:
       "Компании ООО «Сфера» и ООО «Экострой», входящие в состав ГК «Единая среда», более 15 лет успешно выполняют государственные и коммерческие контракты, доказывая свою надёжность и высокое качество работ.",
     button: "Подробнее о проектах",
-    icon: "/icons/gov.svg",
+    icon: "/icons/gov1.svg",
     link: "https://www.tbank.ru/business/contractor/legal/1106195006378/contracts/1/", 
     variant: "light",
   },
