@@ -26,8 +26,8 @@ const cards: Card[] = [
     description:
       "Компании ООО «Сфера» и ООО «Экострой», входящие в состав ГК «Единая среда», более 15 лет успешно выполняют государственные и коммерческие контракты, доказывая свою надёжность и высокое качество работ.",
     button: "Подробнее о проектах",
-    icon: "/icons/gov1.svg",
-    link: "https://www.tbank.ru/business/contractor/legal/1106195006378/contracts/1/", 
+    icon: "/icons/gov.svg",
+    link: "https://www.tbank.ru/business/contractor/legal/1106195006378/contracts/1/",
     variant: "light",
   },
   {
@@ -36,7 +36,7 @@ const cards: Card[] = [
       "Статус резидента «Сколково» и участие в инициативах АСИ подтверждают инновационный подход компании и соответствие высоким стандартам развития цифровых решений.",
     button: "Узнать подробнее",
     icon: "/icons/skolkovo1.svg",
-    link: "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf", 
+    link: "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf",
     variant: "light",
   },
 ];
@@ -45,12 +45,10 @@ export default function TrustSection() {
   return (
     <section className="w-full py-16 md:py-24 bg-white">
       <div className="max-w-[1200px] mx-auto px-5 md:px-8">
-        {/* TITLE */}
         <h2 className="font-involve text-[#222222] text-[32px] md:text-[46px] font-medium leading-[1.2] mb-12">
           Почему клиенты доверяют нам более 15 лет
         </h2>
 
-        {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cards.map((card, i) => {
             const isBlue = card.variant === "blue";
@@ -71,25 +69,28 @@ export default function TrustSection() {
                   }
                 `}
               >
-                {/* ICON */}
-                <div className="w-16 h-16 relative">
-                  <Image
-                    src={card.icon}
-                    alt={card.title}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
+                <div className="flex flex-col">
+                  {/* ICON */}
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <Image
+                      src={card.icon}
+                      alt={card.title}
+                      width={64}
+                      height={64}
+                      className="w-16 h-16 object-contain"
+                    />
+                  </div>
 
-                {/* TEXT */}
-                <div className="mt-6">
-                  <h3 className="font-involve text-2xl font-medium leading-8">
-                    {card.title}
-                  </h3>
+                  {/* TEXT */}
+                  <div className="mt-6">
+                    <h3 className="font-involve text-xl font-medium leading-8">
+                      {card.title}
+                    </h3>
 
-                  <p className="mt-4 font-raleway text-lg leading-[26px]">
-                    {card.description}
-                  </p>
+										<p className="mt-3.5  font-[Raleway] text-[15px] leading-7">
+                      {card.description}
+                    </p>
+                  </div>
                 </div>
 
                 {/* BUTTON */}
@@ -98,7 +99,7 @@ export default function TrustSection() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`
-                    mt-8 inline-flex text-lg font-bold transition-opacity
+                    inline-flex text-lg font-bold transition-opacity
                     ${isBlue ? "text-white" : "text-[#029cda]"}
                     hover:opacity-70
                   `}
@@ -110,7 +111,6 @@ export default function TrustSection() {
           })}
         </div>
 
-        {/* CTA */}
         <div className="mt-10 flex justify-center">
           <a
             href="/about"
