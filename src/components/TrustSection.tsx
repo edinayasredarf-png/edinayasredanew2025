@@ -17,7 +17,7 @@ const cards: Card[] = [
     description:
       "АИС «Единая среда» внесена в реестр отечественного ПО и полностью соответствует требованиям, предъявляемым к российскому программному обеспечению.",
     button: "Посмотреть",
-    icon: "./icons/check-square.svg",
+    icon: "/icons/check-square.svg",
     link: "https://reestr.digital.gov.ru/reestr/685429/",
     variant: "blue",
   },
@@ -26,17 +26,16 @@ const cards: Card[] = [
     description:
       "Компании ООО «Сфера» и ООО «Экострой», входящие в состав ГК «Единая среда», более 15 лет успешно выполняют государственные и коммерческие контракты, доказывая свою надёжность и высокое качество работ.",
     button: "Подробнее о проектах",
-    icon: "./icons/gov.svg",
+    icon: "/icons/gov.svg",
     link: "https://www.tbank.ru/business/contractor/legal/1106195006378/contracts/1/", 
     variant: "light",
   },
   {
     title: "Резидент Сколково и участник АСИ",
     description:
-      "Статус резидента «Сколково» и участие в инициативах АСИ подтверждают инновационный подход компании и соответствие высоким стандартам развития цифровых решений.
-",
+      "Статус резидента «Сколково» и участие в инициативах АСИ подтверждают инновационный подход компании и соответствие высоким стандартам развития цифровых решений.",
     button: "Узнать подробнее",
-    icon: "./icons/skolkovo1.svg",
+    icon: "/icons/skolkovo1.svg",
     link: "https://ytevoelicxcecwpetcqj.supabase.co/storage/v1/object/public/docs/Vipiska_iz_reestra_udach_uchastnikov_proekta_Skolkovo_SFERA.pdf", 
     variant: "light",
   },
