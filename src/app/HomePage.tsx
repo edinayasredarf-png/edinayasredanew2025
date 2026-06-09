@@ -15,7 +15,6 @@ import HomeCases from '../components/HomeCases';
 import SupportersSection from '../components/SupportersSection';
 import TerritoryControlSection from '../components/TerritoryControlSection';
 import SplitStyleCards from '../components/SplitStyleCards';
-import CompanyBadgesProps from '../components/CompanyBadgesProps';
 import BenefitsSection from "@/components/BenefitsSection";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -136,7 +135,7 @@ export default function HomePage() {
 			<TrustSection/>
 			<ResourcesAndContactSection/>
 			<HomeCases/>
-			<CompanyBadgesProps />
+	
 
 
 

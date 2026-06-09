@@ -27,9 +27,9 @@ export function CasesFilterBar({
     selectedApplication !== applications[0];
 
   return (
-    <section className="sticky top-0 z-30 py-4 font-[Raleway] font-medium lining-nums">
+    <section className="sticky top-0 z-30 py-4 font-involve font-medium lining-nums">
       <div className="case-page-column">
-        <div className="bg-white/90 backdrop-blur-md border border-[var(--rd-border,#e4e7ec)] rounded-2xl px-4 py-4 md:px-6 md:py-5 shadow-[var(--rd-shadow-card)]">
+        <div className="bg-white/90 border border-[var(--rd-border,#e4e7ec)] rounded-2xl px-4 py-4 md:px-6 md:py-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-3 min-w-0 flex-1">
               {hasIndustry && (
@@ -46,20 +46,6 @@ export function CasesFilterBar({
                 value={selectedApplication}
                 onChange={onApplicationChange}
               />
-            </div>
-            <div className="flex items-center justify-between gap-4 lg:flex-col lg:items-end lg:shrink-0">
-              <p className="text-sm text-[var(--rd-muted,#667085)] whitespace-nowrap">
-                Найдено: <span className="font-medium text-[var(--rd-ink,#101828)]">{resultCount}</span>
-              </p>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={onReset}
-                  className="text-sm font-medium text-[#029cda] hover:text-[#0288bd] transition-colors whitespace-nowrap"
-                >
-                  Сбросить фильтры
-                </button>
-              )}
             </div>
           </div>
         </div>

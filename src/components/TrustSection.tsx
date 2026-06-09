@@ -26,7 +26,7 @@ const cards: Card[] = [
     description:
       "Компании ООО «Сфера» и ООО «Экострой», входящие в состав ГК «Единая среда», более 15 лет успешно выполняют государственные и коммерческие контракты, доказывая свою надёжность и высокое качество работ.",
     button: "Подробнее о проектах",
-    icon: "/icons/gov.svg",
+    icon: "/icons/gov2.svg",
     link: "https://www.tbank.ru/business/contractor/legal/1106195006378/contracts/1/",
     variant: "light",
   },
