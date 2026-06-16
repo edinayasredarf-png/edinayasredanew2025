@@ -6,6 +6,14 @@ body {
   color: #2c2d2e;
 }
 
+.font-raleway {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+}
+
+.font-inter {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+}
+
 h1,
 h2,
 h3,
