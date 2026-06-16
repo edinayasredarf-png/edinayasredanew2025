@@ -12,7 +12,7 @@ const GreenDataSection: React.FC = () => {
   ];
 
   return (
-    <section className="max-w-[1480px] mx-auto px-4 py-12">
+    <section className="max-w-[1200px] mx-auto px-4 py-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
         {/* TOP BLOCK — занимает всю ширину */}
         <div className="lg:col-span-3 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">

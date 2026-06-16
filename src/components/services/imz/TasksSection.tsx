@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function TasksSection() {
   return (
-    <section className="max-w-[1480px] mx-auto px-4 py-24">
+    <section className="max-w-[1200px] mx-auto px-4 py-24">
       <h2 className="text-center text-[#313131] text-4xl md:text-[56px] mb-16">
         Какие задачи решает инвентаризация кладбищ
       </h2>

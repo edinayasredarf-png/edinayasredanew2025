@@ -36,7 +36,7 @@ const AdvantagesGridSection: React.FC = () => {
 
   return (
     <section className="py-24 bg-[#f5f7fa]">
-      <div className="w-full max-w-[1480px] mx-auto flex flex-col items-center gap-16 px-4">
+      <div className="w-full max-w-[1200px] mx-auto flex flex-col items-center gap-16 px-4">
         <h2 className="text-center text-[#313131] text-4xl md:text-[64px] font-medium leading-snug md:leading-[70px]">
           {data.title}
         </h2>

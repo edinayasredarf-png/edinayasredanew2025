@@ -14,7 +14,7 @@ export default function InventoryBurialsSeoPage() {
 
   return (
     <Layout>
-      <div className="font-[Raleway] font-medium lining-nums">
+      <div className="font-raleway font-medium lining-nums">
         {/* H1 / Hero */}
         <section className="page-hero rounded-b-[20px] relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">

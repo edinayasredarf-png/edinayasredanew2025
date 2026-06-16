@@ -69,10 +69,10 @@ export default function InventoryBurialsPage() {
 
       {/* SEO */}
       {/* Метаданные страницы */}
-     <div className ="font-[Raleway] font-medium lining-nums">
+     <div className ="font-raleway font-medium lining-nums">
       {/* Hero Section */}
       <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
+        <div className="rd-content-column py-10 md:py-20 relative z-10">
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
             <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
               <h1 className="text-4xl sm:text-5xl md:text-[78px] font-medium leading-tight">

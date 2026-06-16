@@ -21,7 +21,7 @@ export default function AudienceSection() {
   ];
 
   return (
-    <section className="max-w-[1480px] mx-auto px-4 py-24">
+    <section className="max-w-[1200px] mx-auto px-4 py-24">
       <h2 className="text-center text-[#313131] text-4xl md:text-[52px] leading-tight mb-16">
         Для кого подходит система инвентаризации мест захоронений
       </h2>

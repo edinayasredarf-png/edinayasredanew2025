@@ -9,7 +9,7 @@ export default function ProcessSection({ onConsult }: any) {
   ];
 
   return (
-    <section className="max-w-[880px] mx-auto px-4 py-24">
+    <section className="max-w-[1200px] mx-auto px-4 py-24">
       <h2 className="text-center text-[#313131] text-4xl md:text-[52px] mb-16">
         Как проводится инвентаризация кладбищ
       </h2>

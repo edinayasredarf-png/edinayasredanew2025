@@ -2,7 +2,7 @@
 
 export default function ResultsSection({ onConsult }: any) {
   return (
-    <section className="max-w-[880px] mx-auto px-4 py-24">
+    <section className="max-w-[1200px] mx-auto px-4 py-24">
       <h2 className="text-center text-[#313131] text-4xl md:text-[52px] font-medium leading-tight mb-16">
         Результат для муниципалитета и граждан
       </h2>
