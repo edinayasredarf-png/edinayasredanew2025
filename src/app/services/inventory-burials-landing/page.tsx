@@ -19,7 +19,7 @@ export default function InventoryBurialsLandingPage() {
         <section className="page-hero rounded-b-[20px]">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-10 items-center">
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-medium leading-tight">
+              <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
                 Инвентаризация кладбищ и мест захоронений «под ключ»
               </h1>
               <p className="mt-5 text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl">

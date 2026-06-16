@@ -1,13 +1,15 @@
-/* Глобальная типографика: Involve — заголовки, Inter — текст */
+/* Глобальная типографика: Involve — заголовки, Raleway — текст */
 
 body {
-  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-family: var(--font-geist-sans), 'Raleway', system-ui, sans-serif;
   font-weight: 400;
+  font-variant-numeric: lining-nums;
   color: #2c2d2e;
 }
 
 .font-raleway {
-  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-family: var(--font-geist-sans), 'Raleway', system-ui, sans-serif;
+  font-variant-numeric: lining-nums;
 }
 
 .font-inter {
@@ -52,4 +54,5 @@ textarea,
 select,
 button {
   font-family: inherit;
+  font-variant-numeric: lining-nums;
 }

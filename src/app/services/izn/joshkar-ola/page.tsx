@@ -31,10 +31,10 @@ export default function GreenInventoryPage() {
         <div className="rd-content-column py-10 md:py-20 relative z-10">
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
             <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-              <h1 className="text-4xl sm:text-5xl md:text-[68px] font-medium leading-tight">
+              <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
                 Инвентаризация<br />зеленых насаждений <br /> <span className="text-[#029cda]">в Йошкар-Оле</span>
               </h1>
-              <p className="mt-8 text-xl sm:text-[20px] text-gray-300 max-w-2xl">
+              <p className="mt-8 text-lg md:text-[22.7px] leading-[1.37] text-gray-300 max-w-2xl font-raleway">
 							Выполняем инвентаризация зеленых насаждений с созданием цифрового реестра территории. Проводим профессиональную инвентаризацию деревьев и кустарников с геопривязкой, фотофиксацией и подготовкой всей необходимой документации. </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <button

@@ -19,7 +19,7 @@ export default function InventoryBurialsSeoPage() {
         <section className="page-hero rounded-b-[20px] relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
             <div className="max-w-4xl">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-medium leading-tight">
+              <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
                 Инвентаризация и оцифровка мест захоронений и кладбищ
               </h1>
               <p className="mt-6 text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl">
