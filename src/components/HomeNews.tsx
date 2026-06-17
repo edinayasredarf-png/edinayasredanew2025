@@ -52,7 +52,7 @@ export default function HomeNews() {
   if (!items.length) return null;
 
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-raleway lining-nums">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] lining-nums">
       <div className="rd-content-column">
         <div className="mb-8 md:mb-10">
           <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2]">

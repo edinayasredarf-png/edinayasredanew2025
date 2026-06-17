@@ -36,7 +36,7 @@ const SectionInterfaceByFigma: React.FC = () => {
   }, []);
 
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-raleway">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
       <div className="rd-content-column">
         {/* Header */}
         <div className="w-full grid grid-cols-1 md:grid-cols-[1fr_1fr] md:items-start md:gap-[60px] lg:gap-[80px]">

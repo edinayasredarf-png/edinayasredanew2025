@@ -27,7 +27,7 @@ export default function HomePosts() {
   if (!posts.length) return null;
 
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-raleway lining-nums">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] lining-nums">
       <div className="rd-content-column">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 lg:mb-12">
           <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] mb-0">

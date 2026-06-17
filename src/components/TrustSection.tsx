@@ -87,7 +87,7 @@ export default function TrustSection() {
                       {card.title}
                     </h3>
 
-										<p className="mt-3.5  font-raleway font-medium text-[18px] opacity-60 leading-7">
+										<p className="mt-3.5  font-[Raleway] text-[15px] leading-7">
                       {card.description}
                     </p>
                   </div>

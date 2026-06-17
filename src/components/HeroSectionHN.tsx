@@ -283,11 +283,11 @@ const HeroSection: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
         <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
           <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-            <h1 className="text-4xl sm:text-5xl md:text-[72px] font-raleway font-medium leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-[72px] font-[Raleway] font-medium leading-tight">
               Цифровое управление<br />территориями
             </h1>
 
-            <p className="mt-8 text-xl sm:text-[27px] text-[#E3E8F2] max-w-2xl font-raleway font-medium">
+            <p className="mt-8 text-xl sm:text-[27px] text-[#E3E8F2] max-w-2xl font-[Raleway] font-medium">
               Платформа для эффективного учёта, управления и мониторинга территорий и объектов в организациях любого типа и масштаба
             </p>
 

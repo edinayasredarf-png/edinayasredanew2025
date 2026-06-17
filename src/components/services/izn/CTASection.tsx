@@ -17,7 +17,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onButtonClick }) => {
 
   return (
     <section className="max-w-[1200px] mx-auto px-4 py-24">
-      <div className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
+      <div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Текст слева */}
         <div className="lg:w-1/2 flex flex-col justify-center p-6">
           <h2
@@ -40,7 +40,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onButtonClick }) => {
         </div>
 
         {/* Изображение справа */}
-        <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-6">
+        <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
           <Image
             src={data.imageSrc}
             alt={data.imageAlt}

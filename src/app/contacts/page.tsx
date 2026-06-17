@@ -26,7 +26,7 @@ export default function ContactsPage() {
   return (
     <Layout>
       {/* Hero Section */}
-			<div className='font-raleway font-medium lining-nums'>
+			<div className='font-[Raleway] font-medium lining-nums'>
       <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">

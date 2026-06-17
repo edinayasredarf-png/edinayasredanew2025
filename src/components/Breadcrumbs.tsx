@@ -121,7 +121,7 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
       />
 
       {/* Визуальные хлебные крошки */}
-      <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper font-raleway">
+      <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper font-[Raleway]">
         <div className="max-w-[1480px] mx-auto px-3 sm:px-3 md:px-4 font-medium">
           <ol className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ">
             {items.map((item, index) => {

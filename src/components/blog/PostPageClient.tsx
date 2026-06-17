@@ -134,7 +134,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
         <TopBar />
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-4 pt-4 sm:pt-6 pb-8 sm:pb-16 font-raleway font-medium lining-nums">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-4 pt-4 sm:pt-6 pb-8 sm:pb-16 font-[Raleway] font-medium lining-nums">
           <div className="flex flex-col xl:flex-row gap-2 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
             <main className="flex-1 flex justify-center">
@@ -201,7 +201,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
       <TopBar />
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-4 pt-4 sm:pt-6 pb-8 sm:pb-16 font-raleway font-medium lining-nums">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-4 pt-4 sm:pt-6 pb-8 sm:pb-16 font-[Raleway] font-medium lining-nums">
         <div className="flex flex-col xl:flex-row gap-2 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 flex justify-center">
@@ -211,7 +211,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
               <section>
 							<h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{post.title}</h1>
 							{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
-                <article className="prose prose-lg max-w-none mx-auto text-[#313131] font-raleway font-medium article-content" dir="ltr">
+                <article className="prose prose-lg max-w-none mx-auto text-[#313131] font-[Raleway] font-medium article-content" dir="ltr">
                   <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
 
                 </article>

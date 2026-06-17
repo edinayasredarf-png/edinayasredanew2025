@@ -45,7 +45,7 @@ export default function Toolbar({ onCmd, onInsertHtml, onPickImage, onPickVideo,
   };
 
   return (
-    <div className="w-full bg-white  rounded-2xl p-1 flex items-center flex-wrap gap-1 font-raleway">
+    <div className="w-full bg-white  rounded-2xl p-1 flex items-center flex-wrap gap-1 font-[Raleway]">
       <div className="flex items-center rounded-xl bg-gray-50 px-1">
         <Btn title="Жирный" onClick={run('bold')}><b>B</b></Btn>
         <Btn title="Курсив" onClick={run('italic')}><i>I</i></Btn>

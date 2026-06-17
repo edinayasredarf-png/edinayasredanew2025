@@ -137,7 +137,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
         <div className="min-h-[50vh] flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4" />
-            <p className="text-[#667085] font-inter">Загрузка кейса…</p>
+            <p className="text-[#667085] font-[Inter]">Загрузка кейса…</p>
           </div>
         </div>
       </Layout>
@@ -174,7 +174,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
           <div className="case-page-column pt-8 md:pt-[30px]">
             <Link
               href="/cases"
-              className="inline-flex items-center gap-2 text-sm text-[#6d7885] hover:text-[#202020] mb-6 font-inter"
+              className="inline-flex items-center gap-2 text-sm text-[#6d7885] hover:text-[#202020] mb-6 font-[Inter]"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -187,7 +187,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
             </h1>
 
             {caseData.subtitle && (
-              <p className="mt-4 md:mt-6 text-[17px] leading-7 text-[#2c2d2e] font-inter max-w-3xl">
+              <p className="mt-4 md:mt-6 text-[17px] leading-7 text-[#2c2d2e] font-[Inter] max-w-3xl">
                 {caseData.subtitle}
               </p>
             )}
@@ -197,14 +197,14 @@ export default function CasePageClient({ slug }: { slug?: string }) {
                 <Link
                   key={tag.label}
                   href={tag.href}
-                  className="inline-flex px-3 py-1.5 rounded-lg bg-[#e1e3e6] text-sm font-medium text-[#6d7885] font-inter hover:bg-[#d5d8dc] transition-colors"
+                  className="inline-flex px-3 py-1.5 rounded-lg bg-[#e1e3e6] text-sm font-medium text-[#6d7885] font-[Inter] hover:bg-[#d5d8dc] transition-colors"
                 >
                   {tag.label}
                 </Link>
               ))}
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-4 md:gap-8 text-[#2c2d2e] font-inter text-sm md:text-[15px]">
+            <div className="mt-5 flex flex-wrap items-center gap-4 md:gap-8 text-[#2c2d2e] font-[Inter] text-sm md:text-[15px]">
               <span className="inline-flex items-center gap-2">
                 <CalendarIcon />
                 {formatCaseDate(caseData.createdAt)}
@@ -264,7 +264,7 @@ export default function CasePageClient({ slug }: { slug?: string }) {
                   <button
                     type="button"
                     onClick={openRequest}
-                    className="mt-6 inline-flex h-9 items-center justify-center px-5 rounded-lg bg-[#029cda] text-white text-sm font-medium font-inter hover:bg-[#0288bd] transition-colors"
+                    className="mt-6 inline-flex h-9 items-center justify-center px-5 rounded-lg bg-[#029cda] text-white text-sm font-medium font-[Inter] hover:bg-[#0288bd] transition-colors"
                   >
                     Получить консультацию
                   </button>

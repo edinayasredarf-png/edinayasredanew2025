@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function ConsultationCTA({ onKP }: any) {
   return (
     <section className="max-w-[1200px] mx-auto px-4 py-24">
-      <div className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
+      <div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
         <div className="lg:w-1/2 flex flex-col justify-center p-6">
           <h2 className="text-[#313131] text-3xl md:text-[28px] font-medium leading-snug mb-6">
             Оставьте запрос на <br /> консультацию с индивидуальным расчетом
@@ -17,7 +17,7 @@ export default function ConsultationCTA({ onKP }: any) {
           </button>
         </div>
 
-        <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-6">
+        <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
           <Image src="/img/imz_cta.png" alt="" width={320} height={320} />
         </div>
       </div>

@@ -1,6 +1,5 @@
 'use client';
 
-
 import React from 'react';
 import { useModal } from './ModalProvider';
 
@@ -57,7 +56,7 @@ export default function BenefitsSection({
 					</header>
 				)}
 
-				<div className="grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-2.5">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-2.5">
 					{ITEMS.map((item, idx) => (
 						<article
 							key={item.title}
@@ -65,10 +64,10 @@ export default function BenefitsSection({
 								idx < 3 ? 'opacity-80' : ''
 							}`}
 						>
-							<h3 className="font-involve font-semibold leading-6 text-[#313131]">
+							<h3 className="text-base font-semibold leading-6 text-[#313131] font-[Raleway]">
 								{item.title}
 							</h3>
-							<p className="mt-2.5 font-raleway text-[15px] leading-6 text-[#7c8a9a]">
+							<p className="mt-2.5 text-[15px] leading-6 text-[#7c8a9a] font-[Raleway]">
 								{item.desc}
 							</p>
 						</article>
@@ -79,7 +78,7 @@ export default function BenefitsSection({
 					<button
 						type="button"
 						onClick={onRegisterClick ?? openRegister}
-						className="w-full sm:w-auto sm:min-w-[280px] lg:w-[394px] inline-flex items-center justify-center px-5 py-3.5 rounded-lg bg-[#029cda] hover:bg-[#0288bd] transition-colors text-white text-lg md:text-xl font-medium leading-7 font-raleway"
+						className="w-full sm:w-auto sm:min-w-[280px] lg:w-[394px] inline-flex items-center justify-center px-5 py-3.5 rounded-lg bg-[#029cda] hover:bg-[#0288bd] transition-colors text-white text-lg md:text-xl font-medium leading-7 font-[Raleway]"
 					>
 						{ctaText}
 					</button>

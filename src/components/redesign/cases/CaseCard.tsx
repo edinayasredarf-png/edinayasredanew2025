@@ -30,7 +30,7 @@ export function CaseCard({ item, size = 'default' }: { item: CaseCardItem; size?
   return (
     <Link
       href={item.href}
-      className={`group block font-inter ${isFeatured ? 'md:col-span-2' : ''}`}
+      className={`group block font-[Inter] ${isFeatured ? 'md:col-span-2' : ''}`}
     >
       <article className="relative flex flex-col w-full">
         <div className="relative w-full aspect-[341/471] rounded-2xl overflow-hidden bg-neutral-100">

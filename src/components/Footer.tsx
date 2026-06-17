@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <footer className="border-t border-black/5 bg-white font-raleway">
+    <footer className="border-t border-black/5 bg-white font-[Raleway]">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
 
         {/* Logo */}

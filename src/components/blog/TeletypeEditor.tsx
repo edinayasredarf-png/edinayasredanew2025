@@ -295,7 +295,7 @@ export default function TeletypeEditor({ initialHtml = '', onChange, className =
   return (
     <div className={`teletype-editor ${className}`}>
       {/* Минималистичная панель инструментов */}
-      <div className="teletype-toolba font-raleway">
+      <div className="teletype-toolba font-[Raleway]">
         <div className="teletype-toolbar-left">
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}

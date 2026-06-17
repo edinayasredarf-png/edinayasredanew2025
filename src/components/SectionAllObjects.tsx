@@ -51,7 +51,7 @@ const ObjectCard: React.FC<ObjectCardProps> = ({ icon, label, index, totalItems 
       </div>
 
       {/* Текст */}
-      <p className="md:text-lg lg:text-xl  font-involve font-medium text-[#313131] leading-7">
+      <p className="md:text-lg lg:text-xl  font-[Raleway] font-medium text-[#313131] leading-7">
         {label}
       </p>
     </div>

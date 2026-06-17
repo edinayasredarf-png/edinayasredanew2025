@@ -36,7 +36,7 @@ const Card: React.FC<BadgeItem> = ({ title, iconSrc, iconAlt }) => (
         />
       </div>
       <div className="absolute left-1/2 -translate-x-1/2 bottom-[18px] p-4 w-[90%] max-w-[400px]">
-        <h4 className="text-center text-[#7c8a9a] text-[20px] sm:text-[22px] md:text-[26px] font-medium font-raleway leading-8 line-clamp-2">
+        <h4 className="text-center text-[#7c8a9a] text-[20px] sm:text-[22px] md:text-[26px] font-medium font-[Raleway] leading-8 line-clamp-2">
           {title}
         </h4>
       </div>
@@ -50,7 +50,7 @@ const CompanyBadges: React.FC<CompanyBadgesProps> = ({
   ctaHref = '/about',
 }) => {
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-raleway" aria-label="Факты о компании">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]" aria-label="Факты о компании">
       <div className="rd-content-column">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-2.5 items-stretch">
           <Card {...items[0]} />

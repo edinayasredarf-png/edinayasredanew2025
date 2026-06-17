@@ -101,7 +101,7 @@ export default function TerritoryControlSection({
                   {card.title}
                 </h3>
 
-                <p className="mt-3.5 text-[#7C8A9A] font-raleway text-[18px] leading-7">
+                <p className="mt-3.5 text-[#7C8A9A] font-[Raleway] text-[15px] leading-7">
                   {card.text}
                 </p>
               </div>

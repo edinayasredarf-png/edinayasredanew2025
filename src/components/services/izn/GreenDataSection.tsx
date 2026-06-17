@@ -15,8 +15,8 @@ const GreenDataSection: React.FC = () => {
     <section className="max-w-[1200px] mx-auto px-4 py-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
         {/* TOP BLOCK — занимает всю ширину */}
-        <div className="lg:col-span-3 bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
-          <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-2">
+        <div className="lg:col-span-3 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
+          <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
             <Image
               src="/img/services/izn/1.png"
               alt="Актуальные данные об инвентаризации"
@@ -24,7 +24,7 @@ const GreenDataSection: React.FC = () => {
               height={180}
             />
           </div>
-          <div className="lg:w-1/2 bg-[#F6F7F9] rounded-3xl p-4 flex flex-col justify-center">
+          <div className="lg:w-1/2 bg-white rounded-3xl p-4 flex flex-col justify-center">
             <h3 className="text-2xl text-[#313131] py-4 mb-4">
               Актуальные данные о зеленом фонде необходимы для:
             </h3>
@@ -55,7 +55,7 @@ const GreenDataSection: React.FC = () => {
         </div>
 
         {/* BOTTOM LEFT — маленький блок */}
-        <div className="bg-[#F6F7F9] rounded-3xl p-6 flex flex-col justify-center">
+        <div className="bg-white rounded-3xl p-6 flex flex-col justify-center">
           <h3 className="text-2xl text-[#313131] mb-4">
             Без системного учета невозможно принимать обоснованные управленческие решения
           </h3>
@@ -65,7 +65,7 @@ const GreenDataSection: React.FC = () => {
         </div>
 
         {/* BOTTOM RIGHT — большой блок */}
-        <div className="lg:col-span-2 bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
+        <div className="lg:col-span-2 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
           <div className="lg:w-1/2 flex flex-col justify-center px-4 py-4">
             <h3 className="text-2xl text-[#313131] mb-4">
               В отличие от традиционного подхода, мы создаем не просто отчет
@@ -74,7 +74,7 @@ const GreenDataSection: React.FC = () => {
               А цифровую модель зеленых насаждений, готовую к дальнейшему использованию и обновлению.
             </p>
           </div>
-          <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-2">
+          <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
             <Image
               src="/img/services/izn/2.png"
               alt="Не просто отчет зеленого реестра"

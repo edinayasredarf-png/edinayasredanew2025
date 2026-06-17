@@ -92,11 +92,11 @@ export default function HomeCases() {
                 </div>
 
                 <div className="mt-6 max-w-[385px] flex flex-col flex-grow">
-                  <p className="text-[#222222] text-lg font-normal leading-[25.92px]">
+                  <p className="text-[#222222] text-lg font-normal font-sans leading-[25.92px]">
                     {item.title}
                   </p>
 
-                  <span className="mt-3 text-[#029cda] text-lg font-normal leading-[25.92px] group-hover:underline">
+                  <span className="mt-3 text-[#029cda] text-lg font-normal font-sans leading-[25.92px] group-hover:underline">
                     Подробнее
                   </span>
                 </div>

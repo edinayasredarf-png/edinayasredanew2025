@@ -13,7 +13,7 @@ const ButtonLike: React.FC<
   }
 > = (props) => {
   const base =
-    'inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-raleway ' +
+    'inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] ' +
     'hover:ring-1 hover:ring-[#029cda] transition-colors ' +
     'w-full md:w-[201.5px]'; // на мобильных — 100% ширины
 
@@ -76,10 +76,10 @@ const QuickStartCard: React.FC<CardProps> = ({
       <div className="rd-block rounded-2xl w-full h-full overflow-hidden p-8 min-h-[180px] md:min-h-[260px] md:grid md:grid-cols-[3fr_2fr] md:gap-6">
         {/* Левая колонка: заголовок + описание + кнопка (≈ 60%) */}
         <div className="min-h-0 min-w-0 flex flex-col">
-          <h3 className="text-[#313131] text-[26px] md:text-[34.7px] font-medium font-raleway leading-[1.25] md:leading-[45px] max-w-[520px] mb-3">
+          <h3 className="text-[#313131] text-[26px] md:text-[34.7px] font-medium font-[Raleway] leading-[1.25] md:leading-[45px] max-w-[520px] mb-3">
             {title}
           </h3>
-          <p className="text-[#7c8a9a] text-[16.5px] md:text-[18.9px] font-medium font-raleway leading-7 max-w-[560px]">
+          <p className="text-[#7c8a9a] text-[16.5px] md:text-[18.9px] font-medium font-[Raleway] leading-7 max-w-[560px]">
             {description}
           </p>
 
@@ -97,7 +97,7 @@ const QuickStartCard: React.FC<CardProps> = ({
           {/* Кнопка — прижимается к низу текста на десктопе */}
           <div className="mt-auto pt-6 md:pt-8">
             {href ? (
-              <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-raleway hover:ring-1 hover:ring-[#029cda] transition-colors w-full md:w-[201.5px]">
+              <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] hover:ring-1 hover:ring-[#029cda] transition-colors w-full md:w-[201.5px]">
                 {buttonLabel}
               </span>
             ) : (
@@ -147,7 +147,7 @@ const SectionQuickStart: React.FC = () => {
   ];
 
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-raleway">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
       <div className="rd-content-column">
         <h2 className="text-center font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] mb-10 md:mb-12">
           Быстрый старт

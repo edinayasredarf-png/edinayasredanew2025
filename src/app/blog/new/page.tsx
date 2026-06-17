@@ -466,7 +466,7 @@ export default function NewPostPage() {
 
   if (!authed) {
     return (
-      <div className="bg-[#f2f3f7] min-h-screen font-raleway">
+      <div className="bg-[#f2f3f7] min-h-screen font-[Raleway]">
         <div className="max-w-[640px] mx-auto px-4 md:px-8 py-8 md:py-16">
           <div className="bg-white rounded-2xl p-6 border">
             <h1 className="text-2xl font-semibold mb-4 text-[#313131]">Авторизация редактора</h1>

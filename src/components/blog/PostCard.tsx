@@ -19,7 +19,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
   const kindBadge = getKindBadge(p.kind);
 
   return (
-    <article className="w-full max-w-[472px] bg-white rounded-3xl p-4 font-raleway font-medium lining-nums ">
+    <article className="w-full max-w-[472px] bg-white rounded-3xl p-4 font-[Raleway] font-medium lining-nums ">
       <Link href={`/blog/${p.slug}`} className="block">
         <div className="w-full aspect-[16/9] bg-[#f2f3f7] rounded-2xl overflow-hidden relative">
           <Image src={p.cover || 'https://placehold.co/340x192'} alt={p.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 472px" />

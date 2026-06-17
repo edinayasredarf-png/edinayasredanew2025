@@ -91,7 +91,7 @@ export default function ForestManagementPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-white font-raleway font-medium lining-nums">
+      <div className="min-h-screen bg-[#F6F7F9] font-raleway font-medium lining-nums">
         {/* Hero Section */}
         <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
         <div className="rd-content-column py-10 md:py-20 relative z-10">
@@ -144,7 +144,7 @@ export default function ForestManagementPage() {
       </section>
 
 
-			<section className="py-24 bg-white">
+			<section className="py-24 bg-[#f5f7fa]">
   <div className="max-w-[1480px] mx-auto px-4">
 
     {/* Заголовок */}
@@ -156,7 +156,7 @@ export default function ForestManagementPage() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
 
       {/* ЛЕВАЯ БОЛЬШАЯ */}
-      <div className="bg-[#F6F7F9] rounded-3xl p-9 flex flex-col justify-between min-h-[420px]">
+      <div className="bg-white rounded-3xl p-9 flex flex-col justify-between min-h-[420px]">
         <h3 className="text-[#313131] text-2xl md:text-[26px] leading-snug">
 				Что такое лесоустройство
         </h3>
@@ -168,8 +168,8 @@ export default function ForestManagementPage() {
       </div>
 
       {/* ЦЕНТР — ИЗОБРАЖЕНИЕ */}
-      <div className="bg-[#F6F7F9] rounded-3xl p-2 flex items-center">
-        <div className="w-full h-full min-h-[420px] bg-white rounded-2xl flex items-center justify-center">
+      <div className="bg-white rounded-3xl p-2 flex items-center">
+        <div className="w-full h-full min-h-[420px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center">
           <Image
             src="/img/services/izn/7.png"
             alt="Цифровая система"
@@ -184,7 +184,7 @@ export default function ForestManagementPage() {
       <div className="flex flex-col gap-2">
 
         {/* ВЫ ПОЛУЧАЕТЕ */}
-        <div className="bg-[#F6F7F9] rounded-3xl p-9">
+        <div className="bg-white rounded-3xl p-9">
           <h3 className="text-[#313131] text-2xl mb-4">
 					Результаты лесоустройства становятся основой для:
           </h3>
@@ -221,7 +221,7 @@ export default function ForestManagementPage() {
         </div>
 
         {/* НИЖНИЙ БЛОК */}
-        <div className="bg-[#F6F7F9] rounded-3xl px-9 py-6">
+        <div className="bg-white rounded-3xl px-9 py-6">
           <p className="text-[#7c8a9a] text-lg leading-relaxed">
 					Грамотно проведённое лесоустройство помогает не только сохранить природный потенциал, но и использовать его максимально рационально.
           </p>
@@ -233,31 +233,31 @@ export default function ForestManagementPage() {
 </section>
 
 
-<section className="py-24 bg-white">
+<section className="py-24 bg-[#f5f7fa]">
   <div className="max-w-[1480px] mx-auto px-4">
 
     {/* Заголовок */}
     <h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
-		Кому необходимо лесоустройство
+		Кому необходима лесоустройство
     </h2>
 
     {/* Верхний ряд — 3 карточки */}
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
-      <div className="bg-[#F6F7F9] rounded-3xl p-6">
+      <div className="bg-white rounded-3xl p-6">
         <h3 className="text-[#313131] text-2xl font-medium mb-4">Муниципалитетам</h3>
         <p className="text-[#7c8a9a] text-lg leading-6">
 				Для контроля состояния лесного фонда и повышения прозрачности управления.
         </p>
       </div>
 
-      <div className="bg-[#F6F7F9] rounded-3xl p-6">
+      <div className="bg-white rounded-3xl p-6">
         <h3 className="text-[#313131] text-2xl font-medium mb-4">Региональным органам власти</h3>
         <p className="text-[#7c8a9a] text-lg leading-6">
 				При развитии территорий и реализации природоохранных программ.
         </p>
       </div>
 
-      <div className="bg-[#F6F7F9] rounded-3xl p-6">
+      <div className="bg-white rounded-3xl p-6">
         <h3 className="text-[#313131] text-2xl font-medium mb-4">Лесничества</h3>
         <p className="text-[#7c8a9a] text-lg leading-6">
 				И профильные учреждения, для актуализации данных и планирования работ
@@ -269,7 +269,7 @@ export default function ForestManagementPage() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-12">
 
       {/* Левая карточка */}
-      <div className="bg-[#F6F7F9] rounded-3xl p-6">
+      <div className="bg-white rounded-3xl p-6">
         <h3 className="text-[#313131] text-2xl font-medium mb-4">Арендаторам лесных участков</h3>
         <p className="text-[#7c8a9a] text-lg leading-6">
 				Для законного и эффективного использования ресурсов
@@ -277,7 +277,7 @@ export default function ForestManagementPage() {
       </div>
 
       {/* Правая большая карточка (занимает 2 колонки) */}
-			<div className="lg:col-span-2 bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
+			<div className="lg:col-span-2 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
 			<div className="lg:w-1/2 flex flex-col p-4">
 
         <h3 className="text-2xl text-[#313131] mb-4">
@@ -287,7 +287,7 @@ export default function ForestManagementPage() {
 				При подготовке проектов освоения территорий.
         </p>
       </div>
-      <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-2">
+      <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
         <Image
           src="/img/services/izn/3.png"
           alt="Система нужна всем"
@@ -313,7 +313,7 @@ export default function ForestManagementPage() {
 </section>
 
 
-<section className="bg-white py-24" >
+<section className="bg-[#f5f7fa] py-24" >
 					<div className="max-w-[1480px] mx-auto px-4">
 
 						<h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
@@ -383,10 +383,10 @@ export default function ForestManagementPage() {
 						].map((item, i) => (
 							<div
 								key={i}
-								className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 transition "
+								className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 transition "
 							>
 								{/* IMAGE */}
-								<div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-8 min-h-[260px]">
+								<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-8 min-h-[260px]">
 									<Image
 										src={item.image}
 										alt={item.title}
@@ -473,11 +473,11 @@ export default function ForestManagementPage() {
 	].map((card, i) => (
 		<div
 			key={i}
-			className="bg-[#F6F7F9] rounded-3xl flex flex-col overflow-hidden "
+			className="bg-white rounded-3xl flex flex-col overflow-hidden "
 		>
 			{/* IMAGE */}
 			<div className="p-2">
-				<div className="bg-white rounded-2xl flex items-center justify-center h-[260px]">
+				<div className="bg-[#f6f7f9] rounded-2xl flex items-center justify-center h-[260px]">
 					<Image
 						src={card.image}
 						alt={card.title}
@@ -526,7 +526,7 @@ export default function ForestManagementPage() {
 
 	{/* Консультация */}
 	<section className="max-w-[980px] mx-auto px-4 py-24">
-					<div className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
+					<div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
 
 						{/* Текст слева */}
 						<div className="lg:w-1/2 flex flex-col justify-center p-6">
@@ -551,7 +551,7 @@ export default function ForestManagementPage() {
 						</div>
 
 						{/* Изображение справа */}
-						<div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-6">
+						<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
 							<Image
 								src="/img/imz_cta.png"
 								alt="Получить консультацию по инвентаризации и оцифровке мест"

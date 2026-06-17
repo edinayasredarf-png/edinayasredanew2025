@@ -19,7 +19,7 @@ const HeroSection: React.FC = () => {
 							территориями
 						</h1>
 
-						<p className="mt-6 md:mt-8 text-[#313131]/70 text-lg md:text-[22.7px] leading-[1.37] max-w-[662px] font-inter">
+						<p className="mt-6 md:mt-8 text-[#313131]/70 text-lg md:text-[22.7px] leading-[1.37] max-w-[662px] font-[Inter]">
 							Платформа для эффективного учёта, управления и мониторинга территорий и объектов в
 							организациях любого типа и масштаба
 						</p>
@@ -28,14 +28,14 @@ const HeroSection: React.FC = () => {
 							<button
 								type="button"
 								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center h-[54px] min-w-[200px] sm:min-w-[232px] px-8 rounded-lg bg-[#029cda] text-white text-base md:text-[19px] font-semibold font-inter hover:bg-[#0288bd] transition-colors"
+								className="inline-flex items-center justify-center h-[54px] min-w-[200px] sm:min-w-[232px] px-8 rounded-lg bg-[#029cda] text-white text-base md:text-[19px] font-semibold font-[Inter] hover:bg-[#0288bd] transition-colors"
 							>
 								Оставить заявку
 							</button>
 							<button
 								type="button"
 								onClick={() => openDemo()}
-								className="inline-flex items-center justify-center h-[54px] min-w-[180px] sm:min-w-[188px] px-8 rounded-lg border border-[#029cda] text-[#029cda] text-base md:text-[19px] font-semibold font-inter hover:bg-[#029cda]/5 transition-colors"
+								className="inline-flex items-center justify-center h-[54px] min-w-[180px] sm:min-w-[188px] px-8 rounded-lg border border-[#029cda] text-[#029cda] text-base md:text-[19px] font-semibold font-[Inter] hover:bg-[#029cda]/5 transition-colors"
 							>
 								Демоверсия
 							</button>

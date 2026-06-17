@@ -71,7 +71,7 @@ const StoriesStrip: React.FC = () => {
   return (
     <>
       {/* Бегущая строка сторис */}
-      <div className="font-raleway font-medium bg-black w-full">
+      <div className="font-[Raleway] font-medium bg-black w-full">
         <div className="w-full max-w-[1480px] mx-auto px-2 mb-3">
           <div className="flex gap-3 overflow-x-auto py-2 no-scrollbar">
           {stories.map((story) => {

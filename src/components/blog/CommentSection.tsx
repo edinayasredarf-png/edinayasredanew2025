@@ -58,7 +58,7 @@ function CommentItem({ comment, onReply, onDelete, level }: CommentItemProps) {
 
   return (
     <div className={`${level > 0 ? 'ml-6 border-l-2 border-gray-100 pl-4' : ''}`}>
-      <div className="bg-gray-50 rounded-lg p-4 mb-3 font-raleway">
+      <div className="bg-gray-50 rounded-lg p-4 mb-3 font-[Raleway]">
         <div className="flex items-start gap-3">
           {comment.author_avatar ? (
             <Image

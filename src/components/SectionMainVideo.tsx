@@ -15,7 +15,7 @@ export default function SectionMainVideo({
   const { openRegister } = useModal();
 
   return (
-    <section className={`bg-white w-full py-10 md:py-14 lg:py-16 font-raleway ${className}`}>
+    <section className={`bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] ${className}`}>
       <div className="rd-content-column">
         <div className="relative">
           <div className="mx-auto w-full rounded-2xl border-b-[10px] border-[#029cda] overflow-hidden">

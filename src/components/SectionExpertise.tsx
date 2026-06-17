@@ -20,7 +20,7 @@ const smallCards = [
 ];
 
 const SectionExpertise = () => (
-  <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-raleway lining-nums">
+  <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] lining-nums">
     <div className="rd-content-column">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-2.5">
         <a
