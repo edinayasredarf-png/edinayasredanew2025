@@ -70,7 +70,7 @@ const Row: React.FC<{
         onClick={toggle}
         className="group w-full flex items-center justify-between gap-4 p-5 md:p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]/40 rounded-2xl"
       >
-        <span className="text-[#313131] text-[18px] md:text-[20px] font-medium font-[Raleway] leading-7 lining-nums">
+        <span className="text-[#313131] text-[18px] md:text-[20px] font-medium font-raleway leading-7 lining-nums">
           {title}
         </span>
 
@@ -100,7 +100,7 @@ const Row: React.FC<{
       >
         <div
           ref={contentRef}
-          className={`px-5 md:px-6 pb-5 md:pb-6 text-[#4B5563] text-[16px] md:text-[17px] leading-7 font-[Raleway]
+          className={`px-5 md:px-6 pb-5 md:pb-6 text-[#4B5563] text-[16px] md:text-[17px] leading-7 font-raleway
                       transition-[opacity,transform] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]
                       ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}`}
         >
@@ -135,7 +135,7 @@ const FAQ: React.FC<FAQProps> = ({
   };
 
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-raleway">
       <div className={maxW ?? 'rd-content-column'}>
         <div className="text-center mb-8 md:mb-10">
           <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] lining-nums">

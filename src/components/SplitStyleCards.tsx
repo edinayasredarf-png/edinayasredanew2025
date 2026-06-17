@@ -237,7 +237,7 @@ export default function FeaturesTabsSection() {
                     {current.title}
                   </h3>
 
-									<p className="mt-6 font-[Raleway] font-medium lining-nums text-[#7C8A9A] text-[15px] leading-7">
+									<p className="mt-6 font-raleway font-medium lining-nums text-[#7C8A9A] text-[18px] leading-7">
   {current.description}
 </p>
 

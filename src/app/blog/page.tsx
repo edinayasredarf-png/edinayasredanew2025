@@ -147,7 +147,7 @@ function BlogHomeInner() {
 
   return (
     <BlogLayout>
-      <div className="bg-[#f2f3f7] min-h-screen font-{Raleway}">
+      <div className="bg-[#f2f3f7] min-h-screen font-raleway">
         <TopBar />
 
         {/* Уведомления */}

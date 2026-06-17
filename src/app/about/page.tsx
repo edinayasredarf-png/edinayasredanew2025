@@ -55,7 +55,7 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-[Raleway] font-medium lining-nums">
+    <div className="bg-white min-h-screen flex flex-col font-raleway font-medium lining-nums">
       {/* Белый Header */}
       <header className={`bg-white fixed top-0 left-0 right-0  z-50 w-full transition-all duration-500 ease-out transform ${
         isScrolled

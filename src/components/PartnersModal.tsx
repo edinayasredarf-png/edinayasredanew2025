@@ -43,7 +43,7 @@ const PartnersModal: React.FC<PartnersModalProps> = ({ open, onClose }) => {
   return (
     <>
       <ModalBase open={open} onClose={onClose} ariaLabel="Заявка на сотрудничество">
-        <div className="w-full md:w-[400px] p-4 flex flex-col justify-center relative font-[Raleway]">
+        <div className="w-full md:w-[400px] p-4 flex flex-col justify-center relative font-raleway">
           <div className="flex items-center gap-3 mb-6" style={{ paddingTop: "1rem", paddingLeft: "1rem", paddingRight: "1rem" }}>
             <Image
               src="/icons/logo-mobile-black.svg"
@@ -70,7 +70,7 @@ const PartnersModal: React.FC<PartnersModalProps> = ({ open, onClose }) => {
 
       {showConfirm && (
         <ModalBase open={showConfirm} onClose={handleCancelClose} ariaLabel="Подтверждение закрытия">
-          <div className="p-4 max-w-xs w-full flex flex-col items-center font-[Raleway]">
+          <div className="p-4 max-w-xs w-full flex flex-col items-center font-raleway">
             <div className="text-lg font-medium mb-4 text-black text-center">Вы точно хотите закрыть окно?</div>
             <div className="flex gap-4 mt-2">
               <button

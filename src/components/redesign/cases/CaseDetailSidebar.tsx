@@ -37,7 +37,7 @@ export function CaseDetailSidebar({ toc, onTocClick, onRequest, related }: CaseD
           aria-expanded={needsCollapse ? tocExpanded : undefined}
           disabled={!needsCollapse}
         >
-          <h2 className="text-xl text-[#2c2d2e] font-normal font-[Inter]">Оглавление</h2>
+          <h2 className="text-xl text-[#2c2d2e] font-normal font-inter">Оглавление</h2>
           {needsCollapse && (
             <span
               className={`shrink-0 text-[#7c8a9a] transition-transform duration-200 ${tocExpanded ? 'rotate-180' : ''}`}
@@ -95,7 +95,7 @@ export function CaseDetailSidebar({ toc, onTocClick, onRequest, related }: CaseD
       <button
         type="button"
         onClick={onRequest}
-        className="w-full h-11 rounded-lg bg-[#202020] text-white text-base font-normal font-[Inter] hover:bg-[#333] transition-colors"
+        className="w-full h-11 rounded-lg bg-[#202020] text-white text-base font-normal font-inter hover:bg-[#333] transition-colors"
       >
         Запросить похожее решение
       </button>

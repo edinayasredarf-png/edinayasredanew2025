@@ -34,7 +34,7 @@ export default function SupportersSection({
 					<h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] md:leading-[58px]">
 						{title}
 					</h2>
-					<p className="mt-3 md:mt-4 text-[#7c8a9a] font-[Raleway] text-base md:text-xl leading-7 max-w-[560px]">
+					<p className="mt-3 md:mt-4 text-[#7c8a9a] font-raleway text-base md:text-xl leading-7 max-w-[560px]">
 						{subtitle}
 					</p>
 				</header>

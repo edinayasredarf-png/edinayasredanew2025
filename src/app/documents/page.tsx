@@ -79,7 +79,7 @@ export default function DocumentsPage() {
 
   return (
 
-    <div className="min-h-screen bg-white font-[Raleway] font-medium lining-nums">
+    <div className="min-h-screen bg-white font-raleway font-medium lining-nums">
       <main className="flex flex-col lg:flex-row w-full max-w-none m-0 pt-4 min-h-screen bg-white">
         {/* Sidebar */}
         <aside className="w-full lg:w-80 bg-[#F6F7F9] rounded-2xl  p-6 lg:mr-8 lg:ml-0 lg:rounded-r-2xl flex flex-col min-h-screen mb-6 lg:mb-0">

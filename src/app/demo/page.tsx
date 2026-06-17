@@ -86,7 +86,7 @@ export default function DemoPage() {
 
   return (
     <Layout>
-      <div className="font-[Raleway] font-medium lining-nums">
+      <div className="font-raleway font-medium lining-nums">
         {/* Hero */}
         <section className="page-hero rounded-b-[20px] relative overflow-hidden">
           <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-4 py-10 md:py-16">

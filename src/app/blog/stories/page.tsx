@@ -164,7 +164,7 @@ export default function BlogStoriesPage() {
 
   if (!authed) {
     return (
-      <div className="bg-[#f2f3f7] min-h-screen font-[Raleway]">
+      <div className="bg-[#f2f3f7] min-h-screen font-raleway">
         <div className="max-w-[640px] mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl p-6 border">
             <h1 className="text-2xl font-semibold mb-4 text-[#313131]">Редактор сторис</h1>
@@ -191,7 +191,7 @@ export default function BlogStoriesPage() {
   }
 
   return (
-    <div className="bg-[#f2f3f7] min-h-screen font-[Raleway]">
+    <div className="bg-[#f2f3f7] min-h-screen font-raleway">
       <div className="max-w-[900px] mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#313131] px-4 py-2 text-white hover:bg-[#313131]/90">

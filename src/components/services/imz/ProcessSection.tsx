@@ -16,8 +16,8 @@ export default function ProcessSection({ onConsult }: any) {
 
       <div className="flex flex-col gap-4">
         {steps.map((item, i) => (
-          <div key={i} className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 transition">
-            <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-8 min-h-[260px]">
+          <div key={i} className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 transition">
+            <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-8 min-h-[260px]">
               <Image src={item.image} alt={item.title} width={260} height={260} className="object-contain" />
             </div>
             <div className="lg:w-1/2 flex flex-col justify-center p-6">

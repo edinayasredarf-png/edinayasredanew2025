@@ -170,7 +170,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Информация о профиле */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-[Raleway] font-medium lining-nums">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-raleway font-medium lining-nums">
               <div>
                 <h2 className="text-lg font-semibold text-[#313131] mb-4">Личная информация</h2>
                 {isEditing ? (

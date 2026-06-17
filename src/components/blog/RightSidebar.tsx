@@ -105,7 +105,7 @@ function AdsCarousel({ loading }: { loading?: boolean }) {
   }
 
   return (
-    <div className="rounded-3xl overflow-hidden font-[Raleway]">
+    <div className="rounded-3xl overflow-hidden font-raleway">
       <div
         ref={wrapRef}
         className="relative w-full h-[424px] bg-white select-none overflow-hidden"
@@ -188,7 +188,7 @@ export default function RightSidebar() {
 
   return (
     <aside className="w-[287px] shrink-0 hidden xl:block">
-      <div className="sticky top-[86px] space-y-4 font-[Raleway]">
+      <div className="sticky top-[86px] space-y-4 font-raleway">
         <div className="p-5 bg-white rounded-3xl space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-[#313131]">Новости</h3>
@@ -217,7 +217,7 @@ export default function RightSidebar() {
               ))}
             </Stack>
           ) : (
-            <div className="space-y-4 font-[Raleway] font-medium lining-nums">
+            <div className="space-y-4 font-raleway font-medium lining-nums">
               {news.slice(0, 6).map((n) => (
                 <div key={n.id} className="space-y-1">
                   <div className="text-sm text-[#52555a]">

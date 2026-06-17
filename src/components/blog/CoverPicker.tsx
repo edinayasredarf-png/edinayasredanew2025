@@ -22,7 +22,7 @@ export default function CoverPicker({ value, onChange }: { value?: string; onCha
           <div className="text-sm text-[#52555a] mt-1">PNG/JPG/WebP</div>
         </div>
       )}
-      <div className="absolute bottom-3 right-3 flex gap-2 font-[Raleway]">
+      <div className="absolute bottom-3 right-3 flex gap-2 font-raleway">
         <button onClick={pick} className="px-4 py-2 rounded-xl bg-[#313131] text-white font-medium  hover:bg-[#313131]/90">Выбрать</button>
         <button
           onClick={() => {

@@ -166,7 +166,7 @@ function TestAuthPageInner() {
       <div className="min-h-screen bg-[#F6F7FB] py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h1 className="text-3xl font-bold text-[#313131] mb-2 font-[Raleway]">
+            <h1 className="text-3xl font-bold text-[#313131] mb-2 font-raleway">
               Тестирование авторизации
             </h1>
             <p className="text-[#7c8a9a] mb-8">
@@ -242,7 +242,7 @@ function TestAuthPageInner() {
                 <button
                   onClick={() => handleProviderAuth('yandex')}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#FC3F1D] text-white rounded-xl hover:bg-[#e03616] transition-colors disabled:opacity-50 font-[Raleway] font-medium"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#FC3F1D] text-white rounded-xl hover:bg-[#e03616] transition-colors disabled:opacity-50 font-raleway font-medium"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 16.894c-1.902 1.902-4.992 1.902-6.894 0l-1.789-1.789c-.391-.391-.391-1.023 0-1.414s1.023-.391 1.414 0l1.789 1.789c.781.781 2.047.781 2.828 0l3.789-3.789c.781-.781.781-2.047 0-2.828l-3.789-3.789c-.781-.781-2.047-.781-2.828 0l-1.789 1.789c-.391.391-1.023.391-1.414 0s-.391-1.023 0-1.414l1.789-1.789c1.902-1.902 4.992-1.902 6.894 0l3.789 3.789c1.902 1.902 1.902 4.992 0 6.894l-3.789 3.789z"/>
@@ -253,7 +253,7 @@ function TestAuthPageInner() {
                 <button
                   onClick={() => handleProviderAuth('vk')}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#029cda] text-white rounded-xl hover:bg-[#029cda]/90 transition-colors disabled:opacity-50 font-[Raleway] font-medium"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#029cda] text-white rounded-xl hover:bg-[#029cda]/90 transition-colors disabled:opacity-50 font-raleway font-medium"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12.785 16.241s.287-.029.435-.18c.135-.137.131-.394.131-.394s-.019-1.123.515-1.288c.526-.17 1.201 1.136 1.916 1.64.552.384.97.3.97.3l1.914-.028s1.002-.066.526-.896c-.039-.066-.276-.577-1.418-1.633-1.198-1.115-1.03-.935.402-2.864.275-.375.385-.604.385-.604s.034-.268-.09-.378c-.124-.111-.329-.073-.329-.073l-2.449.015s-.357-.01-.467.074c-.109.083-.18.277-.18.277s-.32.856-.745 1.584c-.898 1.515-1.258 1.596-1.404 1.504-.343-.22-.258-.882-.258-1.354 0-1.472.22-2.084-.43-2.245-.215-.053-.373-.088-.924-.094-.705-.008-1.3.003-1.638.164-.225.107-.399.346-.293.36.131.018.428.08.585.293.201.274.194.89.194.89s.115 1.693-.268 1.904c-.262.145-.621-.15-1.393-1.504-.396-.697-.696-1.465-.696-1.465s-.058-.208-.161-.321c-.124-.137-.332-.18-.332-.18l-2.33.015s-.35.01-.479.16c-.115.132-.009.404-.009.404s1.816 4.27 3.87 6.427c1.886 1.976 4.04 1.846 4.04 1.846h.967z"/>
@@ -264,7 +264,7 @@ function TestAuthPageInner() {
                 <button
                   onClick={() => handleProviderAuth('google')}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 font-[Raleway] font-medium"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 font-raleway font-medium"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -323,7 +323,7 @@ function TestAuthPageInner() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-[Raleway] font-medium transition-colors"
+                    className="w-full bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-raleway font-medium transition-colors"
                   >
                     {loading ? 'Регистрация...' : 'Зарегистрироваться'}
                   </button>
@@ -360,7 +360,7 @@ function TestAuthPageInner() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-[Raleway] font-medium transition-colors"
+                    className="w-full bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-raleway font-medium transition-colors"
                   >
                     {loading ? 'Вход...' : 'Войти'}
                   </button>
@@ -392,7 +392,7 @@ function TestAuthPageInner() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-[Raleway] font-medium transition-colors"
+                    className="w-full bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-raleway font-medium transition-colors"
                   >
                     {loading ? 'Отправка...' : 'Отправить код'}
                   </button>
@@ -420,7 +420,7 @@ function TestAuthPageInner() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-[Raleway] font-medium transition-colors"
+                      className="flex-1 bg-[#029cda] text-white py-3 px-4 rounded-lg hover:bg-[#029cda]/90 disabled:opacity-50 disabled:cursor-not-allowed font-raleway font-medium transition-colors"
                     >
                       {loading ? 'Проверка...' : 'Подтвердить'}
                     </button>
@@ -430,7 +430,7 @@ function TestAuthPageInner() {
                         setPhoneStep('input');
                         setOtp('');
                       }}
-                      className="px-4 py-3 border border-[#D6D7DB] rounded-lg hover:bg-gray-50 font-[Raleway] font-medium transition-colors"
+                      className="px-4 py-3 border border-[#D6D7DB] rounded-lg hover:bg-gray-50 font-raleway font-medium transition-colors"
                     >
                       Назад
                     </button>
@@ -452,7 +452,7 @@ export default function TestAuthPage() {
         <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4"></div>
-            <p className="text-[#313131] font-[Raleway]">Загрузка...</p>
+            <p className="text-[#313131] font-raleway">Загрузка...</p>
           </div>
         </div>
       </Layout>

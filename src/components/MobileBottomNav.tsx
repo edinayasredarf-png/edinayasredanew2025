@@ -176,7 +176,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                           label={item.label}
                         />
                       </motion.div>
-                      <span className={`text-[12px] leading-4 font-medium font-[Raleway] ${active ? "text-[#313131]" : "text-[#313131]/60"}`}>
+                      <span className={`text-[12px] leading-4 font-medium font-raleway ${active ? "text-[#313131]" : "text-[#313131]/60"}`}>
                         {item.label}
                       </span>
                     </Link>
@@ -198,7 +198,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor" aria-hidden="true">
                   <path d="M12 3a1 1 0 0 1 1 1v7h7a1 1 0 1 1 0 2h-7v7a1 1 0 1 1-2 0v-7H4a1 1 0 1 1 0-2h7V4a1 1 0 0 1 1-1Z" />
                 </svg>
-                <span className="text-[12px] leading-4 font-medium font-[Raleway]">
+                <span className="text-[12px] leading-4 font-medium font-raleway">
                   {mode === "blog" ? "Войти" : "Оставить заявку"}
                 </span>
               </div>

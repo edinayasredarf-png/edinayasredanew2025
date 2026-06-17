@@ -32,7 +32,7 @@ interface LeftNavProps {
 export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProps) {
   return (
     <aside className="w-[294px] shrink-0 hidden xl:block">
-      <div className="sticky top-[86px] space-y-6 font-[Raleway] font-medium  lining-nums">
+      <div className="sticky top-[86px] space-y-6 font-raleway font-medium  lining-nums">
         <nav className="space-y-3">
           <Item
             active={activeTab === 'feed'}

@@ -28,9 +28,9 @@ export default function AudienceSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
         {items.map((card, i) => (
-          <div key={i} className="bg-white rounded-3xl flex flex-col overflow-hidden">
+          <div key={i} className="bg-[#F6F7F9] rounded-3xl flex flex-col overflow-hidden">
             <div className="p-2">
-              <div className="bg-[#f6f7f9] rounded-2xl flex items-center justify-center h-[260px]">
+              <div className="bg-white rounded-2xl flex items-center justify-center h-[260px]">
                 <Image
                   src={card.image}
                   alt={card.title}

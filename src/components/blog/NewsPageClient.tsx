@@ -185,12 +185,12 @@ export default function NewsPageClient({ slug }: { slug: string }) {
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 flex justify-center">
-            <div className="w-full max-w-[761px] font-[Raleway] font-medium lining-nums">
+            <div className="w-full max-w-[761px] font-raleway font-medium lining-nums">
 
               <section>
                 <h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{news.title}</h1>
 
-                <article className="prose prose-lg max-w-none mx-auto text-[#313131] font-[Raleway] font-medium article-content" dir="ltr">
+                <article className="prose prose-lg max-w-none mx-auto text-[#313131] font-raleway font-medium article-content" dir="ltr">
                   <div dangerouslySetInnerHTML={{ __html: news.contentHtml || '<p>Подробностей нет.</p>' }} />
                 </article>
 

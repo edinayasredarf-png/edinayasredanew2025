@@ -9,7 +9,7 @@ const SectionMigration = () => {
 
   return (
     <section className="bg-white w-full py-10 md:py-14 lg:py-16">
-      <div className="rd-content-column font-[Raleway]">
+      <div className="rd-content-column font-raleway">
         <h2 className="font-involve text-[#313131] text-center text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] mb-8 md:mb-12 max-w-[560px] mx-auto">
           Бесплатный перенос данных в платформу
         </h2>
@@ -20,7 +20,7 @@ const SectionMigration = () => {
             {/* Левая часть */}
             <div className="w-full lg:w-[calc(100%-222px-24px)] p-6 lg:p-8 flex flex-col">
               {/* Теги */}
-              <div className="flex flex-wrap gap-2 mb-8 text-[#313131} font-medium font-{Raleway}">
+              <div className="flex flex-wrap gap-2 mb-8 text-[#313131] font-medium font-raleway">
                 {tags.map((tag) => (
                   <span
                     key={tag}

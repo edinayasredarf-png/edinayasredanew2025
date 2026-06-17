@@ -164,7 +164,7 @@ function AuthCallbackInner() {
       <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4"></div>
-          <p className="text-[#313131] font-[Raleway]">Обработка авторизации...</p>
+          <p className="text-[#313131] font-raleway">Обработка авторизации...</p>
         </div>
       </div>
     </Layout>
@@ -178,7 +178,7 @@ export default function AuthCallbackPage() {
         <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4"></div>
-            <p className="text-[#313131] font-[Raleway]">Загрузка...</p>
+            <p className="text-[#313131] font-raleway">Загрузка...</p>
           </div>
         </div>
       </Layout>
