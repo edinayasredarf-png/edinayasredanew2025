@@ -44,7 +44,7 @@ export default function BenefitsSection({
 	const { openRegister } = useModal();
 
 	return (
-		<section className="bg-white w-full py-10 md:py-14 lg:py-16" aria-label="Преимущества системы">
+		<section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16" aria-label="Преимущества системы">
 			<div className="rd-content-column">
 				{showTitle && (
 					<header className="text-center max-w-[950px] mx-auto mb-10 md:mb-12 lg:mb-14">

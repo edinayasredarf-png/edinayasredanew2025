@@ -135,7 +135,7 @@ const FAQ: React.FC<FAQProps> = ({
   };
 
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
+    <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
       <div className={maxW ?? 'rd-content-column'}>
         <div className="text-center mb-8 md:mb-10">
           <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] lining-nums">

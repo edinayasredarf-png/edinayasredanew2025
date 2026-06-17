@@ -43,7 +43,7 @@ const cards: Card[] = [
 
 export default function TrustSection() {
   return (
-    <section className="w-full py-16 md:py-24 bg-white">
+    <section className="w-full py-16 md:py-24 bg-[#F6F7F9]">
       <div className="max-w-[1200px] mx-auto px-5 md:px-8">
         <h2 className="font-involve text-[#222222] text-[32px] md:text-[46px] font-medium leading-[1.2] mb-12">
           Почему клиенты доверяют нам более 15 лет
@@ -65,7 +65,7 @@ export default function TrustSection() {
                   ${
                     isBlue
                       ? "bg-[#029cda] text-white"
-                      : "bg-[#f6f6f6] text-[#222222]"
+                      : "bg-white text-[#222222]"
                   }
                 `}
               >

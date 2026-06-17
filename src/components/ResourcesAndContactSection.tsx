@@ -15,7 +15,7 @@ const resources = [
 
 export default function ResourcesAndContactSection() {
   return (
-    <section className="bg-white w-full py-16 md:py-24">
+    <section className="bg-[#F6F7F9] w-full py-16 md:py-24">
       <div className="rd-content-column">
         {/* TOP CARDS */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -23,7 +23,7 @@ export default function ResourcesAndContactSection() {
             <article
               key={index}
               className="
-                bg-[#F6F7F9]
+                bg-white
                 rounded-[32px]
                 p-8 md:p-10
                 min-h-[258px]

@@ -147,7 +147,7 @@ const SectionQuickStart: React.FC = () => {
   ];
 
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
+    <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
       <div className="rd-content-column">
         <h2 className="text-center font-involve text-[#313131] text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] mb-10 md:mb-12">
           Быстрый старт

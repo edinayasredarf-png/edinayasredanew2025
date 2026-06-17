@@ -29,7 +29,7 @@ export default function HomeCases() {
   if (!cases.length) return null;
 
   return (
-    <section className="bg-white py-16 md:py-20 overflow-hidden">
+    <section className="bg-[#F6F7F9] py-16 md:py-20 overflow-hidden">
       <div className="rd-content-column">
         <h2 className="mb-10 md:mb-12 font-involve text-[#222222] text-[32px] md:text-[46.3px] font-medium leading-[1.2] md:leading-[54.24px] max-w-[1199px]">
           Более 300 компаний уже пользуются
@@ -72,7 +72,7 @@ export default function HomeCases() {
                   min-h-[300px]
                   lg:min-h-[340px]
 
-                  bg-[#f6f6f6]
+                  bg-white
                   rounded-3xl
                   p-10
 

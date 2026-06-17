@@ -60,7 +60,7 @@ const ObjectCard: React.FC<ObjectCardProps> = ({ icon, label, index, totalItems 
 
 const SectionAllObjects: React.FC = () => {
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16">
+    <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16">
       <div className="rd-content-column">
         <h2 className="font-involve text-[#313131] text-center text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] mb-10 md:mb-14">
           Все объекты в одной системе

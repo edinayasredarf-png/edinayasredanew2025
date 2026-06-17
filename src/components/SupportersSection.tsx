@@ -28,7 +28,7 @@ export default function SupportersSection({
 	logos?: Logo[];
 }) {
 	return (
-		<section className="bg-white w-full py-10 md:py-14 lg:py-16" aria-label="Партнёры и поддержка">
+		<section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16" aria-label="Партнёры и поддержка">
 			<div className="rd-content-column">
 				<header className="flex flex-col items-center text-center mb-10 md:mb-12 lg:mb-14">
 					<h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] md:leading-[58px]">

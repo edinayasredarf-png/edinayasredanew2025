@@ -50,7 +50,7 @@ const CompanyBadges: React.FC<CompanyBadgesProps> = ({
   ctaHref = '/about',
 }) => {
   return (
-    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]" aria-label="Факты о компании">
+    <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16 font-[Raleway]" aria-label="Факты о компании">
       <div className="rd-content-column">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-2.5 items-stretch">
           <Card {...items[0]} />
