@@ -53,7 +53,7 @@ const SectionInterfaceByFigma: React.FC = () => {
         {/* Viewer */}
         <div className="w-full mt-8 md:mt-10 overflow-hidden">
           <div className="relative w-full">
-            <div className="relative w-full rounded-2xl overflow-hidden rd-block">
+            <div className="relative w-full rounded-2xl overflow-hidden">
               {/* Контейнер слайдера */}
               <div className="relative w-full aspect-[1477/985] lg:h-[560px] xl:h-[720px]">
                 <Swiper
