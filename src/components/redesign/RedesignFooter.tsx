@@ -4,10 +4,10 @@ import Link from 'next/link';
 
 export function RedesignFooter() {
 	return (
-		<footer className=" font-involve">
+		<footer className="bg-[#F6F7F9] font-involve">
 			<div className="mx-auto max-w-[1200px] px-5 lg:px-10">
 				{/* top border */}
-				<div className="border-t border-[#E7E7E7]" />
+				<div className="border-t border-white" />
 
 				{/* logo */}
 				<div className="pt-14 pb-20">

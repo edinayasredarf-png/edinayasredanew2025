@@ -90,13 +90,13 @@ export default function PartnershipPage() {
 
         {/* HERO с картинкой справа */}
         <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[420px]">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
             <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
               <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-                <h1 className={`text-4xl sm:text-5xl md:text-[72px] ${headingBase}`}>
+                <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
                   Партнёрство
                 </h1>
-                <p className="mt-8 text-xl sm:text-[27px] text-grey-92 max-w-2xl">
+                <p className="mt-8 text-lg md:text-[22.7px] leading-[1.37] text-[#667085] max-w-2xl font-raleway">
                   Станьте частью нашей экосистемы и развивайте бизнес вместе с лидером в области цифровых экологических решений.
                 </p>
                 <div className="mt-10">
@@ -136,7 +136,7 @@ export default function PartnershipPage() {
 
         {/* Настройте партнёрскую программу */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 md:mb-16">
               <h2 className={`text-3xl md:text-4xl lg:text-[48px] ${headingBase} ${headingColor}`}>
                 Настройте партнёрскую программу так, как выгодно вам
@@ -146,7 +146,7 @@ export default function PartnershipPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Карточка 1 */}
               <div className="flex-1 p-2 bg-white rounded-3xl flex flex-col md:flex-row gap-2">
-                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-white rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
+                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-[#F6F7F9] rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
                   <Image
                     src="/img/partners/1.svg"
                     alt="Продукты Единая Среда"
@@ -167,7 +167,7 @@ export default function PartnershipPage() {
 
               {/* Карточка 2 */}
               <div className="flex-1 p-2 bg-white rounded-3xl flex flex-col md:flex-row gap-2">
-                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-white rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
+                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-[#F6F7F9] rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
                   <Image
                     src="/img/partners/2.svg"
                     alt="Варианты участия"
@@ -187,7 +187,7 @@ export default function PartnershipPage() {
               </div>
             </div>
 
-            <div className="max-w-[1480px] mx-auto flex justify-center mt-10">
+            <div className="max-w-[1200px] mx-auto flex justify-center mt-10">
               <button
                 type="button"
                 onClick={() => setPartnersOpen(true)}
@@ -201,7 +201,7 @@ export default function PartnershipPage() {
 
         {/* Варианты участия в программе */}
         <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className={`text-3xl md:text-4xl lg:text-5xl text-center mb-16 ${headingBase} ${headingColor}`}>
               Варианты участия в программе
             </h2>
@@ -310,7 +310,7 @@ export default function PartnershipPage() {
 
         {/* Преимущества */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className={`text-3xl md:text-4xl lg:text-[48px] text-center mb-10 ${headingBase} ${headingColor}`}>
               Преимущества
             </h2>
@@ -343,7 +343,7 @@ export default function PartnershipPage() {
 
         {/* Кому подойдёт программа */}
         <section className="py-16 md:py-24 bg-[#F6F7F9]">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-white rounded-3xl px-9 pt-14 pb-5">
               <h2 className={`text-3xl md:text-4xl lg:text-[48px] text-center mb-12 ${headingBase} ${headingColor}`}>
                 Кому подойдёт программа
@@ -365,7 +365,7 @@ export default function PartnershipPage() {
 
         {/* Почему продавать облачные решения перспективно — с изображениями графиков */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-10">
               <h2 className={`text-3xl md:text-4xl lg:text-[38.9px] ${headingBase} ${headingColor}`}>
                 Почему продавать облачные решения перспективно
@@ -414,7 +414,7 @@ export default function PartnershipPage() {
         {/* Программа технологической сертификации ПО — редизайн */}
       {/* Программа технологической сертификации ПО — редизайн */}
 <section className="py-16 md:py-24">
-  <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+  <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <div className="w-full max-w-[960px] mx-auto text-center mb-12">
       <h2 className={`text-[28px] md:text-[38.9px] ${headingBase} ${headingColor}`}>
 Узнайте больше о сервисе и услугах     </h2>
@@ -495,7 +495,7 @@ export default function PartnershipPage() {
 
         {/* FAQ — новый стиль */}
         <section className="py-16 md:py-24">
-          <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 lg:gap-12 items-start">
               <div className="relative">
                 <div className="mb-8">
@@ -561,7 +561,7 @@ export default function PartnershipPage() {
         {/* CTA финальный */}
 
 <section className="py-16 md:py-24 bg-[#F6F7F9]">
-  <div className="max-w-[1480px] mx-auto px-5 md:px-8">
+  <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <div className="rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2">
         {/* Лево: заголовок, текст и кнопки */}

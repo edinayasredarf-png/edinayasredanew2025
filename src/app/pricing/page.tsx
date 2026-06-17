@@ -12,13 +12,13 @@ export default function PricingPage() {
     <Layout>
 			<div className="font-[Raleway] font-medium lining-nums">
       <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
             <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-              <h1 className="text-4xl sm:text-5xl md:text-[78px] font-medium leading-tight">
+              <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
                 Выгодные тарифы<br />и услуги
               </h1>
-              <p className="mt-8 text-xl sm:text-[27px] text-grey-92 max-w-2xl">
+              <p className="mt-8 text-lg md:text-[22.7px] leading-[1.37] text-[#667085] max-w-2xl font-raleway">
                 Простые решения для эффективного управления территориями и объектами. Прозрачные цены и поддержка на каждом этапе.
               </p>
               <div className="mt-10">
@@ -53,8 +53,8 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
-      <section className="max-w-[1400px] mx-auto mt-8">
-        <div className="max-w-[1400px] mx-auto px-2 py-2">
+      <section className="max-w-[1200px] mx-auto mt-8">
+        <div className="max-w-[1200px] mx-auto px-4 py-2">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
             <h2 className="text-4xl text-black font-medium text-left">
               Тарифы и услуги

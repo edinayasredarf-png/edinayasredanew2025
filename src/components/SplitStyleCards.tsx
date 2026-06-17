@@ -113,7 +113,7 @@ export default function FeaturesTabsSection() {
   const current = features[activeTab];
 
   return (
-    <section className="w-full py-16 md:py-20 overflow-hidden">
+    <section className="bg-white w-full py-16 md:py-20 overflow-hidden">
       <div className="rd-content-column">
         {/* HEADER */}
 

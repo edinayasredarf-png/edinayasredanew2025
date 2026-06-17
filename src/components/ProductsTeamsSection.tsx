@@ -155,7 +155,7 @@ const ProductsTeamsSection = () => {
   }, [videoSrc, isPlaying]);
 
   return (
-    <section className="w-full max-w-[1440px] mx-auto flex flex-col items-start gap-10 md:gap-16 py-12 md:py-20 font-[Raleway] font-medium">
+    <section className="bg-white w-full py-12 md:py-20 font-[Raleway] font-medium">
       <div className="w-full h-[520px] md:h-[640px] xl:h-[760px] relative rounded-[28px] md:rounded-[40px] overflow-hidden">
         {/* Фоновое видео */}
         <div className="absolute inset-0 w-full h-full bg-black">
