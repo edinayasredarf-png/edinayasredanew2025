@@ -8,7 +8,7 @@ const HeroSection: React.FC = () => {
 	const { openRegister, openDemo } = useModal();
 
 	return (
-		<section className="bg-white w-full overflow-hidden">
+		<section className="bg-[#F6F7F9] w-full overflow-hidden">
 			<div className="rd-content-column py-10 md:py-14 lg:py-[66px]">
 				<div className="flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-6">
 					{/* Текст и кнопки */}

@@ -55,12 +55,12 @@ const AboutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-[Raleway] font-medium lining-nums">
+    <div className="bg-[#F6F7F9] min-h-screen flex flex-col font-[Raleway] font-medium lining-nums">
       {/* Белый Header */}
-      <header className={`bg-white fixed top-0 left-0 right-0  z-50 w-full transition-all duration-500 ease-out transform ${
+      <header className={`bg-[#F6F7F9] fixed top-0 left-0 right-0  z-50 w-full transition-all duration-500 ease-out transform ${
         isScrolled
-          ? 'border-b border-gray-300 backdrop-blur-lg bg-white/98'
-          : 'border-b border-gray-200'
+          ? 'border-b border-white backdrop-blur-lg bg-[#F6F7F9]/98'
+          : 'border-b border-white'
       }`}>
         <div className="max-w-[1480px] mx-auto px-4 md:px-0 ">
           <div className="flex items-center justify-between h-20">
@@ -521,7 +521,7 @@ export default function AboutPage() {
       </section>
 
       {/* Projects and Services Statistics - согласно Figma */}
-			<section className="pt-4 pb-20 bg-white">
+			<section className="pt-4 pb-20 bg-[#F6F7F9]">
   <div className="container mx-auto px-4 sm:px-6 lg:px-8">
     <div className="w-full mx-auto">
 
