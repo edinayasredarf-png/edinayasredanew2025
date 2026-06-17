@@ -238,7 +238,7 @@ export default function ForestManagementPage() {
 
     {/* Заголовок */}
     <h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
-		Кому необходима лесоустройство
+		Кому необходимо лесоустройство
     </h2>
 
     {/* Верхний ряд — 3 карточки */}

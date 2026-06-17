@@ -131,7 +131,7 @@ const Header: React.FC<HeaderProps> = ({
 					}`}
 				aria-hidden={!showSticky}
 			>
-				<div className="bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-[#E5E7EB]">
+				<div className="bg-[#F6F7F9]/95 backdrop-blur supports-[backdrop-filter]:bg-[#F6F7F9]/80 border-b border-white">
 					<div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 						{/* Лого */}
 						<Link href="/" className="flex items-center">
@@ -231,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({
 			</div>
 
 			{/* Основной header (тема меняется по роуту) */}
-			<header className={`${isLight ? 'bg-white' : 'bg-black'} rounded-t-[20px] relative z-20 w-full`}>
+			<header className={`${isLight ? 'bg-[#F6F7F9]' : 'bg-black'} rounded-t-[20px] relative z-20 w-full`}>
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					{/* Оверлей блюра при открытом подменю на десктопе */}
 					{openMenu && (
@@ -308,7 +308,7 @@ const Header: React.FC<HeaderProps> = ({
 					</div>
 
 					{/* Навигация (десктоп) */}
-					<nav className={`border-t ${isLight ? 'border-[#E5E7EB]' : 'border-white/30'} border-t-[1px] relative z-50`}>
+					<nav className={`border-t ${isLight ? 'border-white' : 'border-white/30'} border-t-[1px] relative z-50`}>
 						<div className="w-full lg:flex hidden flex-row items-center justify-between lg:h-[70px]">
 							<ul className="flex flex-row items-center gap-3 w-full">
 								<li>
@@ -397,7 +397,7 @@ const Header: React.FC<HeaderProps> = ({
 												Лесоустройство
 											</Link>
 
-											<div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+											<div className="mt-3 pt-3 border-t border-white">
 												<Link
 													href="/services"
 													className={`w-full inline-flex ${isLight
@@ -498,11 +498,11 @@ const Header: React.FC<HeaderProps> = ({
 					role="dialog"
 				>
 					<div
-						className="absolute inset-0 bg-white overflow-y-auto"
+						className="absolute inset-0 bg-[#F6F7F9] overflow-y-auto"
 						onClick={(e) => e.stopPropagation()}
 					>
 						{/* Верхняя панель */}
-						<div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 border-b border-[#E5E7EB]">
+						<div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 border-b border-white">
 							<Link href="/" onClick={() => setIsMobileNavOpen(false)} className="flex items-center">
 								<Image src="/img/logo_dark.svg" alt="ES" width={140} height={40} className="w-[140px] h-auto" />
 							</Link>

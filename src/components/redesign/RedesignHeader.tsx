@@ -112,7 +112,7 @@ export function RedesignHeader() {
 	return (
 		<>
 			<header
-				className={`sticky top-0 w-full bg-white border-b border-black/[0.06] transition-shadow duration-300 ${
+				className={`sticky top-0 w-full bg-[#F6F7F9] border-b border-white transition-shadow duration-300 ${
 					mobileOpen ? 'z-[100]' : 'z-50'
 				}`}
 			>
@@ -161,7 +161,7 @@ export function RedesignHeader() {
 											</Link>
 										))}
 									</div>
-									<div className="mt-3 pt-3 border-t border-[#e4e7ec]">
+									<div className="mt-3 pt-3 border-t border-white">
 										<Link
 											href="/services"
 											onClick={() => setServicesOpen(false)}
@@ -216,7 +216,7 @@ export function RedesignHeader() {
 					onClick={closeMobile}
 				/>
 				<div
-					className={`fixed top-20 right-0 bottom-0 z-[90] w-full max-w-sm bg-white shadow-2xl overflow-y-auto transition-transform duration-300 ease-out ${
+					className={`fixed top-20 right-0 bottom-0 z-[90] w-full max-w-sm bg-[#F6F7F9] shadow-2xl overflow-y-auto transition-transform duration-300 ease-out ${
 						mobileOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
 					}`}
 				>
