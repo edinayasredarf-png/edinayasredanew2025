@@ -112,7 +112,7 @@ const Layout = ({ children }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="redesign min-h-screen w-full flex flex-col bg-white">
+    <div className="redesign min-h-screen w-full flex flex-col bg-[#F6F7F9]">
       <HashCleaner />
       <RedesignHeader />
       <StoriesStrip />
