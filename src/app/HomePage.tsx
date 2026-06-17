@@ -6,6 +6,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
+import SectionAudience from '../components/SectionAudience';
 import TrustSection from '../components/TrustSection';
 import ResourcesAndContactSection from '../components/ResourcesAndContactSection';
 import HomeCases from '../components/HomeCases';
@@ -141,6 +142,9 @@ export default function HomePage() {
 
 			{/* Слайдер интерфейса */}
 			<InterfaceSystem />
+
+			{/* Кому подходит */}
+			<SectionAudience />
 
 			<VideoInvite />
 
