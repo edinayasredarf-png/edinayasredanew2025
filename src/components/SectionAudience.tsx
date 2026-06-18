@@ -9,32 +9,32 @@ import 'swiper/css';
 const cards = [
   {
     title: 'Муниципалитеты',
-    img: '/img/audience/municipal.png',
+    img: '/img/audience/municipal.webp',
     alt: 'Муниципалитеты',
   },
   {
     title: 'Ритуальные службы',
-    img: '/img/audience/ritual.png',
+    img: '/img/audience/ritual.webp',
     alt: 'Ритуальные службы',
   },
   {
     title: 'Застройщики',
-    img: '/img/audience/developer.png',
+    img: '/img/audience/developer.webp',
     alt: 'Застройщики',
   },
   {
     title: 'Управляющие\nкомпании ЖКХ',
-    img: '/img/audience/zhkh.png',
+    img: '/img/audience/zhkh.webp',
     alt: 'Управляющие компании ЖКХ',
   },
   {
     title: 'Отели и санатории',
-    img: '/img/audience/hotel.png',
+    img: '/img/audience/hotel.webp',
     alt: 'Отели и санатории',
   },
   {
     title: 'Крупные\nтерриториальные\nкомплексы',
-    img: '/img/audience/complex.png',
+    img: '/img/audience/complex.webp',
     alt: 'Крупные территориальные комплексы',
   },
 ];
