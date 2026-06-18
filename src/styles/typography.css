@@ -51,8 +51,12 @@ th,
 label,
 input,
 textarea,
-select,
-button {
+select {
   font-family: inherit;
+  font-variant-numeric: lining-nums;
+}
+
+button {
+  font-family: var(--font-involve);
   font-variant-numeric: lining-nums;
 }

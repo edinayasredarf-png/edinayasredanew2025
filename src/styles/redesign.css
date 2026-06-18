@@ -49,6 +49,16 @@
 	opacity: 1;
 }
 
+/* Primary blue buttons: white text + dark hover */
+button.bg-\[#029cda\],
+a.bg-\[#029cda\] {
+  color: #ffffff;
+}
+button.bg-\[#029cda\]:hover,
+a.bg-\[#029cda\]:hover {
+  background-color: #0288bd !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.redesign * {
 		transition-duration: 0.01ms !important;
