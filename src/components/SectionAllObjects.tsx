@@ -66,7 +66,7 @@ const SectionAllObjects: React.FC = () => {
           Все объекты в одной системе
         </h2>
 
-        <div className="w-full rounded-2xl border border-[#e4e7ec] grid grid-cols-1 md:grid-cols-3 overflow-hidden bg-white">
+        <div className="w-full rounded-2xl border border-[#e4e7ec] grid grid-cols-1 md:grid-cols-3 overflow-hidden">
           {objects.map((obj, idx) => (
             <ObjectCard
               key={`${obj.icon}-${idx}`}
