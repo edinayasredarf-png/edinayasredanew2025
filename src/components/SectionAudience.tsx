@@ -71,9 +71,8 @@ const SectionAudience: React.FC = () => {
             <br className="hidden sm:block" />
             Единая Среда
           </h2>
-          <p className="mt-5 text-[#222222] text-lg md:text-xl leading-[1.5] font-[Raleway] max-w-[680px] mx-auto">
-            Управляйте территориями, объектами инфраструктуры и подрядчиками в единой цифровой
-            системе — независимо от масштаба организации.
+          <p className="mt-5 text-[#222222] text-lg md:text-xl leading-[1.5] font-[Raleway] max-w-[860px] mx-auto">
+            Управляйте территориями, объектами инфраструктуры и подрядчиками в единой цифровой системе —<br className="hidden md:block" /> независимо от масштаба организации.
           </p>
         </div>
       </div>
