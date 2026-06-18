@@ -78,8 +78,9 @@ const SectionAudience: React.FC = () => {
         </div>
       </div>
 
-      {/* Мобильный слайдер — выходит за rd-content-column, чтобы следующая карточка была видна */}
-      <div className="lg:hidden pl-4 sm:pl-6">
+      {/* Мобильный слайдер — overflow-hidden на обёртке блокирует горизонтальный скролл страницы */}
+      <div className="lg:hidden overflow-hidden">
+        <div className="pl-4 sm:pl-6">
         <Swiper
           modules={[FreeMode]}
           slidesPerView={1.15}
@@ -89,7 +90,6 @@ const SectionAudience: React.FC = () => {
             480: { slidesPerView: 1.5, spaceBetween: 8 },
             640: { slidesPerView: 2.1, spaceBetween: 8 },
           }}
-          className="!overflow-visible"
         >
           {cards.map((card) => (
             <SwiperSlide key={card.alt} className="!h-auto">
@@ -97,6 +97,7 @@ const SectionAudience: React.FC = () => {
             </SwiperSlide>
           ))}
         </Swiper>
+        </div>
       </div>
 
       {/* Десктоп — обычная сетка */}
