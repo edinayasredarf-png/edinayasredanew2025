@@ -2,6 +2,9 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { FreeMode } from 'swiper/modules';
+import 'swiper/css';
 
 const cards = [
   {
@@ -36,11 +39,32 @@ const cards = [
   },
 ];
 
+const CardContent: React.FC<{ title: string; img: string; alt: string }> = ({ title, img, alt }) => (
+  <div className="bg-white rounded-3xl flex flex-col h-full min-h-[320px]">
+    <div className="px-8 pt-8 pb-4">
+      <h3 className="font-involve text-[#222222] text-2xl font-bold leading-8 whitespace-pre-line">
+        {title}
+      </h3>
+    </div>
+    <div className="flex-1 flex items-end justify-center px-8 pb-6">
+      <div className="relative w-full h-[190px]">
+        <Image
+          src={img}
+          alt={alt}
+          fill
+          className="object-contain object-bottom"
+          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      </div>
+    </div>
+  </div>
+);
+
 const SectionAudience: React.FC = () => {
   return (
     <section className="w-full py-10 md:py-14 lg:py-16">
+      {/* Заголовок — внутри rd-content-column */}
       <div className="rd-content-column">
-        {/* Заголовок */}
         <div className="text-center mb-10 md:mb-14">
           <h2 className="font-involve text-[#222222] text-[clamp(2rem,4.5vw,3rem)] leading-[1.14] font-bold">
             Кому подходит{' '}
@@ -52,34 +76,34 @@ const SectionAudience: React.FC = () => {
             системе — независимо от масштаба организации.
           </p>
         </div>
+      </div>
 
-        {/* Сетка карточек */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+      {/* Мобильный слайдер — выходит за rd-content-column, чтобы следующая карточка была видна */}
+      <div className="lg:hidden pl-4 sm:pl-6">
+        <Swiper
+          modules={[FreeMode]}
+          slidesPerView={1.15}
+          spaceBetween={8}
+          freeMode
+          breakpoints={{
+            480: { slidesPerView: 1.5, spaceBetween: 8 },
+            640: { slidesPerView: 2.1, spaceBetween: 8 },
+          }}
+          className="!overflow-visible"
+        >
           {cards.map((card) => (
-            <div
-              key={card.alt}
-              className="bg-white rounded-3xl flex flex-col overflow-hidden min-h-[352px]"
-            >
-              {/* Заголовок карточки */}
-              <div className="px-10 pt-10 pb-4">
-                <h3 className="font-involve text-[#222222] text-2xl font-bold leading-8 whitespace-pre-line">
-                  {card.title}
-                </h3>
-              </div>
+            <SwiperSlide key={card.alt} className="!h-auto">
+              <CardContent {...card} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
 
-              {/* Изображение */}
-              <div className="flex-1 flex items-end justify-center px-10 pb-6">
-                <div className="relative w-full h-[200px]">
-                  <Image
-                    src={card.img}
-                    alt={card.alt}
-                    fill
-                    className="object-contain object-bottom"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
-              </div>
-            </div>
+      {/* Десктоп — обычная сетка */}
+      <div className="rd-content-column hidden lg:block">
+        <div className="grid grid-cols-3 gap-2">
+          {cards.map((card) => (
+            <CardContent key={card.alt} {...card} />
           ))}
         </div>
       </div>
