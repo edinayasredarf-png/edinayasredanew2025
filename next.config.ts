@@ -13,6 +13,13 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'cdn.jsdelivr.net', pathname: '/**' },
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/**' },
       { protocol: 'https', hostname: 'placehold.co', pathname: '/**' },
+      { protocol: 'https', hostname: 'i.pinimg.com', pathname: '/**' },
+      { protocol: 'https', hostname: '*.pinimg.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'media.единаясреда.рф', pathname: '/**' },
+      { protocol: 'https', hostname: 'единаясреда.рф', pathname: '/**' },
+      { protocol: 'https', hostname: '*.единаясреда.рф', pathname: '/**' },
+      { protocol: 'https', hostname: 'storage.yandexcloud.net', pathname: '/**' },
+      { protocol: 'https', hostname: '*.storage.yandexcloud.net', pathname: '/**' },
     ],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
   },
