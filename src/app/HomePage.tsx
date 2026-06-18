@@ -143,10 +143,10 @@ export default function HomePage() {
 			{/* Слайдер интерфейса */}
 			<InterfaceSystem />
 
+			<VideoInvite />
+
 			{/* Кому подходит */}
 			<SectionAudience />
-
-			<VideoInvite />
 
 
 
