@@ -14,7 +14,7 @@ const SectionReadyCTA: React.FC = () => {
 
           {/* Фоновое изображение */}
           <Image
-            src="/img/heroes.webp"
+            src="/img/cta3.webp"
             alt=""
             fill
             className="object-cover object-center"
