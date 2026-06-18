@@ -23,6 +23,7 @@ import {
 import {
   externalizeContentImages,
   uploadDataUrlIfNeeded,
+  uploadEditorImage,
 } from '@/lib/imageUpload';
 
 // ---------- типы блоков ----------
@@ -225,18 +226,29 @@ export default function NewPostPage() {
 
       // одиночное
       if (!multiple) {
-        const f = files[0]; const data = await fileToDataURL(f);
-        updateAt(i,{ src:data } as Partial<ImageBlock>);
+        const f = files[0];
+        try {
+          const url = await uploadEditorImage(f);
+          updateAt(i,{ src: url } as Partial<ImageBlock>);
+        } catch (err) {
+          alert('Ошибка загрузки изображения: ' + (err instanceof Error ? err.message : String(err)));
+        }
         return;
       }
 
       // множественное — галерея
       const arr: string[] = [];
       for (const f of files) {
-        const data = await fileToDataURL(f);
-        arr.push(data);
+        try {
+          const url = await uploadEditorImage(f);
+          arr.push(url);
+        } catch (err) {
+          alert('Ошибка загрузки: ' + (err instanceof Error ? err.message : String(err)));
+        }
       }
-      updateAt(i,{ images: [ ...(blocks[i] as GalleryBlock).images, ...arr ] } as Partial<GalleryBlock>);
+      if (arr.length) {
+        updateAt(i,{ images: [ ...(blocks[i] as GalleryBlock).images, ...arr ] } as Partial<GalleryBlock>);
+      }
     };
     input.click();
   };
