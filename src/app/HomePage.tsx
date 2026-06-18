@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
 import SectionAudience from '../components/SectionAudience';
+import SectionReadyCTA from '../components/SectionReadyCTA';
 import TrustSection from '../components/TrustSection';
 import ResourcesAndContactSection from '../components/ResourcesAndContactSection';
 import HomeCases from '../components/HomeCases';
@@ -162,6 +163,9 @@ export default function HomePage() {
 
 			{/* Быстрый старт */}
 			<SectionQuickStart />
+
+			{/* CTA перед блогом */}
+			<SectionReadyCTA />
 
 			{/* Посты */}
 			<HomePosts />
