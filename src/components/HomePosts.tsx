@@ -65,7 +65,7 @@ export default function HomePosts() {
               </div>
               <div className="px-4 pb-4 flex flex-col flex-grow">
                 <h3 className="text-xl font-medium text-[#313131] mb-6 flex-grow">{p.title}</h3>
-                <span className="inline-flex items-center justify-center self-start px-6 py-3 rd-block text-[#313131] text-lg font-medium rounded-xl border border-transparent group-hover:outline-1 group-hover:outline-[#029cda]">
+                <span className="inline-flex items-center justify-center self-start px-6 py-3 bg-[#F6F7F9] text-[#313131] text-lg font-medium rounded-xl border border-transparent group-hover:outline-1 group-hover:outline-[#029cda]">
                   Подробнее
                 </span>
               </div>
@@ -76,7 +76,7 @@ export default function HomePosts() {
         <div className="text-center">
           <Link
             href="/blog"
-            className="inline-flex items-center justify-center w-full px-8 py-4 bg-white text-[#029cda] text-lg font-medium rounded-xl hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-[#F1F2F4] hover:text-[#029cda]"
+            className="inline-flex items-center justify-center w-full px-8 py-4 bg-[#F6F7F9] text-[#029cda] text-lg font-medium rounded-xl hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-[#F1F2F4] hover:text-[#029cda]"
           >
             Читать ещё
           </Link>
