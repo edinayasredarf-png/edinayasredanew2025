@@ -41,12 +41,22 @@ const DEFAULT_LABELS: Record<string, string> = {
   'b': 'Блог',
   'imz': 'Инвентаризация мест захоронений',
   'izn': 'Инвентаризация зеленых насаждений',
+  'les': 'Лесоустройство',
   'auth': 'Авторизация',
   'callback': 'Callback',
   'test-auth': 'Тест авторизации',
   'inventory-burials': 'Инвентаризация мест захоронений',
+  'inventory-burials-landing': 'Инвентаризация мест захоронений',
+  'inventory-burials-seo': 'Инвентаризация мест захоронений',
   'green-inventory': 'Инвентаризация зелёных насаждений',
   'forest-management': 'Лесоустройство',
+  'partnership': 'Партнёрство',
+  'implementations': 'Внедрения',
+  'course': 'Обучающий курс',
+  'demo': 'Демонстрация',
+  'welcome-bonus': 'Добро пожаловать',
+  'profile': 'Личный кабинет',
+  'admin': 'Администрирование',
 }
 
 // Сокращённые названия для мобильных
