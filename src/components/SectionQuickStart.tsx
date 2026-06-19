@@ -13,7 +13,7 @@ const ButtonLike: React.FC<
   }
 > = (props) => {
   const base =
-    'inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] ' +
+    'inline-flex items-center justify-center h-[54px] rounded-xl bg-[#F6F7F9] text-black text-[17px] leading-7 font-medium font-[Raleway] ' +
     'hover:ring-1 hover:ring-[#029cda] transition-colors ' +
     'w-full md:w-[201.5px]'; // на мобильных — 100% ширины
 
@@ -97,7 +97,7 @@ const QuickStartCard: React.FC<CardProps> = ({
           {/* Кнопка — прижимается к низу текста на десктопе */}
           <div className="mt-auto pt-6 md:pt-8">
             {href ? (
-              <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-white text-black text-[17px] leading-7 font-medium font-[Raleway] hover:ring-1 hover:ring-[#029cda] transition-colors w-full md:w-[201.5px]">
+              <span className="inline-flex items-center justify-center h-[54px] rounded-xl bg-[#F6F7F9] text-black text-[17px] leading-7 font-medium font-[Raleway] hover:ring-1 hover:ring-[#029cda] transition-colors w-full md:w-[201.5px]">
                 {buttonLabel}
               </span>
             ) : (
