@@ -1,6 +1,71 @@
 "use client";
 
 import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
+
+const MESSENGERS = [
+  {
+    label: "Telegram",
+    href: "https://t.me/edinayasreda",
+    icon: "/icons/telegram_blue.svg",
+  },
+  {
+    label: "MAX",
+    href: "https://max.ru/edinayasreda",
+    icon: "/icons/max-blue.svg",
+  },
+  {
+    label: "ВКонтакте",
+    href: "https://vk.me/edinayasreda",
+    icon: "/icons/vk-blue.svg",
+  },
+];
+
+function MessengerPopup() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-3 bg-white text-[#029CDA] font-involve font-bold text-base md:text-lg px-6 py-3 rounded-2xl hover:bg-white/90 transition-colors"
+      >
+        Написать нам
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 6l5 5 5-5" stroke="#029CDA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute bottom-full mb-3 left-0 bg-white rounded-2xl shadow-xl p-2 flex flex-col gap-1 min-w-[220px] z-50">
+          {MESSENGERS.map((m) => (
+            <a
+              key={m.label}
+              href={m.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#F6F7F9] transition-colors text-[#313131] font-involve font-medium text-base"
+            >
+              <Image src={m.icon} alt={m.label} width={24} height={24} className="shrink-0" />
+              {m.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const resources = [
   {
@@ -150,52 +215,8 @@ export default function ResourcesAndContactSection() {
               и поможем подобрать тариф под ваши задачи
             </h3>
 
-            <div className="flex items-center gap-4 mt-8">
-              <a
-                href="https://t.me/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="
-                  w-10
-                  h-10
-                  bg-white
-                  rounded-full
-                  flex
-                  items-center
-                  justify-center
-                  hover:scale-105
-                  transition-transform
-                "
-              >
-                <Image
-                  src="/icons/telegram.svg"
-                  alt="Telegram"
-                  width={22}
-                  height={22}
-                />
-              </a>
-
-              <a
-                href="#"
-                className="
-                  w-10
-                  h-10
-                  bg-white
-                  rounded-full
-                  flex
-                  items-center
-                  justify-center
-                  hover:scale-105
-                  transition-transform
-                "
-              >
-                <Image
-                  src="/icons/max.svg"
-                  alt="MAX"
-                  width={22}
-                  height={22}
-                />
-              </a>
+            <div className="mt-8">
+              <MessengerPopup />
             </div>
           </div>
         </div>
