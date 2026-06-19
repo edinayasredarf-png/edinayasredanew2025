@@ -11,12 +11,12 @@ const MESSENGERS = [
   },
   {
     label: "MAX",
-    href: "https://max.ru/edinayasreda",
+    href: "https://max.ru/u/f9LHodD0cOK1BljWQVdQUmREhda821o6xBdsfe8i81sZg62tI3MEXi2sUPw",
     icon: "/icons/max-blue.svg",
   },
   {
     label: "ВКонтакте",
-    href: "https://vk.me/edinayasreda",
+    href: "https://vk.com/im/convo/-213906731?entrypoint=community_page&tab=all",
     icon: "/icons/vk-blue.svg",
   },
 ];
