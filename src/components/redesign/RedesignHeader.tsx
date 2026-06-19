@@ -105,7 +105,7 @@ export function RedesignHeader() {
 	const closeMobile = () => setMobileOpen(false);
 
 	const navLinkClass = (href: string) =>
-		`px-3 text-[15px] leading-6 text-black font-[Inter] hover:text-[#029cda] transition-colors whitespace-nowrap ${
+		`px-3 text-[15px] leading-6 text-[#222] font-involve font-medium hover:text-[#029cda] transition-colors whitespace-nowrap ${
 			isActive(href) ? 'text-[#029cda]' : ''
 		}`;
 
@@ -138,8 +138,8 @@ export function RedesignHeader() {
 							<button
 								type="button"
 								onClick={() => setServicesOpen((v) => !v)}
-								className={`inline-flex items-center gap-1 px-3 py-2.5 rounded-xl text-[15px] leading-6 text-black font-[Inter] hover:bg-[#f6f7f9] transition-colors ${
-									isServicesActive || servicesOpen ? 'bg-[#f6f7f9] text-[#029cda]' : ''
+								className={`inline-flex items-center gap-1 px-3 py-2.5 rounded-xl text-[15px] leading-6 text-[#222] font-involve font-medium hover:text-[#029cda] transition-colors ${
+									isServicesActive || servicesOpen ? 'text-[#029cda]' : ''
 								}`}
 								aria-expanded={servicesOpen}
 							>
@@ -154,7 +154,7 @@ export function RedesignHeader() {
 												key={item.href}
 												href={item.href}
 												onClick={() => setServicesOpen(false)}
-												className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-[#202020] text-sm font-[Inter] hover:bg-[#f6f7f9] transition-colors"
+												className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
 											>
 												<ThemedIcon src={item.icon} size={24} color="#202020" />
 												{item.label}
@@ -165,7 +165,7 @@ export function RedesignHeader() {
 										<Link
 											href="/services"
 											onClick={() => setServicesOpen(false)}
-											className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#f6f7f9] text-[#212121] text-sm font-medium hover:bg-[#eceef2] transition-colors"
+											className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#f6f7f9] text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#eceef2] transition-colors"
 										>
 											<ThemedIcon src="/icons/arrow-right.svg" size={20} color="#212121" />
 											Посмотреть все услуги
@@ -186,7 +186,7 @@ export function RedesignHeader() {
 					<div className="hidden lg:flex items-center gap-2 shrink-0">
 						<a
 							href="https://edinayasreda.ru/"
-							className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-black text-base font-medium font-[Raleway] hover:bg-[#f6f7f9] transition-colors"
+							className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-[#222] text-[15px] font-involve font-medium hover:text-[#029cda] transition-colors"
 						>
 							<ThemedIcon src="/icons/icon4.svg" size={24} color="#000000" />
 							Вход
@@ -220,12 +220,12 @@ export function RedesignHeader() {
 						mobileOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
 					}`}
 				>
-					<nav className="flex flex-col gap-1 font-[Inter] px-6 pb-6 pt-12">
+					<nav className="flex flex-col gap-1 px-6 pb-6 pt-12">
 						<Link
 							href="/cases"
 							onClick={closeMobile}
-							className={`px-3 py-3 rounded-xl text-[15px] text-black hover:bg-[#f6f7f9] transition-colors ${
-								isActive('/cases') ? 'text-[#029cda] bg-[#f6f7f9]' : ''
+							className={`px-3 py-3 rounded-xl text-[15px] font-involve font-medium text-[#222] hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors ${
+								isActive('/cases') ? 'text-[#029cda]' : ''
 							}`}
 						>
 							Кейсы
@@ -236,7 +236,7 @@ export function RedesignHeader() {
 								key={item.href}
 								href={item.href}
 								onClick={closeMobile}
-								className="px-3 py-2.5 rounded-xl text-[15px] text-black hover:bg-[#f6f7f9] transition-colors"
+								className="px-3 py-2.5 rounded-xl text-[15px] font-involve font-medium text-[#222] hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
 							>
 								{item.label}
 							</Link>
@@ -244,7 +244,7 @@ export function RedesignHeader() {
 						<Link
 							href="/services"
 							onClick={closeMobile}
-							className="px-3 py-2.5 rounded-xl text-[15px] text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
+							className="px-3 py-2.5 rounded-xl text-[15px] font-involve font-medium text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
 						>
 							Все услуги
 						</Link>
@@ -253,8 +253,8 @@ export function RedesignHeader() {
 								key={item.href}
 								href={item.href}
 								onClick={closeMobile}
-								className={`px-3 py-3 rounded-xl text-[15px] text-black hover:bg-[#f6f7f9] transition-colors ${
-									isActive(item.href) ? 'text-[#029cda] bg-[#f6f7f9]' : ''
+								className={`px-3 py-3 rounded-xl text-[15px] font-involve font-medium text-[#222] hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors ${
+									isActive(item.href) ? 'text-[#029cda]' : ''
 								}`}
 							>
 								{item.label}
@@ -265,7 +265,7 @@ export function RedesignHeader() {
 						<a
 							href="https://edinayasreda.ru/"
 							onClick={closeMobile}
-							className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#f6f7f9] text-black font-medium font-[Raleway]"
+							className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#f6f7f9] text-[#222] text-[15px] font-involve font-medium hover:text-[#029cda] transition-colors"
 						>
 							<ThemedIcon src="/icons/icon4.svg" size={20} color="#000000" />
 							Вход
