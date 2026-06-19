@@ -41,6 +41,11 @@
   color: #2c2d2e !important;
 }
 
+.page-hero button.bg-\[#029cda\],
+.page-hero a.bg-\[#029cda\] {
+  color: #ffffff !important;
+}
+
 .page-hero .text-white\/90 {
   color: #202020 !important;
 }
