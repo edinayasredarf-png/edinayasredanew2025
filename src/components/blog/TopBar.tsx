@@ -11,6 +11,7 @@ import MobileSearch from './MobileSearch';
 export default function TopBar() {
   const [isAuthed, setIsAuthed] = React.useState(false);
   const [isEditor, setIsEditor] = React.useState(false);
+  const [isAdmin, setIsAdmin] = React.useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -29,17 +30,16 @@ export default function TopBar() {
     const unsubscribe = authStore.subscribe(() => {
       const isAuth = authStore.isAuthenticated();
       const isEdit = authStore.canWriteArticles();
-      console.log('TopBar auth state update:', { isAuth, isEdit });
       setIsAuthed(isAuth);
       setIsEditor(isEdit);
+      setIsAdmin(authStore.isAdmin());
     });
 
-    // Устанавливаем начальное состояние
     const isAuth = authStore.isAuthenticated();
     const isEdit = authStore.canWriteArticles();
-    console.log('TopBar initial auth state:', { isAuth, isEdit });
     setIsAuthed(isAuth);
     setIsEditor(isEdit);
+    setIsAdmin(authStore.isAdmin());
 
     return unsubscribe;
   }, []);
@@ -224,7 +224,7 @@ export default function TopBar() {
                 <div className="py-2">
                   {isAuthed ? (
                     <>
-                    {isEditor && (
+                    {isAdmin && (
                       <Link
                         href="/admin"
                         onClick={() => setShowProfileMenu(false)}
@@ -344,6 +344,7 @@ export default function TopBar() {
                     </div>
                   </div>
                   <div className="py-2">
+                    {isAdmin && (
                     <Link
                       href="/admin"
                       onClick={() => setShowProfileMenu(false)}
@@ -358,6 +359,7 @@ export default function TopBar() {
         />
                       <span>Админ-панель</span>
                     </Link>
+                    )}
                     <Link
                       href="/profile"
                       onClick={() => setShowProfileMenu(false)}

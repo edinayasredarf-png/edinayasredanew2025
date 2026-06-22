@@ -84,7 +84,7 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
       initSDK();
     } else {
       const s = document.createElement('script');
-      s.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
+      s.src = 'https://unpkg.com/@vkid/sdk@2.15.0/dist-sdk/umd/index.js';
       s.onload = initSDK;
       document.head.appendChild(s);
     }
