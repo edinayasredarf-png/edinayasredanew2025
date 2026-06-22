@@ -9,9 +9,7 @@ interface VKIDButtonProps {
 }
 
 declare global {
-  interface Window {
-    VKIDSDK: any;
-  }
+  interface Window { VKIDSDK: any; }
 }
 
 export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
@@ -23,7 +21,7 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
 
     const appId = process.env.NEXT_PUBLIC_VK_CLIENT_ID;
     if (!appId) {
-      onError?.('VK_CLIENT_ID не настроен');
+      onError?.('NEXT_PUBLIC_VK_CLIENT_ID не настроен');
       return;
     }
 
@@ -35,43 +33,45 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
 
       VKID.Config.init({
         app: Number(appId),
-        redirectUrl: typeof window !== 'undefined' ? window.location.origin + '/auth/callback?provider=vk' : '',
+        redirectUrl: window.location.origin + '/',
         responseMode: VKID.ConfigResponseMode.Callback,
         source: VKID.ConfigSource.LOWCODE,
-        scope: 'email',
+        scope: '',
       });
 
-      const oneTap = new VKID.OneTap();
-      oneTap
+      const oAuth = new VKID.OAuthList();
+
+      oAuth
         .render({
           container: containerRef.current,
-          showAlternativeLogin: false,
-          styles: { borderRadius: 12 },
+          oauthList: ['vkid'],
         })
-        .on(VKID.WidgetEvents.ERROR, (err: any) => {
-          onError?.(err?.message || 'Ошибка VK ID');
+        .on(VKID.WidgetEvents.ERROR, (error: any) => {
+          onError?.(error?.message || 'Ошибка VK ID');
         })
-        .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload: any) => {
+        .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, async (payload: any) => {
           try {
             const data = await VKID.Auth.exchangeCode(payload.code, payload.device_id);
-            // data.user contains VK user info
             const user = data?.user;
+
             const res = await fetch('/api/auth/oauth', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 provider: 'vk',
-                providerId: String(user?.id || payload.user_id || ''),
+                providerId: String(user?.id || ''),
                 email: user?.email || null,
                 name: [user?.first_name, user?.last_name].filter(Boolean).join(' ') || null,
                 avatarUrl: user?.avatar || null,
               }),
             });
+
             if (!res.ok) {
               const err = await res.json();
               onError?.(err.error || 'Ошибка входа');
               return;
             }
+
             await authStore.refreshSession();
             onSuccess();
           } catch (e: any) {
@@ -83,16 +83,10 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
     if (window.VKIDSDK) {
       initSDK();
     } else {
-      const script = document.querySelector('script[src*="vkid"]') ||
-        document.querySelector('script[src*="@vkid"]');
-      if (script) {
-        script.addEventListener('load', initSDK);
-      } else {
-        const s = document.createElement('script');
-        s.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
-        s.onload = initSDK;
-        document.head.appendChild(s);
-      }
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
+      s.onload = initSDK;
+      document.head.appendChild(s);
     }
   }, []);
 
