@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
 import { initiateOAuth } from '@/lib/oauth';
+import VKIDButton from './VKIDButton';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -167,7 +168,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-3">
+          <div className="mt-4 flex flex-col gap-3">
             <button
               onClick={() => handleProviderAuth('yandex')}
               className="flex items-center justify-center gap-3 px-4 py-3 bg-[#FC3F1D] text-white rounded-xl hover:bg-[#e83516] transition-colors font-involve font-medium"
@@ -177,15 +178,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               </svg>
               Войти через Яндекс
             </button>
-            <button
-              onClick={() => handleProviderAuth('vk')}
-              className="flex items-center justify-center gap-3 px-4 py-3 bg-[#0077FF] text-white rounded-xl hover:bg-[#0065d6] transition-colors font-involve font-medium"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
-                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.974 16.8h-1.91c-.724 0-.947-.577-2.247-1.877-1.137-1.1-1.637-.794-1.637.254V16.8c0 .474-.154.8-1.373.8-2.03 0-4.278-1.247-5.857-3.567C3.16 10.8 2.667 8 3.667 8h1.91c.713 0 .98.33 1.25 1.1.69 2.007 1.843 3.767 2.317 3.767.177 0 .257-.08.257-.517V10.4c-.053-1.013-.593-1.1-.593-1.46 0-.177.14-.357.363-.357h3.01c.4 0 .54.217.54.67v3.583c0 .4.173.543.293.543.177 0 .327-.143.653-.47 1.013-1.133 1.737-2.876 1.737-2.876.097-.197.267-.38.663-.38h1.91c.573 0 .697.3.573.67-.24.803-2.563 4.38-2.563 4.38-.2.32-.273.463 0 .82.2.273 1.193 1.18 1.8 1.897.813.95 1.437 1.747 1.603 2.3.16.553-.13.8-.73.8z"/>
-              </svg>
-              Войти через ВКонтакте
-            </button>
+            <VKIDButton
+              onSuccess={() => { onSuccess?.(); onClose(); }}
+              onError={(msg) => setError(msg)}
+            />
           </div>
         </div>
 
