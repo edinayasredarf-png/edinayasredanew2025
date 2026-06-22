@@ -154,7 +154,7 @@ export default function ServicesPage() {
       </section>
 
         {/* КАТАЛОГ УСЛУГ — карточки с изображением сверху и аккуратным ховером */}
-        <section id="catalog" className="max-w-[1400px] mx-auto mt-8 px-2 py-2">
+        <section id="catalog" className="max-w-[1200px] mx-auto mt-8 px-2 py-2">
           {/* Заголовок/подзаголовок как в примере */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
             <h2 className=" text-[#313131] text-4xl md:text-[56px] font-medium leading-tight text-left">Каталог услуг</h2>
@@ -259,7 +259,7 @@ export default function ServicesPage() {
 
 
 				<section className="bg-[#f5f7fa] py-24" >
-					<div className="max-w-[1480px] mx-auto px-4">
+					<div className="max-w-[1200px] mx-auto px-4">
 
 						<h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
 						Почему выбирают нас	</h2>

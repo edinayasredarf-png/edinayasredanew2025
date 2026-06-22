@@ -122,7 +122,7 @@ export default function InventoryBurialsPage() {
 
       {/* Почему выбирают нас */}
       <section className="w-full flex flex-col items-center mt-16">
-        <div className="max-w-[1480px] w-full flex flex-col items-start gap-16 px-5 md:px-8">
+        <div className="max-w-[1200px] w-full flex flex-col items-start gap-16 px-5 md:px-8">
           {/* Заголовок */}
           <div className="w-full flex flex-col items-center">
             <h2 className="text-center font-medium text-black text-lg md:text-2xl lg:text-4xl leading-tight">
@@ -147,7 +147,7 @@ export default function InventoryBurialsPage() {
 
       {/* Что включает услуга */}
       <section className=" py-16 md:py-24">
-        <div className="max-w-[1400px] mx-auto px-4">
+        <div className="max-w-[1200px] mx-auto px-4">
           <h2 className="text-4xl text-black font-medium mb-12 text-center">
             Что включает услуга
           </h2>
@@ -309,7 +309,7 @@ export default function InventoryBurialsPage() {
 
       {/* Цены */}
       <section className="py-16 md:py-24">
-        <div className="max-w-[1400px] mx-auto px-4">
+        <div className="max-w-[1200px] mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl text-black font-medium mb-8">
               Стоимость услуги
