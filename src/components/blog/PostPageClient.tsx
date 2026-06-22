@@ -20,6 +20,7 @@ import { sb_getPostBySlug, sb_listPosts, sb_incViews, sb_deletePostById } from '
 import { authStore } from '@/lib/authStore';
 import { sb_isFavorite, sb_toggleFavorite } from '@/lib/commentsStore';
 import CommentSection from '@/components/blog/CommentSection';
+import PostActionBar from '@/components/blog/PostActionBar';
 import AuthModal from '@/components/auth/AuthModal';
 
 
@@ -33,6 +34,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
   const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions' | 'favorites'>('feed');
 
   useEffect(() => {
@@ -247,52 +249,13 @@ export default function PostPageClient({ slug }: { slug: string }) {
                 )}
 
                 <div className="mt-4 flex items-center gap-3 text-sm text-[#6b7280]">
-                  {/* Comment icon */}
-                  <button
-                    className="p-2 rounded-lg hover:bg-[#f2f3f7]"
-                    title="Оставить комментарий"
-                    onClick={handleComment}
-                  >
-                 <Image
-          src="/icons/comments.svg"
-          alt="Все новости"
-          width={30}
-          height={30}
-          className="object-contain"
-        />
-                  </button>
-                  {/* Favorite icon */}
-                  <button
-                    className={`p-2 rounded-lg hover:bg-[#f2f3f7] ${isFavorite ? 'text-red-500' : ''}`}
-                    title={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
-                    onClick={handleFavorite}
-                    disabled={loading}
-                  >
-                <Image
-          src="/icons/favorite.svg"
-          alt="Все новости"
-          width={30}
-          height={30}
-          className="object-contain"
-        />
-                  </button>
-
-
-									{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
-                <div className="text-[#676E7E] text-sm font-medium">
-                  {new Date(post.createdAt).toLocaleDateString('ru-RU')}
-                </div>
-								  {/* Views */}
-                  <div className="ml-auto flex items-center gap-1">
-									<Image
-          src="/icons/views.svg"
-          alt="Все новости"
-          width={20}
-          height={20}
-          className="object-contain"
-        />                         <span>{views}</span>
+                  <div className="text-[#676E7E] text-sm font-medium">
+                    {new Date(post.createdAt).toLocaleDateString('ru-RU')}
                   </div>
-
+                  <div className="ml-auto flex items-center gap-1">
+                    <Image src="/icons/views.svg" alt="" width={20} height={20} className="object-contain" />
+                    <span>{views}</span>
+                  </div>
                 </div>
 
               </section>
@@ -328,12 +291,21 @@ export default function PostPageClient({ slug }: { slug: string }) {
               )}
 
               {/* Comments Section */}
-              <CommentSection postId={post.id} postType="post" />
+              <CommentSection postId={post.id} postType="post" onCountChange={setCommentsCount} />
             </div>
           </main>
           <RightSidebar />
         </div>
       </div>
+
+      <PostActionBar
+        postId={post.id}
+        postType="post"
+        commentsCount={commentsCount}
+        initialReactions={post.reactions}
+        onCommentClick={handleComment}
+        onAuthRequired={() => setShowAuthModal(true)}
+      />
 
       <AuthModal
         isOpen={showAuthModal}
