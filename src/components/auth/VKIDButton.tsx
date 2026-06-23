@@ -19,12 +19,6 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
   useEffect(() => {
     if (initialized.current) return;
 
-    const appId = process.env.NEXT_PUBLIC_VK_CLIENT_ID;
-    if (!appId) {
-      onError?.('NEXT_PUBLIC_VK_CLIENT_ID не настроен');
-      return;
-    }
-
     const initSDK = () => {
       if (!window.VKIDSDK || !containerRef.current) return;
       initialized.current = true;
@@ -32,8 +26,8 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
       const VKID = window.VKIDSDK;
 
       VKID.Config.init({
-        app: Number(appId),
-        redirectUrl: window.location.origin + '/',
+        app: 54647124,
+        redirectUrl: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/',
         responseMode: VKID.ConfigResponseMode.Callback,
         source: VKID.ConfigSource.LOWCODE,
         scope: '',
@@ -68,7 +62,7 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
 
             if (!res.ok) {
               const err = await res.json();
-              onError?.(err.error || 'Ошибка входа');
+              onError?.(err.error || 'Ошибка входа через ВК');
               return;
             }
 
