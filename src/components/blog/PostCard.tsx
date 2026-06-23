@@ -7,29 +7,22 @@ import { BlogPost } from '@/lib/blogStore';
 import { formatContentDate } from '@/lib/contentDates';
 import { authStore } from '@/lib/authStore';
 import { sb_react, sb_getReactions, myReactions } from '@/lib/blogStore';
+import CommentSection from './CommentSection';
 
 type Rx = 'heart' | 'fire' | 'smile';
-
-const KIND_LABELS: Record<string, { text: string; color: string }> = {
-  news:   { text: 'Новость', color: 'bg-[#fff3e0] text-[#e65100]' },
-  lesson: { text: 'Урок',    color: 'bg-[#e3f2fd] text-[#1565c0]' },
-  case:   { text: 'Кейс',    color: 'bg-[#e8f5e9] text-[#2e7d32]' },
-  post:   { text: 'Статья',  color: 'bg-[#f3e5f5] text-[#6a1b9a]' },
-};
 
 export default function PostCard({ p }: { p: BlogPost }) {
   const [myRx, setMyRx] = useState<Rx[]>(() => myReactions(p.id) as Rx[]);
   const [reactions, setReactions] = useState(p.reactions ?? { heart: 0, fire: 0, smile: 0 });
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const shareRef = React.useRef<HTMLDivElement>(null);
 
-  // Load actual reactions from DB
   React.useEffect(() => {
     sb_getReactions('post', p.id).then(setReactions).catch(() => {});
   }, [p.id]);
 
-  // Close share on outside click
   React.useEffect(() => {
     if (!shareOpen) return;
     const h = (e: MouseEvent) => {
@@ -41,65 +34,42 @@ export default function PostCard({ p }: { p: BlogPost }) {
 
   const handleReact = async (type: Rx, e: React.MouseEvent) => {
     e.preventDefault();
-    if (!authStore.isAuthenticated()) {
-      window.dispatchEvent(new CustomEvent('openAuthModal'));
-      return;
-    }
+    if (!authStore.isAuthenticated()) { window.dispatchEvent(new CustomEvent('openAuthModal')); return; }
     if (myRx.includes(type)) return;
     setMyRx(prev => [...prev, type]);
     setReactions(prev => ({ ...prev, [type]: prev[type] + 1 }));
     try { await sb_react('post', p.id, type); } catch {}
   };
 
+  const postUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${p.slug}`;
+
   const copyLink = async (e: React.MouseEvent) => {
     e.preventDefault();
-    const url = `${window.location.origin}/blog/${p.slug}`;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    setShareOpen(false);
+    await navigator.clipboard.writeText(postUrl);
+    setCopied(true); setTimeout(() => setCopied(false), 2000); setShareOpen(false);
   };
 
   const shareVk = (e: React.MouseEvent) => {
     e.preventDefault();
-    const url = `${window.location.origin}/blog/${p.slug}`;
-    window.open(`https://vk.com/share.php?url=${encodeURIComponent(url)}`, '_blank');
+    window.open(`https://vk.com/share.php?url=${encodeURIComponent(postUrl)}`, '_blank');
     setShareOpen(false);
   };
 
   const shareTg = (e: React.MouseEvent) => {
     e.preventDefault();
-    const url = `${window.location.origin}/blog/${p.slug}`;
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}`, '_blank');
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(postUrl)}`, '_blank');
     setShareOpen(false);
   };
 
-  const totalReactions = reactions.heart + reactions.fire + reactions.smile;
-  const kind = p.kind || 'post';
-  const badge = KIND_LABELS[kind] || KIND_LABELS.post;
   const views = p.views || 0;
 
   return (
     <article className="bg-white rounded-2xl border border-[#e8eaed] overflow-hidden font-[Raleway] hover:shadow-md transition-shadow duration-200">
 
-      {/* ── Шапка карточки: автор + дата + бейдж ── */}
-      <div className="px-5 pt-5 pb-0 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-[#029cda] flex items-center justify-center text-white text-sm font-semibold shrink-0">
-          Р
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-semibold text-[#313131]">Редакция</div>
-          <div className="text-[12px] text-[#8c9099]">{formatContentDate(p.createdAt, p.updatedAt)}</div>
-        </div>
-        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${badge.color} shrink-0`}>
-          {badge.text}
-        </span>
-      </div>
-
       {/* ── Заголовок ── */}
-      <div className="px-5 pt-3">
+      <div className="px-5 pt-5">
         <Link href={`/blog/${p.slug}`}>
-          <h3 className="text-[19px] font-bold text-[#1a1a1a] leading-[1.25] hover:text-[#029cda] transition-colors line-clamp-3">
+          <h3 className="text-[20px] font-bold text-[#1a1a1a] leading-[1.25] hover:text-[#029cda] transition-colors">
             {p.title}
           </h3>
         </Link>
@@ -114,7 +84,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
 
       {/* ── Теги ── */}
       {!!(p.tags?.length) && (
-        <div className="px-5 pt-2 flex flex-wrap gap-1.5">
+        <div className="px-5 pt-2.5 flex flex-wrap gap-1.5">
           {p.tags!.slice(0, 4).map(t => (
             <Link
               key={t}
@@ -143,31 +113,68 @@ export default function PostCard({ p }: { p: BlogPost }) {
         </Link>
       )}
 
-      {/* ── Кнопка «Читать» ── */}
-      <div className="px-5 pt-3">
-        <Link
-          href={`/blog/${p.slug}`}
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#029cda] hover:text-[#0280b5] transition-colors"
-        >
-          Читать
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </Link>
+      {/* ── Дата под обложкой, справа ── */}
+      <div className="px-5 pt-2 flex justify-end">
+        <span className="text-[12px] text-[#8c9099]">{formatContentDate(p.createdAt, p.updatedAt)}</span>
       </div>
 
+      {/* ── Кнопка «Читать» ── */}
+      <div className="px-5 pt-1 pb-1">
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#029cda] hover:text-[#0280b5] transition-colors"
+        >
+          {expanded ? 'Свернуть' : 'Читать'}
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round"
+            className={`transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Развёрнутый контент ── */}
+      {expanded && (
+        <div className="px-5 pb-2">
+          <div className="h-px bg-[#e8eaed] mb-4" />
+
+          {/* Тело статьи */}
+          <div
+            className="article-content max-w-none text-[#313131] font-[Raleway]"
+            dangerouslySetInnerHTML={{ __html: p.contentHtml }}
+          />
+
+          {/* Ссылка на полную статью */}
+          <div className="mt-4 pt-4 border-t border-[#e8eaed]">
+            <Link
+              href={`/blog/${p.slug}`}
+              className="text-[13px] font-semibold text-[#029cda] hover:text-[#0280b5] transition-colors"
+            >
+              Открыть полную версию →
+            </Link>
+          </div>
+
+          {/* Комментарии */}
+          <div className="mt-4 pt-4 border-t border-[#e8eaed]">
+            <CommentSection postId={p.id} postType="post" />
+          </div>
+        </div>
+      )}
+
       {/* ── Нижняя панель действий ── */}
-      <div className="px-5 pt-3 pb-4 flex items-center gap-1">
+      <div className="px-5 py-3 border-t border-[#f0f1f3] flex items-center gap-1">
 
         {/* Реакции */}
-        {(['heart', 'fire', 'smile'] as Rx[]).map((type, i) => {
+        {(['heart', 'fire', 'smile'] as Rx[]).map(type => {
           const emojis = { heart: '❤️', fire: '🔥', smile: '😊' };
           const count = reactions[type];
           const active = myRx.includes(type);
           return (
             <button
               key={type}
-              onClick={(e) => handleReact(type, e)}
+              onClick={e => handleReact(type, e)}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[13px] font-medium transition-all
                 ${active ? 'bg-[#e6f6fc] text-[#029cda]' : 'text-[#52555a] hover:bg-[#f5f6f8]'}`}
             >
@@ -178,15 +185,25 @@ export default function PostCard({ p }: { p: BlogPost }) {
         })}
 
         {/* Просмотры */}
-        <div className="flex items-center gap-1 px-2.5 py-1.5 text-[13px] text-[#8c9099]">
+        <div className="flex items-center gap-1 px-2 py-1.5 text-[13px] text-[#8c9099]">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
           </svg>
           {views > 0 && <span>{views}</span>}
         </div>
 
         <div className="flex-1" />
+
+        {/* Комментировать */}
+        <button
+          onClick={() => setExpanded(true)}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[13px] font-medium text-[#52555a] hover:bg-[#f5f6f8] transition-all"
+          title="Комментарии"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </button>
 
         {/* Поделиться */}
         <div ref={shareRef} className="relative">

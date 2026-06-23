@@ -43,7 +43,7 @@ function AdsCarousel() {
     <div className="bg-white rounded-2xl border border-[#e8eaed] overflow-hidden">
       <div
         ref={wrapRef}
-        className="relative w-full h-[200px] select-none overflow-hidden cursor-grab active:cursor-grabbing"
+        className="relative w-full h-[424px] select-none overflow-hidden cursor-grab active:cursor-grabbing"
         onMouseDown={e => { startX.current = e.clientX; setDragging(true); setDragPx(0); wasDragged.current = false;
           const mm = (ev: MouseEvent) => { const d = ev.clientX - startX.current; if (Math.abs(d) > 3) wasDragged.current = true; setDragPx(d); };
           const mu = () => { finishDrag(); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
@@ -61,7 +61,7 @@ function AdsCarousel() {
           }}
         >
           {banners.map((b, i) => (
-            <a key={i} href={b.href} className="block min-w-full h-[200px] relative"
+            <a key={i} href={b.href} className="block min-w-full h-[424px] relative"
               onClick={e => { if (wasDragged.current) e.preventDefault(); }}>
               <Image src={b.src} alt={b.alt || `Баннер ${i + 1}`} fill className="object-cover" sizes="260px" draggable={false} />
             </a>
@@ -94,7 +94,7 @@ export default function RightSidebar() {
   }, []);
 
   return (
-    <aside className="w-[260px] shrink-0 hidden xl:block">
+    <aside className="w-[287px] shrink-0 hidden xl:block">
       <div className="sticky top-[76px] space-y-3 font-[Raleway]">
 
         {/* Блок новостей */}

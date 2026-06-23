@@ -125,16 +125,13 @@ function BlogHomeInner() {
               {/* Полоска новостей — только в общей ленте */}
               {activeTab === 'feed' && !q && !tag && <NewsStrip />}
 
-              {/* Фильтр/сортировка */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
+              {/* Активные фильтры */}
+              {(tag || q) && (
+                <div className="flex items-center gap-2 mb-3">
                   {tag && (
                     <div className="flex items-center gap-2 bg-white border border-[#e8eaed] rounded-xl px-3 py-1.5 text-[13px] font-medium text-[#313131]">
                       <span className="text-[#8c9099]">Тег:</span> #{tag}
-                      <button
-                        onClick={() => router.push('/blog')}
-                        className="text-[#8c9099] hover:text-[#313131] ml-1"
-                      >
+                      <button onClick={() => router.push('/blog')} className="text-[#8c9099] hover:text-[#313131] ml-1">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
@@ -148,27 +145,7 @@ function BlogHomeInner() {
                     </div>
                   )}
                 </div>
-
-                <div className="flex items-center gap-1">
-                  {(['popular', 'fresh'] as const).map(sort => (
-                    <button
-                      key={sort}
-                      onClick={() => {
-                        const p = new URLSearchParams(sp.toString());
-                        p.set('sort', sort);
-                        router.push(`/blog?${p.toString()}`);
-                      }}
-                      className={`h-8 px-3 rounded-xl text-[13px] font-medium transition-colors
-                        ${sortFromUrl === sort
-                          ? 'bg-[#e6f6fc] text-[#029cda]'
-                          : 'text-[#8c9099] hover:bg-[#f5f6f8] hover:text-[#313131]'
-                        }`}
-                    >
-                      {sort === 'popular' ? 'Популярное' : 'Свежее'}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Посты */}
               {activeTab === 'favorites' && !isAuthenticated ? (

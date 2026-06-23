@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import MobileSearch from './MobileSearch';
 
 export default function TopBar() {
@@ -53,45 +53,14 @@ export default function TopBar() {
     setShowSearchInput(false);
   };
 
-  const navLinks = [
-    { href: '/blog', label: 'Статьи' },
-    { href: '/news', label: 'Новости' },
-    { href: '/cases', label: 'Кейсы' },
-  ];
-
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-[#e8eaed] font-[Raleway]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[60px] flex items-center gap-4">
 
-        {/* Логотип */}
-        <Link href="/" className="shrink-0 flex items-center gap-2.5" aria-label="Главная">
-          <div className="w-8 h-8 rounded-lg overflow-hidden">
-            <Image src="/icons/es-blue.svg" alt="logo" width={32} height={32} className="w-full h-full object-contain" />
-          </div>
-          <span className="hidden sm:block text-[15px] font-bold text-[#313131] leading-tight">
-            Единая<br/>среда
-          </span>
+        {/* Логотип — как на всех страницах */}
+        <Link href="/" className="shrink-0" aria-label="Главная">
+          <Image src="/img/logo_dark.svg" alt="Единая среда" width={140} height={38} className="h-[38px] w-auto object-contain" />
         </Link>
-
-        {/* Навигационные вкладки (desktop) */}
-        <nav className="hidden md:flex items-center gap-1 ml-2">
-          {navLinks.map(({ href, label }) => {
-            const isActive = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`h-9 px-4 rounded-xl text-[14px] font-medium flex items-center transition-colors
-                  ${isActive
-                    ? 'bg-[#e6f6fc] text-[#029cda]'
-                    : 'text-[#52555a] hover:bg-[#f5f6f8] hover:text-[#313131]'
-                  }`}
-              >
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
 
         <div className="flex-1" />
 
@@ -257,23 +226,6 @@ export default function TopBar() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Мобильные вкладки навигации */}
-      <div className="md:hidden border-t border-[#f0f1f3] px-4 flex gap-1 pb-1 pt-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
-        {navLinks.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`shrink-0 h-8 px-4 rounded-xl text-[13px] font-medium flex items-center transition-colors
-              ${pathname === href
-                ? 'bg-[#e6f6fc] text-[#029cda]'
-                : 'text-[#52555a] hover:bg-[#f5f6f8]'
-              }`}
-          >
-            {label}
-          </Link>
-        ))}
       </div>
 
       <MobileSearch
