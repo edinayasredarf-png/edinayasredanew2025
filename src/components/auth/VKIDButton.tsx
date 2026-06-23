@@ -27,7 +27,7 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
 
       VKID.Config.init({
         app: 54647124,
-        redirectUrl: window.location.origin + '/',
+        redirectUrl: 'https://единаясреда.рф/',
         responseMode: VKID.ConfigResponseMode.Callback,
         source: VKID.ConfigSource.LOWCODE,
         scope: '',
