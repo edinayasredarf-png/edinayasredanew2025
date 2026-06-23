@@ -29,12 +29,46 @@ function AuthCallbackInner() {
         router.push(`/blog?error=${encodeURIComponent(searchParams.get('error_description') || error)}`);
         return;
       }
-      if (!code || !state) {
+      if (!code) {
         router.push('/blog?error=Отсутствует код авторизации');
+        return;
+      }
+      if (!state && provider !== 'vk') {
+        router.push('/blog?error=Отсутствует state');
         return;
       }
 
       try {
+        // For VK SDK, exchange code using codeVerifier from localStorage
+        if (provider === 'vk') {
+          const codeVerifier = localStorage.getItem('vk_code_verifier') || '';
+          localStorage.removeItem('vk_state');
+          localStorage.removeItem('vk_code_verifier');
+          // Use VK SDK to exchange code
+          const { Auth } = await import('@vkid/sdk');
+          const data = await Auth.exchangeCode(code, codeVerifier) as { user?: { id?: number; first_name?: string; last_name?: string; email?: string; avatar?: string } };
+          const user = data?.user;
+          const res = await fetch('/api/auth/oauth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              provider: 'vk',
+              providerId: String(user?.id || ''),
+              email: user?.email || null,
+              name: [user?.first_name, user?.last_name].filter(Boolean).join(' ') || null,
+              avatarUrl: user?.avatar || null,
+            }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            router.push(`/blog?error=${encodeURIComponent(err.error || 'Ошибка авторизации')}`);
+            return;
+          }
+          await authStore.refreshSession();
+          router.push('/blog?success=Вы успешно вошли!');
+          return;
+        }
+
         // Exchange code for token
         const tokenData = await exchangeCodeForToken(provider, code, state);
         // Get user info from provider
