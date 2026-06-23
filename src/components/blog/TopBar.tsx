@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import MobileSearch from './MobileSearch';
 
 export default function TopBar() {
