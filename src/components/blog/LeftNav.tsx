@@ -1,28 +1,9 @@
 'use client';
+
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-interface ItemProps {
-  active?: boolean;
-  label: string;
-  icon: string;
-  onClick?: () => void;
-}
-
-function Item({ active, label, icon, onClick }: ItemProps) {
-  return (
-    <div
-      className={`w-full p-2 rounded-2xl inline-flex items-center gap-3 cursor-pointer hover:bg-white/50 transition-colors ${active ? 'bg-white ' : ''}`}
-      onClick={onClick}
-    >
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${active ? 'bg-[#f2f3f7]' : 'bg-white '}`}>
-        <Image src={icon} alt={label} width={20} height={20} className="w-5 h-5" />
-      </div>
-      <div className={`${active ? 'text-[#313131]' : 'text-[#52555a]'} text-base`}>{label}</div>
-    </div>
-  );
-}
+import { usePathname } from 'next/navigation';
 
 interface LeftNavProps {
   activeTab?: 'feed' | 'subscriptions' | 'favorites';
@@ -30,49 +11,65 @@ interface LeftNavProps {
 }
 
 export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProps) {
-  return (
-    <aside className="w-[294px] shrink-0 hidden xl:block">
-      <div className="sticky top-[86px] space-y-6 font-[Raleway] font-medium  lining-nums">
-        <nav className="space-y-3">
-          <Item
-            active={activeTab === 'feed'}
-            label="Лента"
-            icon="/icons/blog/lenta.svg"
-            onClick={() => onTabChange?.('feed')}
-          />
+  const pathname = usePathname();
 
-          <Item
-            active={activeTab === 'favorites'}
-            label="Избранное"
-            icon="/icons/blog/izbrannoe.svg"
-            onClick={() => onTabChange?.('favorites')}
-          />
+  const mainLinks = [
+    { tab: 'feed' as const, label: 'Лента', icon: '/icons/blog/lenta.svg', href: '/blog' },
+    { tab: 'favorites' as const, label: 'Избранное', icon: '/icons/blog/izbrannoe.svg', href: null },
+  ];
+
+  return (
+    <aside className="w-[220px] shrink-0 hidden xl:block">
+      <div className="sticky top-[76px] font-[Raleway]">
+
+        {/* Основная навигация */}
+        <nav className="space-y-0.5 mb-6">
+          {mainLinks.map(({ tab, label, icon, href }) => {
+            const isActive = tab === activeTab;
+            return (
+              <button
+                key={tab}
+                onClick={() => onTabChange?.(tab)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-colors text-left
+                  ${isActive
+                    ? 'bg-[#e6f6fc] text-[#029cda]'
+                    : 'text-[#52555a] hover:bg-[#f5f6f8] hover:text-[#313131]'
+                  }`}
+              >
+                <Image src={icon} alt={label} width={18} height={18} className="shrink-0 opacity-70" />
+                {label}
+              </button>
+            );
+          })}
         </nav>
 
-        <div className="space-y-3 text-sm font-medium text-[#52555a]">
-          <Link href="/about" className="hover:text-[#313131]">О проекте</Link>
-          <div className="flex gap-5">
-            <a href="/documents" className="hover:text-[#313131]">Документы</a>
-            <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="hover:text-[#313131]">Поддержка</a>
-          </div>
+        {/* Разделитель */}
+        <div className="h-px bg-[#e8eaed] mb-4" />
+
+        {/* Ссылки */}
+        <div className="space-y-1 text-[13px] text-[#8c9099] mb-6">
+          <Link href="/about" className="block px-3 py-1.5 rounded-lg hover:text-[#313131] hover:bg-[#f5f6f8] transition-colors">О проекте</Link>
+          <Link href="/documents" className="block px-3 py-1.5 rounded-lg hover:text-[#313131] hover:bg-[#f5f6f8] transition-colors">Документы</Link>
+          <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="block px-3 py-1.5 rounded-lg hover:text-[#313131] hover:bg-[#f5f6f8] transition-colors">Поддержка</a>
         </div>
 
-        <div className="flex gap-3">
-          <a href="https://vk.com/edinayasredarf" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <Image src="/icons/vk.svg" alt="VK" width={16} height={16} className="brightness-0 invert" />
+        {/* Соцсети */}
+        <div className="flex gap-2 px-3 mb-4">
+          <a href="https://vk.com/edinayasredarf" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-[#f5f6f8] flex items-center justify-center hover:bg-[#e8eaed] transition-colors">
+            <Image src="/icons/vk.svg" alt="VK" width={15} height={15} />
           </a>
-          <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <Image src="/icons/tg.svg" alt="Telegram" width={16} height={16} className="brightness-0 invert" />
+          <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-[#f5f6f8] flex items-center justify-center hover:bg-[#e8eaed] transition-colors">
+            <Image src="/icons/tg.svg" alt="Telegram" width={15} height={15} />
           </a>
-          <a href="https://dzen.ru/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <Image src="/icons/dzen.svg" alt="Дзен" width={16} height={16} className="brightness-0 invert" />
+          <a href="https://dzen.ru/edinayasreda" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-[#f5f6f8] flex items-center justify-center hover:bg-[#e8eaed] transition-colors">
+            <Image src="/icons/dzen.svg" alt="Дзен" width={15} height={15} />
           </a>
-          <a href="https://vkvideo.ru/@edinayasreda" target="_blank" rel="noopener noreferrer" className="w-[30px] h-[30px] rounded-lg bg-[#A4A8B2] flex items-center justify-center hover:bg-[#9398a3] transition">
-            <Image src="/icons/vkvideo.svg" alt="VK Video" width={16} height={16} className="brightness-0 invert" />
+          <a href="https://vkvideo.ru/@edinayasreda" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-[#f5f6f8] flex items-center justify-center hover:bg-[#e8eaed] transition-colors">
+            <Image src="/icons/vkvideo.svg" alt="VK Video" width={15} height={15} />
           </a>
         </div>
 
-        <div className="text-[#52555a] text-sm">© 2023–2025<br/>Все права защищены</div>
+        <div className="px-3 text-[12px] text-[#b0b6c0]">© 2023–2025 Все права защищены</div>
       </div>
     </aside>
   );

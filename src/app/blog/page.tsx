@@ -6,6 +6,7 @@ import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import PostCard from '@/components/blog/PostCard';
+import NewsStrip from '@/components/blog/NewsStrip';
 import BlogLayout from '@/components/BlogLayout';
 import { BlogPost, ensureDemo, sb_listPosts } from '@/lib/blogStore';
 import { sb_getUserFavorites } from '@/lib/commentsStore';
@@ -13,11 +14,6 @@ import { authStore } from '@/lib/authStore';
 import { useSearchParams } from 'next/navigation';
 import MobileBottomNav from '@/components/MobileBottomNav';
 
-// MUI Skeleton
-import Skeleton from '@mui/material/Skeleton';
-import Stack from '@mui/material/Stack';
-
-// Модульный кэш — переживает навигацию между страницами
 let _postsCache: BlogPost[] | null = null;
 
 function BlogHomeInner() {
@@ -35,7 +31,6 @@ function BlogHomeInner() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Загрузка постов (с кэшем — при повторном визите данные уже есть)
   useEffect(() => {
     ensureDemo();
     (async () => {
@@ -43,170 +38,180 @@ function BlogHomeInner() {
         const fromSb = await sb_listPosts();
         _postsCache = fromSb;
         setPosts(fromSb);
-      } catch (error) {
-        console.error('Failed to load posts from database:', error);
+      } catch {
         setPosts([]);
       }
     })();
   }, []);
 
-  // Подписка на изменения аутентификации
   useEffect(() => {
-    const unsubscribe = authStore.subscribe(() => {
-      setIsAuthenticated(authStore.isAuthenticated());
-    });
+    const unsub = authStore.subscribe(() => setIsAuthenticated(authStore.isAuthenticated()));
     setIsAuthenticated(authStore.isAuthenticated());
-    return unsubscribe;
+    return unsub;
   }, []);
 
-  // Загрузка избранного при смене вкладки
   useEffect(() => {
     if (activeTab === 'favorites' && isAuthenticated) {
-      (async () => {
-        try {
-          const favorites = await sb_getUserFavorites();
-          setFavoritePostIds(favorites.map(f => f.post_id));
-        } catch (error) {
-          console.error('Failed to load favorites:', error);
-          setFavoritePostIds([]);
-        }
-      })();
+      sb_getUserFavorites()
+        .then(favs => setFavoritePostIds(favs.map(f => f.post_id)))
+        .catch(() => setFavoritePostIds([]));
     }
   }, [activeTab, isAuthenticated]);
 
-  // Синхронизация query параметров
   useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
   useEffect(() => { setActiveTab(tabFromUrl); }, [tabFromUrl]);
 
-  // Обработка уведомлений через query параметры
   useEffect(() => {
     const error = sp.get('error');
     const success = sp.get('success');
-
-    const showNotification = (type: 'success' | 'error', message: string) => {
-      setNotification({ type, message });
-      setTimeout(() => setNotification(null), 5000);
-    };
-
-    if (error) {
-      showNotification('error', decodeURIComponent(error));
-    }
-
-    if (success) {
-      showNotification('success', decodeURIComponent(success));
-    }
-
+    if (error) { setNotification({ type: 'error', message: decodeURIComponent(error) }); setTimeout(() => setNotification(null), 5000); }
+    if (success) { setNotification({ type: 'success', message: decodeURIComponent(success) }); setTimeout(() => setNotification(null), 5000); }
     if (error || success) {
-      const newSearchParams = new URLSearchParams(sp.toString());
-      newSearchParams.delete('error');
-      newSearchParams.delete('success');
-      const newUrl = newSearchParams.toString() ? `/blog?${newSearchParams.toString()}` : '/blog';
-      router.replace(newUrl, { scroll: false });
+      const p = new URLSearchParams(sp.toString());
+      p.delete('error'); p.delete('success');
+      router.replace(p.toString() ? `/blog?${p.toString()}` : '/blog', { scroll: false });
     }
   }, [sp, router]);
 
-  // Фильтрация постов
   const filtered = useMemo(() => {
     let arr = posts.filter(p => (p.kind || 'post') !== 'case');
-
     if (activeTab === 'favorites') {
       if (!isAuthenticated) return [];
       arr = arr.filter(p => favoritePostIds.includes(p.id));
     }
-
-    if (tag) arr = arr.filter(p => (p.tags||[]).some(t => t.toLowerCase() === tag.toLowerCase()));
+    if (tag) arr = arr.filter(p => (p.tags || []).some(t => t.toLowerCase() === tag.toLowerCase()));
     if (q) {
-      const isTagQuery = q.startsWith('tag:');
-      if (isTagQuery) {
+      const isTagQ = q.startsWith('tag:');
+      if (isTagQ) {
         const t = q.slice(4).trim();
-        arr = arr.filter(p => (p.tags||[]).some(x => x.toLowerCase().includes(t)));
+        arr = arr.filter(p => (p.tags || []).some(x => x.toLowerCase().includes(t)));
       } else {
         arr = arr.filter(p =>
-          p.title.toLowerCase().includes(q) ||
-          (p.subtitle||'').toLowerCase().includes(q) ||
-          (p.tags||[]).some(t => t.toLowerCase().includes(q))
+          p.title.toLowerCase().includes(q.toLowerCase()) ||
+          (p.subtitle || '').toLowerCase().includes(q.toLowerCase()) ||
+          (p.tags || []).some(t => t.toLowerCase().includes(q.toLowerCase()))
         );
       }
     }
-    arr = [...arr].sort((a, b) => {
-      if (sortFromUrl === 'popular') {
-        return (b.views || 0) - (a.views || 0);
-      }
-      return (b.createdAt || 0) - (a.createdAt || 0);
-    });
-
-    return arr;
+    return [...arr].sort((a, b) =>
+      sortFromUrl === 'popular' ? (b.views || 0) - (a.views || 0) : (b.createdAt || 0) - (a.createdAt || 0)
+    );
   }, [posts, q, tag, activeTab, favoritePostIds, isAuthenticated, sortFromUrl]);
-
-  // Разделение на две колонки
-  const cols = useMemo(() => {
-    const A: BlogPost[] = [], B: BlogPost[] = [];
-    filtered.forEach((p, i) => (i % 2 === 0 ? A : B).push(p));
-    return [A, B];
-  }, [filtered]);
 
   return (
     <BlogLayout>
-      <div className="bg-[#f2f3f7] min-h-screen font-{Raleway}">
+      <div className="min-h-screen bg-[#f5f6f8] font-[Raleway]">
         <TopBar />
 
         {/* Уведомления */}
         {notification && (
-          <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg max-w-md ${
-            notification.type === 'success'
-              ? 'bg-green-500 text-white'
-              : 'bg-red-500 text-white'
+          <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-lg max-w-sm flex items-center justify-between gap-4 text-sm font-medium ${
+            notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
           }`}>
-            <div className="flex items-center justify-between">
-              <span>{notification.message}</span>
-              <button
-                onClick={() => setNotification(null)}
-                className="ml-4 text-white hover:text-gray-200"
-              >
-                ×
-              </button>
-            </div>
+            <span>{notification.message}</span>
+            <button onClick={() => setNotification(null)} className="text-white/80 hover:text-white text-lg leading-none">×</button>
           </div>
         )}
 
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
-          <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-16">
+          <div className="flex gap-6">
+
+            {/* Левый сайдбар */}
             <LeftNav activeTab={activeTab} onTabChange={setActiveTab} />
-            <main className="flex-1 flex justify-center">
-              <div className="w-full max-w-[764px]">
-                {/* Не авторизован + избранное */}
-                {activeTab === 'favorites' && !isAuthenticated ? (
-                  <div className="text-center py-12">
-                    <div className="text-gray-500 text-lg mb-4">
-                      Для просмотра избранного необходимо войти в систему
+
+            {/* Основной контент */}
+            <main className="flex-1 min-w-0">
+
+              {/* Полоска новостей — только в общей ленте */}
+              {activeTab === 'feed' && !q && !tag && <NewsStrip />}
+
+              {/* Фильтр/сортировка */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  {tag && (
+                    <div className="flex items-center gap-2 bg-white border border-[#e8eaed] rounded-xl px-3 py-1.5 text-[13px] font-medium text-[#313131]">
+                      <span className="text-[#8c9099]">Тег:</span> #{tag}
+                      <button
+                        onClick={() => router.push('/blog')}
+                        className="text-[#8c9099] hover:text-[#313131] ml-1"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
                     </div>
+                  )}
+                  {q && (
+                    <div className="flex items-center gap-2 bg-white border border-[#e8eaed] rounded-xl px-3 py-1.5 text-[13px] font-medium text-[#313131]">
+                      <span className="text-[#8c9099]">Поиск:</span> {q}
+                      <button onClick={() => router.push('/blog')} className="text-[#8c9099] hover:text-[#313131] ml-1">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {(['popular', 'fresh'] as const).map(sort => (
                     <button
-                      onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-                      className="px-6 py-2 bg-[#029cda] text-white rounded-lg hover:bg-[#029cda]/90 transition-colors"
+                      key={sort}
+                      onClick={() => {
+                        const p = new URLSearchParams(sp.toString());
+                        p.set('sort', sort);
+                        router.push(`/blog?${p.toString()}`);
+                      }}
+                      className={`h-8 px-3 rounded-xl text-[13px] font-medium transition-colors
+                        ${sortFromUrl === sort
+                          ? 'bg-[#e6f6fc] text-[#029cda]'
+                          : 'text-[#8c9099] hover:bg-[#f5f6f8] hover:text-[#313131]'
+                        }`}
                     >
-                      Войти
+                      {sort === 'popular' ? 'Популярное' : 'Свежее'}
                     </button>
-                  </div>
-                ) : posts.length === 0 ? (
-                  // Skeleton пока загружаются посты
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <Stack key={i} spacing={1}>
-                        <Skeleton variant="rectangular" sx={{ borderRadius: 6 }} width={350} height={200} />
-                        <Skeleton variant="text" width={300} height={30} />
-                        <Skeleton variant="text" width={250} height={20} />
-                      </Stack>
-                    ))}
-                  </div>
-                ) : (
-                  // Рендер постов
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
-                    {cols[0].map(p => <PostCard key={p.id} p={p} />)}
-                    {cols[1].map(p => <PostCard key={p.id} p={p} />)}
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
+
+              {/* Посты */}
+              {activeTab === 'favorites' && !isAuthenticated ? (
+                <div className="bg-white rounded-2xl border border-[#e8eaed] p-12 text-center">
+                  <div className="text-[15px] text-[#8c9099] mb-4">Войдите, чтобы видеть избранное</div>
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
+                    className="h-10 px-6 bg-[#029cda] text-white text-[14px] font-semibold rounded-xl hover:bg-[#0280b5] transition-colors"
+                  >
+                    Войти
+                  </button>
+                </div>
+              ) : posts.length === 0 ? (
+                // Skeleton
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-white rounded-2xl border border-[#e8eaed] p-5 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gray-100 animate-pulse" />
+                        <div className="space-y-1.5">
+                          <div className="h-3 w-20 bg-gray-100 rounded animate-pulse" />
+                          <div className="h-3 w-14 bg-gray-100 rounded animate-pulse" />
+                        </div>
+                      </div>
+                      <div className="h-6 w-3/4 bg-gray-100 rounded animate-pulse" />
+                      <div className="h-4 w-full bg-gray-100 rounded animate-pulse" />
+                      <div className="h-4 w-2/3 bg-gray-100 rounded animate-pulse" />
+                      <div className="w-full aspect-[16/9] bg-gray-100 rounded-xl animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-[#e8eaed] p-12 text-center">
+                  <div className="text-[15px] text-[#8c9099]">Ничего не найдено</div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filtered.map(p => <PostCard key={p.id} p={p} />)}
+                </div>
+              )}
             </main>
+
+            {/* Правый сайдбар */}
             <RightSidebar />
           </div>
         </div>
@@ -218,7 +223,11 @@ function BlogHomeInner() {
 
 export default function BlogHome() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f2f3f7] flex items-center justify-center">Загрузка…</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f5f6f8] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#029cda]" />
+      </div>
+    }>
       <BlogHomeInner />
     </Suspense>
   );

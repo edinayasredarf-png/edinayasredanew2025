@@ -1,6 +1,5 @@
 'use client';
 
-// TopBar — белый поиск (desktop) крупнее и по центру, без затемнения фона
 import Link from 'next/link';
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -9,16 +8,15 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import MobileSearch from './MobileSearch';
 
 export default function TopBar() {
-  const [isAuthed, setIsAuthed] = React.useState(false);
-  const [isEditor, setIsEditor] = React.useState(false);
-  const [isAdmin, setIsAdmin] = React.useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [isEditor, setIsEditor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const [contentType, setContentType] = useState<'all' | 'post' | 'news' | 'lesson' | 'case'>('all');
+  const [showSearchInput, setShowSearchInput] = useState(false);
 
   const profileRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -27,368 +25,231 @@ export default function TopBar() {
   const [q, setQ] = useState(qFromUrl);
 
   useEffect(() => {
-    const unsubscribe = authStore.subscribe(() => {
-      const isAuth = authStore.isAuthenticated();
-      const isEdit = authStore.canWriteArticles();
-      setIsAuthed(isAuth);
-      setIsEditor(isEdit);
+    const unsub = authStore.subscribe(() => {
+      setIsAuthed(authStore.isAuthenticated());
+      setIsEditor(authStore.canWriteArticles());
       setIsAdmin(authStore.isAdmin());
     });
-
-    const isAuth = authStore.isAuthenticated();
-    const isEdit = authStore.canWriteArticles();
-    setIsAuthed(isAuth);
-    setIsEditor(isEdit);
+    setIsAuthed(authStore.isAuthenticated());
+    setIsEditor(authStore.canWriteArticles());
     setIsAdmin(authStore.isAdmin());
-
-    return unsubscribe;
+    return unsub;
   }, []);
-  React.useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
 
-  // закрытие поповеров
-  React.useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
+  useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfileMenu(false);
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowSearchDropdown(false);
     };
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  const goSearch = (value: string, type?: string) => {
+  const goSearch = (value: string) => {
     const params = new URLSearchParams(sp.toString());
     if (value) params.set('q', value); else params.delete('q');
-    if (type && type !== 'all') params.set('type', type); else params.delete('type');
     router.push(`${pathname}?${params.toString()}`);
-    setShowSearchDropdown(false);
+    setShowSearchInput(false);
   };
 
+  const navLinks = [
+    { href: '/blog', label: 'Статьи' },
+    { href: '/news', label: 'Новости' },
+    { href: '/cases', label: 'Кейсы' },
+  ];
+
   return (
-    <div className="sticky top-0 z-40 w-full bg-[#f2f3f7] font-[Raleway] font-medium pt-2">
-      <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] h-[62px] flex items-center">
-        {/* ЛОГО слева */}
-        <Link
-          href="/"
-          className="w-[46px] h-[46px] rounded-xl overflow-hidden shrink-0"
-          aria-label="Logo"
-        >
-          <Image src="/icons/es-blue.svg" alt="logo" width={46} height={46} className="w-full h-full object-contain" />
+    <header className="sticky top-0 z-40 w-full bg-white border-b border-[#e8eaed] font-[Raleway]">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[60px] flex items-center gap-4">
+
+        {/* Логотип */}
+        <Link href="/" className="shrink-0 flex items-center gap-2.5" aria-label="Главная">
+          <div className="w-8 h-8 rounded-lg overflow-hidden">
+            <Image src="/icons/es-blue.svg" alt="logo" width={32} height={32} className="w-full h-full object-contain" />
+          </div>
+          <span className="hidden sm:block text-[15px] font-bold text-[#313131] leading-tight">
+            Единая<br/>среда
+          </span>
         </Link>
 
-        {/* ЦЕНТРАЛЬНЫЙ ПОИСК (desktop) — по центру, шире и выше */}
-        <div
-          ref={searchRef}
-          className="hidden md:block absolute left-1/2 -translate-x-1/2 w-full max-w-[764px] "
-        >
-          <div className="relative h-[50px]">
-            <div className="absolute inset-0 bg-white rounded-2xl flex items-center pl-12 pr-4">
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') goSearch(q, contentType); }}
-                onFocus={() => setShowSearchDropdown(true)}
-                placeholder="Поиск по статьям и тегам"
-                className="flex-1 outline-none text-[16px] placeholder:text-[#52555a] text-[#313131] bg-transparent"
-                aria-label="Поле поиска"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => goSearch(q, contentType)}
-              aria-label="Найти"
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-[44px] h-[44px] rounded-lg flex items-center justify-center hover:bg-black/5 transition"
-            >
-              	<Image
-          src="/icons/search.svg"
-          alt="Поиск"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-            </button>
-          </div>
+        {/* Навигационные вкладки (desktop) */}
+        <nav className="hidden md:flex items-center gap-1 ml-2">
+          {navLinks.map(({ href, label }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`h-9 px-4 rounded-xl text-[14px] font-medium flex items-center transition-colors
+                  ${isActive
+                    ? 'bg-[#e6f6fc] text-[#029cda]'
+                    : 'text-[#52555a] hover:bg-[#f5f6f8] hover:text-[#313131]'
+                  }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
 
-          {/* выпадашка категорий — БЕЗ затемнения фона */}
-          {showSearchDropdown && (
-            <div className="absolute top-full left-1 right-0 mt-6 bg-white rounded-2xl shadow-2xl ">
-              <div className="p-4">
-                <div className="text-sm text-[#7C8A9A] font-medium mb-3">Категории</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {([
-                    ['all','Все'],
-                    ['post','Статьи'],
-                    ['news','Новости'],
-                    ['lesson','Уроки'],
-                    ['case','Кейсы'],
-                  ] as const).map(([key,label])=>(
-                    <button
-                      key={key}
-                      onClick={() => { setContentType(key as any); goSearch(q, key); }}
-                      className={`px-3 py-2 text-sm rounded-lg transition ${
-                        contentType === key
-                          ? 'bg-[#029cda] text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+        <div className="flex-1" />
+
+        {/* Поиск (desktop — inline input) */}
+        <div className="hidden md:flex items-center">
+          {showSearchInput ? (
+            <div className="flex items-center gap-2 bg-[#f5f6f8] rounded-xl px-3 h-9 w-[220px]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8c9099" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                ref={searchInputRef}
+                autoFocus
+                value={q}
+                onChange={e => setQ(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') goSearch(q); if (e.key === 'Escape') setShowSearchInput(false); }}
+                onBlur={() => { if (!q) setShowSearchInput(false); }}
+                placeholder="Поиск по статьям…"
+                className="flex-1 bg-transparent text-[13px] text-[#313131] placeholder:text-[#8c9099] outline-none"
+              />
+              {q && (
+                <button onClick={() => { setQ(''); goSearch(''); }} className="text-[#8c9099] hover:text-[#313131]">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              )}
             </div>
+          ) : (
+            <button
+              onClick={() => setShowSearchInput(true)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-[#52555a] hover:bg-[#f5f6f8] transition-colors"
+              aria-label="Поиск"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </button>
           )}
         </div>
 
-        {/* растяжка */}
-        <div className="flex-1" />
-
-        {/* МОБИЛЬНЫЕ ДЕЙСТВИЯ */}
-        <div className="md:hidden ml-auto flex items-center gap-2">
-          <button
-            onClick={() => setShowMobileSearch(true)}
-            className="w-[40px] h-[40px] rounded-xl bg-white flex items-center justify-center hover:bg-gray-50"
-            aria-label="Открыть поиск"
+        {/* Написать (для редакторов) */}
+        {isEditor && (
+          <Link
+            href="/blog/new"
+            className="hidden md:flex items-center gap-2 h-9 px-4 rounded-xl bg-[#029cda] text-white text-[14px] font-semibold hover:bg-[#0280b5] transition-colors"
           >
-            	<Image
-          src="/icons/search.svg"
-          alt="Все новости"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Написать
+          </Link>
+        )}
+
+        {/* Профиль / Войти */}
+        {!isAuthed ? (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
+            className="hidden md:flex items-center gap-2 h-9 px-4 rounded-xl border border-[#e8eaed] text-[#313131] text-[14px] font-medium hover:bg-[#f5f6f8] transition-colors"
+          >
+            Войти
           </button>
-
-          {isEditor ? (
-            <Link
-              href="/blog/new"
-              className="w-[40px] h-[40px] rounded-xl bg-[#029cda] text-white flex items-center justify-center hover:bg-[#029cda]/90 transition"
-              aria-label="Написать"
-            >
-	<Image
-          src="/icons/plus.svg"
-          alt="Написать"
-          width={20}
-          height={20}
-          className="object-contain"
-        />            </Link>
-          ) : !isAuthed ? (
+        ) : (
+          <div className="hidden md:block relative" ref={profileRef}>
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-              className="w-[40px] h-[40px] rounded-xl bg-[#029cda] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
-
-              aria-label="Войти"
-            ><Image
-						src="/icons/sing_in.svg"
-						alt="Войти в  профиль"
-						width={20}
-						height={20}
-						className="object-contain"
-					/>
-
-            </button>
-          ) : (
-            <Link
-              href="/profile"
-              className="w-[40px] h-[40px] rounded-xl bg-[#029cda] text-white flex items-center justify-center hover:bg-[#1f66de] transition"
-              aria-label="Профиль"
-            >
-           	<Image
-          src="/icons/profile.svg"
-          alt="Ваш профиль"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-            </Link>
-          )}
-
-          <div className="relative" ref={profileRef}>
-            <button
-              onClick={() => setShowProfileMenu((v)=>!v)}
-              className="w-[40px] h-[40px] rounded-xl bg-white border border-[#e1e2e5] flex items-center justify-center hover:bg-gray-50"
+              onClick={() => setShowProfileMenu(v => !v)}
+              className="w-9 h-9 rounded-xl bg-[#e6f6fc] flex items-center justify-center text-[#029cda] font-bold text-[15px] hover:bg-[#cceefb] transition-colors"
               aria-haspopup="menu"
               aria-expanded={showProfileMenu}
-              aria-label="Меню профиля"
             >
-              <Image src="/icons/blog/podpiski.svg" alt="Профиль" width={20} height={20} className="w-5 h-5" />
+              П
             </button>
 
             {showProfileMenu && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl ">
-                <div className="p-4 border-b border-gray-100">
-                  <div className="text-sm text-gray-500">Профиль</div>
-                  <div className="text-lg font-semibold text-[#313131]">
-                    {isEditor ? 'Редактор' : isAuthed ? 'Пользователь' : 'Гость'}
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#e8eaed] z-50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#f0f1f3]">
+                  <div className="text-[12px] text-[#8c9099]">Профиль</div>
+                  <div className="text-[14px] font-semibold text-[#313131]">
+                    {isEditor ? 'Редактор' : 'Пользователь'}
                   </div>
                 </div>
-                <div className="py-2">
-                  {isAuthed ? (
-                    <>
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setShowProfileMenu(false)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
-                      >
-                      	<Image
-          src="/icons/admin.svg"
-          alt="Админ панель"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-                        <span>Админ-панель</span>
-                      </Link>
-                    )}
-                    <Link
-                      href="/profile"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
-                    >
-                    	<Image
-          src="/icons/profile.svg"
-          alt="Личный кабинет"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-                      <span>Личный кабинет</span>
+                <div className="py-1.5">
+                  {isAdmin && (
+                    <Link href="/admin" onClick={() => setShowProfileMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+                      <Image src="/icons/admin.svg" alt="" width={16} height={16} />
+                      Админ-панель
                     </Link>
-                      <button
-                        onClick={() => {
-                          authStore.signOut();
-                          setShowProfileMenu(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
-                      >
-                       	<Image
-          src="/icons/sign_out.svg"
-          alt="Выйти из профиля"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-                        <span>Выйти</span>
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        window.dispatchEvent(new CustomEvent('openAuthModal'));
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
-                    >
-	<Image
-          src="/icons/sign_in.svg"
-          alt="Войти в профиль"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-                      <span>Войти</span>
-                    </button>
                   )}
+                  <Link href="/profile" onClick={() => setShowProfileMenu(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+                    <Image src="/icons/profile.svg" alt="" width={16} height={16} />
+                    Личный кабинет
+                  </Link>
+                  <button onClick={() => { authStore.signOut(); setShowProfileMenu(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-[14px]">
+                    <Image src="/icons/sign_out.svg" alt="" width={16} height={16} />
+                    Выйти
+                  </button>
                 </div>
               </div>
             )}
           </div>
-        </div>
+        )}
 
-        {/* ПРАВЫЕ КНОПКИ (desktop) */}
-        <div className="hidden md:flex items-center gap-3 ml-4">
-          {isEditor && (
-            <Link href="/blog/new" className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#029cda] text-white hover:bg-[#1f66de] transition">
-              <span className="hidden sm:inline">Написать</span>
-              	<Image
-          src="/icons/plus.svg"
-          alt="Все новости"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-            </Link>
-          )}
+        {/* ── Мобильные кнопки ── */}
+        <div className="md:hidden flex items-center gap-2">
+          <button
+            onClick={() => setShowMobileSearch(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#52555a] hover:bg-[#f5f6f8]"
+            aria-label="Поиск"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
 
           {!isAuthed ? (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-              className="h-[46px] px-3 sm:px-6 inline-flex items-center gap-2 rounded-xl bg-[#029cda] text-white hover:bg-[#1f66de] transition"
+              className="h-9 px-3 rounded-xl bg-[#029cda] text-white text-[13px] font-semibold hover:bg-[#0280b5]"
             >
-              <span className="hidden sm:inline">Войти</span>
-							<Image
-						src="/icons/sing_in.svg"
-						alt="Войти в  профиль"
-						width={20}
-						height={20}
-						className="object-contain"
-					/>
+              Войти
             </button>
           ) : (
             <div className="relative" ref={profileRef}>
               <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="h-[46px] w-[46px] rounded-xl bg-white hover:bg-gray-50 transition text-[#313131] flex items-center justify-center"
-                aria-haspopup="menu"
-                aria-expanded={showProfileMenu}
+                onClick={() => setShowProfileMenu(v => !v)}
+                className="w-9 h-9 rounded-xl bg-[#e6f6fc] flex items-center justify-center text-[#029cda] font-bold"
               >
-                <Image src="/icons/blog/podpiski.svg" alt="Профиль" width={20} height={20} className="w-5 h-5" />
+                П
               </button>
-
               {showProfileMenu && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#e4e7ec] z-50">
-                  <div className="p-4 border-b border-gray-100">
-                    <div className="text-sm text-gray-500">Профиль</div>
-                    <div className="text-lg font-semibold text-[#313131]">
-                      {isEditor ? 'Редактор' : 'Пользователь'}
-                    </div>
-                  </div>
-                  <div className="py-2">
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-[#e8eaed] z-50 overflow-hidden">
+                  <div className="py-1.5">
                     {isAdmin && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
-                    >
-                      	<Image
-          src="/icons/admin.svg"
-          alt="Админ панель"
-          width={14}
-          height={14}
-          className="object-contain"
-        />
-                      <span>Админ-панель</span>
-                    </Link>
+                      <Link href="/admin" onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+                        <Image src="/icons/admin.svg" alt="" width={16} height={16} />
+                        Админ-панель
+                      </Link>
                     )}
-                    <Link
-                      href="/profile"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-[#313131]"
-                    >
-                   	<Image
-          src="/icons/profile.svg"
-          alt="Личный кабинет"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-                      <span>Личный кабинет</span>
+                    {isEditor && (
+                      <Link href="/blog/new" onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Написать
+                      </Link>
+                    )}
+                    <Link href="/profile" onClick={() => setShowProfileMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+                      <Image src="/icons/profile.svg" alt="" width={16} height={16} />
+                      Личный кабинет
                     </Link>
-                    <button
-                      onClick={() => {
-                        authStore.signOut();
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600"
-                    >
-                  	<Image
-          src="/icons/sign_out.svg"
-          alt="Выйти из профиля "
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-                      <span>Выйти</span>
+                    <button onClick={() => { authStore.signOut(); setShowProfileMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-[14px]">
+                      <Image src="/icons/sign_out.svg" alt="" width={16} height={16} />
+                      Выйти
                     </button>
                   </div>
                 </div>
@@ -398,38 +259,28 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* мобильные вкладки */}
-      <div className="md:hidden max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-3">
-        <div className="grid grid-cols-2 gap-2">
+      {/* Мобильные вкладки навигации */}
+      <div className="md:hidden border-t border-[#f0f1f3] px-4 flex gap-1 pb-1 pt-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+        {navLinks.map(({ href, label }) => (
           <Link
-            href="/blog"
-            className={`h-10 rounded-xl text-sm font-medium flex items-center justify-center transition ${
-              pathname === '/blog'
-                ? 'bg-white border-2 border-[#029cda] text-[#029cda] shadow-sm'
-                : 'bg-transparent border border-[#e1e2e5] text-[#52555a] hover:bg-gray-50'
-            }`}
+            key={href}
+            href={href}
+            className={`shrink-0 h-8 px-4 rounded-xl text-[13px] font-medium flex items-center transition-colors
+              ${pathname === href
+                ? 'bg-[#e6f6fc] text-[#029cda]'
+                : 'text-[#52555a] hover:bg-[#f5f6f8]'
+              }`}
           >
-            Статьи
+            {label}
           </Link>
-          <Link
-            href="/news"
-            className={`h-10 rounded-xl text-sm font-medium flex items-center justify-center transition ${
-              pathname === '/news'
-                ? 'bg-white border-2 border-[#029cda] text-[#029cda] shadow-sm'
-                : 'bg-transparent border border-[#e1e2e5] text-[#52555a] hover:bg-gray-50'
-            }`}
-          >
-            Новости
-          </Link>
-        </div>
+        ))}
       </div>
 
-      {/* мобильный полноэкранный поиск */}
       <MobileSearch
         isOpen={showMobileSearch}
         onClose={() => setShowMobileSearch(false)}
         initialQuery={q}
       />
-    </div>
+    </header>
   );
 }
