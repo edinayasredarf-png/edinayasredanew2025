@@ -50,9 +50,9 @@ export default function VKIDButton({ onSuccess: _onSuccess, onError }: VKIDButto
     oneTap
       .render({ container: containerRef.current })
       .on(VKID.WidgetEvents.ERROR, (error: unknown) => {
-        console.error('VKID error:', error);
-        const e = error as { message?: string; code?: number };
-        onError?.(e?.message || `Ошибка VK ID (код ${e?.code ?? '?'})`);
+        console.error('VKID error full:', JSON.stringify(error, null, 2), error);
+        const e = error as { message?: string; code?: number; type?: string; details?: unknown };
+        onError?.(`VK код ${e?.code} | type: ${e?.type} | ${e?.message || JSON.stringify(error)}`);
       });
   }, []);
 
