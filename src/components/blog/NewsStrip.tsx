@@ -5,31 +5,38 @@ import Link from 'next/link';
 import { sb_listNews, NewsItem } from '@/lib/blogStore';
 import { formatContentDate } from '@/lib/contentDates';
 
-let _cache: NewsItem[] | null = null;
+const PAGE = 5;
 
 export default function NewsStrip() {
-  const [news, setNews] = React.useState<NewsItem[]>(_cache || []);
-  const [loading, setLoading] = React.useState(_cache === null);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [news, setNews] = React.useState<NewsItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [visible, setVisible] = React.useState(PAGE);
+  const [loadingMore, setLoadingMore] = React.useState(false);
 
   React.useEffect(() => {
-    if (_cache) { setLoading(false); return; }
-    sb_listNews().then(d => { _cache = d; setNews(d); }).catch(() => {}).finally(() => setLoading(false));
+    sb_listNews().then(d => setNews(d)).catch(() => {}).finally(() => setLoading(false));
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    await new Promise(r => setTimeout(r, 200));
+    setVisible(v => v + PAGE);
+    setLoadingMore(false);
+  };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-[#e8eaed] p-4 mb-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="h-5 w-16 bg-gray-100 rounded animate-pulse" />
-          <div className="h-4 w-20 bg-gray-100 rounded animate-pulse" />
+      <div className="bg-white rounded-2xl border border-[#e8eaed] p-5 mb-3">
+        <div className="flex items-center justify-between mb-4">
+          <div className="h-5 w-20 bg-gray-100 rounded animate-pulse" />
+          <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
         </div>
-        <div className="flex gap-4 overflow-hidden">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="shrink-0 w-[180px] space-y-1.5">
+        <div className="space-y-4">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="space-y-1.5">
               <div className="h-3 w-14 bg-gray-100 rounded animate-pulse" />
-              <div className="h-4 w-full bg-gray-100 rounded animate-pulse" />
-              <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse" />
+              <div className="h-5 w-full bg-gray-100 rounded animate-pulse" />
+              <div className="h-5 w-3/4 bg-gray-100 rounded animate-pulse" />
             </div>
           ))}
         </div>
@@ -39,40 +46,46 @@ export default function NewsStrip() {
 
   if (!news.length) return null;
 
+  const shown = news.slice(0, visible);
+  const hasMore = visible < news.length;
+
   return (
-    <div className="bg-white rounded-2xl border border-[#e8eaed] p-4 mb-2">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[15px] font-semibold text-[#313131] font-[Raleway]">Новости</h2>
-        <Link href="/news" className="text-[13px] text-[#029cda] hover:text-[#0280b5] font-[Raleway] font-medium flex items-center gap-1">
+    <div className="bg-white rounded-2xl border border-[#e8eaed] p-5 mb-3">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[17px] font-bold text-[#313131] font-[Raleway]">Новости</h2>
+        <Link href="/news" className="text-[14px] text-[#029cda] hover:text-[#0280b5] font-[Raleway] font-semibold flex items-center gap-1">
           Все новости
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </Link>
       </div>
 
-      <div
-        ref={scrollRef}
-        className="flex gap-5 overflow-x-auto scrollbar-hide pb-1"
-        style={{ scrollbarWidth: 'none' }}
-      >
-        {news.slice(0, 8).map((n, idx) => (
+      <div className="space-y-4">
+        {shown.map((n, idx) => (
           <React.Fragment key={n.id}>
-            {idx > 0 && <div className="shrink-0 w-px bg-[#e8eaed] self-stretch" />}
-            <Link
-              href={`/news/${n.slug}`}
-              className="shrink-0 w-[200px] group"
-            >
-              <div className="text-[11px] text-[#8c9099] font-[Raleway] mb-1">
+            {idx > 0 && <div className="h-px bg-[#e8eaed]" />}
+            <Link href={`/news/${n.slug}`} className="group block">
+              <div className="text-[12px] text-[#8c9099] font-[Raleway] mb-1">
                 {formatContentDate(n.createdAt, n.updatedAt)}
               </div>
-              <div className="text-[13px] text-[#313131] leading-snug font-[Raleway] font-medium line-clamp-3 group-hover:text-[#029cda] transition-colors">
+              <div className="text-[16px] text-[#1a1a1a] leading-snug font-[Raleway] font-semibold line-clamp-3 group-hover:text-[#029cda] transition-colors">
                 {n.title}
               </div>
             </Link>
           </React.Fragment>
         ))}
       </div>
+
+      {hasMore && (
+        <button
+          onClick={loadMore}
+          disabled={loadingMore}
+          className="mt-4 w-full py-2.5 rounded-xl border border-[#e8eaed] text-[14px] font-semibold text-[#029cda] hover:bg-[#f0faff] transition-colors disabled:opacity-50 font-[Raleway]"
+        >
+          {loadingMore ? 'Загрузка...' : 'Ещё новости'}
+        </button>
+      )}
     </div>
   );
 }

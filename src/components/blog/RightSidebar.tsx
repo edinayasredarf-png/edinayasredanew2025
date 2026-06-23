@@ -2,9 +2,6 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { sb_listNews, NewsItem } from '@/lib/blogStore';
-import { formatContentDate } from '@/lib/contentDates';
 
 type Banner = { src: string; href: string; alt?: string };
 
@@ -78,61 +75,10 @@ function AdsCarousel() {
   );
 }
 
-let _newsCache: NewsItem[] | null = null;
-
 export default function RightSidebar() {
-  const [news, setNews] = React.useState<NewsItem[]>(_newsCache || []);
-  const [loading, setLoading] = React.useState(_newsCache === null);
-
-  React.useEffect(() => {
-    if (_newsCache) { setLoading(false); return; }
-    sb_listNews().then(d => { _newsCache = d; setNews(d); }).catch(() => {}).finally(() => setLoading(false));
-    const refresh = () => sb_listNews().then(d => setNews(d)).catch(() => {});
-    window.addEventListener('focus', refresh);
-    window.addEventListener('newsUpdated', refresh as EventListener);
-    return () => { window.removeEventListener('focus', refresh); window.removeEventListener('newsUpdated', refresh as EventListener); };
-  }, []);
-
   return (
     <aside className="w-[287px] shrink-0 hidden xl:block">
       <div className="sticky top-[76px] space-y-3 font-[Raleway]">
-
-        {/* Блок новостей */}
-        <div className="bg-white rounded-2xl border border-[#e8eaed] p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[15px] font-semibold text-[#313131]">Новости</h3>
-            <Link href="/news" className="text-[12px] text-[#029cda] hover:text-[#0280b5] flex items-center gap-0.5 font-medium">
-              Все
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="space-y-3">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="space-y-1">
-                  <div className="h-3 w-16 bg-gray-100 rounded animate-pulse" />
-                  <div className="h-4 w-full bg-gray-100 rounded animate-pulse" />
-                  <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3.5">
-              {news.slice(0, 6).map(n => (
-                <div key={n.id}>
-                  <div className="text-[11px] text-[#8c9099] mb-0.5">{formatContentDate(n.createdAt, n.updatedAt)}</div>
-                  <Link href={`/news/${n.slug}`} className="text-[13px] text-[#313131] leading-snug hover:text-[#029cda] transition-colors line-clamp-2 font-medium">
-                    {n.title}
-                  </Link>
-                </div>
-              ))}
-              {!news.length && <div className="text-[13px] text-[#8c9099]">Новостей пока нет</div>}
-            </div>
-          )}
-        </div>
 
         {/* Рекламный баннер */}
         <AdsCarousel />
