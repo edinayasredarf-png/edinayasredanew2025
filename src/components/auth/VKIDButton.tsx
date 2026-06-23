@@ -41,7 +41,10 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
           showAlternativeLogin: true,
         })
         .on(VKID.WidgetEvents.ERROR, (error: any) => {
-          onError?.(error?.message || 'Ошибка VK ID');
+          const msg = error?.message || error?.error_description || error?.code
+            || (typeof error === 'string' ? error : JSON.stringify(error));
+          console.error('VKID error:', error);
+          onError?.(msg || 'Ошибка VK ID');
         })
         .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload: any) => {
           try {
