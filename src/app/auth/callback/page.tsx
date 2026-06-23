@@ -70,7 +70,7 @@ function AuthCallbackInner() {
         }
 
         // Exchange code for token
-        const tokenData = await exchangeCodeForToken(provider, code, state);
+        const tokenData = await exchangeCodeForToken(provider, code, state ?? '');
         // Get user info from provider
         const userInfo = await getUserInfo(provider, tokenData.access_token, tokenData);
 
