@@ -31,7 +31,7 @@ export const oauthProviders: Record<'yandex' | 'vk', OAuthConfig> = {
     authUrl: 'https://oauth.vk.com/authorize',
     tokenUrl: 'https://oauth.vk.com/access_token',
     redirectUri: typeof window !== 'undefined'
-      ? `${window.location.origin}/auth/callback?provider=vk`
+      ? `${window.location.origin}/auth/callback`
       : '',
     scope: 'email',
   },
@@ -78,6 +78,9 @@ export function initiateOAuth(provider: 'yandex' | 'vk'): void {
 
   const state = generateState();
   saveState(state);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('oauth_provider', provider);
+  }
 
   const params = new URLSearchParams({
     response_type: 'code',
@@ -111,7 +114,9 @@ export async function exchangeCodeForToken(
 
   const config = oauthProviders[provider];
   const redirectUri = typeof window !== 'undefined'
-    ? `${window.location.origin}/auth/callback?provider=${provider}`
+    ? provider === 'vk'
+      ? `${window.location.origin}/auth/callback`
+      : `${window.location.origin}/auth/callback?provider=${provider}`
     : '';
 
   // Для обмена кода на токен нужен серверный endpoint

@@ -12,7 +12,10 @@ function AuthCallbackInner() {
 
   useEffect(() => {
     const handle = async () => {
-      const provider = searchParams.get('provider') as 'yandex' | 'vk' | null;
+      const providerParam = searchParams.get('provider');
+      const providerStored = typeof window !== 'undefined' ? localStorage.getItem('oauth_provider') : null;
+      const provider = (providerParam || providerStored) as 'yandex' | 'vk' | null;
+      if (typeof window !== 'undefined') localStorage.removeItem('oauth_provider');
       if (provider !== 'yandex' && provider !== 'vk') {
         router.push('/blog?error=Неизвестный провайдер');
         return;
