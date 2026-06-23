@@ -336,7 +336,7 @@ export default function TopBar() {
               </button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border shadow-lg z-50">
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#e4e7ec] z-50">
                   <div className="p-4 border-b border-gray-100">
                     <div className="text-sm text-gray-500">Профиль</div>
                     <div className="text-lg font-semibold text-[#313131]">
