@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import * as VKID from '@vkid/sdk';
 import { authStore } from '@/lib/authStore';
 
 interface VKIDButtonProps {
@@ -8,8 +9,17 @@ interface VKIDButtonProps {
   onError?: (msg: string) => void;
 }
 
-declare global {
-  interface Window { VKIDSDK: any; }
+function generateState(): string {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateCodeVerifier(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
 export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
@@ -17,73 +27,58 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
   const initialized = useRef(false);
 
   useEffect(() => {
-    if (initialized.current) return;
+    if (initialized.current || !containerRef.current) return;
+    initialized.current = true;
 
-    const initSDK = () => {
-      if (!window.VKIDSDK || !containerRef.current) return;
-      initialized.current = true;
+    VKID.Config.init({
+      app: 54647124,
+      redirectUrl: 'https://единаясреда.рф/',
+      state: generateState(),
+      codeVerifier: generateCodeVerifier(),
+      scope: '',
+      responseMode: VKID.ConfigResponseMode.Callback,
+      source: VKID.ConfigSource.LOWCODE,
+    });
 
-      const VKID = window.VKIDSDK;
+    const oneTap = new VKID.OneTap();
 
-      VKID.Config.init({
-        app: 54647124,
-        redirectUrl: 'https://единаясреда.рф/',
-        responseMode: VKID.ConfigResponseMode.Callback,
-        source: VKID.ConfigSource.LOWCODE,
-        scope: '',
-      });
+    oneTap
+      .render({ container: containerRef.current })
+      .on(VKID.WidgetEvents.ERROR, (error: unknown) => {
+        console.error('VKID error:', error);
+        const e = error as { message?: string; code?: number };
+        onError?.(e?.message || `Ошибка VK ID (код ${e?.code ?? '?'})`);
+      })
+      .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload: { code: string; device_id: string }) => {
+        try {
+          const data = await VKID.Auth.exchangeCode(payload.code, payload.device_id);
+          const user = (data as { user?: { id?: number; first_name?: string; last_name?: string; email?: string; avatar?: string } })?.user;
 
-      const oneTap = new VKID.OneTap();
+          const res = await fetch('/api/auth/oauth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              provider: 'vk',
+              providerId: String(user?.id || ''),
+              email: user?.email || null,
+              name: [user?.first_name, user?.last_name].filter(Boolean).join(' ') || null,
+              avatarUrl: user?.avatar || null,
+            }),
+          });
 
-      oneTap
-        .render({
-          container: containerRef.current,
-        })
-        .on(VKID.WidgetEvents.ERROR, (error: any) => {
-          const msg = error?.message || error?.error_description || error?.code
-            || (typeof error === 'string' ? error : JSON.stringify(error));
-          console.error('VKID error:', error);
-          onError?.(msg || 'Ошибка VK ID');
-        })
-        .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload: any) => {
-          try {
-            const data = await VKID.Auth.exchangeCode(payload.code, payload.device_id);
-            const user = data?.user;
-
-            const res = await fetch('/api/auth/oauth', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                provider: 'vk',
-                providerId: String(user?.id || ''),
-                email: user?.email || null,
-                name: [user?.first_name, user?.last_name].filter(Boolean).join(' ') || null,
-                avatarUrl: user?.avatar || null,
-              }),
-            });
-
-            if (!res.ok) {
-              const err = await res.json();
-              onError?.(err.error || 'Ошибка входа через ВК');
-              return;
-            }
-
-            await authStore.refreshSession();
-            onSuccess();
-          } catch (e: any) {
-            onError?.(e?.message || 'Ошибка входа через ВК');
+          if (!res.ok) {
+            const err = await res.json();
+            onError?.(err.error || 'Ошибка входа через ВК');
+            return;
           }
-        });
-    };
 
-    if (window.VKIDSDK) {
-      initSDK();
-    } else {
-      const s = document.createElement('script');
-      s.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
-      s.onload = initSDK;
-      document.head.appendChild(s);
-    }
+          await authStore.refreshSession();
+          onSuccess();
+        } catch (e: unknown) {
+          const err = e as { message?: string };
+          onError?.(err?.message || 'Ошибка входа через ВК');
+        }
+      });
   }, []);
 
   return <div ref={containerRef} className="w-full" />;
