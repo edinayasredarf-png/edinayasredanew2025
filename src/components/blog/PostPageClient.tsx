@@ -134,17 +134,15 @@ export default function PostPageClient({ slug }: { slug: string }) {
 
   if (!post) {
     return (
-      <div className="bg-[#f2f3f7] min-h-screen">
+      <div className="bg-[#f5f6f8] min-h-screen">
         <TopBar />
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-4 pt-4 sm:pt-6 pb-8 sm:pb-16 font-[Raleway] font-medium lining-nums">
-          <div className="flex flex-col xl:flex-row gap-2 xl:gap-[15px]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-16 font-[Raleway]">
+          <div className="flex gap-6">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
-            <main className="flex-1 flex justify-center">
-              <div className="w-full max-w-[761px] flex items-center justify-center min-h-[60vh]">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4" />
-                  <p className="text-gray-600">Загрузка статьи...</p>
-                </div>
+            <main className="flex-1 min-w-0 flex items-center justify-center min-h-[60vh]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4" />
+                <p className="text-gray-600">Загрузка статьи...</p>
               </div>
             </main>
             <RightSidebar />
@@ -201,98 +199,110 @@ export default function PostPageClient({ slug }: { slug: string }) {
   };
 
   return (
-    <div className="bg-[#f2f3f7] min-h-screen">
+    <div className="bg-[#f5f6f8] min-h-screen">
       <TopBar />
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-4 pt-4 sm:pt-6 pb-8 sm:pb-16 font-[Raleway] font-medium lining-nums">
-        <div className="flex flex-col xl:flex-row gap-2 xl:gap-[15px]">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-16 font-[Raleway]">
+        <div className="flex gap-6">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
-          <main className="flex-1 flex justify-center">
-            <div className="w-full max-w-[761px]">
+          <main className="flex-1 min-w-0">
 
+            {/* Карточка статьи — такой же размер и подложка как PostCard */}
+            <article className="bg-white rounded-2xl border border-[#e8eaed] overflow-hidden">
 
-              <section>
-							<h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{post.title}</h1>
-							{post.subtitle && <p className="mt-3 text-xl text-[#52555a]">{post.subtitle}</p>}
-                <article className="prose prose-lg max-w-none mx-auto text-[#313131] font-[Raleway] font-medium article-content" dir="ltr">
-                  <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+              {/* Заголовок */}
+              <div className="px-5 pt-5">
+                <h1 className="text-[20px] font-bold text-[#1a1a1a] leading-[1.25]">{post.title}</h1>
+              </div>
 
-                </article>
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 mt-14">
-
-
-                  {isEditor && (
-                    <div className="ml-auto flex items-center gap-2">
-                      <Link
-                        href={`/blog/new?edit=${encodeURIComponent(post.slug)}&type=post`}
-                        className="h-9 px-3 rounded-lg bg-[#313131] text-white hover:bg-[#333] text-sm flex items-center"
-                      >
-                        Редактировать
-                      </Link>
-                      <button onClick={doDelete} className="h-9 px-3 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
-                        Удалить
-                      </button>
-                    </div>
-                  )}
+              {/* Подзаголовок */}
+              {post.subtitle && (
+                <div className="px-5 pt-2">
+                  <p className="text-[14px] text-[#52555a] leading-relaxed">{post.subtitle}</p>
                 </div>
-
-
-
-                {!!(post.tags?.length) && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {post.tags!.map(t => (
-                      <Link key={t} href={`/blog?tag=${encodeURIComponent(t)}`} className="text-sm text-[#029cda]">
-                        #{t}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                <div className="mt-4 flex items-center gap-3 text-sm text-[#6b7280]">
-                  <div className="text-[#676E7E] text-sm font-medium">
-                    {new Date(post.createdAt).toLocaleDateString('ru-RU')}
-                  </div>
-                  <div className="ml-auto flex items-center gap-1">
-                    <Image src="/icons/views.svg" alt="" width={20} height={20} className="object-contain" />
-                    <span>{views}</span>
-                  </div>
-                </div>
-
-              </section>
-              {more.length > 0 && (
-                <section className="mt-20">
-                  <h3 className="text-2xl text-[#313131] font-bold">Читайте ещё</h3>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {more.map(m => (
-                      <Link
-                        key={m.id}
-                        href={`/blog/${m.slug}`}
-                        className="bg-white rounded-3xl p-4  hover:border-[#029cda] transition block"
-                      >
-                        <div className="w-full aspect-[16/10] rounded-2xl bg-[#F6F7F9] overflow-hidden relative">
-                          <Image
-                            src={m.cover || 'https://placehold.co/400x225'}
-                            alt={m.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                          />
-                        </div>
-                        <div className="mt-2 text-sm text-[#52555a]">
-                          {new Date(m.createdAt).toLocaleDateString('ru-RU')}
-                        </div>
-                        <div className="text-[16px] font-semibold text-[#313131] leading-snug">
-                          {m.title}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
               )}
 
-              {/* Comments Section */}
-              <CommentSection postId={post.id} postType="post" onCountChange={setCommentsCount} />
-            </div>
+              {/* Теги */}
+              {!!(post.tags?.length) && (
+                <div className="px-5 pt-2.5 flex flex-wrap gap-1.5">
+                  {post.tags!.map(t => (
+                    <Link key={t} href={`/blog?tag=${encodeURIComponent(t)}`}
+                      className="text-[12px] text-[#029cda] hover:text-[#0280b5] bg-[#f0faff] px-2.5 py-0.5 rounded-full transition-colors">
+                      #{t}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Обложка */}
+              {post.cover && (
+                <div className="mt-3 mx-5">
+                  <div className="w-full aspect-[16/9] rounded-xl overflow-hidden relative bg-[#f2f3f7]">
+                    <Image src={post.cover} alt={post.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 660px" />
+                  </div>
+                </div>
+              )}
+
+              {/* Дата */}
+              <div className="px-5 pt-2 flex justify-between items-center">
+                <span className="text-[12px] text-[#8c9099]">{new Date(post.createdAt).toLocaleDateString('ru-RU')}</span>
+                <div className="flex items-center gap-1 text-[12px] text-[#8c9099]">
+                  <Image src="/icons/views.svg" alt="" width={14} height={14} className="object-contain opacity-60" />
+                  {views > 0 && <span>{views}</span>}
+                </div>
+              </div>
+
+              {/* Разделитель */}
+              <div className="mx-5 mt-4 h-px bg-[#e8eaed]" />
+
+              {/* Контент статьи */}
+              <div className="px-5 py-5">
+                <div className="article-content max-w-none text-[#313131] font-[Raleway]"
+                  dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+              </div>
+
+              {/* Кнопки редактора */}
+              {isEditor && (
+                <div className="px-5 pb-4 flex items-center gap-2 justify-end">
+                  <Link href={`/blog/new?edit=${encodeURIComponent(post.slug)}&type=post`}
+                    className="h-9 px-3 rounded-lg bg-[#313131] text-white hover:bg-[#333] text-[13px] flex items-center">
+                    Редактировать
+                  </Link>
+                  <button onClick={doDelete} className="h-9 px-3 rounded-lg bg-red-600 text-white hover:bg-red-700 text-[13px]">
+                    Удалить
+                  </button>
+                </div>
+              )}
+
+              {/* Комментарии */}
+              <div className="h-px bg-[#e8eaed]" />
+              <div className="px-5 py-5">
+                <CommentSection postId={post.id} postType="post" onCountChange={setCommentsCount} />
+              </div>
+            </article>
+
+            {/* Читайте ещё */}
+            {more.length > 0 && (
+              <section className="mt-3">
+                <h3 className="text-[17px] font-bold text-[#313131] mb-3">Читайте ещё</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {more.map(m => (
+                    <Link key={m.id} href={`/blog/${m.slug}`}
+                      className="bg-white rounded-2xl border border-[#e8eaed] p-4 hover:border-[#029cda] transition block">
+                      <div className="w-full aspect-[16/10] rounded-xl bg-[#f2f3f7] overflow-hidden relative">
+                        <Image src={m.cover || 'https://placehold.co/400x225'} alt={m.title} fill
+                          className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
+                      </div>
+                      <div className="mt-2 text-[12px] text-[#8c9099]">
+                        {new Date(m.createdAt).toLocaleDateString('ru-RU')}
+                      </div>
+                      <div className="text-[15px] font-semibold text-[#313131] leading-snug mt-1">
+                        {m.title}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
           </main>
           <RightSidebar />
         </div>
