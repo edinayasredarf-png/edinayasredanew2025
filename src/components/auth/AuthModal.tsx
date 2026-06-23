@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
 import { initiateOAuth } from '@/lib/oauth';
-import VKIDButton from './VKIDButton';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -67,7 +66,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     }
   };
 
-  const handleProviderAuth = (provider: 'yandex' | 'vk') => {
+  const handleProviderAuth = (provider: 'yandex' | 'vk'): void => {
     setError('');
     try {
       initiateOAuth(provider);
@@ -169,19 +168,29 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           </div>
 
           <div className="mt-4 flex flex-col gap-3">
+            {/* Яндекс ID — официальный дизайн: чёрная кнопка */}
             <button
               onClick={() => handleProviderAuth('yandex')}
-              className="flex items-center justify-center gap-3 px-4 py-3 bg-[#FC3F1D] text-white rounded-xl hover:bg-[#e83516] transition-colors font-involve font-medium"
+              className="flex items-center justify-center gap-3 px-4 py-[13px] bg-[#000] text-white rounded-xl hover:bg-[#222] transition-colors font-involve font-medium text-[15px]"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
-                <path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12zm10.927-4.5H12c-1.38 0-2.25.81-2.25 2.047 0 1.13.6 1.77 1.687 2.483l.938.614-2.766 4.356H11.4l2.494-3.937.938.614c1.322.864 2.018 1.77 2.018 3.323H18.3c0-2.11-1.01-3.323-2.766-4.5C16.758 9.3 16.1 8.16 16.1 6.932 16.1 5.108 14.813 4 12.927 4H9.9v10h1.688V7.5h1.34z"/>
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="22" height="22" rx="4" fill="white"/>
+                <path d="M13.012 18H11.18V8.252H10.3C8.748 8.252 7.932 9.02 7.932 10.22C7.932 11.588 8.54 12.224 9.748 13.048L10.724 13.712L7.86 18H5.9L8.508 13.964C7.044 12.96 6.212 11.988 6.212 10.316C6.212 8.22 7.668 6.8 10.292 6.8H13.012V18Z" fill="#FC3F1D"/>
               </svg>
-              Войти через Яндекс
+              Войти с Яндекс ID
             </button>
-            <VKIDButton
-              onSuccess={() => { onSuccess?.(); onClose(); }}
-              onError={(msg) => setError(msg)}
-            />
+
+            {/* ВКонтакте */}
+            <button
+              onClick={() => handleProviderAuth('vk')}
+              className="flex items-center justify-center gap-3 px-4 py-[13px] bg-[#0077FF] text-white rounded-xl hover:bg-[#0066dd] transition-colors font-involve font-medium text-[15px]"
+            >
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="22" height="22" rx="4" fill="white"/>
+                <path d="M11.5 4C7.358 4 4 7.358 4 11.5C4 15.642 7.358 19 11.5 19C15.642 19 19 15.642 19 11.5C19 7.358 15.642 4 11.5 4ZM15.274 13.854H14.13C13.706 13.854 13.578 13.522 12.842 12.778C12.202 12.146 11.922 12.066 11.762 12.066C11.538 12.066 11.474 12.13 11.474 12.442V13.474C11.474 13.742 11.39 13.854 10.67 13.854C9.45 13.854 8.098 13.09 7.138 11.674C5.706 9.63 5.314 8.106 5.314 7.794C5.314 7.634 5.378 7.482 5.69 7.482H6.834C7.114 7.482 7.218 7.61 7.33 7.906C7.906 9.518 8.87 10.93 9.25 10.93C9.394 10.93 9.458 10.866 9.458 10.514V8.69C9.41 7.834 8.946 7.762 8.946 7.498C8.946 7.37 9.05 7.242 9.218 7.242H11.026C11.258 7.242 11.338 7.37 11.338 7.65V10.13C11.338 10.362 11.434 10.442 11.506 10.442C11.65 10.442 11.762 10.362 12.026 10.098C12.842 9.19 13.434 7.794 13.434 7.794C13.514 7.634 13.642 7.482 13.922 7.482H15.066C15.41 7.482 15.482 7.658 15.41 7.906C15.258 8.578 13.61 10.938 13.61 10.938C13.482 11.138 13.434 11.226 13.61 11.442C13.738 11.61 14.162 11.97 14.45 12.306C14.97 12.906 15.378 13.41 15.49 13.57C15.602 13.73 15.554 13.854 15.274 13.854Z" fill="#0077FF"/>
+              </svg>
+              Войти через ВКонтакте
+            </button>
           </div>
         </div>
 
