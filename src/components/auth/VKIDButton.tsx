@@ -39,17 +39,17 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
         scope: '',
       });
 
-      const oAuth = new VKID.OAuthList();
+      const oneTap = new VKID.OneTap();
 
-      oAuth
+      oneTap
         .render({
           container: containerRef.current,
-          oauthList: ['vkid'],
+          showAlternativeLogin: true,
         })
         .on(VKID.WidgetEvents.ERROR, (error: any) => {
           onError?.(error?.message || 'Ошибка VK ID');
         })
-        .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, async (payload: any) => {
+        .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload: any) => {
           try {
             const data = await VKID.Auth.exchangeCode(payload.code, payload.device_id);
             const user = data?.user;
@@ -84,7 +84,7 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
       initSDK();
     } else {
       const s = document.createElement('script');
-      s.src = 'https://unpkg.com/@vkid/sdk@2.6.5/dist-sdk/umd/index.js';
+      s.src = 'https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js';
       s.onload = initSDK;
       document.head.appendChild(s);
     }
