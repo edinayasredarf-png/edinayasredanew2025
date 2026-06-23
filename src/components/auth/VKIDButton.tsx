@@ -38,7 +38,6 @@ export default function VKIDButton({ onSuccess, onError }: VKIDButtonProps) {
       oneTap
         .render({
           container: containerRef.current,
-          showAlternativeLogin: true,
         })
         .on(VKID.WidgetEvents.ERROR, (error: any) => {
           const msg = error?.message || error?.error_description || error?.code
