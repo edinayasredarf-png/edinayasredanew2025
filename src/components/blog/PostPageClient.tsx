@@ -137,7 +137,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
       <div className="bg-[#f5f6f8] min-h-screen">
         <TopBar />
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-16 font-[Raleway]">
-          <div className="flex gap-6">
+          <div className="flex gap-4">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
             <main className="flex-1 min-w-0 flex items-center justify-center min-h-[60vh]">
               <div className="text-center">
@@ -202,7 +202,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
     <div className="bg-[#f5f6f8] min-h-screen">
       <TopBar />
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-16 font-[Raleway]">
-        <div className="flex gap-6">
+        <div className="flex gap-4">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 min-w-0">
 

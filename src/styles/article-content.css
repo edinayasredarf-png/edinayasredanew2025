@@ -1,11 +1,13 @@
 /* Стили для отображения контента из редактора reactjs-tiptap-editor */
 
-/* Raleway — как на остальном сайте (перебивает prose и стили редактора) */
 .prose.article-content,
 .article-content.prose,
 .article-content {
   font-family: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   font-weight: 400;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #1a1a1a;
 }
 
 .prose.article-content :where(h1, h2, h3, h4, h5, h6, p, li, a, blockquote, td, th, figcaption, span, div),
@@ -20,53 +22,115 @@
 .article-content { direction: ltr; }
 .article-toc-targets h2, .article-toc-targets h3 { scroll-margin-top: 1.5rem; }
 
-/* Базовые элементы */
-.prose p { margin-bottom: 1rem; line-height: 1.75; }
-.prose strong { font-weight: 700; }
-.prose em { font-style: italic; }
-.prose s { text-decoration: line-through; }
-.prose u { text-decoration: underline; }
-.prose a { color: #029cda; text-decoration: underline; }
+/* Абзацы */
+.prose p,
+.article-content p {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+}
 
-/* Списки — важно перебить сброс Tailwind prose */
+/* Заголовки — правильные отступы как в нормальных блогах */
+.prose h1,
+.article-content h1 {
+  font-size: 1.875rem;
+  line-height: 1.25;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+.prose h2,
+.article-content h2 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+.prose h3,
+.article-content h3 {
+  font-size: 1.25rem;
+  line-height: 1.35;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: #1a1a1a;
+}
+.prose h4,
+.article-content h4 {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
+}
+
+/* Первый элемент — без верхнего отступа */
+.article-content > *:first-child,
+.prose > *:first-child {
+  margin-top: 0 !important;
+}
+
+.prose strong,
+.article-content strong { font-weight: 700; }
+.prose em,
+.article-content em { font-style: italic; }
+.prose s,
+.article-content s { text-decoration: line-through; }
+.prose u,
+.article-content u { text-decoration: underline; }
+.prose a,
+.article-content a { color: #029cda; text-decoration: underline; }
+
+/* Списки */
 .prose ul,
 .article-content ul {
   list-style-type: disc !important;
   padding-left: 1.5rem !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 1.5rem !important;
 }
 .prose ol,
 .article-content ol {
   list-style-type: decimal !important;
   padding-left: 1.5rem !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 1.5rem !important;
 }
 .prose li,
 .article-content li {
-  margin-bottom: 0.25rem !important;
+  margin-bottom: 0.4rem !important;
   display: list-item !important;
+  line-height: 1.7 !important;
 }
 .prose ul ul,
 .article-content ul ul { list-style-type: circle !important; }
 .prose ul ul ul,
 .article-content ul ul ul { list-style-type: square !important; }
 
-/* Заголовки */
-.prose h1 { font-size: 2rem; line-height: 1.25; margin-top: 1.6rem; margin-bottom: 1rem; font-weight: 700; }
-.prose h2 { font-size: 1.8rem; line-height: 1.3; margin-top: 1.6rem; margin-bottom: 1.4rem; font-weight: 700; }
-.prose h3 { font-size: 1.25rem; line-height: 1.35; margin-top: 1.2rem; margin-bottom: 1rem; font-weight: 600; }
-.prose h4 { font-size: 1.1rem; line-height: 1.4; margin-top: 1rem; margin-bottom: 0.75rem; font-weight: 600; }
-
-/* Медиа */
-.prose img, .prose video, .prose iframe {
+/* Медиа — скругление как у обложки */
+.prose img,
+.article-content img {
   max-width: 100% !important;
   height: auto !important;
-  border-radius: 16px;
-  margin-bottom: 1.4rem;
-  margin-top: 1.2rem;
+  border-radius: 12px !important;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+  display: block;
 }
-.prose figure { text-align: center; margin-bottom: 1.4rem; }
-.prose figcaption { color: #6b7280; font-size: 14px; margin-top: 6px; margin-bottom: 1.4rem; }
+.prose video,
+.article-content video,
+.prose iframe,
+.article-content iframe {
+  max-width: 100% !important;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+}
+.prose figure,
+.article-content figure { text-align: center; margin-bottom: 1.5rem; }
+.prose figcaption,
+.article-content figcaption { color: #6b7280; font-size: 14px; margin-top: 6px; margin-bottom: 1rem; }
 
 /* Изображения из редактора — обёртка image-view */
 .prose .image-view,
@@ -74,18 +138,22 @@
   display: block !important;
   max-width: 100% !important;
   overflow: hidden;
+  border-radius: 12px;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 .prose .image-view__body,
 .article-content .image-view__body {
   max-width: 100% !important;
   display: block;
   overflow: hidden;
+  border-radius: 12px;
 }
 .prose .image-view__body__image,
 .article-content .image-view__body__image {
   max-width: 100% !important;
   height: auto !important;
-  border-radius: 12px;
+  border-radius: 12px !important;
 }
 
 /* Выравнивание изображений */
@@ -115,7 +183,6 @@
   margin-right: auto !important;
 }
 
-/* Обёртка div вокруг изображения с выравниванием */
 .prose div[style*="text-align: left"] img,
 .article-content div[style*="text-align: left"] img {
   float: left !important;
@@ -136,13 +203,12 @@
   margin-right: auto !important;
 }
 
-/* inline=false — изображение на отдельной строке */
 .prose img[inline="false"],
 .article-content img[inline="false"] {
   display: block !important;
 }
 
-/* Сброс float после изображений */
+/* Сброс float после абзацев */
 .prose p::after,
 .article-content p::after {
   content: "";
@@ -150,27 +216,28 @@
   clear: both;
 }
 
-/* Изображения не должны вылезать за контейнер */
 .prose div.image,
 .article-content div.image {
   max-width: 100% !important;
   overflow: hidden;
+  border-radius: 12px;
 }
 .prose div.image img,
 .article-content div.image img {
   max-width: 100% !important;
   height: auto !important;
+  border-radius: 12px !important;
 }
 
 /* Цитата */
 .prose blockquote,
 .article-content blockquote {
-  border-left: 4px solid #e1e2e5 !important;
-  padding: 8px 16px !important;
-  border-radius: 8px !important;
+  border-left: 4px solid #029cda !important;
+  padding: 12px 20px !important;
+  border-radius: 0 8px 8px 0 !important;
   color: #374151 !important;
-  background: #f9fafb !important;
-  margin: 1.4rem 0 !important;
+  background: #f0faff !important;
+  margin: 2rem 0 !important;
   font-style: italic !important;
   quotes: none !important;
 }
@@ -186,7 +253,8 @@
 }
 
 /* Код */
-.prose code:not(pre code) {
+.prose code:not(pre code),
+.article-content code:not(pre code) {
   background: #f1f5f9;
   color: #e11d48;
   padding: 2px 6px;
@@ -194,45 +262,58 @@
   font-size: 0.875em;
   font-family: monospace;
 }
-.prose pre {
+.prose pre,
+.article-content pre {
   background: #1e1e2e;
   color: #cdd6f4;
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 1.25rem;
+  border-radius: 12px;
   overflow-x: auto;
-  margin: 1.4rem 0;
+  margin: 2rem 0;
   font-size: 0.9em;
 }
-.prose pre code { background: none; color: inherit; padding: 0; }
+.prose pre code,
+.article-content pre code { background: none; color: inherit; padding: 0; }
 
 /* Таблица */
-.prose table {
+.prose table,
+.article-content table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1.4rem 0;
+  margin: 2rem 0;
   font-size: 0.95em;
+  border-radius: 8px;
+  overflow: hidden;
 }
-.prose th, .prose td {
+.prose th, .prose td,
+.article-content th, .article-content td {
   border: 1px solid #e5e7eb;
-  padding: 8px 12px;
+  padding: 10px 14px;
   text-align: left;
 }
-.prose th { background: #f3f4f6; font-weight: 600; }
-.prose tr:nth-child(even) td { background: #fafafa; }
+.prose th,
+.article-content th { background: #f3f4f6; font-weight: 600; }
+.prose tr:nth-child(even) td,
+.article-content tr:nth-child(even) td { background: #fafafa; }
 
 /* Task list */
-.prose ul[data-type="taskList"] { list-style: none; padding-left: 0; }
-.prose ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
-.prose ul[data-type="taskList"] li input[type="checkbox"] { margin-top: 4px; cursor: default; }
+.prose ul[data-type="taskList"],
+.article-content ul[data-type="taskList"] { list-style: none; padding-left: 0; }
+.prose ul[data-type="taskList"] li,
+.article-content ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
+.prose ul[data-type="taskList"] li input[type="checkbox"],
+.article-content ul[data-type="taskList"] li input[type="checkbox"] { margin-top: 4px; cursor: default; }
 
 /* Горизонтальная линия */
-.prose hr { border: none; border-top: 2px solid #e5e7eb; margin: 2rem 0; }
+.prose hr,
+.article-content hr { border: none; border-top: 2px solid #e5e7eb; margin: 2.5rem 0; }
 
 /* Callout */
-.prose [data-type="callout"] {
+.prose [data-type="callout"],
+.article-content [data-type="callout"] {
   border-radius: 8px;
   padding: 12px 16px;
-  margin: 1.4rem 0;
+  margin: 2rem 0;
   background: #eff6ff;
   border-left: 4px solid #3b82f6;
   display: flex;
@@ -241,11 +322,15 @@
 }
 
 /* Колонки */
-.prose [data-type="columns"] { display: flex; gap: 1rem; margin: 1.4rem 0; }
-.prose [data-type="column"] { flex: 1; min-width: 0; }
+.prose [data-type="columns"],
+.article-content [data-type="columns"] { display: flex; gap: 1rem; margin: 2rem 0; }
+.prose [data-type="column"],
+.article-content [data-type="column"] { flex: 1; min-width: 0; }
 
 /* Mermaid */
-.prose [data-type="mermaid"] { margin: 1.4rem 0; text-align: center; }
+.prose [data-type="mermaid"],
+.article-content [data-type="mermaid"] { margin: 2rem 0; text-align: center; }
 
 /* Отступы (indent) */
-.prose [style*="margin-left"] { display: block; }
+.prose [style*="margin-left"],
+.article-content [style*="margin-left"] { display: block; }

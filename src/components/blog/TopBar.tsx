@@ -55,11 +55,11 @@ export default function TopBar() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-[#e8eaed] font-[Raleway]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[60px] flex items-center gap-4">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[70px] flex items-center gap-4">
 
         {/* Логотип — как на всех страницах */}
         <Link href="/" className="shrink-0" aria-label="Главная">
-          <Image src="/img/logo_dark.svg" alt="Единая среда" width={140} height={38} className="h-[38px] w-auto object-contain" />
+          <Image src="/img/logo_dark.svg" alt="Единая среда" width={166} height={45} className="h-[45px] w-auto object-contain" />
         </Link>
 
         <div className="flex-1" />
