@@ -32,7 +32,7 @@ export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProp
                 onClick={() => onTabChange?.(tab)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-colors text-left
                   ${isActive
-                    ? 'bg-[#e6f6fc] text-[#029cda]'
+                    ? 'bg-[#f5f6f8] text-[#313131] font-semibold'
                     : 'text-[#52555a] hover:bg-[#f5f6f8] hover:text-[#313131]'
                   }`}
               >
