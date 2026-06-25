@@ -54,7 +54,7 @@ export default function TopBar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white border-b border-[#e8eaed] font-[Raleway]">
+    <header className="sticky top-0 z-[60] w-full bg-white border-b border-[#e8eaed] font-[Raleway]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[70px] flex items-center gap-4">
 
         {/* Логотип — как на всех страницах */}
@@ -135,7 +135,7 @@ export default function TopBar() {
             </button>
 
             {showProfileMenu && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#e8eaed] z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#e8eaed] z-[200] overflow-hidden">
                 <div className="px-4 py-3 border-b border-[#f0f1f3]">
                   <div className="text-[12px] text-[#8c9099]">Профиль</div>
                   <div className="text-[14px] font-semibold text-[#313131]">

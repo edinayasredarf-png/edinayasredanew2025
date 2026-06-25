@@ -78,7 +78,7 @@ function AdsCarousel() {
 export default function RightSidebar() {
   return (
     <aside className="w-[240px] shrink-0 hidden xl:block">
-      <div className="sticky top-[86px] space-y-3 font-[Raleway]">
+      <div className="sticky top-[86px] space-y-3 font-[Raleway] z-0">
 
         {/* Рекламный баннер */}
         <AdsCarousel />
