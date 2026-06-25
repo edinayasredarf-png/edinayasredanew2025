@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { authStore, UserProfile } from '@/lib/authStore';
 import { sb_getUserFavorites } from '@/lib/commentsStore';
 import { sb_listPosts } from '@/lib/blogStore';
@@ -17,6 +18,7 @@ interface FavoritePost {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -163,7 +165,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-[#313131]">Личный кабинет</h1>
               <button
-                onClick={() => authStore.signOut()}
+                onClick={async () => { await authStore.signOut(); router.push('/'); }}
                 className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
               >
                 Выйти
