@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { authStore } from '@/lib/authStore';
 
 declare global {
   interface Window {
@@ -15,7 +16,7 @@ declare global {
 }
 
 interface YandexIDButtonProps {
-  onSuccess: (data: unknown) => void;
+  onSuccess: () => void;
   onError?: (msg: string) => void;
 }
 
@@ -56,7 +57,44 @@ export default function YandexIDButton({ onSuccess, onError }: YandexIDButtonPro
         }
       )
         .then(({ handler }) => handler())
-        .then((data) => onSuccess(data))
+        .then(async (data: any) => {
+          try {
+            const accessToken = data?.access_token || data?.token;
+            if (!accessToken) throw new Error('Не удалось получить токен Яндекс');
+
+            // Получаем профиль пользователя через Яндекс API
+            const infoRes = await fetch('https://login.yandex.ru/info?format=json', {
+              headers: { Authorization: `OAuth ${accessToken}` },
+            });
+            if (!infoRes.ok) throw new Error('Ошибка получения профиля Яндекс');
+            const info = await infoRes.json();
+
+            // Создаём/обновляем сессию на сервере
+            const authRes = await fetch('/api/auth/oauth', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                provider: 'yandex',
+                providerId: String(info.id || ''),
+                email: info.default_email || info.emails?.[0] || null,
+                name: `${info.first_name || ''} ${info.last_name || ''}`.trim() || info.display_name || null,
+                avatarUrl: info.default_avatar_id
+                  ? `https://avatars.yandex.net/get-yapic/${info.default_avatar_id}/islands-200`
+                  : null,
+              }),
+            });
+
+            if (!authRes.ok) {
+              const err = await authRes.json();
+              throw new Error(err.error || 'Ошибка входа через Яндекс');
+            }
+
+            await authStore.refreshSession();
+            onSuccess();
+          } catch (e: any) {
+            onError?.(e?.message || 'Ошибка входа через Яндекс');
+          }
+        })
         .catch((err: Error) => onError?.(err?.message || 'Ошибка Яндекс ID'));
     };
 

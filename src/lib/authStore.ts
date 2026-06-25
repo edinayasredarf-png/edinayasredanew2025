@@ -117,7 +117,11 @@ export class AuthStore {
   }
 
   async signOut() {
-    await authFetch('/logout', { method: 'POST' });
+    try {
+      await authFetch('/logout', { method: 'POST' });
+    } catch {
+      // ignore server errors — always clear local state
+    }
     this.user = null;
     this.profile = null;
     this.notifyListeners();
