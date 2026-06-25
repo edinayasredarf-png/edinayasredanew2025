@@ -11,6 +11,7 @@ const NAV_LINKS = [
 	{ href: '/cases', label: 'Кейсы' },
 	{ href: '/blog', label: 'Блог' },
 	{ href: '/partnership', label: 'Партнерство' },
+	{ href: '/contacts', label: 'Контакты' },
 ] as const;
 
 const SERVICE_LINKS = [
@@ -175,6 +176,10 @@ export function RedesignHeader() {
 							)}
 						</div>
 
+						<Link href="/about" className={navLinkClass('/about')}>
+							О компании
+						</Link>
+
 						{NAV_LINKS.filter((item) => item.href !== '/cases').map((item) => (
 							<Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
 								{item.label}
@@ -247,6 +252,15 @@ export function RedesignHeader() {
 							className="px-3 py-2.5 rounded-xl text-[15px] font-involve font-medium text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
 						>
 							Все услуги
+						</Link>
+						<Link
+							href="/about"
+							onClick={closeMobile}
+							className={`px-3 py-3 rounded-xl text-[15px] font-involve font-medium text-[#222] hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors ${
+								isActive('/about') ? 'text-[#029cda]' : ''
+							}`}
+						>
+							О компании
 						</Link>
 						{NAV_LINKS.filter((item) => item.href !== '/cases').map((item) => (
 							<Link
