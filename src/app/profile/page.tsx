@@ -19,6 +19,7 @@ interface FavoritePost {
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [favoritePosts, setFavoritePosts] = useState<FavoritePost[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -29,9 +30,11 @@ export default function ProfilePage() {
   const [requestMessage, setRequestMessage] = useState('');
 
   useEffect(() => {
-    const unsubscribe = authStore.subscribe(() => {
+    const syncAuth = () => {
+      if (!authStore.isInitialized()) return;
       const authenticated = authStore.isAuthenticated();
       setIsAuthenticated(authenticated);
+      setAuthChecked(true);
       if (authenticated) {
         const userProfile = authStore.getCurrentProfile();
         setProfile(userProfile);
@@ -44,22 +47,10 @@ export default function ProfilePage() {
       } else {
         setProfile(null);
       }
-    });
+    };
 
-    // Устанавливаем начальное состояние
-    const authenticated = authStore.isAuthenticated();
-    setIsAuthenticated(authenticated);
-    if (authenticated) {
-      const userProfile = authStore.getCurrentProfile();
-      setProfile(userProfile);
-      if (userProfile) {
-        setEditData({
-          full_name: userProfile.full_name || '',
-          organization: userProfile.organization || '',
-        });
-      }
-    }
-
+    syncAuth();
+    const unsubscribe = authStore.subscribe(syncAuth);
     return unsubscribe;
   }, []);
 
@@ -117,6 +108,16 @@ export default function ProfilePage() {
       alert('Ошибка при отправке заявки');
     }
   };
+
+  if (!authChecked) {
+    return (
+      <ProfileLayout>
+        <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#029cda]" />
+        </div>
+      </ProfileLayout>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

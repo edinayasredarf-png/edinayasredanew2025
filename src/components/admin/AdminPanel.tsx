@@ -23,21 +23,21 @@ export default function AdminPanel() {
   });
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
-    // Check if user is authorized to access admin panel
     const checkAuth = () => {
+      const initialized = authStore.isInitialized();
       const isAdmin = authStore.isAdmin();
-      setIsAuthorized(isAdmin);
-      if (isAdmin) {
-        loadAdminData();
+      if (initialized) {
+        setAuthChecked(true);
+        setIsAuthorized(isAdmin);
+        if (isAdmin) loadAdminData();
       }
     };
 
     checkAuth();
-    
-    // Listen for auth changes
     const unsubscribe = authStore.subscribe(checkAuth);
     return unsubscribe;
   }, []);
@@ -87,6 +87,14 @@ export default function AdminPanel() {
     }
   };
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#029cda]" />
+      </div>
+    );
+  }
+
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -94,7 +102,7 @@ export default function AdminPanel() {
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <h2 className="text-xl font-bold mb-2">Доступ запрещен</h2>
             <p>У вас нет прав для доступа к админ-панели.</p>
-            <p className="text-sm mt-2">Только редакторы могут просматривать эту страницу.</p>
+            <p className="text-sm mt-2">Только администраторы могут просматривать эту страницу.</p>
           </div>
         </div>
       </div>

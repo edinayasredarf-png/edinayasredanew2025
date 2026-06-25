@@ -20,7 +20,7 @@ export class AuthStore {
   private user: SessionUser | null = null;
   private profile: UserProfile | null = null;
   private listeners: Set<() => void> = new Set();
-  private initDone = false;
+  private _initialized = false;
 
   constructor() {
     this.init();
@@ -29,8 +29,12 @@ export class AuthStore {
   private async init() {
     if (typeof window === 'undefined') return;
     await this.refreshSession();
-    this.initDone = true;
+    this._initialized = true;
     this.notifyListeners();
+  }
+
+  isInitialized(): boolean {
+    return this._initialized;
   }
 
   async refreshSession() {
