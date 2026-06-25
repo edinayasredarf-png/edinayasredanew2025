@@ -413,6 +413,16 @@ const Header: React.FC<HeaderProps> = ({
 									)}
 								</li>
 
+								{/* О компании */}
+								<li>
+									<Link
+										href="/about"
+										className={`${navLinkBase} ${navText} ${navHover} ${isActive('/about') ? activeBox : ''}`}
+									>
+										О компании
+									</Link>
+								</li>
+
 								{/* Компания */}
 								<li className="relative">
 									<button
@@ -468,18 +478,18 @@ const Header: React.FC<HeaderProps> = ({
 								</li>
 								<li>
 									<Link
-										href="/contacts"
-										className={`${navLinkBase} ${navText} ${navHover} ${isActive('/contacts') ? activeBox : ''}`}
-									>
-										Контакты
-									</Link>
-								</li>
-								<li>
-									<Link
 										href="/partnership"
 										className={`${navLinkBase} ${navText} ${navHover} ${isActive('/partnership') ? activeBox : ''}`}
 									>
 										Партнерство
+									</Link>
+								</li>
+								<li>
+									<Link
+										href="/contacts"
+										className={`${navLinkBase} ${navText} ${navHover} ${isActive('/contacts') ? activeBox : ''}`}
+									>
+										Контакты
 									</Link>
 								</li>
 
