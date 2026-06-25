@@ -16,6 +16,7 @@ export default function TopBar() {
   const [showSearchInput, setShowSearchInput] = useState(false);
 
   const profileRef = useRef<HTMLDivElement>(null);
+  const profileMobileRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
@@ -40,7 +41,10 @@ export default function TopBar() {
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfileMenu(false);
+      const t = e.target as Node;
+      const inDesktop = profileRef.current?.contains(t);
+      const inMobile = profileMobileRef.current?.contains(t);
+      if (!inDesktop && !inMobile) setShowProfileMenu(false);
     };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
@@ -186,7 +190,7 @@ export default function TopBar() {
               Войти
             </button>
           ) : (
-            <div className="relative" ref={profileRef}>
+            <div className="relative" ref={profileMobileRef}>
               <button
                 onClick={() => setShowProfileMenu(v => !v)}
                 className="w-9 h-9 rounded-xl bg-[#e6f6fc] flex items-center justify-center text-[#029cda] font-bold"
