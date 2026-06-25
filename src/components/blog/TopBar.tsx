@@ -155,7 +155,7 @@ export default function TopBar() {
                     <Image src="/icons/profile.svg" alt="" width={16} height={16} />
                     Личный кабинет
                   </Link>
-                  <button onClick={async () => { await authStore.signOut(); setShowProfileMenu(false); }}
+                  <button onClick={async () => { await authStore.signOut(); window.location.reload(); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-[14px]">
                     <Image src="/icons/sign_out.svg" alt="" width={16} height={16} />
                     Выйти
@@ -215,7 +215,7 @@ export default function TopBar() {
                       <Image src="/icons/profile.svg" alt="" width={16} height={16} />
                       Личный кабинет
                     </Link>
-                    <button onClick={async () => { await authStore.signOut(); setShowProfileMenu(false); }}
+                    <button onClick={async () => { await authStore.signOut(); window.location.reload(); }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-[14px]">
                       <Image src="/icons/sign_out.svg" alt="" width={16} height={16} />
                       Выйти

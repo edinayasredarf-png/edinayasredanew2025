@@ -165,7 +165,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-[#313131]">Личный кабинет</h1>
               <button
-                onClick={async () => { await authStore.signOut(); router.push('/'); }}
+                onClick={async () => { await authStore.signOut(); window.location.href = '/'; }}
                 className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
               >
                 Выйти
