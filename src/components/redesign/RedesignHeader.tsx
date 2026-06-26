@@ -131,6 +131,10 @@ export function RedesignHeader() {
 
 					{/* Навигация — центр на десктопе */}
 					<nav className="hidden lg:flex items-center justify-center gap-3 flex-1 px-4">
+						<Link href="/about" className={navLinkClass('/about')}>
+							О компании
+						</Link>
+
 						<Link href="/cases" className={navLinkClass('/cases')}>
 							Кейсы
 						</Link>
@@ -175,10 +179,6 @@ export function RedesignHeader() {
 								</div>
 							)}
 						</div>
-
-						<Link href="/about" className={navLinkClass('/about')}>
-							О компании
-						</Link>
 
 						{NAV_LINKS.filter((item) => item.href !== '/cases').map((item) => (
 							<Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
@@ -227,6 +227,15 @@ export function RedesignHeader() {
 				>
 					<nav className="flex flex-col gap-1 px-6 pb-6 pt-12">
 						<Link
+							href="/about"
+							onClick={closeMobile}
+							className={`px-3 py-3 rounded-xl text-[15px] font-involve font-medium text-[#222] hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors ${
+								isActive('/about') ? 'text-[#029cda]' : ''
+							}`}
+						>
+							О компании
+						</Link>
+						<Link
 							href="/cases"
 							onClick={closeMobile}
 							className={`px-3 py-3 rounded-xl text-[15px] font-involve font-medium text-[#222] hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors ${
@@ -252,15 +261,6 @@ export function RedesignHeader() {
 							className="px-3 py-2.5 rounded-xl text-[15px] font-involve font-medium text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
 						>
 							Все услуги
-						</Link>
-						<Link
-							href="/about"
-							onClick={closeMobile}
-							className={`px-3 py-3 rounded-xl text-[15px] font-involve font-medium text-[#222] hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors ${
-								isActive('/about') ? 'text-[#029cda]' : ''
-							}`}
-						>
-							О компании
 						</Link>
 						{NAV_LINKS.filter((item) => item.href !== '/cases').map((item) => (
 							<Link
