@@ -10,7 +10,7 @@ export async function generateMetadata(props: any): Promise<Metadata> {
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
   const fallbackTitle = 'Кейс';
-  const fallbackDescription = 'Кейс компании «Единая среда».';
+  const fallbackDescription = 'Кейс компании «Единая среда» — цифровое управление территориями.';
 
   try {
     const seo = await getCaseSeoBySlug(slug);
@@ -19,11 +19,13 @@ export async function generateMetadata(props: any): Promise<Metadata> {
       return {
         title: seo.title,
         description: seo.description ?? fallbackDescription,
+        alternates: { canonical: `/cases/${slug}` },
         openGraph: {
           type: 'article',
           title: seo.title,
           description: seo.description ?? fallbackDescription,
           images,
+          publishedTime: seo.datePublished,
         },
         twitter: {
           card: 'summary_large_image',
@@ -37,10 +39,7 @@ export async function generateMetadata(props: any): Promise<Metadata> {
     // ignore
   }
 
-  return {
-    title: fallbackTitle,
-    description: fallbackDescription,
-  };
+  return { title: fallbackTitle, description: fallbackDescription };
 }
 
 export default async function CaseSlugPage(props: any) {
@@ -48,9 +47,52 @@ export default async function CaseSlugPage(props: any) {
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
 
+  let jsonLd: object | null = null;
+  try {
+    const seo = await getCaseSeoBySlug(slug);
+    if (seo?.title) {
+      jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        articleSection: 'Кейсы',
+        headline: seo.title,
+        description: seo.description,
+        image: seo.image,
+        datePublished: seo.datePublished,
+        dateModified: seo.dateModified ?? seo.datePublished,
+        author: {
+          '@type': 'Organization',
+          name: 'Единая среда',
+          url: 'https://единаясреда.рф',
+        },
+        publisher: {
+          '@type': 'Organization',
+          '@id': 'https://единаясреда.рф/#organization',
+          name: 'Единая среда',
+          logo: { '@type': 'ImageObject', url: 'https://единаясреда.рф/img/logo_dark.svg' },
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `https://единаясреда.рф/cases/${slug}`,
+        },
+        inLanguage: 'ru-RU',
+      };
+    }
+  } catch {
+    // ignore
+  }
+
   return (
-    <Suspense fallback={null}>
-      <CasePageClient slug={slug} />
-    </Suspense>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <Suspense fallback={null}>
+        <CasePageClient slug={slug} />
+      </Suspense>
+    </>
   );
 }

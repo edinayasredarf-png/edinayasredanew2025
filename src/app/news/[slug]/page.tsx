@@ -17,9 +17,17 @@ export async function generateMetadata(props: any): Promise<Metadata> {
     if (seo?.title) {
       const images = seo.image ? [seo.image] : undefined;
       return {
-        title: seo.title, // template из root metadata добавит " | Единая среда"
+        title: seo.title,
         description: seo.description ?? fallbackDescription,
-        openGraph: { type: 'article', title: seo.title, description: seo.description ?? fallbackDescription, images },
+        alternates: { canonical: `/news/${slug}` },
+        openGraph: {
+          type: 'article',
+          title: seo.title,
+          description: seo.description ?? fallbackDescription,
+          images,
+          publishedTime: seo.datePublished,
+          modifiedTime: seo.dateModified,
+        },
         twitter: { card: 'summary_large_image', title: seo.title, description: seo.description ?? fallbackDescription, images },
       };
     }
@@ -40,9 +48,51 @@ export default async function NewsSlugPage(props: any) {
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
 
+  let jsonLd: object | null = null;
+  try {
+    const seo = await getNewsSeoBySlug(slug);
+    if (seo?.title) {
+      jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: seo.title,
+        description: seo.description,
+        image: seo.image,
+        datePublished: seo.datePublished,
+        dateModified: seo.dateModified ?? seo.datePublished,
+        author: {
+          '@type': 'Organization',
+          name: 'Единая среда',
+          url: 'https://единаясреда.рф',
+        },
+        publisher: {
+          '@type': 'Organization',
+          '@id': 'https://единаясреда.рф/#organization',
+          name: 'Единая среда',
+          logo: { '@type': 'ImageObject', url: 'https://единаясреда.рф/img/logo_dark.svg' },
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `https://единаясреда.рф/news/${slug}`,
+        },
+        inLanguage: 'ru-RU',
+      };
+    }
+  } catch {
+    // ignore
+  }
+
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f2f3f7] flex items-center justify-center">Загрузка…</div>}>
-      <NewsPageClient slug={slug} />
-    </Suspense>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <Suspense fallback={<div className="min-h-screen bg-[#f2f3f7] flex items-center justify-center">Загрузка…</div>}>
+        <NewsPageClient slug={slug} />
+      </Suspense>
+    </>
   );
 }

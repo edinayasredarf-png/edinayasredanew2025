@@ -7,7 +7,6 @@ import Stack from '@mui/material/Stack';
 
 export const dynamic = 'force-dynamic';
 
-// Генерация метаданных — серверная функция
 export async function generateMetadata(props: any): Promise<Metadata> {
   const raw = props?.params;
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
@@ -24,11 +23,14 @@ export async function generateMetadata(props: any): Promise<Metadata> {
       return {
         title: seo.title,
         description: seo.description ?? fallbackDescription,
+        alternates: { canonical: `/blog/${slug}` },
         openGraph: {
           type: 'article',
           title: seo.title,
           description: seo.description ?? fallbackDescription,
           images,
+          publishedTime: seo.datePublished,
+          modifiedTime: seo.dateModified,
         },
         twitter: {
           card: 'summary_large_image',
@@ -50,7 +52,6 @@ export async function generateMetadata(props: any): Promise<Metadata> {
   };
 }
 
-// Skeleton отдельный компонент
 function PostSkeleton() {
   return (
     <div className="max-w-[800px] mx-auto p-4 sm:p-6 md:p-8 space-y-6">
@@ -58,34 +59,63 @@ function PostSkeleton() {
       <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 12 }} animation="wave" />
       <Stack spacing={2}>
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            variant="text"
-            width={`${100 - i * 5}%`}
-            height={24}
-            sx={{ borderRadius: 4 }}
-            animation="wave"
-          />
-        ))}
-      </Stack>
-      <Stack spacing={1}>
-        {Array.from({ length: 2 }).map((_, i) => (
-          <Skeleton key={i} variant="text" width={`${60 - i * 10}%`} height={32} sx={{ borderRadius: 4 }} animation="wave" />
+          <Skeleton key={i} variant="text" width={`${100 - i * 5}%`} height={24} sx={{ borderRadius: 4 }} animation="wave" />
         ))}
       </Stack>
     </div>
   );
 }
 
-// Серверная страница
 export default async function BlogPostPage(props: any) {
   const raw = props?.params;
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
 
+  let jsonLd: object | null = null;
+  try {
+    const seo = await getPostSeoBySlug(slug);
+    if (seo?.title) {
+      jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: seo.title,
+        description: seo.description,
+        image: seo.image,
+        datePublished: seo.datePublished,
+        dateModified: seo.dateModified ?? seo.datePublished,
+        author: {
+          '@type': 'Organization',
+          name: 'Единая среда',
+          url: 'https://единаясреда.рф',
+        },
+        publisher: {
+          '@type': 'Organization',
+          '@id': 'https://единаясреда.рф/#organization',
+          name: 'Единая среда',
+          logo: { '@type': 'ImageObject', url: 'https://единаясреда.рф/img/logo_dark.svg' },
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `https://единаясреда.рф/blog/${slug}`,
+        },
+        inLanguage: 'ru-RU',
+      };
+    }
+  } catch {
+    // ignore
+  }
+
   return (
-    <Suspense fallback={<PostSkeleton />}>
-      <PostPageClient slug={slug} />
-    </Suspense>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <Suspense fallback={<PostSkeleton />}>
+        <PostPageClient slug={slug} />
+      </Suspense>
+    </>
   );
 }
