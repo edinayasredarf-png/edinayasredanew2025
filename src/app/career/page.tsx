@@ -13,10 +13,10 @@ export default function CareerPage() {
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
             <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
               <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-                <h1 className="text-4xl sm:text-5xl md:text-[78px] font-medium leading-tight">
+                <h1 className="font-involve text-[#313131] text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
                   Карьера в Единой Среде
                 </h1>
-                <p className="mt-8 text-xl sm:text-[27px] text-grey-92 max-w-2xl">
+                <p className="mt-6 md:mt-8 text-[#313131]/70 text-lg md:text-[22.7px] leading-[1.37] max-w-[662px] font-[Inter]">
                   Присоединяйтесь к команде профессионалов и участвуйте в цифровой революции экологического управления
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">

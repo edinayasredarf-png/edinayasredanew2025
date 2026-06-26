@@ -91,10 +91,10 @@ export default function DemoPage() {
         <section className="page-hero rounded-b-[20px] relative overflow-hidden">
           <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-4 py-10 md:py-16">
             <div className="max-w-4xl">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-medium leading-tight">
+              <h1 className="font-involve text-[#313131] text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
                 Демо-версия <br />АИС «Единая среда»
               </h1>
-              <p className="mt-6 text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl">
+              <p className="mt-6 md:mt-8 text-[#313131]/70 text-lg md:text-[22.7px] leading-[1.37] max-w-[662px] font-[Inter]">
                 Посмотрите, как работает система: интерактивная карта, карточки
                 объектов, реестры, поиск, отчеты и аналитика.
               </p>
