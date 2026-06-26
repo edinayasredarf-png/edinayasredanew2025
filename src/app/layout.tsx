@@ -146,7 +146,7 @@ export default function RootLayout({
               },
               "image": `${normalizedSiteUrl}/img/og-image.jpg`,
               "description": "Цифровое управление территориями для муниципалитетов и городских служб. Учёт объектов городской среды, контроль подрядчиков, аналитика.",
-              "foundingDate": "2026",
+              "foundingDate": "2011",
               "address": {
                 "@type": "PostalAddress",
                 "addressCountry": "RU"

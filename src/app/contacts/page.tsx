@@ -1,107 +1,17 @@
-"use client";
-import React, { useEffect } from 'react';
-import Layout from '@/components/Layout';
+import { Metadata } from 'next';
+import ContactsPageClient from './ContactsPageClient';
+
+export const metadata: Metadata = {
+  title: 'Контакты — Единая среда',
+  description: 'Свяжитесь с нами: +7 (800) 550-56-12, info@единаясреда.рф. Консультации по инвентаризации территорий, внедрению платформы и государственным контрактам. Пн-Пт 9:00–18:00.',
+  alternates: { canonical: '/contacts' },
+  openGraph: {
+    title: 'Контакты — Единая среда',
+    description: 'Телефон: +7 (800) 550-56-12. Email: info@единаясреда.рф. Консультации по цифровому управлению территориями.',
+    url: 'https://единаясреда.рф/contacts',
+  },
+};
 
 export default function ContactsPage() {
-  useEffect(() => {
-    // Динамически загружаем скрипт Яндекс.Карт
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.charset = 'utf-8';
-    script.async = true;
-    script.src = 'https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3Abc95fd3859638c7daa47e1662aaae6ce55e67126d111841305077e032b13ac18&amp;width=500&amp;height=500&amp;lang=ru_RU&amp;scroll=true';
-
-    const mapContainer = document.getElementById('yandex-map');
-    if (mapContainer) {
-      mapContainer.appendChild(script);
-    }
-
-    return () => {
-      // Очистка при размонтировании компонента
-      if (mapContainer && script.parentNode) {
-        mapContainer.removeChild(script);
-      }
-    };
-  }, []);
-  return (
-    <Layout>
-      {/* Hero Section */}
-			<div className='font-[Raleway] font-medium lining-nums'>
-      <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
-          <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
-            <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-              <h1 className="font-involve text-[#313131] text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
-                Контакты
-              </h1>
-              <p className="mt-6 md:mt-8 text-[#313131]/70 text-lg md:text-[22.7px] leading-[1.37] max-w-[662px] font-[Inter]">
-                Свяжитесь с нами для получения консультации по вопросам лесоустройства и экологических услуг
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Information */}
-              <section className="py-16 md:py-24 bg-[#F6F7F9]">
-        <div className="max-w-[1200px] mx-auto px-5 md:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-            {/* Contact Info */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#313131] mb-12">
-                Контактная информация
-              </h2>
-
-              {/* Sales Department */}
-              <div className="mb-12">
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-3xl font-bold text-[#029cda]">+7 (800) 550-56-12</p>
-                    <p className="text-lg text-[#7C8A9A] mt-2">Телефон отдела продаж</p>
-                  </div>
-                  <div>
-                    <p className="text-xl text-[#313131]">info@единаясреда.рф</p>
-                    <p className="text-lg text-[#7C8A9A] mt-2">Email для заявок и информации</p>
-                  </div>
-                  <div>
-                    <p className="text-xl text-[#313131]">Пн-Пт: 9:00 - 18:00</p>
-                    <p className="text-lg text-[#7C8A9A] mt-2">Время работы</p>
-                  </div>
-                </div>
-              </div>
-
-
-              {/* Address
-              <div className="mb-12">
-                <h3 className="text-xl font-semibold text-[#313131] mb-6">Адрес</h3>
-                <div>
-                  <p className="text-xl text-[#313131]">г. Ростов-на-Дону, ул. Комарова, 28/2</p>
-                  <p className="text-lg text-[#7C8A9A] mt-2">Офис 403, 4 этаж</p>
-                </div>
-              </div>*/}
-
-              {/* Action Buttons */}
-              <div className="flex flex-col space-y-4">
-                <a
-                  href="tel:+78005505612"
-                  className="w-full px-8 py-4 border-2 border-[#029cda] text-[#029cda] text-lg font-medium rounded-xl hover:bg-[#029cda] hover:text-white transition-colors text-center block"
-                >
-                  Позвонить нам
-                </a>
-                <a
-                  href="mailto:info@единаясреда.рф"
-                  className="w-full px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-medium rounded-xl hover:bg-[#F6F7F9] transition-colors text-center block"
-                >
-                  Написать письмо
-                </a>
-              </div>
-            </div>
-
-
-          </div>
-        </div>
-      </section>
-			</div>
-    </Layout>
-  );
+  return <ContactsPageClient />;
 }

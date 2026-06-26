@@ -3,12 +3,12 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai/'
+  const baseUrl = 'https://единаясреда.рф'
 
   return [
     {
       // Главная страница - самый высокий приоритет, обновляется часто (например, за счет новостей)
-      url: baseUrl,
+      url: `${baseUrl}/`,
       lastModified: new Date(), // Оставляем new Date(), так как контент на главной может меняться
       changeFrequency: 'daily',
       priority: 1,
@@ -76,13 +76,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(), // Оставляем new Date(), так как список кейсов может пополняться
       changeFrequency: 'weekly',
       priority: 0.8,
-    },
-    {
-      // Динамический раздел, обновляется часто
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(), // Оставляем new Date() для страницы списка постов
-      changeFrequency: 'daily',
-      priority: 0.7,
     },
     {
       // Динамический раздел, обновляется часто

@@ -5,9 +5,7 @@ import { MetadataRoute } from 'next'
 export default function robots(): MetadataRoute.Robots {
 
 
-  const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai/'
-
-
+  const baseUrl = 'https://единаясреда.рф'
 
   return {
     rules: [
@@ -15,31 +13,25 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
-          '/admin',           // Админ-панель
-          '/admin/',          // С слешем на конце (на всякий случай)
-          '/api/',            // API endpoints
-          '/blog/new',        // Форма создания поста
-          '/editor-demo',     // Демо-редактор
-          '/_next/',          // Служебные файлы Next.js
-          '/private/',        // Если есть приватные разделы
-          '/*.json$',         // JSON файлы
-          '/*?preview=',      // Параметры предпросмотра
-          '/*?draft=',        // Черновики
+          '/admin',
+          '/admin/',
+          '/api/',
+          '/blog/new',
+          '/editor-demo',
+          '/private/',
+          '/*.json$',
+          '/*?preview=',
+          '/*?draft=',
         ],
       },
-      // Опционально: специальные правила для Яндекса
-      {
-        userAgent: 'Yandex',
-        allow: '/',
-        disallow: ['/admin', '/api/', '/blog/new', '/editor-demo', '/_next/'],
-        crawlDelay: 2, // Задержка между запросами (секунды)
-      },
-      // Опционально: для Google
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
-        disallow: ['/admin', '/api/', '/blog/new', '/editor-demo'],
-      },
+      { userAgent: 'Yandex', allow: '/', disallow: ['/admin', '/api/', '/blog/new', '/editor-demo'], crawlDelay: 2 },
+      { userAgent: 'Googlebot', allow: '/', disallow: ['/admin', '/api/', '/blog/new', '/editor-demo'] },
+      // AI search crawlers — явно разрешены
+      { userAgent: 'GPTBot', allow: '/', disallow: ['/admin', '/api/'] },
+      { userAgent: 'OAI-SearchBot', allow: '/', disallow: ['/admin', '/api/'] },
+      { userAgent: 'ClaudeBot', allow: '/', disallow: ['/admin', '/api/'] },
+      { userAgent: 'PerplexityBot', allow: '/', disallow: ['/admin', '/api/'] },
+      { userAgent: 'Google-Extended', allow: '/', disallow: ['/admin', '/api/'] },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
   }
