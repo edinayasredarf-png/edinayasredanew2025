@@ -19,7 +19,7 @@ export default function WelcomeBonusPage() {
       <div className="min-h-screen">
         {/* HERO — слева текст/кнопки, справа изображение */}
         <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[420px]">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
             <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
               {/* Текст слева */}
               <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">

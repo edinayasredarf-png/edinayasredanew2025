@@ -10,7 +10,7 @@ export default function CareerPage() {
 			<div className="font-[Raleway] font-medium lining-nums">
         {/* Hero Section */}
         <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 relative z-10">
             <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
               <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
                 <h1 className="text-4xl sm:text-5xl md:text-[78px] font-medium leading-tight">
@@ -209,7 +209,7 @@ export default function CareerPage() {
 
         {/* Contact Section */}
         <section className="bg-black text-white rounded-[20px] mt-8">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20">
             <div className="text-center">
               <h2 className="text-4xl sm:text-5xl md:text-[78px] font-medium leading-tight mb-8">
                 Готовы присоединиться?
