@@ -99,7 +99,18 @@ export default function CasesPage() {
 
         <section id="cases-grid" className="case-page-column pb-8 lining-nums">
           {loading ? (
-            <div className="text-center py-24 text-[var(--rd-muted,#667085)]">Загрузка…</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden bg-white animate-pulse">
+                  <div className="h-48 bg-[#e4e7ec]" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-4 bg-[#e4e7ec] rounded-lg w-3/4" />
+                    <div className="h-3 bg-[#e4e7ec] rounded-lg w-full" />
+                    <div className="h-3 bg-[#e4e7ec] rounded-lg w-2/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : cardItems.length === 0 ? (
             <CasesEmptyState onReset={resetFilters} />
           ) : (

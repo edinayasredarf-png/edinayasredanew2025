@@ -7,7 +7,7 @@ import { getTimewebPool } from "@/lib/timewebPg";
 export async function dbListPosts() {
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    "select * from posts order by createdat desc"
+    "select id, slug, title, subtitle, cover, tags, kind, createdat, updatedat, views, reactions from posts order by createdat desc"
   );
   return rows;
 }
@@ -64,7 +64,7 @@ export async function dbDeletePost(id: string) {
 export async function dbListNews() {
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    "select * from news order by createdat desc"
+    "select id, slug, title, cover, tags, createdat, updatedat, views, reactions from news order by createdat desc"
   );
   return rows;
 }
@@ -130,7 +130,7 @@ export async function dbClearTestNews(): Promise<number> {
 export async function dbListCases() {
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    "select * from cases order by createdat desc"
+    "select id, slug, title, subtitle, cover, tags, application, location, createdat, updatedat, views, reactions from cases order by createdat desc"
   );
   return rows;
 }

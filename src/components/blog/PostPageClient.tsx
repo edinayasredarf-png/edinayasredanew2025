@@ -140,9 +140,14 @@ export default function PostPageClient({ slug }: { slug: string }) {
           <div className="flex gap-4">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
             <main className="flex-1 min-w-0 flex items-center justify-center min-h-[60vh]">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4" />
-                <p className="text-gray-600">Загрузка статьи...</p>
+              <div className="w-full max-w-[760px] space-y-4 animate-pulse">
+                <div className="h-8 bg-[#e4e7ec] rounded-xl w-3/4" />
+                <div className="h-56 bg-[#e4e7ec] rounded-2xl w-full" />
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-4 bg-[#e4e7ec] rounded-lg" style={{ width: `${100 - i * 5}%` }} />
+                  ))}
+                </div>
               </div>
             </main>
             <RightSidebar />
