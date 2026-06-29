@@ -41,7 +41,7 @@ export default function BlogLayout({ children }: BlogLayoutProps) {
 
   return (
     <div className="bg-[#F6F7FB] min-h-screen flex flex-col">
-      <main className="flex-1 w-full mx-auto relative z-10">
+      <main className="flex-1 w-full mx-auto">
         {children}
       </main>
 
