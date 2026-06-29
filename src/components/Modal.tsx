@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
-import MessengerRequestLinks from "./MessengerRequestLinks";
 
 interface ModalBaseProps {
   open: boolean;
@@ -132,7 +131,6 @@ const Modal: React.FC<ModalProps> = ({
         <div className="flex flex-col gap-4">
           {children}
           <div id="b24-register-form" />
-          <MessengerRequestLinks />
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-400">

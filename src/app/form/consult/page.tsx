@@ -16,7 +16,7 @@ export default function ConsultFormPage() {
       b24Form="inline/95/lw93ha"
       b24Loader={95}
       containerId="b24-consult-page-form"
-      showMessengers
+
     />
   );
 }

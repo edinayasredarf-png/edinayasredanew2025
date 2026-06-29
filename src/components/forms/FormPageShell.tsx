@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { RedesignHeader } from '@/components/redesign/RedesignHeader';
 import { RedesignFooter } from '@/components/redesign/RedesignFooter';
-import MessengerRequestLinks from '@/components/MessengerRequestLinks';
 
 interface FormPageShellProps {
   title: string;
@@ -16,7 +15,6 @@ interface FormPageShellProps {
   b24Loader: number;
   /** unique DOM container id */
   containerId: string;
-  showMessengers?: boolean;
 }
 
 export default function FormPageShell({
@@ -24,8 +22,7 @@ export default function FormPageShell({
   description,
   b24Form,
   b24Loader,
-  containerId,
-  showMessengers = false,
+  containerId
 }: FormPageShellProps) {
   const injected = useRef(false);
 
@@ -82,11 +79,6 @@ export default function FormPageShell({
             {/* Bitrix24 form */}
             <div id={containerId} />
 
-            {showMessengers && (
-              <div className="mt-4">
-                <MessengerRequestLinks />
-              </div>
-            )}
           </div>
 
           {/* Back link */}
