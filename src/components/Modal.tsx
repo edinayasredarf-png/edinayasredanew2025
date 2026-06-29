@@ -100,7 +100,7 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel={title}>
-      <div className="w-full max-w-[420px] mx-auto m-2 bg-[#EEEEF8] rounded-[28px] p-6 flex flex-col font-[Raleway] animate-fade-in relative" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-[420px] mx-auto m-2 bg-white rounded-[28px] p-6 flex flex-col font-[Raleway] animate-fade-in relative" onClick={e => e.stopPropagation()}>
 
         {/* Header с логотипом и крестиком */}
         <div className="flex items-center gap-3 mb-6 pr-10">
