@@ -130,7 +130,8 @@ export function RedesignHeader() {
 
 					{/* Навигационная пилюля — по центру */}
 					<div
-						className="h-[68px] flex items-center rounded-xl overflow-visible"
+						ref={servicesRef}
+						className="relative h-[68px] flex items-center rounded-xl overflow-visible"
 						style={{ background: '#ffffff' }}
 					>
 						<nav className="flex items-center px-1">
@@ -148,44 +149,15 @@ export function RedesignHeader() {
 								Кейсы
 							</Link>
 
-							<div ref={servicesRef} className="relative">
-								<button
-									type="button"
-									onClick={() => setServicesOpen((v) => !v)}
-									className={`flex items-center gap-0.5 pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isServicesActive || servicesOpen ? 'text-[#029cda]' : 'text-[#313131]'}`}
-									aria-expanded={servicesOpen}
-								>
-									Услуги
-									<ChevronDown open={servicesOpen} />
-								</button>
-								{servicesOpen && (
-									<div className="absolute left-0 top-full mt-2 min-w-[320px] bg-white rounded-2xl shadow-xl border border-[#e4e7ec] p-4 z-50 animate-fade-in">
-										<div className="flex flex-col gap-1">
-											{SERVICE_LINKS.map((item) => (
-												<Link
-													key={item.href}
-													href={item.href}
-													onClick={() => setServicesOpen(false)}
-													className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
-												>
-													<ThemedIcon src={item.icon} size={24} color="#202020" />
-													{item.label}
-												</Link>
-											))}
-										</div>
-										<div className="mt-3 pt-3 border-t border-[#f0f0f0]">
-											<Link
-												href="/services"
-												onClick={() => setServicesOpen(false)}
-												className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#f6f7f9] text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#eceef2] transition-colors"
-											>
-												<ThemedIcon src="/icons/arrow-right.svg" size={20} color="#212121" />
-												Посмотреть все услуги
-											</Link>
-										</div>
-									</div>
-								)}
-							</div>
+							<button
+								type="button"
+								onClick={() => setServicesOpen((v) => !v)}
+								className={`flex items-center gap-0.5 pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isServicesActive || servicesOpen ? 'text-[#029cda]' : 'text-[#313131]'}`}
+								aria-expanded={servicesOpen}
+							>
+								Услуги
+								<ChevronDown open={servicesOpen} />
+							</button>
 
 							<Link
 								href="/blog"
@@ -201,6 +173,35 @@ export function RedesignHeader() {
 								Контакты
 							</Link>
 						</nav>
+
+						{/* Дропдаун под всей пилюлей */}
+						{servicesOpen && (
+							<div className="absolute left-0 right-0 top-[calc(100%+8px)] bg-white rounded-2xl shadow-xl border border-[#e4e7ec] p-4 z-50 animate-fade-in">
+								<div className="flex flex-col gap-1">
+									{SERVICE_LINKS.map((item) => (
+										<Link
+											key={item.href}
+											href={item.href}
+											onClick={() => setServicesOpen(false)}
+											className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
+										>
+											<ThemedIcon src={item.icon} size={24} color="#202020" />
+											{item.label}
+										</Link>
+									))}
+								</div>
+								<div className="mt-3 pt-3 border-t border-[#f0f0f0]">
+									<Link
+										href="/services"
+										onClick={() => setServicesOpen(false)}
+										className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#f6f7f9] text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#eceef2] transition-colors"
+									>
+										<ThemedIcon src="/icons/arrow-right.svg" size={20} color="#212121" />
+										Посмотреть все услуги
+									</Link>
+								</div>
+							</div>
+						)}
 					</div>
 
 					{/* Пилюля Войти + Попробовать — справа */}
