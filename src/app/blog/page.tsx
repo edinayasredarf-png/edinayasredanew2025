@@ -2,7 +2,6 @@
 
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import TopBar from '@/components/blog/TopBar';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
 import PostCard from '@/components/blog/PostCard';
@@ -101,7 +100,6 @@ function BlogHomeInner() {
   return (
     <BlogLayout>
       <div className="min-h-screen bg-[#f5f6f8] font-[Raleway]">
-        <TopBar />
 
         {/* Уведомления */}
         {notification && (
