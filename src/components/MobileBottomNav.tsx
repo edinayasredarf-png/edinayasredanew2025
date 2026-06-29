@@ -136,7 +136,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       </div>
 
       {/* DESKTOP: в том же стиле с плавным тоглом */}
-      <div className="hidden md:block fixed inset-x-0 bottom-0 z-[110] pointer-events-none pb-4">
+      <div className="hidden fixed inset-x-0 bottom-0 z-[110] pointer-events-none pb-4">
         <div className="mx-auto max-w-[620px] px-4">
           <div className="pointer-events-auto inline-flex w-full items-center gap-2">
             <div className="relative h-[64px] flex-1 rounded-2xl bg-white/20 border border-white/50 shadow-[0px_20px_30px_0px_rgba(0,0,0,0.08),0px_8px_12px_0px_rgba(0,0,0,0.05)] backdrop-blur-[20px] overflow-hidden">
