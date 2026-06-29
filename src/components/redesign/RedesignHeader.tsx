@@ -197,7 +197,7 @@ export function RedesignHeader() {
 				</div>
 
 				{/* ── Mobile: full-width bar ── */}
-				<div className="lg:hidden bg-[#F6F7F9] border-b border-white">
+				<div className="lg:hidden bg-[#F6F7F9]">
 					<div className="h-20 flex items-center justify-between gap-4 px-4">
 						<Link href="/" onClick={closeMobile}>
 							<Image
@@ -226,7 +226,7 @@ export function RedesignHeader() {
 					onClick={closeMobile}
 				/>
 				<div
-					className={`fixed top-20 right-0 bottom-0 z-[90] w-full max-w-sm bg-[#F6F7F9] shadow-2xl overflow-y-auto transition-transform duration-300 ease-out ${
+					className={`fixed top-20 right-0 bottom-0 z-[90] w-full max-w-sm bg-[#F6F7F9] overflow-y-auto transition-transform duration-300 ease-out ${
 						mobileOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
 					}`}
 				>
