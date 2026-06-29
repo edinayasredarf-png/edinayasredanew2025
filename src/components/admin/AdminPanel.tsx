@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { authStore } from '@/lib/authStore';
 import { sb_listPosts } from '@/lib/blogStore';
 import { sb_listAllComments } from '@/lib/commentsStore';
+import UtmGenerator from './UtmGenerator';
 
 interface AdminStats {
   totalPosts: number;
@@ -25,6 +26,7 @@ export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'utm'>('dashboard');
 
   useEffect(() => {
     const checkAuth = () => {
@@ -123,7 +125,7 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Админ-панель</h1>
           <p className="mt-2 text-gray-600">Управление контентом и пользователями</p>
           {status && (
@@ -133,6 +135,30 @@ export default function AdminPanel() {
           )}
         </div>
 
+        {/* Вкладки */}
+        <div className="flex gap-1 mb-8 border-b border-gray-200">
+          {([
+            { id: 'dashboard', label: 'Дашборд' },
+            { id: 'utm',       label: 'UTM-метки' },
+          ] as const).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors -mb-px ${
+                activeTab === tab.id
+                  ? 'bg-white border border-b-white border-gray-200 text-[#029cda]'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'utm' && <UtmGenerator />}
+
+        {activeTab === 'dashboard' && (<>
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -220,6 +246,7 @@ export default function AdminPanel() {
             ))}
           </div>
         </div>
+        </>)}
       </div>
     </div>
   );
