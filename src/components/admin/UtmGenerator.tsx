@@ -47,6 +47,7 @@ const DEFAULT_CHANNELS: Omit<Channel, 'campaign' | 'content'>[] = [
   { id: 'telegram',  label: 'Телеграм',        icon: '✈️',  url: '', source: 'telegram',  medium: 'messenger',  enabled: true },
   { id: 'dzen',      label: 'Яндекс Дзен',    icon: '🟡',  url: '', source: 'dzen',      medium: 'social',     enabled: true },
   { id: 'email',     label: 'Email рассылка',  icon: '📧',  url: '', source: 'email',     medium: 'email',      enabled: true },
+  { id: 'max',       label: 'Max (VK мессенджер)', icon: '🟣', url: '', source: 'max',      medium: 'messenger',  enabled: true  },
   { id: 'whatsapp',  label: 'WhatsApp',        icon: '💬',  url: '', source: 'whatsapp',  medium: 'messenger',  enabled: false },
   { id: 'ok',        label: 'Одноклассники',   icon: '🟠',  url: '', source: 'ok',        medium: 'social',     enabled: false },
   { id: 'website',   label: 'Сайт / баннер',  icon: '🌐',  url: '', source: 'website',   medium: 'banner',     enabled: false },
