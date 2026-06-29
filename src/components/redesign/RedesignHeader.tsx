@@ -113,11 +113,24 @@ export function RedesignHeader() {
 	return (
 		<>
 			<header className={`sticky top-0 ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
+				{/* ── Desktop: три отдельных элемента ── */}
+				<div className="hidden lg:flex items-center justify-between w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 gap-4">
 
-				{/* ── Desktop: floating pill ── */}
-				<div className="hidden lg:flex justify-center px-5 pt-3 pb-2 bg-transparent">
+					{/* Логотип — слева, без пилюли */}
+					<Link href="/" onClick={closeMobile} className="shrink-0">
+						<Image
+							src="/img/logo_dark.svg"
+							alt="Единая Среда"
+							width={148}
+							height={40}
+							className="w-[148px] h-auto"
+							priority
+						/>
+					</Link>
+
+					{/* Навигационная пилюля — по центру */}
 					<div
-						className="w-full max-w-[1200px] h-[58px] flex items-center gap-2.5 px-3 rounded-xl"
+						className="h-[58px] flex items-center rounded-xl overflow-visible"
 						style={{
 							background: 'linear-gradient(to bottom, #fafafa, rgba(250,250,250,0.92))',
 							boxShadow: [
@@ -131,22 +144,7 @@ export function RedesignHeader() {
 							].join(', '),
 						}}
 					>
-						{/* Логотип */}
-						<div className="flex-1 flex items-center">
-							<Link href="/" onClick={closeMobile}>
-								<Image
-									src="/img/logo_dark.svg"
-									alt="Единая Среда"
-									width={127}
-									height={35}
-									className="w-[120px] h-auto"
-									priority
-								/>
-							</Link>
-						</div>
-
-						{/* Навигация — центр */}
-						<nav className="flex items-center">
+						<nav className="flex items-center px-1">
 							<Link
 								href="/about"
 								className={`pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}
@@ -156,9 +154,10 @@ export function RedesignHeader() {
 
 							<Link
 								href="/cases"
-								className={`pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}
+								className={`flex items-center gap-0.5 pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Кейсы
+								<ChevronDown open={false} />
 							</Link>
 
 							<div ref={servicesRef} className="relative">
@@ -200,28 +199,56 @@ export function RedesignHeader() {
 								)}
 							</div>
 
-							{NAV_LINKS.filter((l) => l.href !== '/cases').map((item) => (
-								<Link
-									key={item.href}
-									href={item.href}
-									className={`pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive(item.href) ? 'text-[#029cda]' : 'text-[#313131]'}`}
-								>
-									{item.label}
-								</Link>
-							))}
-						</nav>
+							<Link
+								href="/blog"
+								className={`pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/blog') ? 'text-[#029cda]' : 'text-[#313131]'}`}
+							>
+								Блог
+							</Link>
 
-						{/* Кнопка */}
-						<div className="flex-1 flex items-center justify-end">
+							<Link
+								href="/contacts"
+								className={`pl-4 pr-3 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}
+							>
+								Контакты
+							</Link>
+						</nav>
+					</div>
+
+					{/* Пилюля Войти + Попробовать — справа */}
+					<div
+						className="h-[58px] flex items-center rounded-xl shrink-0"
+						style={{
+							background: 'linear-gradient(to bottom, #fafafa, rgba(250,250,250,0.92))',
+							boxShadow: [
+								'0px 0px 0px 0.5px rgba(0,0,0,0.05)',
+								'0px 2px 6.8px -4.5px rgba(0,0,0,0.01)',
+								'0px 0.24px 0.82px -2.25px rgba(0,0,0,0.08)',
+								'0px 6px 6px -3.75px rgba(0,0,0,0.06)',
+								'0px 1.37px 1.37px -2.5px rgba(0,0,0,0.16)',
+								'0px 0.36px 0.36px -1.25px rgba(0,0,0,0.18)',
+								'inset 0px 1px 1px 0px rgba(255,255,255,0.90)',
+							].join(', '),
+						}}
+					>
+						<a
+							href="https://edinayasreda.ru/"
+							className="inline-flex items-center gap-1.5 pl-4 pr-2 py-2.5 text-sm font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
+						>
+							Войти
+							<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
+						</a>
+						<div className="px-2">
 							<button
 								type="button"
 								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center px-4 py-2 bg-[#e0f2fd] rounded-[10px] text-[#029cda] text-sm font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
+								className="inline-flex items-center justify-center px-5 py-2 bg-[#e0f2fd] rounded-[10px] text-[#029cda] text-sm font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
 							>
 								Попробовать
 							</button>
 						</div>
 					</div>
+
 				</div>
 
 				{/* ── Mobile: full-width bar ── */}
