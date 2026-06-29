@@ -1,6 +1,9 @@
 import { MetadataRoute } from 'next'
 import { getTimewebPool } from '@/lib/timewebPg'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600
+
 const baseUrl = 'https://единаясреда.рф'
 
 const staticRoutes: MetadataRoute.Sitemap = [
