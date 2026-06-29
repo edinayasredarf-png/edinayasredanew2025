@@ -117,7 +117,7 @@ export function RedesignHeader() {
 				{/* ── Desktop: floating pill ── */}
 				<div className="hidden lg:flex justify-center px-5 pt-3 pb-2 bg-transparent">
 					<div
-						className="w-full max-w-[960px] h-[58px] flex items-center gap-2.5 px-3 rounded-2xl"
+						className="w-full max-w-[1200px] h-[58px] flex items-center gap-2.5 px-3 rounded-xl"
 						style={{
 							background: 'linear-gradient(to bottom, #fafafa, rgba(250,250,250,0.92))',
 							boxShadow: [
@@ -216,7 +216,7 @@ export function RedesignHeader() {
 							<button
 								type="button"
 								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center px-4 py-2 bg-[#e0f2fd] rounded-[99px] text-[#029cda] text-sm font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
+								className="inline-flex items-center justify-center px-4 py-2 bg-[#e0f2fd] rounded-[10px] text-[#029cda] text-sm font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
 							>
 								Попробовать
 							</button>
