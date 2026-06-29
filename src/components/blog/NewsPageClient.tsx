@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
-import TopBar from '@/components/blog/TopBar';
 import {
   NewsItem,
   deleteNewsById,
@@ -137,7 +136,6 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   if (newsLoading) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
-        <TopBar />
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
@@ -164,7 +162,6 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   if (!news) {
     return (
       <div className="bg-[#f2f3f7] min-h-screen">
-        <TopBar />
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
@@ -185,7 +182,6 @@ export default function NewsPageClient({ slug }: { slug: string }) {
 
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
-      <TopBar />
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />

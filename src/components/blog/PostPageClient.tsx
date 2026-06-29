@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LeftNav from '@/components/blog/LeftNav';
 import RightSidebar from '@/components/blog/RightSidebar';
-import TopBar from '@/components/blog/TopBar';
 import {
   BlogPost,
   getPostBySlug,
@@ -135,7 +134,6 @@ export default function PostPageClient({ slug }: { slug: string }) {
   if (!post) {
     return (
       <div className="bg-[#f5f6f8] min-h-screen">
-        <TopBar />
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-16 font-[Raleway]">
           <div className="flex gap-4">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
@@ -205,7 +203,6 @@ export default function PostPageClient({ slug }: { slug: string }) {
 
   return (
     <div className="bg-[#f5f6f8] min-h-screen">
-      <TopBar />
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-16 font-[Raleway]">
         <div className="flex gap-4">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
