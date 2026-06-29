@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
-
+import { BlogHeader } from '@/components/redesign/BlogHeader';
 
 export const metadata: Metadata = {
   title: 'Блог',
@@ -14,15 +14,13 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * Отдельный лэйаут для блока /blog — без общего Header сайта.
- * Общий фон и отступы как в референсе.
- */
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-[#f2f3f7] min-h-screen">
+      <Suspense>
+        <BlogHeader />
+      </Suspense>
       {children}
-
     </div>
   );
 }

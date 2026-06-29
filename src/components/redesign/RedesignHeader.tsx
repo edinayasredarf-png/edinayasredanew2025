@@ -130,85 +130,49 @@ export function RedesignHeader() {
 
 					{/* Навигационная пилюля — по центру */}
 					<div
-						className="h-[58px] flex items-center rounded-xl overflow-visible"
+						className="h-[68px] flex items-center rounded-xl overflow-visible"
 						style={{
-							background: 'linear-gradient(to bottom, #fafafa, rgba(250,250,250,0.92))',
+							background: '#ffffff',
 							boxShadow: [
-								'0px 0px 0px 0.5px rgba(0,0,0,0.05)',
-								'0px 2px 6.8px -4.5px rgba(0,0,0,0.01)',
-								'0px 0.24px 0.82px -2.25px rgba(0,0,0,0.08)',
-								'0px 6px 6px -3.75px rgba(0,0,0,0.06)',
-								'0px 1.37px 1.37px -2.5px rgba(0,0,0,0.16)',
-								'0px 0.36px 0.36px -1.25px rgba(0,0,0,0.18)',
-								'inset 0px 1px 1px 0px rgba(255,255,255,0.90)',
+								'0px 0px 0px 0.5px rgba(0,0,0,0.07)',
+								'0px 2px 8px -3px rgba(0,0,0,0.08)',
+								'0px 6px 16px -4px rgba(0,0,0,0.06)',
+								'inset 0px 1px 0px 0px rgba(255,255,255,1)',
 							].join(', '),
 						}}
 					>
 						<nav className="flex items-center px-1">
 							<Link
 								href="/about"
-								className={`pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								О компании
 							</Link>
 
 							<Link
 								href="/cases"
-								className={`flex items-center gap-0.5 pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Кейсы
-								<ChevronDown open={false} />
 							</Link>
 
-							<div ref={servicesRef} className="relative">
-								<button
-									type="button"
-									onClick={() => setServicesOpen((v) => !v)}
-									className={`flex items-center gap-0.5 pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isServicesActive || servicesOpen ? 'text-[#029cda]' : 'text-[#313131]'}`}
-									aria-expanded={servicesOpen}
-								>
-									Услуги
-									<ChevronDown open={servicesOpen} />
-								</button>
-								{servicesOpen && (
-									<div className="absolute left-0 top-full mt-2 min-w-[320px] bg-white rounded-2xl shadow-xl border border-[#e4e7ec] p-4 z-50 animate-fade-in">
-										<div className="flex flex-col gap-1">
-											{SERVICE_LINKS.map((item) => (
-												<Link
-													key={item.href}
-													href={item.href}
-													onClick={() => setServicesOpen(false)}
-													className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
-												>
-													<ThemedIcon src={item.icon} size={24} color="#202020" />
-													{item.label}
-												</Link>
-											))}
-										</div>
-										<div className="mt-3 pt-3 border-t border-[#f0f0f0]">
-											<Link
-												href="/services"
-												onClick={() => setServicesOpen(false)}
-												className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#f6f7f9] text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#eceef2] transition-colors"
-											>
-												<ThemedIcon src="/icons/arrow-right.svg" size={20} color="#212121" />
-												Посмотреть все услуги
-											</Link>
-										</div>
-									</div>
-								)}
-							</div>
+							<Link
+								href="/services"
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isServicesActive ? 'text-[#029cda]' : 'text-[#313131]'}`}
+							>
+								Услуги
+							</Link>
 
 							<Link
 								href="/blog"
-								className={`pl-4 pr-1.5 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/blog') ? 'text-[#029cda]' : 'text-[#313131]'}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/blog') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Блог
 							</Link>
 
 							<Link
 								href="/contacts"
-								className={`pl-4 pr-3 py-3 text-sm font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Контакты
 							</Link>
@@ -217,23 +181,20 @@ export function RedesignHeader() {
 
 					{/* Пилюля Войти + Попробовать — справа */}
 					<div
-						className="h-[58px] flex items-center rounded-xl shrink-0"
+						className="h-[68px] flex items-center rounded-xl shrink-0"
 						style={{
-							background: 'linear-gradient(to bottom, #fafafa, rgba(250,250,250,0.92))',
+							background: '#ffffff',
 							boxShadow: [
-								'0px 0px 0px 0.5px rgba(0,0,0,0.05)',
-								'0px 2px 6.8px -4.5px rgba(0,0,0,0.01)',
-								'0px 0.24px 0.82px -2.25px rgba(0,0,0,0.08)',
-								'0px 6px 6px -3.75px rgba(0,0,0,0.06)',
-								'0px 1.37px 1.37px -2.5px rgba(0,0,0,0.16)',
-								'0px 0.36px 0.36px -1.25px rgba(0,0,0,0.18)',
-								'inset 0px 1px 1px 0px rgba(255,255,255,0.90)',
+								'0px 0px 0px 0.5px rgba(0,0,0,0.07)',
+								'0px 2px 8px -3px rgba(0,0,0,0.08)',
+								'0px 6px 16px -4px rgba(0,0,0,0.06)',
+								'inset 0px 1px 0px 0px rgba(255,255,255,1)',
 							].join(', '),
 						}}
 					>
 						<a
 							href="https://edinayasreda.ru/"
-							className="inline-flex items-center gap-1.5 pl-4 pr-2 py-2.5 text-sm font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
+							className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
 						>
 							Войти
 							<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
@@ -242,7 +203,7 @@ export function RedesignHeader() {
 							<button
 								type="button"
 								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center px-5 py-2 bg-[#e0f2fd] rounded-[10px] text-[#029cda] text-sm font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
+								className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-[10px] text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
 							>
 								Попробовать
 							</button>
