@@ -80,7 +80,7 @@ export function BlogHeader() {
 				</Link>
 
 				{/* Правая пилюля */}
-				<div className="h-[68px] flex items-center rounded-xl shrink-0" style={{ background: '#ffffff', boxShadow: PILL_SHADOW }}>
+				<div className="h-[68px] flex items-center rounded-xl shrink-0" style={{ background: '#ffffff' }}>
 
 					{/* Поиск */}
 					<div className="flex items-center pl-3 pr-1">
@@ -176,7 +176,7 @@ export function BlogHeader() {
 			</div>
 
 			{/* ── Mobile ── */}
-			<div className="lg:hidden bg-white border-b border-[#e8eaed]">
+			<div className="lg:hidden bg-white">
 				<div className="h-[70px] flex items-center justify-between gap-4 px-4">
 					<Link href="/" aria-label="Главная">
 						<Image src="/img/logo_dark.svg" alt="Единая среда" width={140} height={38} className="h-[38px] w-auto object-contain" />

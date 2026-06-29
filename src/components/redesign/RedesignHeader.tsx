@@ -131,15 +131,7 @@ export function RedesignHeader() {
 					{/* Навигационная пилюля — по центру */}
 					<div
 						className="h-[68px] flex items-center rounded-xl overflow-visible"
-						style={{
-							background: '#ffffff',
-							boxShadow: [
-								'0px 0px 0px 0.5px rgba(0,0,0,0.07)',
-								'0px 2px 8px -3px rgba(0,0,0,0.08)',
-								'0px 6px 16px -4px rgba(0,0,0,0.06)',
-								'inset 0px 1px 0px 0px rgba(255,255,255,1)',
-							].join(', '),
-						}}
+						style={{ background: '#ffffff' }}
 					>
 						<nav className="flex items-center px-1">
 							<Link
@@ -182,15 +174,7 @@ export function RedesignHeader() {
 					{/* Пилюля Войти + Попробовать — справа */}
 					<div
 						className="h-[68px] flex items-center rounded-xl shrink-0"
-						style={{
-							background: '#ffffff',
-							boxShadow: [
-								'0px 0px 0px 0.5px rgba(0,0,0,0.07)',
-								'0px 2px 8px -3px rgba(0,0,0,0.08)',
-								'0px 6px 16px -4px rgba(0,0,0,0.06)',
-								'inset 0px 1px 0px 0px rgba(255,255,255,1)',
-							].join(', '),
-						}}
+						style={{ background: '#ffffff' }}
 					>
 						<a
 							href="https://edinayasreda.ru/"
