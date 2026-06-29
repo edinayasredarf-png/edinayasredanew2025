@@ -58,7 +58,7 @@ export default function FormPageShell({
       <main className="flex-1 flex items-center justify-center px-4 py-12 md:py-20">
         <div className="w-full max-w-[460px]">
           {/* Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-[#e8eaef] p-8">
+          <div className="bg-[#EEEEF8] rounded-[28px] p-8">
             {/* Logo + title */}
             <div className="flex items-center gap-3 mb-6">
               <Image

@@ -100,75 +100,47 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel={title}>
-      <div className="w-full md:w-1/2 mx-auto m-2 flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-lg animate-fade-in relative" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-[420px] mx-auto m-2 bg-[#EEEEF8] rounded-[28px] p-6 flex flex-col font-[Raleway] animate-fade-in relative" onClick={e => e.stopPropagation()}>
 
-        {/* Левая часть: фирменный блок (только на md+) */}
-        <div className={`hidden md:flex md:w-1/2 ${leftBgColor} ${leftTextColor} flex-col justify-between p-4 md:p-6`}>
-          <div>
-            <p className="text-base md:text-lg mb-8">{description}</p>
-          </div>
-          <div className="bg-white/10 rounded-2xl p-4 flex flex-col items-start mt-auto">
-            <div className="flex items-center gap-3 mb-2">
-              <Image src="/img/box.png" alt="Бонус" width={160} height={160} className="w-full h-20" />
-            </div>
-          </div>
+        {/* Header с логотипом и крестиком */}
+        <div className="flex items-center gap-3 mb-6 pr-10">
+          <Image
+            src="/icons/logo_modal.svg"
+            alt="Логотип"
+            width={52}
+            height={52}
+            className="w-13 h-13 flex-shrink-0"
+          />
+          <h2 className="text-2xl font-medium text-[#313131] flex-1">{title}</h2>
+          <button
+            onClick={onClose}
+            aria-label="Закрыть модальное окно"
+            className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#313131" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
-        {/* Правая часть: форма (на мобильных — вся модалка) */}
-        <div className="w-full md:w-1/2 bg-white p-4 md:p-6 flex flex-col justify-center relative">
+        {description && (
+          <p className="text-[15px] text-[#7C8A9A] mb-5 leading-relaxed">{description}</p>
+        )}
 
-          {/* Header с логотипом и крестиком */}
-          <div className="flex items-center gap-3 mb-6">
-            <Image
-              src="/icons/logo_modal.svg"
-              alt="Логотип"
-              width={40}
-              height={40}
-              className="w-14 h-14"
-            />
-            <h2 className="text-2xl font-medium text-[#313131] flex-1">{title}</h2>
-            <button
-              onClick={onClose} // сразу закрывает модалку
-              aria-label="Закрыть модальное окно"
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#313131"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Контент и Bitrix форма */}
-          <div className="flex flex-col gap-4">
-            {children}
-            <div id="b24-register-form" />
-            <MessengerRequestLinks />
-          </div>
-
-          <div className="mt-6 text-center text-sm text-gray-400">
-            Есть аккаунт?{' '}
-            <a
-              href="https://edinayasreda.ru/"
-              className="text-[#029cda] font-medium hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Войти
-            </a>
-          </div>
+        {/* Форма */}
+        <div className="flex flex-col gap-4">
+          {children}
+          <div id="b24-register-form" />
+          <MessengerRequestLinks />
         </div>
 
+        <div className="mt-6 text-center text-sm text-gray-400">
+          Есть аккаунт?{' '}
+          <a href="https://edinayasreda.ru/" className="text-[#029cda] font-medium hover:underline" target="_blank" rel="noopener noreferrer">
+            Войти
+          </a>
+        </div>
       </div>
     </ModalBase>
   );

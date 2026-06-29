@@ -37,7 +37,7 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ open, onClose }) 
 
   return (
     <ModalBase open={open} onClose={onClose} ariaLabel="Получить консультацию">
-      <div className=" bg-white rounded-2xl shadow-lg relative w-full md:w-[400px] p-6 flex flex-col font-[Raleway]">
+      <div className=" bg-[#EEEEF8] rounded-[28px] relative w-full md:w-[400px] p-6 flex flex-col font-[Raleway]">
 
         {/* Крестик */}
         <button
