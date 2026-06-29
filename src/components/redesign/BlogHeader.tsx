@@ -26,7 +26,9 @@ export function BlogHeader() {
 	const [isAdmin, setIsAdmin] = useState(false);
 	const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-	const profileRef = useRef<HTMLDivElement>(null);
+	// Отдельные рефы для десктопа и мобилки
+	const profileDesktopRef = useRef<HTMLDivElement>(null);
+	const profileMobileRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -44,16 +46,15 @@ export function BlogHeader() {
 	useEffect(() => { setQ(qFromUrl); }, [qFromUrl]);
 
 	useEffect(() => {
-		if (showSearch && searchInputRef.current) {
-			searchInputRef.current.focus();
-		}
+		if (showSearch && searchInputRef.current) searchInputRef.current.focus();
 	}, [showSearch]);
 
 	useEffect(() => {
 		const h = (e: MouseEvent) => {
-			if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-				setShowProfileMenu(false);
-			}
+			const t = e.target as Node;
+			const inDesktop = profileDesktopRef.current?.contains(t);
+			const inMobile = profileMobileRef.current?.contains(t);
+			if (!inDesktop && !inMobile) setShowProfileMenu(false);
 		};
 		document.addEventListener('mousedown', h);
 		return () => document.removeEventListener('mousedown', h);
@@ -66,28 +67,53 @@ export function BlogHeader() {
 		setShowSearch(false);
 	};
 
+	const ProfileMenu = () => (
+		<div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#e8eaed] z-[999] overflow-hidden">
+			<div className="px-4 py-3 border-b border-[#f0f1f3]">
+				<div className="text-[12px] text-[#8c9099]">Профиль</div>
+				<div className="text-[14px] font-semibold text-[#313131]">
+					{isEditor ? 'Редактор' : 'Пользователь'}
+				</div>
+			</div>
+			<div className="py-1.5">
+				{isAdmin && (
+					<Link href="/admin" onClick={() => setShowProfileMenu(false)}
+						className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+						Админ-панель
+					</Link>
+				)}
+				{isEditor && (
+					<Link href="/blog/new" onClick={() => setShowProfileMenu(false)}
+						className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+						Написать статью
+					</Link>
+				)}
+				<Link href="/profile" onClick={() => setShowProfileMenu(false)}
+					className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
+					Личный кабинет
+				</Link>
+				<button
+					onClick={async () => { await authStore.signOut(); window.location.reload(); }}
+					className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-[14px]">
+					Выйти
+				</button>
+			</div>
+		</div>
+	);
+
 	return (
-		<header className="sticky top-0 z-50 overflow-visible">
+		<header className="sticky top-0 z-50">
 			{/* Desktop */}
 			<div className="hidden lg:flex items-center justify-between w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 gap-4">
 
 				{/* Логотип */}
 				<Link href="/" className="shrink-0">
-					<Image
-						src="/img/logo_dark.svg"
-						alt="Единая Среда"
-						width={148}
-						height={40}
-						className="w-[148px] h-auto"
-						priority
-					/>
+					<Image src="/img/logo_dark.svg" alt="Единая Среда" width={148} height={40} className="w-[148px] h-auto" priority />
 				</Link>
 
-				{/* Правая пилюля: поиск + войти/профиль */}
-				<div
-					className="h-[68px] flex items-center rounded-xl shrink-0 overflow-visible"
-					style={{ background: '#ffffff', boxShadow: PILL_SHADOW }}
-				>
+				{/* Правая пилюля */}
+				<div className="h-[68px] flex items-center rounded-xl shrink-0" style={{ background: '#ffffff', boxShadow: PILL_SHADOW }}>
+
 					{/* Поиск */}
 					<div className="flex items-center pl-3 pr-1">
 						{showSearch ? (
@@ -116,11 +142,7 @@ export function BlogHeader() {
 								)}
 							</div>
 						) : (
-							<button
-								onClick={() => setShowSearch(true)}
-								className="w-10 h-10 rounded-xl flex items-center justify-center text-[#52555a] hover:bg-[#f5f6f8] transition-colors"
-								aria-label="Поиск"
-							>
+							<button onClick={() => setShowSearch(true)} className="w-10 h-10 rounded-xl flex items-center justify-center text-[#52555a] hover:bg-[#f5f6f8] transition-colors" aria-label="Поиск">
 								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 									<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
 								</svg>
@@ -129,19 +151,16 @@ export function BlogHeader() {
 					</div>
 
 					{/* Написать (для редакторов) */}
-				{isEditor && (
-					<Link
-						href="/blog/new"
-						className="hidden md:flex items-center gap-1.5 px-3 py-2 mx-1 rounded-[10px] bg-[#e0f2fd] text-[#029cda] text-[14px] font-semibold font-[Raleway] hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
-					>
-						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-							<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-						</svg>
-						Написать
-					</Link>
-				)}
+					{isEditor && (
+						<Link href="/blog/new" className="flex items-center gap-1.5 px-3 py-2 mx-1 rounded-[10px] bg-[#e0f2fd] text-[#029cda] text-[14px] font-semibold font-[Raleway] hover:bg-[#c8eaf9] transition-colors whitespace-nowrap">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+								<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+							</svg>
+							Написать
+						</Link>
+					)}
 
-				{/* Войти / Профиль */}
+					{/* Войти / Профиль */}
 					{!isAuthed ? (
 						<button
 							onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
@@ -153,47 +172,14 @@ export function BlogHeader() {
 							</svg>
 						</button>
 					) : (
-						<div className="relative pr-2" ref={profileRef}>
+						<div className="relative pr-2" ref={profileDesktopRef}>
 							<button
 								onClick={() => setShowProfileMenu(v => !v)}
 								className="w-10 h-10 rounded-xl bg-[#e6f6fc] flex items-center justify-center text-[#029cda] font-bold text-[15px] hover:bg-[#cceefb] transition-colors"
-								aria-haspopup="menu"
-								aria-expanded={showProfileMenu}
 							>
 								П
 							</button>
-							{showProfileMenu && (
-								<div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#e8eaed] z-[999] overflow-hidden">
-									<div className="px-4 py-3 border-b border-[#f0f1f3]">
-										<div className="text-[12px] text-[#8c9099]">Профиль</div>
-										<div className="text-[14px] font-semibold text-[#313131]">
-											{isEditor ? 'Редактор' : 'Пользователь'}
-										</div>
-									</div>
-									<div className="py-1.5">
-										{isAdmin && (
-											<Link href="/admin" onClick={() => setShowProfileMenu(false)}
-												className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
-												Админ-панель
-											</Link>
-										)}
-										{isEditor && (
-											<Link href="/blog/new" onClick={() => setShowProfileMenu(false)}
-												className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
-												Написать статью
-											</Link>
-										)}
-										<Link href="/profile" onClick={() => setShowProfileMenu(false)}
-											className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">
-											Личный кабинет
-										</Link>
-										<button onClick={async () => { await authStore.signOut(); window.location.reload(); }}
-											className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-[14px]">
-											Выйти
-										</button>
-									</div>
-								</div>
-							)}
+							{showProfileMenu && <ProfileMenu />}
 						</div>
 					)}
 				</div>
@@ -206,30 +192,24 @@ export function BlogHeader() {
 						<Image src="/img/logo_dark.svg" alt="Единая Среда" width={120} height={33} className="w-[110px] h-auto" priority />
 					</Link>
 					<div className="flex items-center gap-2">
-						<button
-							onClick={() => setShowSearch(v => !v)}
-							className="w-9 h-9 rounded-xl flex items-center justify-center text-[#52555a] hover:bg-[#f5f6f8]"
-							aria-label="Поиск"
-						>
+						<button onClick={() => setShowSearch(v => !v)} className="w-9 h-9 rounded-xl flex items-center justify-center text-[#52555a] hover:bg-[#f5f6f8]" aria-label="Поиск">
 							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 								<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
 							</svg>
 						</button>
 						{!isAuthed ? (
-							<button
-								onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-								className="h-9 px-3 rounded-xl bg-[#029cda] text-white text-[13px] font-semibold font-[Raleway] hover:bg-[#0280b5]"
-							>
+							<button onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))} className="h-9 px-3 rounded-xl bg-[#029cda] text-white text-[13px] font-semibold font-[Raleway] hover:bg-[#0280b5]">
 								Войти
 							</button>
 						) : (
-							<div className="relative" ref={profileRef}>
+							<div className="relative" ref={profileMobileRef}>
 								<button
 									onClick={() => setShowProfileMenu(v => !v)}
 									className="w-9 h-9 rounded-xl bg-[#e6f6fc] flex items-center justify-center text-[#029cda] font-bold"
 								>
 									П
 								</button>
+								{showProfileMenu && <ProfileMenu />}
 							</div>
 						)}
 					</div>
