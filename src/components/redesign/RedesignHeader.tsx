@@ -114,7 +114,7 @@ export function RedesignHeader() {
 		<>
 			<header className={`sticky top-0 ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
 				{/* ── Desktop: три отдельных элемента ── */}
-				<div className="hidden lg:flex items-center justify-between w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 gap-4">
+				<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 relative">
 
 					{/* Логотип — слева, без пилюли */}
 					<Link href="/" onClick={closeMobile} className="shrink-0">
@@ -128,10 +128,10 @@ export function RedesignHeader() {
 						/>
 					</Link>
 
-					{/* Навигационная пилюля — по центру */}
+					{/* Навигационная пилюля — строго по центру */}
 					<div
 						ref={servicesRef}
-						className="relative h-[68px] flex items-center rounded-xl overflow-visible"
+						className="absolute left-1/2 -translate-x-1/2 h-[68px] flex items-center rounded-xl overflow-visible"
 						style={{ background: '#ffffff' }}
 					>
 						<nav className="flex items-center px-1">
@@ -176,7 +176,7 @@ export function RedesignHeader() {
 
 						{/* Дропдаун под всей пилюлей */}
 						{servicesOpen && (
-							<div className="absolute left-0 right-0 top-[calc(100%+8px)] bg-white rounded-2xl shadow-xl border border-[#e4e7ec] p-4 z-50 animate-fade-in">
+							<div className="absolute left-0 right-0 top-[calc(100%+8px)] bg-white rounded-2xl p-4 z-50 animate-fade-in">
 								<div className="flex flex-col gap-1">
 									{SERVICE_LINKS.map((item) => (
 										<Link
@@ -206,7 +206,7 @@ export function RedesignHeader() {
 
 					{/* Пилюля Войти + Попробовать — справа */}
 					<div
-						className="h-[68px] flex items-center rounded-xl shrink-0"
+						className="ml-auto h-[68px] flex items-center rounded-xl shrink-0"
 						style={{ background: '#ffffff' }}
 					>
 						<a
