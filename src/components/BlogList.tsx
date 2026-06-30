@@ -32,7 +32,7 @@ const blogPosts: BlogPost[] = [
 
 const BlogList = () => {
   return (
-    <div className="w-full bg-[#f2f3f7]">
+    <div className="w-full bg-[#F6F7F9]">
       <div className="max-w-[1440px] mx-auto px-[34px] py-10">
         <h1 className="text-[32px] font-bold text-[#292c32] mb-8">Блог</h1>
 

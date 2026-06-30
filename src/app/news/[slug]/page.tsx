@@ -90,7 +90,7 @@ export default async function NewsSlugPage(props: any) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <Suspense fallback={<div className="min-h-screen bg-[#f2f3f7] flex items-center justify-center">Загрузка…</div>}>
+      <Suspense fallback={<div className="min-h-screen bg-[#F6F7F9] flex items-center justify-center">Загрузка…</div>}>
         <NewsPageClient slug={slug} />
       </Suspense>
     </>

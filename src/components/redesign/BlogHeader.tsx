@@ -72,26 +72,15 @@ export function BlogHeader() {
 	return (
 		<header className="sticky top-0 z-[60] w-full font-[Raleway]">
 			{/* ── Desktop ── */}
-			<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 relative">
+			<div className="hidden lg:flex items-center justify-between w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 gap-4">
 
 				{/* Логотип */}
 				<Link href="/" className="shrink-0">
 					<Image src="/img/logo_dark.svg" alt="Единая Среда" width={148} height={40} className="w-[148px] h-auto" priority />
 				</Link>
 
-				{/* Навигационная пилюля — по центру */}
-				<div className="absolute left-1/2 -translate-x-1/2 h-[68px] flex items-center rounded-xl" style={{ background: '#ffffff' }}>
-					<nav className="flex items-center px-1">
-						<Link href="/about" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}>О компании</Link>
-						<Link href="/cases" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Кейсы</Link>
-						<Link href="/services" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/services') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Услуги</Link>
-						<Link href="/blog" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/blog') || pathname?.startsWith('/news') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Блог</Link>
-						<Link href="/contacts" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Контакты</Link>
-					</nav>
-				</div>
-
 				{/* Правая пилюля */}
-				<div className="ml-auto h-[68px] flex items-center rounded-xl shrink-0" style={{ background: '#ffffff' }}>
+				<div className="h-[68px] flex items-center rounded-xl shrink-0" style={{ background: '#ffffff' }}>
 
 					{/* Поиск */}
 					<div className="flex items-center pl-3 pr-1">
