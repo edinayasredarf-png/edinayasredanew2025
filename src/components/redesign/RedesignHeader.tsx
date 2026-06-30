@@ -170,7 +170,7 @@ export function RedesignHeader() {
 
 						{/* Дропдаун под навигацией */}
 						{servicesOpen && (
-							<div className="absolute left-0 right-0 top-[calc(100%+8px)] bg-white rounded-3xl p-4 z-50 animate-fade-in">
+							<div className="absolute left-0 right-0 top-[calc(100%+12px)] bg-white rounded-3xl p-4 z-50 animate-fade-in">
 								<div className="flex flex-col gap-1">
 									{SERVICE_LINKS.map((item) => (
 										<Link

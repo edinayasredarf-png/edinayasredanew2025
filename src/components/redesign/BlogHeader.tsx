@@ -5,6 +5,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { authStore } from '@/lib/authStore';
+import ThemedIcon from '@/components/ThemedIcon';
+
+const SERVICE_LINKS = [
+	{ href: '/services/imz', label: 'Инвентаризация мест захоронений', icon: '/icons/Cemetery.svg' },
+	{ href: '/services/izn', label: 'Инвентаризация зеленых насаждений', icon: '/icons/Tree.svg' },
+	{ href: '/services/les', label: 'Лесоустройство', icon: '/icons/Forest.svg' },
+] as const;
+
+function ChevronDown({ open }: { open: boolean }) {
+	return (
+		<svg className={`w-[17px] h-[17px] shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} viewBox="0 0 17 17" fill="none" aria-hidden>
+			<path d="M12.4911 6.20898L8.50013 10.1999L4.50928 6.20898" stroke="currentColor" strokeWidth="1.39" strokeLinecap="round" strokeLinejoin="round"/>
+		</svg>
+	);
+}
 
 const PILL_SHADOW = [
 	'0px 0px 0px 0.5px rgba(0,0,0,0.07)',
@@ -26,9 +41,11 @@ export function BlogHeader() {
 	const [showProfileMenu, setShowProfileMenu] = useState(false);
 	const [showSearchInput, setShowSearchInput] = useState(false);
 	const [showMobileSearch, setShowMobileSearch] = useState(false);
+	const [servicesOpen, setServicesOpen] = useState(false);
 
 	// Отдельные рефы — как в оригинальном TopBar
 	const profileRef = useRef<HTMLDivElement>(null);
+	const servicesRef = useRef<HTMLDivElement>(null);
 	const profileMobileRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,12 +67,15 @@ export function BlogHeader() {
 		if (showSearchInput && searchInputRef.current) searchInputRef.current.focus();
 	}, [showSearchInput]);
 
-	// Закрытие дропдауна — точно как в TopBar
+	// Закрытие дропдаунов
 	useEffect(() => {
 		const h = (e: MouseEvent) => {
 			const t = e.target as Node;
 			if (!profileRef.current?.contains(t) && !profileMobileRef.current?.contains(t)) {
 				setShowProfileMenu(false);
+			}
+			if (!servicesRef.current?.contains(t)) {
+				setServicesOpen(false);
 			}
 		};
 		document.addEventListener('mousedown', h);
@@ -81,13 +101,40 @@ export function BlogHeader() {
 				</Link>
 
 				{/* Навигация — по центру */}
-				<nav className="absolute left-1/2 -translate-x-1/2 flex items-center">
+				<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+				<div ref={servicesRef} style={{ position: 'relative' }} className="flex items-center">
+				<nav className="flex items-center">
 					<Link href="/about" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}>О компании</Link>
 					<Link href="/cases" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Кейсы</Link>
-					<Link href="/services" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/services') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Услуги</Link>
+					<button type="button" onClick={() => setServicesOpen(v => !v)} aria-expanded={servicesOpen}
+						className={`flex items-center gap-0.5 pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/services') || servicesOpen ? 'text-[#029cda]' : 'text-[#313131]'}`}>
+						Услуги<ChevronDown open={servicesOpen} />
+					</button>
 					<Link href="/blog" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/blog') || pathname?.startsWith('/news') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Блог</Link>
 					<Link href="/contacts" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Контакты</Link>
 				</nav>
+				{servicesOpen && (
+					<div className="absolute left-0 right-0 top-[calc(100%+12px)] bg-white rounded-3xl p-4 z-50 animate-fade-in">
+						<div className="flex flex-col gap-1">
+							{SERVICE_LINKS.map((item) => (
+								<Link key={item.href} href={item.href} onClick={() => setServicesOpen(false)}
+									className="flex items-center gap-3 py-2.5 px-3 rounded-2xl text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors">
+									<ThemedIcon src={item.icon} size={24} color="#202020" />
+									{item.label}
+								</Link>
+							))}
+						</div>
+						<div className="mt-3 pt-3 border-t border-[#f0f0f0]">
+							<Link href="/services" onClick={() => setServicesOpen(false)}
+								className="flex items-center justify-center gap-2 w-full py-2.5 rounded-2xl bg-[#f6f7f9] text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#eceef2] transition-colors">
+								<ThemedIcon src="/icons/arrow-right.svg" size={20} color="#212121" />
+								Посмотреть все услуги
+							</Link>
+						</div>
+					</div>
+				)}
+				</div>
+				</div>
 
 				{/* Правая часть */}
 				<div className="ml-auto flex items-center">
