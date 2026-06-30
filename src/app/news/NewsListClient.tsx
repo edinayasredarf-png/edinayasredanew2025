@@ -44,7 +44,7 @@ export default function NewsListClient() {
 
   return (
     <div className="bg-[#F6F7F9] min-h-screen font-[Raleway] font-medium lining-nums">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-8 sm:pb-16">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
 
@@ -68,7 +68,7 @@ export default function NewsListClient() {
                     <Link
                       key={n.id}
                       href={`/news/${encodeURIComponent(n.slug)}`}
-                      className="rounded-2xl border border-[#DCDDE1] p-4 hover:border-[#029cda] bg-white"
+                      className="rounded-2xl border border-[#DCDDE1] p-4 bg-white"
                     >
                       <div className="text-sm text-[#52555a]">
                         {formatContentDate(n.createdAt, n.updatedAt)}

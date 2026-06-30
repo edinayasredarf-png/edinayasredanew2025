@@ -64,7 +64,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
   const views = p.views || 0;
 
   return (
-    <article className="bg-white rounded-2xl border border-[#e8eaed] overflow-hidden font-[Raleway] hover:shadow-md transition-shadow duration-200">
+    <article className="bg-white rounded-2xl overflow-hidden font-[Raleway]">
 
       {/* ── Заголовок ── */}
       <div className="px-5 pt-5">
