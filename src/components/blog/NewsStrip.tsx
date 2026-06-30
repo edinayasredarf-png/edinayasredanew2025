@@ -66,7 +66,7 @@ export default function NewsStrip() {
           <React.Fragment key={n.id}>
             {idx > 0 && <div className="h-px bg-[#e8eaed]" />}
             <Link href={`/news/${n.slug}`} className="group flex items-start justify-between gap-3">
-              <div className="text-[15px] text-[#1a1a1a] leading-snug font-[Raleway] font-semibold line-clamp-2 group-hover:text-[#029cda] transition-colors flex-1">
+              <div className="text-[15px] text-[#1a1a1a] leading-snug font-involve font-medium line-clamp-2 group-hover:text-[#029cda] transition-colors flex-1">
                 {n.title}
               </div>
               <span className="text-[12px] text-[#8c9099] font-[Raleway] shrink-0 mt-0.5">
