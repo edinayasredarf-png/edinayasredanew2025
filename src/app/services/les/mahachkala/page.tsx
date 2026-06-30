@@ -1,14 +1,14 @@
 "use client";
 import React from 'react';
 import Image from "next/image";
-import Layout from '../../../../../components/Layout';
-import LesInfoSection from '../../../../../components/services/les/LesInfoSection';
-import LesAudienceSection from '../../../../../components/services/les/LesAudienceSection';
-import LesTasksSection from '../../../../../components/services/les/LesTasksSection';
-import LesWorkflowSection from '../../../../../components/services/les/LesWorkflowSection';
-import LesAdvantagesSection from '../../../../../components/services/les/LesAdvantagesSection';
-import LesCTASection from '../../../../../components/services/les/LesCTASection';
-import LesFAQSection from '../../../../../components/services/les/LesFAQSection';
+import Layout from '../../../../components/Layout';
+import LesInfoSection from '../../../../components/services/les/LesInfoSection';
+import LesAudienceSection from '../../../../components/services/les/LesAudienceSection';
+import LesTasksSection from '../../../../components/services/les/LesTasksSection';
+import LesWorkflowSection from '../../../../components/services/les/LesWorkflowSection';
+import LesAdvantagesSection from '../../../../components/services/les/LesAdvantagesSection';
+import LesCTASection from '../../../../components/services/les/LesCTASection';
+import LesFAQSection from '../../../../components/services/les/LesFAQSection';
 
 export default function ForestManagementCityPage() {
   const handleKP = () => { window.dispatchEvent(new CustomEvent('openKPModal')); };
