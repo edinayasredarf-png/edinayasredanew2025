@@ -72,15 +72,25 @@ export function BlogHeader() {
 	return (
 		<header className="sticky top-0 z-[60] w-full font-[Raleway]">
 			{/* ── Desktop ── */}
-			<div className="hidden lg:flex items-center justify-between w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 gap-4">
+			<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2">
+				<div className="flex items-center w-full h-[68px] bg-white rounded-3xl px-4 relative">
 
 				{/* Логотип */}
 				<Link href="/" className="shrink-0">
 					<Image src="/img/logo_dark.svg" alt="Единая Среда" width={148} height={40} className="w-[148px] h-auto" priority />
 				</Link>
 
-				{/* Правая пилюля */}
-				<div className="h-[68px] flex items-center rounded-xl shrink-0" style={{ background: '#ffffff' }}>
+				{/* Навигация — по центру */}
+				<nav className="absolute left-1/2 -translate-x-1/2 flex items-center">
+					<Link href="/about" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}>О компании</Link>
+					<Link href="/cases" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Кейсы</Link>
+					<Link href="/services" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/services') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Услуги</Link>
+					<Link href="/blog" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/blog') || pathname?.startsWith('/news') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Блог</Link>
+					<Link href="/contacts" className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${pathname?.startsWith('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}>Контакты</Link>
+				</nav>
+
+				{/* Правая часть */}
+				<div className="ml-auto flex items-center">
 
 					{/* Поиск */}
 					<div className="flex items-center pl-3 pr-1">
@@ -172,6 +182,7 @@ export function BlogHeader() {
 							)}
 						</div>
 					)}
+				</div>
 				</div>
 			</div>
 

@@ -113,42 +113,39 @@ export function RedesignHeader() {
 	return (
 		<>
 			<header className={`sticky top-0 ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
-				{/* ── Desktop: три отдельных элемента ── */}
-				<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 relative">
+				{/* ── Desktop: единая плашка ── */}
+				<div
+					ref={servicesRef}
+					className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 relative"
+				>
+					<div className="flex items-center w-full h-[68px] bg-white rounded-3xl px-4 relative">
 
-					{/* Логотип — слева, без пилюли */}
-					<Link href="/" onClick={closeMobile} className="shrink-0">
-						<Image
-							src="/img/logo_dark.svg"
-							alt="Единая Среда"
-							width={148}
-							height={40}
-							className="w-[148px] h-auto"
-							priority
-						/>
-					</Link>
+						{/* Логотип — слева */}
+						<Link href="/" onClick={closeMobile} className="shrink-0">
+							<Image
+								src="/img/logo_dark.svg"
+								alt="Единая Среда"
+								width={148}
+								height={40}
+								className="w-[148px] h-auto"
+								priority
+							/>
+						</Link>
 
-					{/* Навигационная пилюля — строго по центру */}
-					<div
-						ref={servicesRef}
-						className="absolute left-1/2 -translate-x-1/2 h-[68px] flex items-center rounded-xl overflow-visible"
-						style={{ background: '#ffffff' }}
-					>
-						<nav className="flex items-center px-1">
+						{/* Навигация — строго по центру */}
+						<nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0">
 							<Link
 								href="/about"
 								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								О компании
 							</Link>
-
 							<Link
 								href="/cases"
 								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Кейсы
 							</Link>
-
 							<button
 								type="button"
 								onClick={() => setServicesOpen((v) => !v)}
@@ -158,14 +155,12 @@ export function RedesignHeader() {
 								Услуги
 								<ChevronDown open={servicesOpen} />
 							</button>
-
 							<Link
 								href="/blog"
 								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/blog') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Блог
 							</Link>
-
 							<Link
 								href="/contacts"
 								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}
@@ -174,16 +169,34 @@ export function RedesignHeader() {
 							</Link>
 						</nav>
 
-						{/* Дропдаун под всей пилюлей */}
+						{/* Войти + Попробовать — справа */}
+						<div className="ml-auto flex items-center gap-1">
+							<a
+								href="https://edinayasreda.ru/"
+								className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
+							>
+								Войти
+								<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
+							</a>
+							<button
+								type="button"
+								onClick={() => openRegister()}
+								className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
+							>
+								Попробовать
+							</button>
+						</div>
+
+						{/* Дропдаун под хедером */}
 						{servicesOpen && (
-							<div className="absolute left-0 right-0 top-[calc(100%+8px)] bg-white rounded-2xl p-4 z-50 animate-fade-in">
+							<div className="absolute left-0 right-0 top-[calc(100%+8px)] bg-white rounded-3xl p-4 z-50 animate-fade-in">
 								<div className="flex flex-col gap-1">
 									{SERVICE_LINKS.map((item) => (
 										<Link
 											key={item.href}
 											href={item.href}
 											onClick={() => setServicesOpen(false)}
-											className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
+											className="flex items-center gap-3 py-2.5 px-3 rounded-2xl text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#f6f7f9] transition-colors"
 										>
 											<ThemedIcon src={item.icon} size={24} color="#202020" />
 											{item.label}
@@ -194,7 +207,7 @@ export function RedesignHeader() {
 									<Link
 										href="/services"
 										onClick={() => setServicesOpen(false)}
-										className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#f6f7f9] text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#eceef2] transition-colors"
+										className="flex items-center justify-center gap-2 w-full py-2.5 rounded-2xl bg-[#f6f7f9] text-[15px] text-[#222] font-involve font-medium hover:text-[#029cda] hover:bg-[#eceef2] transition-colors"
 									>
 										<ThemedIcon src="/icons/arrow-right.svg" size={20} color="#212121" />
 										Посмотреть все услуги
@@ -203,30 +216,6 @@ export function RedesignHeader() {
 							</div>
 						)}
 					</div>
-
-					{/* Пилюля Войти + Попробовать — справа */}
-					<div
-						className="ml-auto h-[68px] flex items-center rounded-xl shrink-0"
-						style={{ background: '#ffffff' }}
-					>
-						<a
-							href="https://edinayasreda.ru/"
-							className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
-						>
-							Войти
-							<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
-						</a>
-						<div className="px-2">
-							<button
-								type="button"
-								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-[10px] text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
-							>
-								Попробовать
-							</button>
-						</div>
-					</div>
-
 				</div>
 
 				{/* ── Mobile: full-width bar ── */}
