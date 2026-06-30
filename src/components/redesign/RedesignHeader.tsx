@@ -130,8 +130,9 @@ export function RedesignHeader() {
 						</Link>
 
 						{/* Навигация — строго по центру */}
-						<div ref={servicesRef} className="absolute left-1/2 -translate-x-1/2 flex items-center relative">
-						<nav className="flex items-center gap-0">
+						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+						<div ref={servicesRef} style={{ position: 'relative' }} className="flex items-center">
+						<nav className="flex items-center">
 							<Link
 								href="/about"
 								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}
@@ -195,6 +196,7 @@ export function RedesignHeader() {
 								</div>
 							</div>
 						)}
+						</div>
 						</div>
 
 						{/* Войти + Попробовать — справа */}
