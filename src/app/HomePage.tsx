@@ -18,6 +18,7 @@ import SupportersSection from '../components/SupportersSection';
 import TerritoryControlSection from '../components/TerritoryControlSection';
 import SplitStyleCards from '../components/SplitStyleCards';
 import BenefitsSection from "@/components/BenefitsSection";
+import PressSection from "@/components/PressSection";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // Динамические импорты для секций ниже fold (ленивая загрузка)
@@ -172,6 +173,9 @@ export default function HomePage() {
 
 			{/* Секция экспертизы (15+ лет) */}
 			<SectionExpertise />
+
+			{/* СМИ о нас */}
+			<PressSection />
 
 			{/* ✅ FAQ СЕКЦИЯ */}
 			<FAQ
