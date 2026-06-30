@@ -99,7 +99,7 @@ function BlogHomeInner() {
 
   return (
     <BlogLayout>
-      <div className="min-h-screen bg-[#f5f6f8] font-[Raleway]">
+      <div className="min-h-screen font-[Raleway]">
 
         {/* Уведомления */}
         {notification && (

@@ -20,7 +20,7 @@ export default function LeftNav({ activeTab = 'feed', onTabChange }: LeftNavProp
 
   return (
     <aside className="w-[180px] shrink-0 hidden xl:block">
-      <div className="sticky top-[86px] font-[Raleway]">
+      <div className="sticky top-[84px] font-[Raleway]">
 
         {/* Основная навигация */}
         <nav className="space-y-0.5 mb-6">

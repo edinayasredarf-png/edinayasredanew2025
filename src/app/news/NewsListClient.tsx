@@ -50,7 +50,7 @@ export default function NewsListClient() {
 
           <main className="flex-1 flex justify-center">
             <div className="w-full max-w-[761px]">
-              <section className="bg-white rounded-3xl p-6 border">
+              <section className="bg-white rounded-3xl p-6">
                 <div className="flex items-center justify-between">
                   <h1 className="text-2xl md:text-3xl font-semibold text-[#313131]">
                     Все новости
