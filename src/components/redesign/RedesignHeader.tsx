@@ -114,10 +114,7 @@ export function RedesignHeader() {
 		<>
 			<header className={`sticky top-0 ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
 				{/* ── Desktop: единая плашка ── */}
-				<div
-					ref={servicesRef}
-					className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 relative"
-				>
+				<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 relative">
 					<div className="flex items-center w-full h-[68px] bg-white rounded-3xl px-4 relative">
 
 						{/* Логотип — слева */}
@@ -133,7 +130,8 @@ export function RedesignHeader() {
 						</Link>
 
 						{/* Навигация — строго по центру */}
-						<nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0">
+						<div ref={servicesRef} className="absolute left-1/2 -translate-x-1/2 flex items-center relative">
+						<nav className="flex items-center gap-0">
 							<Link
 								href="/about"
 								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}
@@ -169,25 +167,7 @@ export function RedesignHeader() {
 							</Link>
 						</nav>
 
-						{/* Войти + Попробовать — справа */}
-						<div className="ml-auto flex items-center gap-1">
-							<a
-								href="https://edinayasreda.ru/"
-								className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
-							>
-								Войти
-								<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
-							</a>
-							<button
-								type="button"
-								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
-							>
-								Попробовать
-							</button>
-						</div>
-
-						{/* Дропдаун под хедером */}
+						{/* Дропдаун под навигацией */}
 						{servicesOpen && (
 							<div className="absolute left-0 right-0 top-[calc(100%+8px)] bg-white rounded-3xl p-4 z-50 animate-fade-in">
 								<div className="flex flex-col gap-1">
@@ -215,6 +195,26 @@ export function RedesignHeader() {
 								</div>
 							</div>
 						)}
+						</div>
+
+						{/* Войти + Попробовать — справа */}
+						<div className="ml-auto flex items-center gap-1">
+							<a
+								href="https://edinayasreda.ru/"
+								className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
+							>
+								Войти
+								<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
+							</a>
+							<button
+								type="button"
+								onClick={() => openRegister()}
+								className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
+							>
+								Попробовать
+							</button>
+						</div>
+
 					</div>
 				</div>
 
