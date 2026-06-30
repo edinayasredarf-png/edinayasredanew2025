@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { listPress, upsertPress, deletePress, PressItem } from "@/lib/pressStore";
 
 function genId() {
@@ -167,7 +166,7 @@ export default function PressAdmin() {
               <input
                 type="date"
                 className={inputCls}
-                value={new Date(form.published_at).toISOString().slice(0, 10)}
+                value={new Date(Number(form.published_at)).toISOString().slice(0, 10)}
                 onChange={e => {
                   const d = new Date(e.target.value);
                   setForm(f => ({ ...f, published_at: isNaN(d.getTime()) ? f.published_at : d.getTime() }));
@@ -187,8 +186,9 @@ export default function PressAdmin() {
               <label className={labelCls}>Логотип издания</label>
               <div className="flex items-center gap-4">
                 {form.source_logo && (
-                  <div className="relative w-[120px] h-9 shrink-0">
-                    <Image src={form.source_logo} alt="Логотип" fill className="object-contain" />
+                  <div className="w-[120px] h-9 shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.source_logo} alt="Логотип" className="max-h-9 w-auto object-contain" />
                   </div>
                 )}
                 <div className="flex-1">
@@ -248,15 +248,16 @@ export default function PressAdmin() {
           {items.map(item => (
             <div key={item.id} className="bg-white rounded-2xl border border-[#e8eaed] px-5 py-4 flex items-center gap-4">
               {item.source_logo && (
-                <div className="relative w-[80px] h-8 shrink-0">
-                  <Image src={item.source_logo} alt={item.source_name} fill className="object-contain" />
+                <div className="w-[80px] h-8 shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.source_logo} alt={item.source_name} className="max-h-8 w-auto object-contain" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-[14px] font-medium text-[#1a1a1a] truncate">{item.title}</p>
                 <p className="text-[12px] text-[#9ca3af] mt-0.5">
                   {item.source_name && <span className="mr-2">{item.source_name}</span>}
-                  {new Date(item.published_at).toLocaleDateString("ru-RU")}
+                  {new Date(Number(item.published_at)).toLocaleDateString("ru-RU")}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">

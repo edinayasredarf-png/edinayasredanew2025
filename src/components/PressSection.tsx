@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { listPress, PressItem } from "@/lib/pressStore";
 
 export default function PressSection() {
@@ -46,11 +45,10 @@ export default function PressSection() {
                 {/* Логотип источника */}
                 <div className="mb-4 h-9 flex items-center">
                   {item.source_logo ? (
-                    <Image
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       src={item.source_logo}
                       alt={item.source_name}
-                      width={120}
-                      height={36}
                       className="max-h-9 w-auto object-contain"
                     />
                   ) : (
@@ -68,7 +66,7 @@ export default function PressSection() {
                 {/* Дата + стрелка */}
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-[#9ca3af]">
-                    {new Date(item.published_at).toLocaleDateString("ru-RU", {
+                    {new Date(Number(item.published_at)).toLocaleDateString("ru-RU", {
                       day: "numeric",
                       month: "long",
                       year: "numeric",
