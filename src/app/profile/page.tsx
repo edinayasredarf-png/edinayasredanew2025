@@ -8,6 +8,7 @@ import { sb_listPosts } from '@/lib/blogStore';
 import ProfileLayout from '@/components/ProfileLayout';
 import Image from 'next/image';
 import Link from 'next/link';
+import PressAdmin from '@/components/admin/PressAdmin';
 
 interface FavoritePost {
   id: string;
@@ -360,6 +361,13 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+
+          {/* СМИ о нас — для редакторов и админов */}
+          {(profile.role === 'author' || profile.role === 'admin') && (
+            <div className="bg-white rounded-2xl p-6 mt-6">
+              <PressAdmin />
+            </div>
+          )}
 
           {/* Заказ услуг */}
           <div className="bg-white rounded-2xl p-6 mt-6">

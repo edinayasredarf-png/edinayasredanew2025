@@ -502,3 +502,57 @@ export async function dbGetEditorMedia(id: string): Promise<{
     sizeBytes: row.size_bytes,
   };
 }
+
+export async function dbEnsurePressTable() {
+  const pool = getTimewebPool();
+  await pool.query(`
+    create table if not exists press_mentions (
+      id text primary key,
+      title text not null,
+      source_name text not null default '',
+      source_logo text not null default '',
+      link text not null default '',
+      published_at bigint not null default 0,
+      created_at bigint not null default 0
+    )
+  `);
+}
+
+export async function dbListPress() {
+  const pool = getTimewebPool();
+  await dbEnsurePressTable();
+  const { rows } = await pool.query(
+    "select * from press_mentions order by published_at desc"
+  );
+  return rows;
+}
+
+export async function dbUpsertPress(payload: Record<string, unknown>) {
+  const pool = getTimewebPool();
+  await dbEnsurePressTable();
+  await pool.query(
+    `insert into press_mentions (id, title, source_name, source_logo, link, published_at, created_at)
+     values ($1,$2,$3,$4,$5,$6,$7)
+     on conflict (id) do update set
+       title = excluded.title,
+       source_name = excluded.source_name,
+       source_logo = excluded.source_logo,
+       link = excluded.link,
+       published_at = excluded.published_at`,
+    [
+      payload.id,
+      payload.title,
+      payload.source_name ?? '',
+      payload.source_logo ?? '',
+      payload.link ?? '',
+      payload.published_at ?? Date.now(),
+      payload.created_at ?? Date.now(),
+    ]
+  );
+}
+
+export async function dbDeletePress(id: string) {
+  const pool = getTimewebPool();
+  const { rowCount } = await pool.query("delete from press_mentions where id = $1", [id]);
+  return rowCount ?? 0;
+}

@@ -5,6 +5,7 @@ import { authStore } from '@/lib/authStore';
 import { sb_listPosts } from '@/lib/blogStore';
 import { sb_listAllComments } from '@/lib/commentsStore';
 import UtmGenerator from './UtmGenerator';
+import PressAdmin from './PressAdmin';
 
 interface AdminStats {
   totalPosts: number;
@@ -26,7 +27,7 @@ export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'utm'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'utm' | 'press'>('dashboard');
 
   useEffect(() => {
     const checkAuth = () => {
@@ -140,6 +141,7 @@ export default function AdminPanel() {
           {([
             { id: 'dashboard', label: 'Дашборд' },
             { id: 'utm',       label: 'UTM-метки' },
+            { id: 'press',     label: 'СМИ о нас' },
           ] as const).map((tab) => (
             <button
               key={tab.id}
@@ -157,6 +159,7 @@ export default function AdminPanel() {
         </div>
 
         {activeTab === 'utm' && <UtmGenerator />}
+        {activeTab === 'press' && <PressAdmin />}
 
         {activeTab === 'dashboard' && (<>
         {/* Статистика */}
