@@ -26,12 +26,12 @@ export default function NewsStrip() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-[#e8eaed] p-5 mb-3">
+      <div className="bg-white rounded-2xl p-5 mb-3">
         <div className="flex items-center justify-between mb-4">
           <div className="h-5 w-20 bg-gray-100 rounded animate-pulse" />
           <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
         </div>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {[1,2,3,4,5].map(i => (
             <div key={i} className="space-y-1.5">
               <div className="h-3 w-14 bg-gray-100 rounded animate-pulse" />
@@ -50,7 +50,7 @@ export default function NewsStrip() {
   const hasMore = visible < news.length;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e8eaed] p-5 mb-3">
+    <div className="bg-white rounded-2xl p-5 mb-3">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[17px] font-bold text-[#313131] font-[Raleway]">Новости</h2>
         <Link href="/news" className="text-[14px] text-[#029cda] hover:text-[#0280b5] font-[Raleway] font-semibold flex items-center gap-1">
@@ -61,17 +61,17 @@ export default function NewsStrip() {
         </Link>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {shown.map((n, idx) => (
           <React.Fragment key={n.id}>
             {idx > 0 && <div className="h-px bg-[#e8eaed]" />}
-            <Link href={`/news/${n.slug}`} className="group block">
-              <div className="text-[12px] text-[#8c9099] font-[Raleway] mb-1">
-                {formatContentDate(n.createdAt, n.updatedAt)}
-              </div>
-              <div className="text-[16px] text-[#1a1a1a] leading-snug font-[Raleway] font-semibold line-clamp-3 group-hover:text-[#029cda] transition-colors">
+            <Link href={`/news/${n.slug}`} className="group flex items-start justify-between gap-3">
+              <div className="text-[15px] text-[#1a1a1a] leading-snug font-[Raleway] font-semibold line-clamp-2 group-hover:text-[#029cda] transition-colors flex-1">
                 {n.title}
               </div>
+              <span className="text-[12px] text-[#8c9099] font-[Raleway] shrink-0 mt-0.5">
+                {formatContentDate(n.createdAt, n.updatedAt)}
+              </span>
             </Link>
           </React.Fragment>
         ))}
