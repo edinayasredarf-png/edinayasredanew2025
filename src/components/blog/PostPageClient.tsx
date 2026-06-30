@@ -137,8 +137,8 @@ export default function PostPageClient({ slug }: { slug: string }) {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-16 font-[Raleway]">
           <div className="flex gap-4">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
-            <main className="flex-1 min-w-0 flex items-center justify-center min-h-[60vh]">
-              <div className="w-full max-w-[760px] space-y-4 animate-pulse">
+            <main className="flex-1 min-w-0">
+              <div className="bg-white rounded-2xl p-6 space-y-4 animate-pulse">
                 <div className="h-8 bg-[#e4e7ec] rounded-xl w-3/4" />
                 <div className="h-56 bg-[#e4e7ec] rounded-2xl w-full" />
                 <div className="space-y-3">
@@ -209,7 +209,7 @@ export default function PostPageClient({ slug }: { slug: string }) {
           <main className="flex-1 min-w-0">
 
             {/* Карточка статьи — такой же размер и подложка как PostCard */}
-            <article className="bg-white rounded-2xl border border-[#e8eaed] overflow-hidden">
+            <article className="bg-white rounded-2xl overflow-hidden">
 
               {/* Заголовок */}
               <div className="px-5 pt-5">

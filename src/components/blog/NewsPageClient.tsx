@@ -139,16 +139,14 @@ export default function NewsPageClient({ slug }: { slug: string }) {
         <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
-            <main className="flex-1 flex justify-center">
-              <div className="w-full max-w-[761px] flex items-center justify-center min-h-[60vh]">
-                <div className="w-full space-y-4 animate-pulse">
-                  <div className="h-8 bg-[#e4e7ec] rounded-xl w-3/4" />
-                  <div className="h-52 bg-[#e4e7ec] rounded-2xl w-full" />
-                  <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="h-4 bg-[#e4e7ec] rounded-lg" style={{ width: `${100 - i * 6}%` }} />
-                    ))}
-                  </div>
+            <main className="flex-1 min-w-0">
+              <div className="bg-white rounded-2xl p-6 animate-pulse space-y-4">
+                <div className="h-8 bg-[#e4e7ec] rounded-xl w-3/4" />
+                <div className="h-52 bg-[#e4e7ec] rounded-2xl w-full" />
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="h-4 bg-[#e4e7ec] rounded-lg" style={{ width: `${100 - i * 6}%` }} />
+                  ))}
                 </div>
               </div>
             </main>
@@ -165,8 +163,8 @@ export default function NewsPageClient({ slug }: { slug: string }) {
         <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
-            <main className="flex-1 flex justify-center">
-              <div className="w-full max-w-[761px] text-center py-16">
+            <main className="flex-1 min-w-0">
+              <div className="bg-white rounded-2xl p-6 text-center py-16">
                 <h1 className="text-3xl font-semibold mb-3 text-[#313131]">Новость не найдена</h1>
                 <Link href="/news" className="text-[#029cda] hover:underline">К новостям</Link>
               </div>
@@ -185,9 +183,8 @@ export default function NewsPageClient({ slug }: { slug: string }) {
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
-          <main className="flex-1 flex justify-center">
-            <div className="w-full max-w-[761px] font-[Raleway] font-medium lining-nums">
-
+          <main className="flex-1 min-w-0">
+            <div className="bg-white rounded-2xl p-6 font-[Raleway] font-medium lining-nums">
               <section>
                 <h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{news.title}</h1>
 
