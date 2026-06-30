@@ -136,7 +136,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   if (newsLoading) {
     return (
       <div className="bg-[#F6F7F9] min-h-screen">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
             <main className="flex-1 flex justify-center">
@@ -162,7 +162,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
   if (!news) {
     return (
       <div className="bg-[#F6F7F9] min-h-screen">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
             <main className="flex-1 flex justify-center">
@@ -182,7 +182,7 @@ export default function NewsPageClient({ slug }: { slug: string }) {
 
   return (
     <div className="bg-[#F6F7F9] min-h-screen">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pt-4 sm:pt-6 pb-8 sm:pb-16">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 flex justify-center">
