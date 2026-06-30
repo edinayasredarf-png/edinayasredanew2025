@@ -151,7 +151,7 @@ export function BlogHeader() {
 								{profileButtonContent}
 							</button>
 							{showProfileMenu && (
-								<div className="absolute right-[-1rem] top-full mt-3 w-56 bg-white rounded-2xl shadow-xl z-[200] overflow-hidden">
+								<div className="absolute right-[-1rem] top-full mt-5 w-56 bg-white rounded-2xl shadow-xl z-[200] overflow-hidden">
 									<div className="px-4 py-3 border-b border-[#f0f1f3]">
 										<div className="text-[12px] text-[#8c9099]">Профиль</div>
 										<div className="text-[14px] font-semibold text-[#313131]">{isEditor ? 'Редактор' : 'Пользователь'}</div>

@@ -44,7 +44,7 @@ export default function NewsListClient() {
 
   return (
     <div className="bg-[#F6F7F9] min-h-screen font-[Raleway] font-medium lining-nums">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-[34px] pb-8 sm:pb-16">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-10 xl:px-[50px] pt-6 pb-8 sm:pb-16">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
 

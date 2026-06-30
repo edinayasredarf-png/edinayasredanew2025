@@ -111,7 +111,7 @@ function BlogHomeInner() {
           </div>
         )}
 
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-16">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-6 pb-16">
           <div className="flex gap-4">
 
             {/* Левый сайдбар */}
