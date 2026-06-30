@@ -40,7 +40,7 @@ export default function PressSection() {
                 href={item.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group bg-white rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition-shadow duration-200 min-h-[180px]"
+                className="group bg-white rounded-2xl p-5 flex flex-col justify-between min-h-[180px]"
               >
                 {/* Логотип источника */}
                 <div className="mb-4 h-9 flex items-center">
