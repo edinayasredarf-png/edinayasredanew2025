@@ -124,7 +124,7 @@ export function BlogHeader() {
 
 					{/* Написать (для редакторов) */}
 					{isEditor && (
-						<Link href="/blog/new" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#029cda] rounded-2xl text-white text-[15px] font-semibold font-involve leading-6 hover:bg-[#0280b5] transition-colors whitespace-nowrap mx-1">
+						<Link href="/blog/new" className="inline-flex items-center justify-center gap-2 h-[44px] px-5 bg-[#029cda] rounded-2xl text-white text-[15px] font-semibold font-involve hover:bg-[#0280b5] transition-colors whitespace-nowrap mx-1">
 							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
 								<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
 							</svg>
@@ -136,7 +136,7 @@ export function BlogHeader() {
 					{!isAuthed ? (
 						<button
 							onClick={() => window.dispatchEvent(new CustomEvent('openAuthModal'))}
-							className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
+							className="inline-flex items-center justify-center h-[44px] px-5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
 						>
 							Войти
 						</button>
@@ -144,7 +144,7 @@ export function BlogHeader() {
 						<div className="relative ml-1" ref={profileRef}>
 							<button
 								onClick={() => setShowProfileMenu(v => !v)}
-								className="inline-flex items-center justify-center w-10 h-10 bg-[#e0f2fd] rounded-2xl text-[#029cda] hover:bg-[#c8eaf9] transition-colors overflow-hidden"
+								className="inline-flex items-center justify-center w-[44px] h-[44px] bg-[#e0f2fd] rounded-2xl text-[#029cda] hover:bg-[#c8eaf9] transition-colors overflow-hidden"
 								aria-haspopup="menu"
 								aria-expanded={showProfileMenu}
 							>

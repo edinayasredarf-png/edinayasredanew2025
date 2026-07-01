@@ -75,10 +75,12 @@ export default function PostCard({ p }: { p: BlogPost }) {
         </Link>
       </div>
 
-      {/* ── Подзаголовок ── */}
-      {p.subtitle && (
+      {/* ── Подзаголовок / превью ── */}
+      {(p.subtitle || p.contentHtml) && (
         <div className="px-5 pt-2">
-          <p className="text-[14px] text-[#52555a] leading-relaxed line-clamp-2">{p.subtitle}</p>
+          <p className="text-[14px] text-[#52555a] leading-relaxed line-clamp-2">
+            {p.subtitle || p.contentHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 180)}
+          </p>
         </div>
       )}
 
