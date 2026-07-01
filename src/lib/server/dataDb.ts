@@ -7,7 +7,7 @@ import { getTimewebPool } from "@/lib/timewebPg";
 export async function dbListPosts() {
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    "select id, slug, title, subtitle, cover, tags, kind, createdat, updatedat, views, reactions from posts order by createdat desc"
+    "select id, slug, title, subtitle, cover, contenthtml, tags, kind, createdat, updatedat, views, reactions from posts order by createdat desc"
   );
   return rows;
 }
