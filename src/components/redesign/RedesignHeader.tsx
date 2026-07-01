@@ -72,7 +72,6 @@ function MobileMenuButton({ open, onClick }: { open: boolean; onClick: () => voi
 
 export function RedesignHeader() {
 	const pathname = usePathname();
-	const isHome = pathname === '/';
 	const { openRegister } = useModal();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [servicesOpen, setServicesOpen] = useState(false);
@@ -107,8 +106,8 @@ export function RedesignHeader() {
 	const closeMobile = () => setMobileOpen(false);
 
 	const navLinkClass = (href: string) =>
-		`px-3 text-[15px] leading-6 font-involve font-medium hover:text-[#029cda] transition-colors whitespace-nowrap ${
-			isHome ? 'text-white hover:text-white/80' : (isActive(href) ? 'text-[#029cda]' : 'text-[#222]')
+		`px-3 text-[15px] leading-6 text-[#222] font-involve font-medium hover:text-[#029cda] transition-colors whitespace-nowrap ${
+			isActive(href) ? 'text-[#029cda]' : ''
 		}`;
 
 	return (
@@ -116,7 +115,7 @@ export function RedesignHeader() {
 			<header className={`sticky top-0 ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
 				{/* ── Desktop: единая плашка ── */}
 				<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2 relative">
-					<div className={`flex items-center w-full h-[68px] px-4 relative transition-all duration-300 ${isHome ? 'bg-white/10 backdrop-blur-md rounded-3xl' : 'bg-white rounded-3xl'}`}>
+					<div className="flex items-center w-full h-[68px] bg-white rounded-3xl px-4 relative">
 
 						{/* Логотип — слева */}
 						<Link href="/" onClick={closeMobile} className="shrink-0">
@@ -136,20 +135,20 @@ export function RedesignHeader() {
 						<nav className="flex items-center">
 							<Link
 								href="/about"
-								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isHome ? 'text-white hover:text-white/80' : (isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]')}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/about') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								О компании
 							</Link>
 							<Link
 								href="/cases"
-								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isHome ? 'text-white hover:text-white/80' : (isActive('/cases') ? 'text-[#029cda]' : 'text-[#313131]')}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/cases') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Кейсы
 							</Link>
 							<button
 								type="button"
 								onClick={() => setServicesOpen((v) => !v)}
-								className={`flex items-center gap-0.5 pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isHome ? 'text-white hover:text-white/80' : (isServicesActive || servicesOpen ? 'text-[#029cda]' : 'text-[#313131]')}`}
+								className={`flex items-center gap-0.5 pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isServicesActive || servicesOpen ? 'text-[#029cda]' : 'text-[#313131]'}`}
 								aria-expanded={servicesOpen}
 							>
 								Услуги
@@ -157,13 +156,13 @@ export function RedesignHeader() {
 							</button>
 							<Link
 								href="/blog"
-								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isHome ? 'text-white hover:text-white/80' : (isActive('/blog') ? 'text-[#029cda]' : 'text-[#313131]')}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/blog') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Блог
 							</Link>
 							<Link
 								href="/contacts"
-								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isHome ? 'text-white hover:text-white/80' : (isActive('/contacts') ? 'text-[#029cda]' : 'text-[#313131]')}`}
+								className={`pl-4 pr-3 py-3 text-[15px] font-involve font-medium leading-6 tracking-tight whitespace-nowrap transition-colors hover:text-[#029cda] ${isActive('/contacts') ? 'text-[#029cda]' : 'text-[#313131]'}`}
 							>
 								Контакты
 							</Link>
@@ -204,7 +203,7 @@ export function RedesignHeader() {
 						<div className="ml-auto flex items-center gap-1">
 							<a
 								href="https://edinayasreda.ru/"
-								className={`inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium transition-colors whitespace-nowrap ${isHome ? 'text-white hover:text-white/80' : 'text-[#313131] hover:text-[#029cda]'}`}
+								className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
 							>
 								Войти
 								<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
@@ -212,7 +211,7 @@ export function RedesignHeader() {
 							<button
 								type="button"
 								onClick={() => openRegister()}
-								className={`inline-flex items-center justify-center px-5 py-2.5 rounded-2xl text-[15px] font-semibold font-involve leading-6 transition-colors whitespace-nowrap ${isHome ? 'bg-white/20 border border-white/50 text-white hover:bg-white/30' : 'bg-[#e0f2fd] text-[#029cda] hover:bg-[#c8eaf9]'}`}
+								className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
 							>
 								Попробовать
 							</button>

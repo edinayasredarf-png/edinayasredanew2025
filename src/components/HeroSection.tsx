@@ -8,7 +8,7 @@ const HeroSection: React.FC = () => {
 	const { openRegister, openDemo } = useModal();
 
 	return (
-		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/80 to-[#0c5fe1] -mt-[88px] pt-[88px]">
+		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/80 to-[#0c5fe1]">
 			<div className="rd-content-column py-10 md:py-14 lg:py-[66px]">
 				<div className="flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-6">
 					{/* Текст и кнопки */}
