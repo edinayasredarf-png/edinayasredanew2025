@@ -8,7 +8,7 @@ const HeroSection: React.FC = () => {
 	const { openRegister, openDemo } = useModal();
 
 	return (
-		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/80 to-[#0c5fe1]">
+		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/80 to-[#0c5fe1] -mt-[88px] pt-[88px]">
 			<div className="rd-content-column py-10 md:py-14 lg:py-[66px]">
 				<div className="flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-6">
 					{/* Текст и кнопки */}
@@ -28,14 +28,14 @@ const HeroSection: React.FC = () => {
 							<button
 								type="button"
 								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center h-[54px] min-w-[200px] sm:min-w-[232px] px-8 rounded-lg bg-white text-[#0c5fe1] text-base md:text-[19px] font-semibold font-[Inter] hover:bg-white/90 transition-colors"
+								className="inline-flex items-center justify-center h-[54px] min-w-[200px] sm:min-w-[232px] px-8 rounded-lg bg-white/20 backdrop-blur-sm border border-white/40 text-white text-base md:text-[19px] font-semibold font-[Inter] hover:bg-white/30 transition-colors"
 							>
 								Оставить заявку
 							</button>
 							<button
 								type="button"
 								onClick={() => openDemo()}
-								className="inline-flex items-center justify-center h-[54px] min-w-[180px] sm:min-w-[188px] px-8 rounded-lg border border-white text-white text-base md:text-[19px] font-semibold font-[Inter] hover:bg-white/10 transition-colors"
+								className="inline-flex items-center justify-center h-[54px] min-w-[180px] sm:min-w-[188px] px-8 rounded-lg bg-white/10 backdrop-blur-sm border border-white/60 text-white text-base md:text-[19px] font-semibold font-[Inter] hover:bg-white/20 transition-colors"
 							>
 								Демоверсия
 							</button>
