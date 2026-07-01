@@ -73,7 +73,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
     setShareOpen(false);
   };
 
-  const preview = p.subtitle || (p.contentHtml ? stripHtml(p.contentHtml).slice(0, 200) : '');
+  const preview = p.subtitle || (p.contentHtml ? stripHtml(p.contentHtml) : '');
   const views = p.views || 0;
 
   return (
@@ -91,7 +91,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
       {/* ── Превью текста ── */}
       {preview && (
         <Link href={`/blog/${p.slug}`} className="block px-5 pt-2">
-          <p className="text-[15px] text-[#52555a] leading-relaxed line-clamp-3 font-[Raleway] font-normal">{preview}</p>
+          <p className="text-[15px] text-[#52555a] leading-relaxed font-[Raleway] font-normal">{preview.length > 200 ? preview.slice(0, 200) + '…' : preview}</p>
         </Link>
       )}
 
