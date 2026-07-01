@@ -11,7 +11,17 @@ import { sb_react, sb_getReactions, myReactions } from '@/lib/blogStore';
 type Rx = 'heart' | 'fire' | 'smile';
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&[a-z]+;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export default function PostCard({ p }: { p: BlogPost }) {
@@ -81,7 +91,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
       {/* ── Превью текста ── */}
       {preview && (
         <Link href={`/blog/${p.slug}`} className="block px-5 pt-2">
-          <p className="text-[14px] text-[#52555a] leading-relaxed line-clamp-3">{preview}</p>
+          <p className="text-[15px] text-[#52555a] leading-relaxed line-clamp-3 font-[Raleway] font-normal">{preview}</p>
         </Link>
       )}
 
