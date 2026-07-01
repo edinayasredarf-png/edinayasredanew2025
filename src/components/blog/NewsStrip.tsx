@@ -65,13 +65,25 @@ export default function NewsStrip() {
         {shown.map((n, idx) => (
           <React.Fragment key={n.id}>
             {idx > 0 && <div className="h-px bg-[#e8eaed]" />}
-            <Link href={`/news/${n.slug}`} className="group flex items-start justify-between gap-3">
-              <div className="text-[15px] text-[#1a1a1a] leading-snug font-involve font-medium line-clamp-2 group-hover:text-[#029cda] transition-colors flex-1">
-                {n.title}
+            <Link href={`/news/${n.slug}`} className="group flex items-start gap-3">
+              {n.cover ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={n.cover} alt="" className="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-[#e0f2fd] shrink-0 mt-0.5 flex items-center justify-center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#029cda" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/>
+                  </svg>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="text-[15px] text-[#1a1a1a] leading-snug font-involve font-medium line-clamp-2 group-hover:text-[#029cda] transition-colors">
+                  {n.title}
+                </div>
+                <span className="text-[12px] text-[#8c9099] mt-0.5 block">
+                  {formatContentDate(n.createdAt, n.updatedAt)}
+                </span>
               </div>
-              <span className="text-[12px] text-[#8c9099] font-[Raleway] shrink-0 mt-0.5">
-                {formatContentDate(n.createdAt, n.updatedAt)}
-              </span>
             </Link>
           </React.Fragment>
         ))}
