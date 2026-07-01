@@ -7,16 +7,18 @@ import { BlogPost } from '@/lib/blogStore';
 import { formatContentDate } from '@/lib/contentDates';
 import { authStore } from '@/lib/authStore';
 import { sb_react, sb_getReactions, myReactions } from '@/lib/blogStore';
-import CommentSection from './CommentSection';
 
 type Rx = 'heart' | 'fire' | 'smile';
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
 
 export default function PostCard({ p }: { p: BlogPost }) {
   const [myRx, setMyRx] = useState<Rx[]>(() => myReactions(p.id) as Rx[]);
   const [reactions, setReactions] = useState(p.reactions ?? { heart: 0, fire: 0, smile: 0 });
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const shareRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -61,6 +63,7 @@ export default function PostCard({ p }: { p: BlogPost }) {
     setShareOpen(false);
   };
 
+  const preview = p.subtitle || (p.contentHtml ? stripHtml(p.contentHtml).slice(0, 200) : '');
   const views = p.views || 0;
 
   return (
@@ -75,13 +78,11 @@ export default function PostCard({ p }: { p: BlogPost }) {
         </Link>
       </div>
 
-      {/* ── Подзаголовок / превью ── */}
-      {(p.subtitle || p.contentHtml) && (
-        <div className="px-5 pt-2">
-          <p className="text-[14px] text-[#52555a] leading-relaxed line-clamp-2">
-            {p.subtitle || p.contentHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 180)}
-          </p>
-        </div>
+      {/* ── Превью текста ── */}
+      {preview && (
+        <Link href={`/blog/${p.slug}`} className="block px-5 pt-2">
+          <p className="text-[14px] text-[#52555a] leading-relaxed line-clamp-3">{preview}</p>
+        </Link>
       )}
 
       {/* ── Теги ── */}
@@ -115,57 +116,12 @@ export default function PostCard({ p }: { p: BlogPost }) {
         </Link>
       )}
 
-      {/* ── Дата под обложкой, справа ── */}
+      {/* ── Дата ── */}
       <div className="px-5 pt-2 flex justify-end">
         <span className="text-[12px] text-[#8c9099]">{formatContentDate(p.createdAt, p.updatedAt)}</span>
       </div>
 
-      {/* ── Кнопка «Читать» ── */}
-      <div className="px-5 pt-1 pb-1">
-        <button
-          onClick={() => setExpanded(v => !v)}
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#029cda] hover:text-[#0280b5] transition-colors"
-        >
-          {expanded ? 'Свернуть' : 'Читать'}
-          <svg
-            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-            strokeLinecap="round" strokeLinejoin="round"
-            className={`transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
-      </div>
-
-      {/* ── Развёрнутый контент ── */}
-      {expanded && (
-        <div className="px-5 pb-2">
-          <div className="h-px bg-[#e8eaed] mb-4" />
-
-          {/* Тело статьи */}
-          <div
-            className="article-content max-w-none text-[#313131] font-[Raleway]"
-            dangerouslySetInnerHTML={{ __html: p.contentHtml }}
-          />
-
-          {/* Ссылка на полную статью */}
-          <div className="mt-4 pt-4 border-t border-[#e8eaed]">
-            <Link
-              href={`/blog/${p.slug}`}
-              className="text-[13px] font-semibold text-[#029cda] hover:text-[#0280b5] transition-colors"
-            >
-              Открыть полную версию →
-            </Link>
-          </div>
-
-          {/* Комментарии */}
-          <div className="mt-4 pt-4 border-t border-[#e8eaed]">
-            <CommentSection postId={p.id} postType="post" />
-          </div>
-        </div>
-      )}
-
-      {/* ── Нижняя панель действий ── */}
+      {/* ── Нижняя панель ── */}
       <div className="px-5 py-3 border-t border-[#f0f1f3] flex items-center gap-1">
 
         {/* Реакции */}
@@ -195,17 +151,6 @@ export default function PostCard({ p }: { p: BlogPost }) {
         </div>
 
         <div className="flex-1" />
-
-        {/* Комментировать */}
-        <button
-          onClick={() => setExpanded(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[13px] font-medium text-[#52555a] hover:bg-[#f5f6f8] transition-all"
-          title="Комментарии"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-        </button>
 
         {/* Поделиться */}
         <div ref={shareRef} className="relative">
