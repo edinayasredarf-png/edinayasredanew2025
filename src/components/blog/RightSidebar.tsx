@@ -37,7 +37,7 @@ function AdsCarousel() {
   const w = wrapRef.current?.clientWidth || 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e8eaed] overflow-hidden">
+    <div className="bg-white rounded-2xl overflow-hidden">
       <div
         ref={wrapRef}
         className="relative w-full h-[424px] select-none overflow-hidden cursor-grab active:cursor-grabbing"
@@ -79,25 +79,7 @@ export default function RightSidebar() {
   return (
     <aside className="w-[240px] shrink-0 hidden xl:block">
       <div className="sticky top-[86px] space-y-3 font-[Raleway] z-0">
-
-        {/* Рекламный баннер */}
         <AdsCarousel />
-
-        {/* Соцсети */}
-        <div className="bg-white rounded-2xl border border-[#e8eaed] p-4">
-          <div className="text-[13px] font-semibold text-[#313131] mb-2.5">Подписывайтесь</div>
-          <div className="flex gap-2">
-            <a href="https://vk.com/edinayasredarf" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#f5f6f8] hover:bg-[#e8eaed] transition-colors text-[13px] font-medium text-[#52555a]">
-              <Image src="/icons/vk.svg" alt="VK" width={15} height={15} /> ВК
-            </a>
-            <a href="https://t.me/edinayasredarf" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#f5f6f8] hover:bg-[#e8eaed] transition-colors text-[13px] font-medium text-[#52555a]">
-              <Image src="/icons/tg.svg" alt="Telegram" width={15} height={15} /> TG
-            </a>
-            <a href="https://dzen.ru/edinayasreda" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#f5f6f8] hover:bg-[#e8eaed] transition-colors text-[13px] font-medium text-[#52555a]">
-              <Image src="/icons/dzen.svg" alt="Дзен" width={15} height={15} /> Дзен
-            </a>
-          </div>
-        </div>
       </div>
     </aside>
   );
