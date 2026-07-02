@@ -12,28 +12,28 @@ const HeroSection: React.FC = () => {
 
 				{/* Текст и кнопки — левая колонка, от левого края 1200px */}
 				<div className="relative z-10 flex flex-col justify-center shrink-0 lg:w-[460px] xl:w-[490px] lg:pl-0 lg:pr-8 pt-[120px] pb-10 lg:pt-[160px] lg:pb-[80px]">
-					<h1 className="font-involve text-white text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
+					<h1 className="font-involve text-white text-[2.4rem] sm:text-[2.6rem] lg:text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
 						Цифровое управление
 						<br />
 						территориями
 					</h1>
 
-					<p className="mt-6 text-white/70 text-[15px] md:text-[16px] leading-[1.55] font-semibold max-w-[420px]">
+					<p className="mt-6 text-white/70 text-[17px] md:text-[16px] leading-[1.55] font-semibold max-w-[420px]">
 						Платформа для эффективного учёта, управления и мониторинга территорий и объектов в организациях любого типа и масштаба
 					</p>
 
-					<div className="mt-10 flex flex-wrap gap-3">
+					<div className="mt-10 flex flex-col sm:flex-row flex-wrap gap-3">
 						<button
 							type="button"
 							onClick={() => openRegister()}
-							className="inline-flex items-center justify-center h-[54px] min-w-[200px] px-8 rounded-xl bg-white text-[#029cda] text-[19px] font-semibold font-involve hover:bg-white/90 transition-colors"
+							className="flex items-center justify-center w-full sm:w-auto h-[54px] sm:min-w-[200px] px-8 rounded-xl bg-white text-[#029cda] text-[19px] font-semibold font-involve hover:bg-white/90 transition-colors"
 						>
 							Оставить заявку
 						</button>
 						<button
 							type="button"
 							onClick={() => openConsult()}
-							className="inline-flex items-center justify-center h-[54px] min-w-[160px] px-8 rounded-xl border border-white text-white text-[19px] font-semibold font-involve hover:bg-white/10 transition-colors"
+							className="flex items-center justify-center w-full sm:w-auto h-[54px] sm:min-w-[160px] px-8 rounded-xl border border-white text-white text-[19px] font-semibold font-involve hover:bg-white/10 transition-colors"
 						>
 							Консультация
 						</button>
