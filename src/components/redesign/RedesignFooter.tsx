@@ -71,12 +71,11 @@ const NAV = [
 export function RedesignFooter() {
 	return (
 		<footer className="bg-[#F6F7F9] font-[Raleway]">
-			<div className="mx-auto max-w-[1200px] px-5 lg:px-5">
+			<div className="mx-auto max-w-[1200px] px-5">
 
 				{/* ── Верхняя полоса: соцсети + рассылка ── */}
 				<div className="py-5">
 					<div className="bg-white rounded-2xl px-5 py-3 flex flex-wrap items-center gap-3">
-						{/* Иконки соцсетей */}
 						<div className="flex items-center gap-2 flex-wrap">
 							{SOCIALS.map((s) => (
 								<a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer"
@@ -85,14 +84,10 @@ export function RedesignFooter() {
 								</a>
 							))}
 						</div>
-
-						{/* Подпись */}
 						<span className="text-[#646b85] text-sm hidden sm:block ml-1">Мы в социальных сетях</span>
-
-						{/* Кнопка рассылки — прижата вправо */}
 						<a href="mailto:info@edinayasreda.ru"
 							className="ml-auto flex items-center gap-3 h-11 px-5 bg-[#029cda] rounded-xl text-white text-sm font-semibold hover:bg-[#0280b5] transition-colors shrink-0 whitespace-nowrap">
-							<svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<svg width="20" height="16" viewBox="0 0 20 16" fill="none">
 								<rect x="0" y="0" width="20" height="16" rx="3" fill="white" fillOpacity="0.3"/>
 								<path d="M1 1L10 9L19 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
 							</svg>
@@ -102,16 +97,16 @@ export function RedesignFooter() {
 					</div>
 				</div>
 
-				{/* ── Основной блок: лого + навигация ── */}
-				<div className="pt-8 pb-10 flex flex-col lg:flex-row gap-10 lg:gap-6">
+				{/* ── Основной блок ── */}
+				<div className="pt-8 pb-10 flex flex-col lg:flex-row gap-10 lg:gap-8">
 
 					{/* Левая колонка */}
-					<div className="shrink-0 lg:w-[240px] flex flex-col gap-6">
+					<div className="shrink-0 lg:w-[220px] flex flex-col gap-5">
 						<Link href="/">
 							<Image src="/img/logo_footer.svg" alt="Единая Среда" width={150} height={42} className="h-auto" />
 						</Link>
 
-						<div className="flex flex-col gap-2 text-[15px] text-[#050c26]">
+						<div className="flex flex-col gap-2.5 text-[15px] text-[#050c26]">
 							<a href="/contacts" className="flex items-center gap-2 hover:text-[#029cda] transition-colors">
 								<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="16" height="16" rx="3" stroke="#b1b2c7" strokeWidth="1.5"/><path d="M4 6h5M4 9h3" stroke="#b1b2c7" strokeWidth="1.5" strokeLinecap="round"/></svg>
 								Отдел продаж
@@ -123,39 +118,33 @@ export function RedesignFooter() {
 						</div>
 
 						<a href="mailto:info@edinayasreda.ru"
-							className="inline-flex items-center justify-center h-[52px] px-5 bg-[#029cda] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0280b5] transition-colors">
+							className="inline-flex items-center justify-center h-[50px] px-5 bg-[#029cda] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0280b5] transition-colors">
 							Подписаться на рассылку
 						</a>
 
-						{/* QR + приложения */}
+						{/* QR + RuStore */}
 						<div className="flex items-start gap-3">
-							<div className="w-[90px] h-[90px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center shrink-0">
+							<div className="w-[90px] h-[90px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center shrink-0 p-2">
 								<Image src="/img/qr_apps.svg" alt="QR код" width={70} height={70} />
 							</div>
-							<div className="flex flex-col gap-2">
-								<a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer"
-									className="w-[60px] h-[60px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors">
-									<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 4C8.48 4 4 8.48 4 14s4.48 10 10 10 10-4.48 10-10S19.52 4 14 4z" fill="#0077ff"/><path d="M11 9.5l6 4.5-6 4.5V9.5z" fill="white"/></svg>
-								</a>
-								<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer"
-									className="w-[60px] h-[60px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors">
-									<svg width="22" height="28" viewBox="0 0 22 28" fill="none"><path d="M1 2h12l8 8-8 8H1V2z" fill="#34a853"/><path d="M1 18h12l4 4H1v-4z" fill="#ea4335"/><path d="M13 10h5l4 4-4 4h-5" fill="#fbbc04"/><path d="M1 2v16" stroke="#4285f4" strokeWidth="2"/></svg>
-								</a>
-							</div>
+							<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer"
+								className="w-[90px] h-[90px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-3">
+								<Image src="/icons/Rustore Logo Color Light.svg" alt="RuStore" width={64} height={64} className="object-contain" />
+							</a>
 						</div>
-						<p className="text-xs text-[#646b85]">Наведите камеру, чтобы<br/>скачать приложение</p>
+						<p className="text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
 					</div>
 
 					{/* Навигация — 6 колонок */}
-					<div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 lg:gap-4">
+					<div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-y-8 gap-x-4">
 						{NAV.map((col) => (
 							<div key={col.title}>
-								<p className="text-[#050c26] text-[15px] font-semibold font-involve mb-4">{col.title}</p>
+								<p className="text-[#050c26] text-base font-semibold font-involve mb-4">{col.title}</p>
 								<ul className="space-y-3">
 									{col.links.map((l) => (
 										<li key={l.label}>
 											<Link href={l.href}
-												className={`text-[13px] leading-[1.5] transition-colors hover:text-[#029cda] ${l.accent ? 'text-[#029cda]' : 'text-[#646b85]'}`}>
+												className={`text-[14px] leading-[1.5] transition-colors hover:text-[#029cda] ${l.accent ? 'text-[#029cda]' : 'text-[#646b85]'}`}>
 												{l.label}
 											</Link>
 										</li>
@@ -166,8 +155,8 @@ export function RedesignFooter() {
 					</div>
 				</div>
 
-				{/* ── Нижняя строка: копирайт ── */}
-				<div className="border-t border-[#e8eaed] py-6 flex flex-col sm:flex-row gap-3 sm:gap-8 text-xs text-[#646b85]">
+				{/* ── Нижняя строка ── */}
+				<div className="border-t border-[#e8eaed] py-6 flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-6 text-[13px] text-[#646b85]">
 					<span>© 2026 ООО «СФЕРА». Все права защищены.</span>
 					<Link href="/privacy" className="hover:text-[#029cda] transition-colors">
 						Политика ООО «СФЕРА» в отношении обработки персональных данных.
