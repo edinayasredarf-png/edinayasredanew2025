@@ -64,6 +64,42 @@
   box-sizing: border-box;
 }
 
+/* Bitrix24 form — reduce top spacing / subtitle gap */
+.b24-form-wrapper {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+.b24-form-header {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+}
+.b24-form-header-description {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: 12px !important;
+}
+
+/* Bitrix24 — style submit button like site buttons */
+.b24-form-btn-container .b24-form-btn,
+.b24-form-btn-container button[type="submit"],
+.b24-form-btn {
+  border-radius: 14px !important;
+  background-color: #029cda !important;
+  color: #ffffff !important;
+  font-family: var(--font-geist-sans), Raleway, sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  height: 52px !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: background-color 0.2s ease !important;
+}
+.b24-form-btn-container .b24-form-btn:hover,
+.b24-form-btn:hover {
+  background-color: #0280b5 !important;
+}
+
 body {
 	background: #F6F7F9;
 	color: #2c2d2e;
