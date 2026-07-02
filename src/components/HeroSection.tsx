@@ -5,55 +5,55 @@ import Image from 'next/image';
 import { useModal } from './ModalProvider';
 
 const HeroSection: React.FC = () => {
-	const { openRegister, openDemo } = useModal();
+	const { openRegister, openConsult } = useModal();
 
 	return (
-		<section className="bg-[#F6F7F9] w-full overflow-hidden">
-			<div className="rd-content-column py-10 md:py-14 lg:py-[66px]">
-				<div className="flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-6">
-					{/* Текст и кнопки */}
-					<div className="flex-1 lg:max-w-[662px] lg:pt-[66px] flex flex-col">
-						<h1 className="font-involve text-[#313131] text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
-							Цифровое управление
-							<br />
-							территориями
-						</h1>
+		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/50 to-[#0c5fe1]">
+			<div className="relative mx-auto max-w-[1400px] min-h-[580px] lg:min-h-[660px] flex items-stretch">
 
-						<p className="mt-6 md:mt-8 text-[#313131]/70 text-lg md:text-[22.7px] leading-[1.37] max-w-[662px] font-[Inter]">
-							Платформа для эффективного учёта, управления и мониторинга территорий и объектов в
-							организациях любого типа и масштаба
-						</p>
+				{/* Текст и кнопки — левая колонка */}
+				<div className="relative z-10 flex flex-col justify-center w-full lg:max-w-[620px] xl:max-w-[680px] px-6 sm:px-10 lg:px-16 py-16 lg:py-[80px]">
+					<h1 className="font-involve text-white text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
+						Цифровое управление
+						<br />
+						территориями
+					</h1>
 
-						<div className="mt-8 md:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-2">
-							<button
-								type="button"
-								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center h-[54px] min-w-[200px] sm:min-w-[232px] px-8 rounded-lg bg-[#029cda] text-white text-base md:text-[19px] font-semibold font-[Inter] hover:bg-[#0288bd] transition-colors"
-							>
-								Оставить заявку
-							</button>
-							<button
-								type="button"
-								onClick={() => openDemo()}
-								className="inline-flex items-center justify-center h-[54px] min-w-[180px] sm:min-w-[188px] px-8 rounded-lg border border-[#029cda] text-[#029cda] text-base md:text-[19px] font-semibold font-[Inter] hover:bg-[#029cda]/5 transition-colors"
-							>
-								Демоверсия
-							</button>
-						</div>
-					</div>
+					<p className="mt-8 text-white/70 text-lg md:text-[22.7px] leading-[1.37] max-w-[580px]">
+						Платформа для эффективного учёта, управления и мониторинга территорий и объектов в организациях любого типа и масштаба
+					</p>
 
-					{/* Иллюстрация */}
-					<div className="relative w-full lg:w-[415px] lg:shrink-0 lg:ml-auto aspect-[396/396] max-h-[396px] overflow-hidden">
-						<Image
-							src="/img/hero-home.webp"
-							alt="Платформа АИС Единая среда"
-							fill
-							priority
-							className="object-cover object-left-top"
-							sizes="(max-width: 1024px) 100vw, 515px"
-						/>
+					<div className="mt-10 flex flex-wrap gap-3">
+						<button
+							type="button"
+							onClick={() => openRegister()}
+							className="inline-flex items-center justify-center h-[54px] min-w-[232px] px-8 rounded-xl bg-white text-[#029cda] text-[19px] font-semibold font-involve hover:bg-white/90 transition-colors"
+						>
+							Оставить заявку
+						</button>
+						<button
+							type="button"
+							onClick={() => openConsult()}
+							className="inline-flex items-center justify-center h-[54px] min-w-[188px] px-8 rounded-xl border border-white text-white text-[19px] font-semibold font-involve hover:bg-white/10 transition-colors"
+						>
+							Консультация
+						</button>
 					</div>
 				</div>
+
+				{/* Изображение — правая колонка, прижато к низу */}
+				<div className="hidden lg:flex flex-1 items-end justify-end pointer-events-none select-none">
+					<Image
+						src="/img/hero-tablet.png"
+						alt="Платформа АИС Единая среда"
+						width={760}
+						height={660}
+						priority
+						className="object-contain object-bottom max-h-[660px] w-auto"
+						sizes="(max-width: 1400px) 50vw, 700px"
+					/>
+				</div>
+
 			</div>
 		</section>
 	);
