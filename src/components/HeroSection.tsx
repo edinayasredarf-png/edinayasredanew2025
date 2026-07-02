@@ -8,7 +8,7 @@ const HeroSection: React.FC = () => {
 
 	return (
 		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/50 to-[#0c5fe1] -mt-[80px]">
-			<div className="relative mx-auto w-full max-w-[1200px] flex flex-col lg:flex-row lg:items-stretch px-6 lg:px-0">
+			<div className="relative mx-auto w-full max-w-[1200px] flex flex-col lg:flex-row lg:items-stretch px-6 lg:px-5">
 
 				{/* Текст и кнопки — левая колонка, от левого края 1200px */}
 				<div className="relative z-10 flex flex-col justify-center shrink-0 lg:w-[460px] xl:w-[490px] lg:pl-0 lg:pr-8 pt-[120px] pb-10 lg:pt-[160px] lg:pb-[80px]">
