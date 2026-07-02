@@ -15,6 +15,17 @@
 
 /* dark mode intentionally disabled — site is light-only */
 
+/* Bitrix24 consent popup fix — force white background */
+.b24-window-popup-wrapper,
+.b24-window-scrollable,
+.b24-window-popup-body,
+.b24-window-popup-head,
+.b24-form-scroll-textable,
+.b24-form-scroll-textable * {
+  background-color: #ffffff !important;
+  color: #313131 !important;
+}
+
 body {
 	background: #F6F7F9;
 	color: #2c2d2e;
