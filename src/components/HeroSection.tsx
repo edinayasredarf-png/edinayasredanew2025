@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { useModal } from './ModalProvider';
 
 const HeroSection: React.FC = () => {
@@ -42,15 +41,13 @@ const HeroSection: React.FC = () => {
 				</div>
 
 				{/* Изображение — правая колонка, прижато к низу */}
-				<div className="hidden lg:flex flex-1 items-end justify-end pointer-events-none select-none">
-					<Image
+				<div className="hidden lg:flex flex-1 items-end justify-end pointer-events-none select-none overflow-hidden">
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img
 						src="/img/hero-tablet.webp"
 						alt="Платформа АИС Единая среда"
-						width={760}
-						height={660}
-						priority
 						className="object-contain object-bottom max-h-[660px] w-auto"
-						sizes="(max-width: 1400px) 50vw, 700px"
+						loading="eager"
 					/>
 				</div>
 
