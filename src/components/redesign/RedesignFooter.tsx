@@ -83,7 +83,7 @@ export function RedesignFooter() {
 
 						{/* Услуги */}
 						<div className="flex flex-col gap-4">
-							<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Услуги</p>
+							<p className="text-[#050c26] text-[20px] font-semibold font-involve leading-7">Услуги</p>
 							<ul className="space-y-3">
 								<li><Link href="/services/cemetery" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Инвентаризация мест захоронений</Link></li>
 								<li><Link href="/services/green" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Инвентаризация зеленых насаждений</Link></li>
@@ -100,7 +100,7 @@ export function RedesignFooter() {
 
 						{/* Решения */}
 						<div className="flex flex-col gap-4">
-							<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Решения</p>
+							<p className="text-[#050c26] text-[20px] font-semibold font-involve leading-7">Решения</p>
 							<ul className="space-y-3">
 								<li><Link href="/solutions/digital-twin" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Цифровой двойник города</Link></li>
 								<li><Link href="/solutions/green-platform" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Платформа учёта зелёных насаждений города</Link></li>
@@ -111,14 +111,14 @@ export function RedesignFooter() {
 						{/* Партнерам + Поддержка */}
 						<div className="flex flex-col gap-8">
 							<div className="flex flex-col gap-4">
-								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Партнёрам</p>
+								<p className="text-[#050c26] text-[20px] font-semibold font-involve leading-7">Партнёрам</p>
 								<ul className="space-y-3">
 									<li><Link href="/partnership" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Партнёрская программа</Link></li>
 									<li><Link href="/partnership/all" className="text-[14px] text-[#029cda] leading-5 hover:text-[#0280b5] transition-colors">Все программы</Link></li>
 								</ul>
 							</div>
 							<div className="flex flex-col gap-4">
-								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Поддержка</p>
+								<p className="text-[#050c26] text-[20px] font-semibold font-involve leading-7">Поддержка</p>
 								<ul className="space-y-3">
 									<li><Link href="/documents" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Реквизиты</Link></li>
 									<li><Link href="/help" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Техподдержка</Link></li>
@@ -133,7 +133,7 @@ export function RedesignFooter() {
 						{/* Компания + Контакты */}
 						<div className="flex flex-col gap-8">
 							<div className="flex flex-col gap-4">
-								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Компания</p>
+								<p className="text-[#050c26] text-[20px] font-semibold font-involve leading-7">Компания</p>
 								<ul className="space-y-3">
 									<li><Link href="/about" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">О нас</Link></li>
 									<li><Link href="/grants" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Гранты</Link></li>
@@ -144,7 +144,7 @@ export function RedesignFooter() {
 								</ul>
 							</div>
 							<div className="flex flex-col gap-4">
-								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Контакты</p>
+								<p className="text-[#050c26] text-[20px] font-semibold font-involve leading-7">Контакты</p>
 								<ul className="space-y-3">
 									<li><Link href="/contacts" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Отдел продаж</Link></li>
 									<li><Link href="/contacts/meeting" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Пригласить на встречу</Link></li>
