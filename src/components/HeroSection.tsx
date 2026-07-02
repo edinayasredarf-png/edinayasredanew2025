@@ -7,11 +7,11 @@ const HeroSection: React.FC = () => {
 	const { openRegister, openConsult } = useModal();
 
 	return (
-		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/50 to-[#0c5fe1]">
-			<div className="relative mx-auto max-w-[1400px] min-h-[580px] lg:min-h-[660px] flex items-stretch">
+		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/50 to-[#0c5fe1] -mt-[80px]">
+			<div className="relative mx-auto max-w-[1200px] min-h-[580px] lg:min-h-[660px] flex items-stretch">
 
 				{/* Текст и кнопки — левая колонка */}
-				<div className="relative z-10 flex flex-col justify-center w-full lg:max-w-[620px] xl:max-w-[680px] px-6 sm:px-10 lg:px-16 py-16 lg:py-[80px]">
+				<div className="relative z-10 flex flex-col justify-center w-full lg:max-w-[620px] xl:max-w-[680px] px-6 sm:px-10 lg:px-16 pt-16 pb-16 lg:pt-[140px] lg:pb-[80px]">
 					<h1 className="font-involve text-white text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
 						Цифровое управление
 						<br />

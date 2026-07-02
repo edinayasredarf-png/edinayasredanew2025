@@ -112,7 +112,7 @@ export function RedesignHeader() {
 
 	return (
 		<>
-			<header className={`sticky top-0 ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
+			<header className={`sticky top-0 bg-transparent ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
 				{/* ── Desktop: единая плашка ── */}
 				<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-0 relative">
 					<div className="flex items-center w-full h-[68px] bg-white rounded-3xl px-4 relative">
