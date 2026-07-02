@@ -11,63 +11,6 @@ const SOCIALS = [
 	{ href: 'https://dzen.ru/edinayasreda', src: '/icons/dzen.svg', alt: 'Дзен' },
 ];
 
-const NAV = [
-	{
-		title: 'Услуги',
-		links: [
-			{ label: 'Инвентаризация мест захоронений', href: '/services/cemetery' },
-			{ label: 'Инвентаризация зеленых насаждений', href: '/services/green' },
-			{ label: 'Лесоустройство', href: '/services/forest' },
-			{ label: 'Все сервисы', href: '/services', accent: true },
-		],
-	},
-	{
-		title: 'Решения',
-		links: [
-			{ label: 'Цифровой двойник города', href: '/solutions/digital-twin' },
-			{ label: 'Платформа учёта зелёных насаждений', href: '/solutions/green-platform' },
-			{ label: 'Платформа для инвентаризации мест захоронений', href: '/solutions/cemetery-platform' },
-		],
-	},
-	{
-		title: 'Партнёрам',
-		links: [
-			{ label: 'Партнёрская программа', href: '/partnership' },
-			{ label: 'Все программы', href: '/partnership/all', accent: true },
-		],
-	},
-	{
-		title: 'Поддержка',
-		links: [
-			{ label: 'Реквизиты', href: '/documents' },
-			{ label: 'Техподдержка', href: '/help' },
-			{ label: 'Документация', href: '/documents' },
-			{ label: 'FAQ', href: '/faq' },
-			{ label: 'Предложить идею', href: '/idea' },
-			{ label: 'Карта сайта', href: '/sitemap' },
-		],
-	},
-	{
-		title: 'Компания',
-		links: [
-			{ label: 'О нас', href: '/about' },
-			{ label: 'Гранты', href: '/grants' },
-			{ label: 'Кейсы', href: '/cases' },
-			{ label: 'Мероприятия', href: '/events' },
-			{ label: 'Блог', href: '/blog' },
-			{ label: 'Отзывы', href: '/reviews' },
-		],
-	},
-	{
-		title: 'Контакты',
-		links: [
-			{ label: 'Отдел продаж', href: '/contacts' },
-			{ label: 'Пригласить на встречу', href: '/contacts/meeting' },
-			{ label: 'Контакты', href: '/contacts' },
-		],
-	},
-];
-
 export function RedesignFooter() {
 	return (
 		<footer className="bg-[#F6F7F9] font-[Raleway]">
@@ -135,32 +78,88 @@ export function RedesignFooter() {
 						<p className="text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
 					</div>
 
-					{/* Навигация — 6 колонок */}
-					<div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-y-8 gap-x-4">
-						{NAV.map((col) => (
-							<div key={col.title}>
-								<p className="text-[#050c26] text-base font-semibold font-involve mb-4">{col.title}</p>
+					{/* ── Навигация ── */}
+					<div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_1fr_1fr] gap-y-8 gap-x-6">
+
+						{/* Услуги */}
+						<div className="flex flex-col gap-4">
+							<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Услуги</p>
+							<ul className="space-y-3">
+								<li><Link href="/services/cemetery" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Инвентаризация мест захоронений</Link></li>
+								<li><Link href="/services/green" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Инвентаризация зеленых насаждений</Link></li>
+								<li><Link href="/services/forest" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Лесоустройство</Link></li>
+								<li><Link href="/services" className="text-[14px] text-[#029cda] leading-5 hover:text-[#0280b5] transition-colors">Все сервисы</Link></li>
+							</ul>
+							{/* Копирайт под Услугами */}
+							<div className="mt-auto pt-8 hidden lg:flex flex-col gap-1 text-[12px] text-[#646b85] leading-5">
+								<span>© 2026 ООО «СФЕРА». Все права защищены.</span>
+								<Link href="/privacy" className="hover:text-[#029cda] transition-colors">Политика ООО «СФЕРА» в отношении обработки персональных данных.</Link>
+								<span>ПО «АИС Единая среда» включена в Единый реестр российских программ. Запись в реестре №15725 от 05.12.2022 г.</span>
+							</div>
+						</div>
+
+						{/* Решения */}
+						<div className="flex flex-col gap-4">
+							<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Решения</p>
+							<ul className="space-y-3">
+								<li><Link href="/solutions/digital-twin" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Цифровой двойник города</Link></li>
+								<li><Link href="/solutions/green-platform" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Платформа учёта зелёных насаждений города</Link></li>
+								<li><Link href="/solutions/cemetery-platform" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Платформа для инвентаризации мест захоронений</Link></li>
+							</ul>
+						</div>
+
+						{/* Партнерам + Поддержка */}
+						<div className="flex flex-col gap-8">
+							<div className="flex flex-col gap-4">
+								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Партнёрам</p>
 								<ul className="space-y-3">
-									{col.links.map((l) => (
-										<li key={l.label}>
-											<Link href={l.href}
-												className={`text-[14px] leading-[1.5] transition-colors hover:text-[#029cda] ${l.accent ? 'text-[#029cda]' : 'text-[#646b85]'}`}>
-												{l.label}
-											</Link>
-										</li>
-									))}
+									<li><Link href="/partnership" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Партнёрская программа</Link></li>
+									<li><Link href="/partnership/all" className="text-[14px] text-[#029cda] leading-5 hover:text-[#0280b5] transition-colors">Все программы</Link></li>
 								</ul>
 							</div>
-						))}
+							<div className="flex flex-col gap-4">
+								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Поддержка</p>
+								<ul className="space-y-3">
+									<li><Link href="/documents" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Реквизиты</Link></li>
+									<li><Link href="/help" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Техподдержка</Link></li>
+									<li><Link href="/documents" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Документация</Link></li>
+									<li><Link href="/faq" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">FAQ</Link></li>
+									<li><Link href="/idea" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Предложить идею</Link></li>
+									<li><Link href="/sitemap" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Карта сайта</Link></li>
+								</ul>
+							</div>
+						</div>
+
+						{/* Компания + Контакты */}
+						<div className="flex flex-col gap-8">
+							<div className="flex flex-col gap-4">
+								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Компания</p>
+								<ul className="space-y-3">
+									<li><Link href="/about" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">О нас</Link></li>
+									<li><Link href="/grants" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Гранты</Link></li>
+									<li><Link href="/cases" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Кейсы</Link></li>
+									<li><Link href="/events" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Мероприятия</Link></li>
+									<li><Link href="/blog" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Блог</Link></li>
+									<li><Link href="/reviews" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Отзывы</Link></li>
+								</ul>
+							</div>
+							<div className="flex flex-col gap-4">
+								<p className="text-[#050c26] text-[20px] font-medium font-involve leading-7">Контакты</p>
+								<ul className="space-y-3">
+									<li><Link href="/contacts" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Отдел продаж</Link></li>
+									<li><Link href="/contacts/meeting" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Пригласить на встречу</Link></li>
+									<li><Link href="/contacts" className="text-[14px] text-[#646b85] leading-5 hover:text-[#029cda] transition-colors">Контакты</Link></li>
+								</ul>
+							</div>
+						</div>
+
 					</div>
 				</div>
 
-				{/* ── Нижняя строка ── */}
-				<div className="border-t border-[#e8eaed] py-6 flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-6 text-[13px] text-[#646b85]">
+				{/* Копирайт на мобиле */}
+				<div className="lg:hidden border-t border-[#e8eaed] py-6 flex flex-col gap-2 text-[12px] text-[#646b85]">
 					<span>© 2026 ООО «СФЕРА». Все права защищены.</span>
-					<Link href="/privacy" className="hover:text-[#029cda] transition-colors">
-						Политика ООО «СФЕРА» в отношении обработки персональных данных.
-					</Link>
+					<Link href="/privacy" className="hover:text-[#029cda] transition-colors">Политика ООО «СФЕРА» в отношении обработки персональных данных.</Link>
 					<span>ПО «АИС Единая среда» включена в Единый реестр российских программ. Запись в реестре №15725 от 05.12.2022 г.</span>
 				</div>
 
