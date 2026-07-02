@@ -74,16 +74,16 @@ export function RedesignFooter() {
 					</div>
 
 					{/* ── Навигация ── */}
-					<div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_1fr_1fr] gap-y-8 gap-x-6">
+					<div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_1fr] gap-y-8 gap-x-6">
 
 						{/* Услуги */}
 						<div className="flex flex-col gap-4">
 							<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Услуги</p>
 							<ul className="space-y-3">
-								<li><Link href="/services/cemetery" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация мест захоронений</Link></li>
-								<li><Link href="/services/green" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация зеленых насаждений</Link></li>
-								<li><Link href="/services/forest" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Лесоустройство</Link></li>
-								<li><Link href="/services" className="text-[15px] text-[#029cda] leading-6 hover:text-[#0280b5] transition-colors">Все сервисы</Link></li>
+								<li><Link href="/services/cemetery" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация мест захоронений</Link></li>
+								<li><Link href="/services/green" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация зеленых насаждений</Link></li>
+								<li><Link href="/services/forest" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Лесоустройство</Link></li>
+								<li><Link href="/services" className="text-[16px] lg:text-[15px] text-[#029cda] leading-6 hover:text-[#0280b5] transition-colors">Все сервисы</Link></li>
 							</ul>
 							{/* Копирайт под Услугами */}
 							<div className="mt-auto pt-8 hidden lg:flex flex-col gap-1 text-[12px] text-[#646b85] leading-5">
@@ -97,9 +97,9 @@ export function RedesignFooter() {
 						<div className="flex flex-col gap-4">
 							<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Решения</p>
 							<ul className="space-y-3">
-								<li><Link href="/solutions/digital-twin" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Цифровой двойник города</Link></li>
-								<li><Link href="/solutions/green-platform" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Платформа учёта зелёных насаждений города</Link></li>
-								<li><Link href="/solutions/cemetery-platform" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Платформа для инвентаризации мест захоронений</Link></li>
+								<li><Link href="/solutions/digital-twin" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Цифровой двойник города</Link></li>
+								<li><Link href="/solutions/green-platform" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Платформа учёта зелёных насаждений города</Link></li>
+								<li><Link href="/solutions/cemetery-platform" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Платформа для инвентаризации мест захоронений</Link></li>
 							</ul>
 						</div>
 
@@ -108,19 +108,19 @@ export function RedesignFooter() {
 							<div className="flex flex-col gap-4">
 								<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Партнёрам</p>
 								<ul className="space-y-3">
-									<li><Link href="/partnership" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Партнёрская программа</Link></li>
-									<li><Link href="/partnership/all" className="text-[15px] text-[#029cda] leading-6 hover:text-[#0280b5] transition-colors">Все программы</Link></li>
+									<li><Link href="/partnership" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Партнёрская программа</Link></li>
+									<li><Link href="/partnership/all" className="text-[16px] lg:text-[15px] text-[#029cda] leading-6 hover:text-[#0280b5] transition-colors">Все программы</Link></li>
 								</ul>
 							</div>
 							<div className="flex flex-col gap-4">
 								<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Поддержка</p>
 								<ul className="space-y-3">
-									<li><Link href="/documents" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Реквизиты</Link></li>
-									<li><Link href="/help" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Техподдержка</Link></li>
-									<li><Link href="/documents" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Документация</Link></li>
-									<li><Link href="/faq" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">FAQ</Link></li>
-									<li><Link href="/idea" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Предложить идею</Link></li>
-									<li><Link href="/sitemap" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Карта сайта</Link></li>
+									<li><Link href="/documents" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Реквизиты</Link></li>
+									<li><Link href="/help" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Техподдержка</Link></li>
+									<li><Link href="/documents" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Документация</Link></li>
+									<li><Link href="/faq" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">FAQ</Link></li>
+									<li><Link href="/idea" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Предложить идею</Link></li>
+									<li><Link href="/sitemap" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Карта сайта</Link></li>
 								</ul>
 							</div>
 						</div>
@@ -130,20 +130,20 @@ export function RedesignFooter() {
 							<div className="flex flex-col gap-4">
 								<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Компания</p>
 								<ul className="space-y-3">
-									<li><Link href="/about" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">О нас</Link></li>
-									<li><Link href="/grants" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Гранты</Link></li>
-									<li><Link href="/cases" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Кейсы</Link></li>
-									<li><Link href="/events" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Мероприятия</Link></li>
-									<li><Link href="/blog" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Блог</Link></li>
-									<li><Link href="/reviews" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Отзывы</Link></li>
+									<li><Link href="/about" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">О нас</Link></li>
+									<li><Link href="/grants" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Гранты</Link></li>
+									<li><Link href="/cases" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Кейсы</Link></li>
+									<li><Link href="/events" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Мероприятия</Link></li>
+									<li><Link href="/blog" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Блог</Link></li>
+									<li><Link href="/reviews" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Отзывы</Link></li>
 								</ul>
 							</div>
 							<div className="flex flex-col gap-4">
 								<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Контакты</p>
 								<ul className="space-y-3">
-									<li><Link href="/contacts" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Отдел продаж</Link></li>
-									<li><Link href="/contacts/meeting" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Пригласить на встречу</Link></li>
-									<li><Link href="/contacts" className="text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Контакты</Link></li>
+									<li><Link href="/contacts" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Отдел продаж</Link></li>
+									<li><Link href="/contacts/meeting" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Пригласить на встречу</Link></li>
+									<li><Link href="/contacts" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Контакты</Link></li>
 								</ul>
 							</div>
 						</div>
