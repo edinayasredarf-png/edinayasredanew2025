@@ -72,7 +72,7 @@ export function RedesignFooter() {
 							</div>
 							<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer"
 								className="w-[90px] h-[90px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-3">
-								<Image src="/icons/RuStore_Icon.svg" alt="RuStore" width={64} height={64} className="object-contain" />
+								<Image src="/icons/RuStore_Icon .svg" alt="RuStore" width={64} height={64} className="object-contain" />
 							</a>
 						</div>
 						<p className="text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
