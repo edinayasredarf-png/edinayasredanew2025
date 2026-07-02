@@ -26,6 +26,44 @@
   color: #313131 !important;
 }
 
+/* Bitrix24 form padding — align fields with modal header */
+.b24-form-wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.b24-form-header {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.b24-form-field {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.b24-form-field-container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.b24-form-control-container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.b24-form-btn-container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.b24-form-sign {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.b24-form-padding-side {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+/* inner wrapper that adds its own horizontal padding */
+[class*="b24-form"] > div {
+  box-sizing: border-box;
+}
+
 body {
 	background: #F6F7F9;
 	color: #2c2d2e;
