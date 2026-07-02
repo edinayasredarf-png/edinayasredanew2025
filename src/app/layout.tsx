@@ -124,7 +124,7 @@ export default function RootLayout({
     : SITE_CONFIG.url;
 
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning style={{ colorScheme: 'light' }}>
       <head>
         {/* ========================================
             JSON-LD: Organization
