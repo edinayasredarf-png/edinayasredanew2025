@@ -44,7 +44,7 @@ const HeroSection: React.FC = () => {
 				{/* Изображение — правая колонка, прижато к низу */}
 				<div className="hidden lg:flex flex-1 items-end justify-end pointer-events-none select-none">
 					<Image
-						src="/img/hero-tablet.png"
+						src="/img/hero-tablet.webp"
 						alt="Платформа АИС Единая среда"
 						width={760}
 						height={660}
