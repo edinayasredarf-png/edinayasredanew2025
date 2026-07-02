@@ -62,15 +62,15 @@ export function RedesignFooter() {
 
 						{/* QR + RuStore */}
 						<div className="flex items-start gap-3">
-							<div className="w-[90px] h-[90px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center shrink-0 p-2">
-								<Image src="/img/qr_apps.svg" alt="QR код" width={70} height={70} />
+							<div className="hidden lg:flex w-[120px] h-[120px] bg-[#f5f6fe] rounded-[18px] items-center justify-center shrink-0 p-2">
+								<Image src="/img/qr_apps.svg" alt="QR код" width={100} height={100} />
 							</div>
 							<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer"
-								className="w-[90px] h-[90px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-3">
-								<Image src="/icons/RuStore_Icon .svg" alt="RuStore" width={64} height={64} className="object-contain" />
+								className="w-[120px] h-[120px] lg:w-[120px] lg:h-[120px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-4">
+								<Image src="/icons/RuStore_Icon .svg" alt="RuStore" width={80} height={80} className="object-contain" />
 							</a>
 						</div>
-						<p className="text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
+						<p className="hidden lg:block text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
 					</div>
 
 					{/* ── Навигация ── */}
