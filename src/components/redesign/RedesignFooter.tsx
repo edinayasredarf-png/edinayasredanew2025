@@ -50,10 +50,6 @@ export function RedesignFooter() {
 						</Link>
 
 						<div className="flex flex-col gap-2.5 text-[15px] text-[#050c26]">
-							<a href="/contacts" className="flex items-center gap-2 hover:text-[#029cda] transition-colors">
-								<Image src="/icons/chat.svg" alt="" width={18} height={18} className="shrink-0 opacity-50" />
-								Отдел продаж
-							</a>
 							<a href="tel:88005505612" className="flex items-center gap-2 hover:text-[#029cda] transition-colors">
 								<Image src="/icons/phone.svg" alt="" width={18} height={18} className="shrink-0 opacity-50" />
 								8 (800) 550-56-12
@@ -62,12 +58,12 @@ export function RedesignFooter() {
 
 						{/* QR + RuStore */}
 						<div className="flex items-start gap-3">
-							<div className="hidden lg:flex w-[120px] h-[120px] bg-[#f5f6fe] rounded-[18px] items-center justify-center shrink-0 p-2">
-								<Image src="/img/qr_apps.svg" alt="QR код" width={100} height={100} />
+							<div className="hidden lg:flex w-[150px] h-[150px] bg-[#f5f6fe] rounded-[18px] items-center justify-center shrink-0 p-2">
+								<Image src="/img/qr_apps.svg" alt="QR код" width={130} height={130} />
 							</div>
 							<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer"
-								className="w-[120px] h-[120px] lg:w-[120px] lg:h-[120px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-4">
-								<Image src="/icons/RuStore_Icon .svg" alt="RuStore" width={80} height={80} className="object-contain" />
+								className="hidden lg:flex w-[150px] h-[150px] bg-[#f5f6fe] rounded-[18px] items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-5">
+								<Image src="/icons/RuStore_Icon .svg" alt="RuStore" width={60} height={60} className="object-contain" />
 							</a>
 						</div>
 						<p className="hidden lg:block text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
