@@ -63,8 +63,8 @@ export function RedesignFooter() {
 							</div>
 							<p className="text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
 							<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer"
-								className="w-[150px] h-[150px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-5">
-								<Image src="/icons/RuStore_Icon .svg" alt="RuStore" width={60} height={60} className="object-contain" />
+								className="w-[150px] shrink-0 hover:opacity-80 transition-opacity">
+								<Image src="/icons/Rustore Logo Color Light.svg" alt="Скачать в RuStore" width={111} height={40} className="w-full h-auto" />
 							</a>
 						</div>
 					</div>
