@@ -31,6 +31,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'cases': 'Кейсы',
   'pricing': 'Цены',
   'documents': 'Документация',
+  'requisites': 'Реквизиты',
   'career': 'Карьера',
   'contacts': 'Контакты',
   'services': 'Услуги',

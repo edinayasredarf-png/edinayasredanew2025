@@ -21,6 +21,7 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: `${baseUrl}/contacts`,              changeFrequency: 'yearly',  priority: 0.6, lastModified: '2026-04-06' },
   { url: `${baseUrl}/career`,                changeFrequency: 'weekly',  priority: 0.5, lastModified: new Date() },
   { url: `${baseUrl}/documents`,             changeFrequency: 'monthly', priority: 0.5, lastModified: '2026-04-06' },
+  { url: `${baseUrl}/requisites`,            changeFrequency: 'yearly',  priority: 0.4, lastModified: '2026-07-03' },
   { url: `${baseUrl}/implementations`,       changeFrequency: 'monthly', priority: 0.6, lastModified: new Date() },
   { url: `${baseUrl}/welcome-bonus`,         changeFrequency: 'monthly', priority: 0.5, lastModified: '2026-04-06' },
 ]

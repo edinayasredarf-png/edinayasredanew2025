@@ -111,7 +111,7 @@ export function RedesignFooter() {
 							<div className="flex flex-col gap-4">
 								<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Поддержка</p>
 								<ul className="space-y-3">
-									<li><Link href="/documents" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Реквизиты</Link></li>
+									<li><Link href="/requisites" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Реквизиты</Link></li>
 									<li><Link href="/help" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Техподдержка</Link></li>
 									<li><Link href="/documents" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Документация</Link></li>
 									<li><Link href="/faq" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">FAQ</Link></li>
