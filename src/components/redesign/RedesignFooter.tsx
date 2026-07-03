@@ -56,17 +56,17 @@ export function RedesignFooter() {
 							</a>
 						</div>
 
-						{/* QR + RuStore */}
-						<div className="flex items-start gap-3">
-							<div className="hidden lg:flex w-[150px] h-[150px] bg-[#f5f6fe] rounded-[18px] items-center justify-center shrink-0 p-2">
+						{/* QR + текст + RuStore */}
+						<div className="hidden lg:flex flex-col items-start gap-3">
+							<div className="w-[150px] h-[150px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center shrink-0 p-2">
 								<Image src="/img/qr_apps.svg" alt="QR код" width={130} height={130} />
 							</div>
+							<p className="text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
 							<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" target="_blank" rel="noopener noreferrer"
-								className="hidden lg:flex w-[150px] h-[150px] bg-[#f5f6fe] rounded-[18px] items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-5">
+								className="w-[150px] h-[150px] bg-[#f5f6fe] rounded-[18px] flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0 p-5">
 								<Image src="/icons/RuStore_Icon .svg" alt="RuStore" width={60} height={60} className="object-contain" />
 							</a>
 						</div>
-						<p className="hidden lg:block text-xs text-[#646b85] leading-[1.5]">Наведите камеру, чтобы<br/>скачать приложение</p>
 					</div>
 
 					{/* ── Навигация ── */}
@@ -76,9 +76,9 @@ export function RedesignFooter() {
 						<div className="flex flex-col gap-4">
 							<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Услуги</p>
 							<ul className="space-y-3">
-								<li><Link href="/services/cemetery" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация мест захоронений</Link></li>
-								<li><Link href="/services/green" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация зеленых насаждений</Link></li>
-								<li><Link href="/services/forest" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Лесоустройство</Link></li>
+								<li><Link href="/services/imz" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация мест захоронений</Link></li>
+								<li><Link href="/services/izn" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация зеленых насаждений</Link></li>
+								<li><Link href="/services/les" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Лесоустройство</Link></li>
 								<li><Link href="/services" className="text-[16px] lg:text-[15px] text-[#029cda] leading-6 hover:text-[#0280b5] transition-colors">Все сервисы</Link></li>
 							</ul>
 							{/* Копирайт под Услугами */}
