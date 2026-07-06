@@ -33,6 +33,15 @@ interface EmailResponse {
   truncated?: boolean;
 }
 
+type LeadQuality = 'converted' | 'junk' | 'in_progress';
+interface LeadUtm { source?: string; medium?: string; campaign?: string; content?: string; term?: string }
+interface CrmLead {
+  id: string; title: string; createdAt: string | null; source: string; sourceId: string;
+  sourceDescription: string | null; utm: LeadUtm; company: string | null; contact: string | null;
+  comment: string | null; status: string; statusId: string; quality: LeadQuality; url: string;
+}
+interface LeadsResponse { configured: boolean; error?: string; total?: number; leads?: CrmLead[] }
+
 const PERIODS = [
   { value: 7, label: '7 дней' },
   { value: 30, label: '30 дней' },
@@ -130,6 +139,8 @@ export default function AnalyticsDashboard() {
   const [metrikaLoading, setMetrikaLoading] = useState(true);
   const [email, setEmail] = useState<EmailResponse | null>(null);
   const [emailLoading, setEmailLoading] = useState(true);
+  const [leads, setLeads] = useState<LeadsResponse | null>(null);
+  const [leadsLoading, setLeadsLoading] = useState(true);
 
   const loadMetrika = useCallback(async (p: number) => {
     setMetrikaLoading(true);
@@ -151,11 +162,22 @@ export default function AnalyticsDashboard() {
     } finally { setEmailLoading(false); }
   }, []);
 
-  useEffect(() => { loadMetrika(period); loadEmail(period); }, [period, loadMetrika, loadEmail]);
+  const loadLeads = useCallback(async (p: number) => {
+    setLeadsLoading(true);
+    try {
+      const res = await fetch(`/api/analytics/leads?period=${p}`, { credentials: 'include' });
+      setLeads(await res.json());
+    } catch {
+      setLeads({ configured: true, error: 'Не удалось загрузить лиды' });
+    } finally { setLeadsLoading(false); }
+  }, []);
+
+  useEffect(() => { loadMetrika(period); loadEmail(period); loadLeads(period); }, [period, loadMetrika, loadEmail, loadLeads]);
 
   const s = metrika?.summary;
   const es = email?.summary;
   const recent = email?.recent ?? [];
+  const leadRows = leads?.leads ?? [];
 
   return (
     <div className="space-y-6 font-[Raleway]">
@@ -283,6 +305,111 @@ export default function AnalyticsDashboard() {
           </>
         ) : null}
       </Card>
+
+      {/* ── Новые лиды (Битрикс24 CRM) ── */}
+      <Card>
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-[#313131]">Новые лиды</h3>
+          <p className="text-sm text-[#7C8A9A]">С сайта и рассылок (Битрикс24 CRM)</p>
+        </div>
+
+        {leadsLoading ? <Spinner /> : leads?.configured === false ? (
+          <Notice>Битрикс24 не подключён. Задайте <code className="font-mono">BITRIX24_WEBHOOK_URL</code>.</Notice>
+        ) : leads?.error ? (
+          <Notice>Ошибка Битрикс24: {leads.error}</Notice>
+        ) : leadRows.length === 0 ? (
+          <p className="text-sm text-gray-400 py-2">За период новых лидов нет.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <Metric label="Всего лидов" value={fmt(leadRows.length)} />
+              <Metric label="Качественные" value={fmt(leadRows.filter((l) => l.quality === 'converted').length)} />
+              <Metric label="Некачественные" value={fmt(leadRows.filter((l) => l.quality === 'junk').length)} />
+              <Metric label="В работе" value={fmt(leadRows.filter((l) => l.quality === 'in_progress').length)} />
+            </div>
+            <div className="space-y-3">
+              {leadRows.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+            </div>
+          </>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+/* ── Карточка лида ── */
+const QUALITY: Record<LeadQuality, { label: string; cls: string }> = {
+  converted: { label: 'Качественный', cls: 'bg-[#e3f7e8] text-[#1f9d55]' },
+  junk: { label: 'Некачественный', cls: 'bg-[#fde8e8] text-[#d64545]' },
+  in_progress: { label: 'В работе', cls: 'bg-[#e0f2fd] text-[#029cda]' },
+};
+
+function fmtDateTime(d: string | null): string {
+  if (!d) return '—';
+  const p = new Date(d);
+  if (Number.isNaN(p.getTime())) return d;
+  return p.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function LeadCard({ lead }: { lead: CrmLead }) {
+  const q = QUALITY[lead.quality];
+  const utm = lead.utm || {};
+  const utmParts = [
+    utm.source && `source: ${utm.source}`,
+    utm.medium && `medium: ${utm.medium}`,
+    utm.campaign && `campaign: ${utm.campaign}`,
+    utm.content && `content: ${utm.content}`,
+    utm.term && `term: ${utm.term}`,
+  ].filter(Boolean) as string[];
+
+  return (
+    <div className="rounded-xl border border-gray-100 bg-[#F9FAFB] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[#313131] font-medium leading-snug">{lead.title}</div>
+          <div className="text-xs text-[#9AA6B2] mt-0.5">{fmtDateTime(lead.createdAt)}</div>
+        </div>
+        <span className={`shrink-0 text-xs px-2.5 py-1 rounded-full font-medium ${q.cls}`}>{q.label}</span>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-3">
+        <span className="text-xs px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[#646b85]">Источник: {lead.source}</span>
+        <span className="text-xs px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[#646b85]">Стадия: {lead.status}</span>
+        {lead.sourceDescription && (
+          <span className="text-xs px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[#646b85]">{lead.sourceDescription}</span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-3 text-sm">
+        {lead.company && <div><span className="text-[#9AA6B2]">Компания: </span><span className="text-[#313131]">{lead.company}</span></div>}
+        {lead.contact && <div><span className="text-[#9AA6B2]">Контакт: </span><span className="text-[#313131]">{lead.contact}</span></div>}
+      </div>
+
+      {utmParts.length > 0 && (
+        <div className="mt-3">
+          <div className="text-xs text-[#9AA6B2] mb-1">UTM / путь клиента</div>
+          <div className="flex flex-wrap gap-1.5">
+            {utmParts.map((p) => (
+              <span key={p} className="text-xs px-2 py-0.5 rounded-md bg-[#eef6fb] text-[#0a7bb0] font-mono">{p}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {lead.comment && (
+        <div className="mt-3 text-sm text-[#646b85] bg-white border border-gray-100 rounded-lg px-3 py-2">
+          <span className="text-[#9AA6B2]">Комментарий: </span>{lead.comment}
+        </div>
+      )}
+
+      {lead.url && (
+        <div className="mt-3">
+          <a href={lead.url} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm text-[#029cda] hover:text-[#0280b5] font-medium">
+            Открыть в Битрикс24 →
+          </a>
+        </div>
+      )}
     </div>
   );
 }

@@ -87,6 +87,8 @@ function mskDateKey(iso: string): string {
   return `${msk.getUTCFullYear()}-${pad(msk.getUTCMonth() + 1)}-${pad(msk.getUTCDate())}`;
 }
 
+const toStr = (v: unknown): string => (v == null ? "" : String(v));
+
 const CRM_EMAIL = "CRM_EMAIL";
 
 /** Точный счётчик писем через поле total (без выкачивания строк). */
@@ -204,6 +206,142 @@ export async function getEmailActivity(
     recent,
     truncated: rows.length < total, // выгрузили не все строки за период
   };
+}
+
+/* ── Новые лиды из CRM (сайт + рассылки) ── */
+
+/** Origin портала из URL вебхука — для ссылок на карточки лидов. */
+function portalOrigin(): string {
+  try {
+    return new URL(webhookBase()).origin;
+  } catch {
+    return "";
+  }
+}
+
+/** Справочник crm.status.list (STATUS_ID → NAME) для стадий/источников. */
+async function loadStatusMap(
+  entityId: "STATUS" | "SOURCE"
+): Promise<Record<string, string>> {
+  const { result } = await bitrixCall<Array<{ STATUS_ID: string; NAME: string }>>(
+    "crm.status.list",
+    { filter: { ENTITY_ID: entityId } }
+  );
+  const map: Record<string, string> = {};
+  for (const r of result || []) map[r.STATUS_ID] = r.NAME;
+  return map;
+}
+
+/** Источники «Сайт» и «Рассылка» (при желании список легко расширить). */
+const LEAD_SOURCES = ["WEBFORM", "RC_GENERATOR"];
+
+const stripHtml = (s: string) =>
+  s.replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+
+export type LeadQuality = "converted" | "junk" | "in_progress";
+
+export interface LeadUtm {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  content?: string;
+  term?: string;
+}
+
+export interface CrmLead {
+  id: string;
+  title: string;
+  createdAt: string | null;
+  source: string;
+  sourceId: string;
+  sourceDescription: string | null;
+  utm: LeadUtm;
+  company: string | null;
+  contact: string | null;
+  comment: string | null;
+  status: string;
+  statusId: string;
+  quality: LeadQuality;
+  url: string;
+}
+
+export interface LeadsResult {
+  configured: boolean;
+  period: EmailPeriod;
+  total: number;
+  leads: CrmLead[];
+}
+
+function qualityOf(statusId: string, semantic: string): LeadQuality {
+  if (statusId === "CONVERTED" || semantic === "S") return "converted";
+  if (statusId === "JUNK" || semantic === "F") return "junk";
+  return "in_progress";
+}
+
+type RawLead = Record<string, unknown>;
+
+/** Новые лиды за период с источниками «Сайт» и «Рассылка». */
+export async function getRecentLeads(period: EmailPeriod): Promise<LeadsResult> {
+  const fromISO = mskDayStart(period);
+  const [statusMap, sourceMap] = await Promise.all([
+    loadStatusMap("STATUS"),
+    loadStatusMap("SOURCE"),
+  ]);
+  const origin = portalOrigin();
+
+  const rows: RawLead[] = [];
+  let start = 0;
+  let total = 0;
+  for (let page = 0; page < 10; page++) {
+    const { result, total: t, next } = await bitrixCall<RawLead[]>("crm.lead.list", {
+      filter: { ">=DATE_CREATE": fromISO, SOURCE_ID: LEAD_SOURCES },
+      select: [
+        "ID", "TITLE", "NAME", "LAST_NAME", "SECOND_NAME", "COMPANY_TITLE",
+        "DATE_CREATE", "SOURCE_ID", "SOURCE_DESCRIPTION", "STATUS_ID",
+        "STATUS_SEMANTIC_ID", "COMMENTS",
+        "UTM_SOURCE", "UTM_MEDIUM", "UTM_CAMPAIGN", "UTM_CONTENT", "UTM_TERM",
+      ],
+      order: { DATE_CREATE: "DESC" },
+      start,
+    });
+    if (typeof t === "number") total = t;
+    if (Array.isArray(result)) rows.push(...result);
+    if (typeof next !== "number") break;
+    start = next;
+  }
+
+  const leads: CrmLead[] = rows.map((r) => {
+    const statusId = toStr(r.STATUS_ID);
+    const semantic = toStr(r.STATUS_SEMANTIC_ID);
+    const contact =
+      [r.NAME, r.SECOND_NAME, r.LAST_NAME].map((x) => toStr(x).trim()).filter(Boolean).join(" ") ||
+      null;
+    const commentRaw = toStr(r.COMMENTS);
+    return {
+      id: toStr(r.ID),
+      title: toStr(r.TITLE) || "Без названия",
+      createdAt: (r.DATE_CREATE as string) ?? null,
+      source: sourceMap[toStr(r.SOURCE_ID)] || toStr(r.SOURCE_ID) || "—",
+      sourceId: toStr(r.SOURCE_ID),
+      sourceDescription: toStr(r.SOURCE_DESCRIPTION) || null,
+      utm: {
+        source: toStr(r.UTM_SOURCE) || undefined,
+        medium: toStr(r.UTM_MEDIUM) || undefined,
+        campaign: toStr(r.UTM_CAMPAIGN) || undefined,
+        content: toStr(r.UTM_CONTENT) || undefined,
+        term: toStr(r.UTM_TERM) || undefined,
+      },
+      company: toStr(r.COMPANY_TITLE) || null,
+      contact,
+      comment: commentRaw ? stripHtml(commentRaw) || null : null,
+      status: statusMap[statusId] || statusId || "—",
+      statusId,
+      quality: qualityOf(statusId, semantic),
+      url: origin ? `${origin}/crm/lead/details/${toStr(r.ID)}/` : "",
+    };
+  });
+
+  return { configured: true, period, total, leads };
 }
 
 export { BitrixError };
