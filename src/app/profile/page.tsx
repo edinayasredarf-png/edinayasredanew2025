@@ -9,6 +9,7 @@ import ProfileLayout from '@/components/ProfileLayout';
 import Image from 'next/image';
 import Link from 'next/link';
 import PressAdmin from '@/components/admin/PressAdmin';
+import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
 
 interface FavoritePost {
   id: string;
@@ -339,6 +340,13 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+
+          {/* Аналитика — только для администраторов */}
+          {profile.role === 'admin' && (
+            <div className="mb-6">
+              <AnalyticsDashboard />
+            </div>
+          )}
 
           {/* Избранные статьи */}
           <div className="bg-white rounded-2xl p-6">
