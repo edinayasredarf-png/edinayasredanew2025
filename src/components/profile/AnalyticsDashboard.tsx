@@ -141,6 +141,8 @@ export default function AnalyticsDashboard() {
   const [emailLoading, setEmailLoading] = useState(true);
   const [leads, setLeads] = useState<LeadsResponse | null>(null);
   const [leadsLoading, setLeadsLoading] = useState(true);
+  const [leadSource, setLeadSource] = useState<string>('all');
+  const [leadQuality, setLeadQuality] = useState<string>('all');
 
   const loadMetrika = useCallback(async (p: number) => {
     setMetrikaLoading(true);
@@ -178,6 +180,22 @@ export default function AnalyticsDashboard() {
   const es = email?.summary;
   const recent = email?.recent ?? [];
   const leadRows = leads?.leads ?? [];
+  const leadSources = Array.from(new Set(leadRows.map((l) => l.source)));
+  const filteredLeads = leadRows.filter(
+    (l) =>
+      (leadSource === 'all' || l.source === leadSource) &&
+      (leadQuality === 'all' || l.quality === leadQuality)
+  );
+  const downloadLeadsCsv = () => {
+    const csv = '﻿' + leadsToCsv(filteredLeads);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `leads_${period}d.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6 font-[Raleway]">
@@ -327,9 +345,56 @@ export default function AnalyticsDashboard() {
               <Metric label="Некачественные" value={fmt(leadRows.filter((l) => l.quality === 'junk').length)} />
               <Metric label="В работе" value={fmt(leadRows.filter((l) => l.quality === 'in_progress').length)} />
             </div>
-            <div className="space-y-3">
-              {leadRows.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+
+            {/* Фильтры + выгрузка */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <select
+                value={leadSource}
+                onChange={(e) => setLeadSource(e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-white"
+              >
+                <option value="all">Все источники</option>
+                {leadSources.map((sName) => (
+                  <option key={sName} value={sName}>{sName}</option>
+                ))}
+              </select>
+              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                {[
+                  { v: 'all', label: 'Все' },
+                  { v: 'converted', label: 'Качественные' },
+                  { v: 'in_progress', label: 'В работе' },
+                  { v: 'junk', label: 'Некачественные' },
+                ].map((o) => (
+                  <button
+                    key={o.v}
+                    onClick={() => setLeadQuality(o.v)}
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                      leadQuality === o.v ? 'bg-white text-[#029cda] shadow-sm font-medium' : 'text-[#7C8A9A] hover:text-[#313131]'
+                    }`}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={downloadLeadsCsv}
+                disabled={filteredLeads.length === 0}
+                className="ml-auto text-sm px-3 py-1.5 rounded-lg border border-[#029cda] text-[#029cda] hover:bg-[#029cda] hover:text-white transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#029cda]"
+              >
+                Выгрузить CSV
+              </button>
             </div>
+
+            {filteredLeads.length === 0 ? (
+              <p className="text-sm text-gray-400 py-2">Нет лидов под выбранные фильтры.</p>
+            ) : (
+              <>
+                <div className="text-xs text-[#9AA6B2] mb-3">Показано: {filteredLeads.length} из {leadRows.length}</div>
+                <div className="space-y-3">
+                  {filteredLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                </div>
+              </>
+            )}
           </>
         )}
       </Card>
@@ -343,6 +408,23 @@ const QUALITY: Record<LeadQuality, { label: string; cls: string }> = {
   junk: { label: 'Некачественный', cls: 'bg-[#fde8e8] text-[#d64545]' },
   in_progress: { label: 'В работе', cls: 'bg-[#e0f2fd] text-[#029cda]' },
 };
+
+function leadsToCsv(rows: CrmLead[]): string {
+  const headers = [
+    'ID', 'Дата создания', 'Источник', 'Стадия', 'Качество', 'Название',
+    'Компания', 'Контакт', 'UTM source', 'UTM medium', 'UTM campaign',
+    'UTM content', 'UTM term', 'Комментарий', 'Ссылка',
+  ];
+  const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = rows.map((l) =>
+    [
+      l.id, l.createdAt, l.source, l.status, QUALITY[l.quality].label, l.title,
+      l.company, l.contact, l.utm.source, l.utm.medium, l.utm.campaign,
+      l.utm.content, l.utm.term, l.comment, l.url,
+    ].map(esc).join(',')
+  );
+  return [headers.map(esc).join(','), ...lines].join('\r\n');
+}
 
 function fmtDateTime(d: string | null): string {
   if (!d) return '—';
