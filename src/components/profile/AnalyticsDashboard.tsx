@@ -42,11 +42,29 @@ interface CrmLead {
 }
 interface LeadsResponse { configured: boolean; error?: string; total?: number; leads?: CrmLead[] }
 
-const PERIODS = [
-  { value: 7, label: '7 дней' },
-  { value: 30, label: '30 дней' },
-  { value: 90, label: '90 дней' },
+const DATE_TABS = [
+  { value: 'today', label: 'Сегодня' },
+  { value: 'week', label: 'Неделя' },
+  { value: 'month', label: 'Месяц' },
+  { value: 'custom', label: 'Выбранный период' },
 ] as const;
+type DateMode = (typeof DATE_TABS)[number]['value'];
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const toDateStr = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const todayDate = () => toDateStr(new Date());
+const daysAgoDate = (n: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return toDateStr(d);
+};
+
+function rangeForMode(mode: DateMode, customFrom: string, customTo: string): { from: string; to: string } {
+  if (mode === 'today') return { from: todayDate(), to: todayDate() };
+  if (mode === 'week') return { from: daysAgoDate(6), to: todayDate() };
+  if (mode === 'month') return { from: daysAgoDate(29), to: todayDate() };
+  return { from: customFrom, to: customTo };
+}
 
 /* ── Форматирование ── */
 const nf = new Intl.NumberFormat('ru-RU');
@@ -133,7 +151,9 @@ function EmailChart({ points }: { points: EmailPoint[] }) {
 }
 
 export default function AnalyticsDashboard() {
-  const [period, setPeriod] = useState<number>(30);
+  const [dateMode, setDateMode] = useState<DateMode>('month');
+  const [customFrom, setCustomFrom] = useState<string>(daysAgoDate(29));
+  const [customTo, setCustomTo] = useState<string>(todayDate());
 
   const [metrika, setMetrika] = useState<MetrikaResponse | null>(null);
   const [metrikaLoading, setMetrikaLoading] = useState(true);
@@ -143,38 +163,46 @@ export default function AnalyticsDashboard() {
   const [leadsLoading, setLeadsLoading] = useState(true);
   const [leadSource, setLeadSource] = useState<string>('all');
   const [leadQuality, setLeadQuality] = useState<string>('all');
+  const [leadsOpen, setLeadsOpen] = useState(false);
 
-  const loadMetrika = useCallback(async (p: number) => {
+  const loadMetrika = useCallback(async (from: string, to: string) => {
     setMetrikaLoading(true);
     try {
-      const res = await fetch(`/api/analytics/metrika?period=${p}`, { credentials: 'include' });
+      const res = await fetch(`/api/analytics/metrika?from=${from}&to=${to}`, { credentials: 'include' });
       setMetrika(await res.json());
     } catch {
       setMetrika({ configured: true, error: 'Не удалось загрузить данные Метрики' });
     } finally { setMetrikaLoading(false); }
   }, []);
 
-  const loadEmail = useCallback(async (p: number) => {
+  const loadEmail = useCallback(async (from: string, to: string) => {
     setEmailLoading(true);
     try {
-      const res = await fetch(`/api/analytics/email-activity?period=${p}`, { credentials: 'include' });
+      const res = await fetch(`/api/analytics/email-activity?from=${from}&to=${to}`, { credentials: 'include' });
       setEmail(await res.json());
     } catch {
       setEmail({ configured: true, error: 'Не удалось загрузить данные Битрикс24' });
     } finally { setEmailLoading(false); }
   }, []);
 
-  const loadLeads = useCallback(async (p: number) => {
+  const loadLeads = useCallback(async (from: string, to: string) => {
     setLeadsLoading(true);
     try {
-      const res = await fetch(`/api/analytics/leads?period=${p}`, { credentials: 'include' });
+      const res = await fetch(`/api/analytics/leads?from=${from}&to=${to}`, { credentials: 'include' });
       setLeads(await res.json());
     } catch {
       setLeads({ configured: true, error: 'Не удалось загрузить лиды' });
     } finally { setLeadsLoading(false); }
   }, []);
 
-  useEffect(() => { loadMetrika(period); loadEmail(period); loadLeads(period); }, [period, loadMetrika, loadEmail, loadLeads]);
+  const { from, to } = rangeForMode(dateMode, customFrom, customTo);
+
+  useEffect(() => {
+    if (!from || !to) return;
+    loadMetrika(from, to);
+    loadEmail(from, to);
+    loadLeads(from, to);
+  }, [from, to, loadMetrika, loadEmail, loadLeads]);
 
   const s = metrika?.summary;
   const es = email?.summary;
@@ -192,29 +220,51 @@ export default function AnalyticsDashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `leads_${period}d.csv`;
+    a.download = `leads_${from}_${to}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
     <div className="space-y-6 font-[Raleway]">
-      {/* ── Заголовок + период ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-[#313131]">Аналитика</h2>
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-          {PERIODS.map((p) => (
-            <button
-              key={p.value}
-              onClick={() => setPeriod(p.value)}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                period === p.value ? 'bg-white text-[#029cda] shadow-sm font-medium' : 'text-[#7C8A9A] hover:text-[#313131]'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+      {/* ── Заголовок + вкладки дат ── */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-bold text-[#313131]">Аналитика</h2>
+          <div className="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1">
+            {DATE_TABS.map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setDateMode(t.value)}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  dateMode === t.value ? 'bg-white text-[#029cda] shadow-sm font-medium' : 'text-[#7C8A9A] hover:text-[#313131]'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
+        {dateMode === 'custom' && (
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <input
+              type="date"
+              value={customFrom}
+              max={customTo || todayDate()}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-white"
+            />
+            <span className="text-[#9AA6B2] text-sm">—</span>
+            <input
+              type="date"
+              value={customTo}
+              min={customFrom}
+              max={todayDate()}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-white"
+            />
+          </div>
+        )}
       </div>
 
       {/* ── Посещаемость сайта ── */}
@@ -346,6 +396,15 @@ export default function AnalyticsDashboard() {
               <Metric label="В работе" value={fmt(leadRows.filter((l) => l.quality === 'in_progress').length)} />
             </div>
 
+            <button
+              onClick={() => setLeadsOpen((v) => !v)}
+              className="mb-4 text-sm px-4 py-2 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] transition-colors"
+            >
+              {leadsOpen ? 'Скрыть лиды' : `Посмотреть лиды (${leadRows.length})`}
+            </button>
+
+            {leadsOpen && (
+            <>
             {/* Фильтры + выгрузка */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <select
@@ -394,6 +453,8 @@ export default function AnalyticsDashboard() {
                   {filteredLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
                 </div>
               </>
+            )}
+            </>
             )}
           </>
         )}

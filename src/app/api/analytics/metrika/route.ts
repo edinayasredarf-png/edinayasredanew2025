@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
-import {
-  getMetrikaOverview,
-  metrikaConfigured,
-  MetrikaPeriod,
-} from "@/lib/server/yandexMetrika";
+import { getMetrikaOverview, metrikaConfigured } from "@/lib/server/yandexMetrika";
+import { parseRange } from "@/lib/server/dateRange";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const ALLOWED_PERIODS: MetrikaPeriod[] = [7, 30, 90];
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,13 +21,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const raw = Number(request.nextUrl.searchParams.get("period"));
-  const period: MetrikaPeriod = ALLOWED_PERIODS.includes(raw as MetrikaPeriod)
-    ? (raw as MetrikaPeriod)
-    : 30;
+  const { from, to } = parseRange(
+    request.nextUrl.searchParams.get("from"),
+    request.nextUrl.searchParams.get("to")
+  );
 
   try {
-    const overview = await getMetrikaOverview(period);
+    const overview = await getMetrikaOverview(from, to);
     return NextResponse.json({ configured: true, ...overview });
   } catch (e) {
     const status = (e as { status?: number }).status ?? 502;

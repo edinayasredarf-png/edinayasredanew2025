@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
-import {
-  getEmailActivity,
-  bitrixConfigured,
-  EmailPeriod,
-} from "@/lib/server/bitrix";
+import { getEmailActivity, bitrixConfigured } from "@/lib/server/bitrix";
+import { parseRange } from "@/lib/server/dateRange";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const ALLOWED: EmailPeriod[] = [7, 30, 90];
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,13 +21,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const raw = Number(request.nextUrl.searchParams.get("period"));
-  const period: EmailPeriod = ALLOWED.includes(raw as EmailPeriod)
-    ? (raw as EmailPeriod)
-    : 30;
+  const { from, to } = parseRange(
+    request.nextUrl.searchParams.get("from"),
+    request.nextUrl.searchParams.get("to")
+  );
 
   try {
-    const data = await getEmailActivity(period);
+    const data = await getEmailActivity(from, to);
     return NextResponse.json(data);
   } catch (e) {
     const status = (e as { status?: number }).status ?? 502;

@@ -21,8 +21,6 @@ function counterId(): string {
   return (process.env.YANDEX_METRIKA_COUNTER || DEFAULT_COUNTER).trim();
 }
 
-export type MetrikaPeriod = 7 | 30 | 90;
-
 export interface MetrikaSummary {
   visits: number;
   users: number;
@@ -44,7 +42,8 @@ export interface MetrikaNamedValue {
 }
 
 export interface MetrikaOverview {
-  period: MetrikaPeriod;
+  from: string;
+  to: string;
   counter: string;
   summary: MetrikaSummary;
   timeline: MetrikaTimePoint[];
@@ -90,20 +89,17 @@ async function metrikaFetch(
   return (await res.json()) as Record<string, unknown>;
 }
 
-// «Последние N дней» включая сегодня: N-1 дней назад → сегодня (как пресеты Метрики).
-const dateFrom = (period: MetrikaPeriod) => `${period - 1}daysAgo`;
-
 function num(v: unknown): number {
   const n = typeof v === "number" ? v : Number(v);
   return Number.isFinite(n) ? n : 0;
 }
 
-async function fetchSummary(period: MetrikaPeriod): Promise<MetrikaSummary> {
+async function fetchSummary(from: string, to: string): Promise<MetrikaSummary> {
   const data = await metrikaFetch("", {
     metrics:
       "ym:s:visits,ym:s:users,ym:s:pageviews,ym:s:bounceRate,ym:s:avgVisitDurationSeconds",
-    date1: dateFrom(period),
-    date2: "today",
+    date1: from,
+    date2: to,
   });
   const totals = (data.totals as unknown[])?.map(num) ?? [];
   return {
@@ -115,11 +111,11 @@ async function fetchSummary(period: MetrikaPeriod): Promise<MetrikaSummary> {
   };
 }
 
-async function fetchTimeline(period: MetrikaPeriod): Promise<MetrikaTimePoint[]> {
+async function fetchTimeline(from: string, to: string): Promise<MetrikaTimePoint[]> {
   const data = await metrikaFetch("/bytime", {
     metrics: "ym:s:visits,ym:s:users",
-    date1: dateFrom(period),
-    date2: "today",
+    date1: from,
+    date2: to,
     group: "day",
   });
 
@@ -137,15 +133,16 @@ async function fetchTimeline(period: MetrikaPeriod): Promise<MetrikaTimePoint[]>
 }
 
 async function fetchDimension(
-  period: MetrikaPeriod,
+  from: string,
+  to: string,
   dimension: string,
   limit = 8
 ): Promise<MetrikaNamedValue[]> {
   const data = await metrikaFetch("", {
     metrics: "ym:s:visits",
     dimensions: dimension,
-    date1: dateFrom(period),
-    date2: "today",
+    date1: from,
+    date2: to,
     sort: "-ym:s:visits",
     limit: String(limit),
   });
@@ -168,16 +165,17 @@ async function fetchDimension(
 }
 
 export async function getMetrikaOverview(
-  period: MetrikaPeriod
+  from: string,
+  to: string
 ): Promise<MetrikaOverview> {
   const [summary, timeline, sources, topPages] = await Promise.all([
-    fetchSummary(period),
-    fetchTimeline(period),
-    fetchDimension(period, "ym:s:lastTrafficSource"),
-    fetchDimension(period, "ym:s:startURLPath"),
+    fetchSummary(from, to),
+    fetchTimeline(from, to),
+    fetchDimension(from, to, "ym:s:lastTrafficSource"),
+    fetchDimension(from, to, "ym:s:startURLPath"),
   ]);
 
-  return { period, counter: counterId(), summary, timeline, sources, topPages };
+  return { from, to, counter: counterId(), summary, timeline, sources, topPages };
 }
 
 export { MetrikaError };

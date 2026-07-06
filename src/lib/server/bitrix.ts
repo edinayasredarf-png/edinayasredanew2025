@@ -69,14 +69,31 @@ export async function bitrixCall<T = unknown>(
 const pad = (n: number) => String(n).padStart(2, "0");
 const MSK_OFFSET_MS = 3 * 3600 * 1000;
 
-/** Начало дня (МСК) `daysAgo` дней назад в ISO 8601 c оффсетом +03:00. */
-function mskDayStart(daysAgo: number): string {
-  const msk = new Date(Date.now() + MSK_OFFSET_MS);
-  msk.setUTCDate(msk.getUTCDate() - daysAgo);
-  const y = msk.getUTCFullYear();
-  const m = msk.getUTCMonth() + 1;
-  const d = msk.getUTCDate();
-  return `${y}-${pad(m)}-${pad(d)}T00:00:00+03:00`;
+/** Начало дня (МСК) для даты YYYY-MM-DD в ISO 8601 c оффсетом +03:00. */
+function dayStartISO(dateStr: string): string {
+  return `${dateStr}T00:00:00+03:00`;
+}
+
+/** Начало следующего дня (МСК) — для верхней границы «< CREATED». */
+function nextDayStartISO(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + 1));
+  return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}T00:00:00+03:00`;
+}
+
+/** Список дней YYYY-MM-DD от from до to включительно (с ограничением). */
+function enumerateDays(from: string, to: string): string[] {
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const [ty, tm, td] = to.split("-").map(Number);
+  let cur = Date.UTC(fy, fm - 1, fd);
+  const end = Date.UTC(ty, tm - 1, td);
+  const days: string[] = [];
+  while (cur <= end && days.length < 400) {
+    const dt = new Date(cur);
+    days.push(`${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`);
+    cur += 86400000;
+  }
+  return days;
 }
 
 /** YYYY-MM-DD (МСК) из ISO-даты Битрикса (CREATED). */
@@ -94,11 +111,13 @@ const CRM_EMAIL = "CRM_EMAIL";
 /** Точный счётчик писем через поле total (без выкачивания строк). */
 async function countEmails(
   fromISO: string,
+  toExclISO: string,
   direction?: "1" | "2"
 ): Promise<number> {
   const filter: Record<string, unknown> = {
     PROVIDER_ID: CRM_EMAIL,
     ">=CREATED": fromISO,
+    "<CREATED": toExclISO,
   };
   if (direction) filter.DIRECTION = direction;
 
@@ -117,13 +136,17 @@ interface RawActivity {
   DIRECTION?: string | number;
 }
 
-/** Страницы crm.activity.list за период (с ограничением по числу страниц). */
-async function fetchEmailRows(fromISO: string, maxPages = 20): Promise<RawActivity[]> {
+/** Страницы crm.activity.list за диапазон (с ограничением по числу страниц). */
+async function fetchEmailRows(
+  fromISO: string,
+  toExclISO: string,
+  maxPages = 20
+): Promise<RawActivity[]> {
   const rows: RawActivity[] = [];
   let start = 0;
   for (let page = 0; page < maxPages; page++) {
     const { result, next } = await bitrixCall<RawActivity[]>("crm.activity.list", {
-      filter: { PROVIDER_ID: CRM_EMAIL, ">=CREATED": fromISO },
+      filter: { PROVIDER_ID: CRM_EMAIL, ">=CREATED": fromISO, "<CREATED": toExclISO },
       select: ["ID", "SUBJECT", "CREATED", "DIRECTION"],
       order: { CREATED: "DESC" },
       start,
@@ -134,8 +157,6 @@ async function fetchEmailRows(fromISO: string, maxPages = 20): Promise<RawActivi
   }
   return rows;
 }
-
-export type EmailPeriod = 7 | 30 | 90;
 
 export interface EmailActivitySummary {
   total: number;
@@ -155,31 +176,33 @@ export interface EmailRecentItem {
 }
 export interface EmailActivityResult {
   configured: boolean;
-  period: EmailPeriod;
+  from: string;
+  to: string;
   summary: EmailActivitySummary;
   timeline: EmailActivityPoint[];
   recent: EmailRecentItem[];
   truncated: boolean; // true, если строк больше, чем успели выгрузить
 }
 
-/** Итоговая сводка email-активности CRM за период. */
+/** Итоговая сводка email-активности CRM за диапазон дат. */
 export async function getEmailActivity(
-  period: EmailPeriod
+  from: string,
+  to: string
 ): Promise<EmailActivityResult> {
-  const fromISO = mskDayStart(period);
+  const fromISO = dayStartISO(from);
+  const toExclISO = nextDayStartISO(to);
 
   // Точные счётчики — независимо от объёма
   const [total, sent, received, rows] = await Promise.all([
-    countEmails(fromISO),
-    countEmails(fromISO, "2"),
-    countEmails(fromISO, "1"),
-    fetchEmailRows(fromISO),
+    countEmails(fromISO, toExclISO),
+    countEmails(fromISO, toExclISO, "2"),
+    countEmails(fromISO, toExclISO, "1"),
+    fetchEmailRows(fromISO, toExclISO),
   ]);
 
-  // Заготовка дней периода (МСК) с нулями
+  // Заготовка дней диапазона (МСК) с нулями
   const buckets = new Map<string, EmailActivityPoint>();
-  for (let i = period - 1; i >= 0; i--) {
-    const key = mskDateKey(mskDayStart(i));
+  for (const key of enumerateDays(from, to)) {
     buckets.set(key, { date: key, sent: 0, received: 0 });
   }
 
@@ -200,7 +223,8 @@ export async function getEmailActivity(
 
   return {
     configured: true,
-    period,
+    from,
+    to,
     summary: { total, sent, received },
     timeline: Array.from(buckets.values()),
     recent,
@@ -267,7 +291,8 @@ export interface CrmLead {
 
 export interface LeadsResult {
   configured: boolean;
-  period: EmailPeriod;
+  from: string;
+  to: string;
   total: number;
   leads: CrmLead[];
 }
@@ -280,9 +305,10 @@ function qualityOf(statusId: string, semantic: string): LeadQuality {
 
 type RawLead = Record<string, unknown>;
 
-/** Новые лиды за период с источниками «Сайт» и «Рассылка». */
-export async function getRecentLeads(period: EmailPeriod): Promise<LeadsResult> {
-  const fromISO = mskDayStart(period);
+/** Новые лиды за диапазон дат с источниками «Сайт» и «Рассылка». */
+export async function getRecentLeads(from: string, to: string): Promise<LeadsResult> {
+  const fromISO = dayStartISO(from);
+  const toExclISO = nextDayStartISO(to);
   const [statusMap, sourceMap] = await Promise.all([
     loadStatusMap("STATUS"),
     loadStatusMap("SOURCE"),
@@ -294,7 +320,7 @@ export async function getRecentLeads(period: EmailPeriod): Promise<LeadsResult> 
   let total = 0;
   for (let page = 0; page < 10; page++) {
     const { result, total: t, next } = await bitrixCall<RawLead[]>("crm.lead.list", {
-      filter: { ">=DATE_CREATE": fromISO, SOURCE_ID: LEAD_SOURCES },
+      filter: { ">=DATE_CREATE": fromISO, "<DATE_CREATE": toExclISO, SOURCE_ID: LEAD_SOURCES },
       select: [
         "ID", "TITLE", "NAME", "LAST_NAME", "SECOND_NAME", "COMPANY_TITLE",
         "DATE_CREATE", "SOURCE_ID", "SOURCE_DESCRIPTION", "STATUS_ID",
@@ -341,7 +367,7 @@ export async function getRecentLeads(period: EmailPeriod): Promise<LeadsResult> 
     };
   });
 
-  return { configured: true, period, total, leads };
+  return { configured: true, from, to, total, leads };
 }
 
 export { BitrixError };
