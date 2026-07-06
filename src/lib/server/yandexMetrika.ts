@@ -90,7 +90,8 @@ async function metrikaFetch(
   return (await res.json()) as Record<string, unknown>;
 }
 
-const dateFrom = (period: MetrikaPeriod) => `${period}daysAgo`;
+// «Последние N дней» включая сегодня: N-1 дней назад → сегодня (как пресеты Метрики).
+const dateFrom = (period: MetrikaPeriod) => `${period - 1}daysAgo`;
 
 function num(v: unknown): number {
   const n = typeof v === "number" ? v : Number(v);
