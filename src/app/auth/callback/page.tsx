@@ -11,6 +11,26 @@ function AuthCallbackInner() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Яндекс ID (YaAuthSuggest) с response_type=token открывает эту страницу как
+    // «token-страницу»: токен приходит в hash-фрагменте, и его нужно вернуть в SDK
+    // через скрипт Яндекса, а не искать ?code (которого при token-флоу нет).
+    if (typeof window !== 'undefined') {
+      const isYandex = new URLSearchParams(window.location.search).get('provider') === 'yandex';
+      const hasToken = /(?:access_)?token=/.test(window.location.hash);
+      if (isYandex && hasToken) {
+        const s = document.createElement('script');
+        s.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js';
+        s.onload = () => {
+          try {
+            (window as unknown as { YaSendSuggestToken?: (o: string, p?: object) => void })
+              .YaSendSuggestToken?.(window.location.origin, {});
+          } catch { /* скрипт отправляет токен сам */ }
+        };
+        document.head.appendChild(s);
+        return; // не выполняем логику code-флоу
+      }
+    }
+
     const handle = async () => {
       const providerParam = searchParams.get('provider');
       const providerStored = typeof window !== 'undefined' ? localStorage.getItem('oauth_provider') : null;
