@@ -6,6 +6,7 @@ import { sb_listPosts } from '@/lib/blogStore';
 import { sb_listAllComments } from '@/lib/commentsStore';
 import UtmGenerator from './UtmGenerator';
 import PressAdmin from './PressAdmin';
+import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
 
 interface AdminStats {
   totalPosts: number;
@@ -27,7 +28,9 @@ export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'utm' | 'press'>('dashboard');
+  const [activeTab, setActiveTab] = useState<
+    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press'
+  >('dashboard');
 
   useEffect(() => {
     const checkAuth = () => {
@@ -124,44 +127,61 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Админ-панель</h1>
-          <p className="mt-2 text-gray-600">Управление контентом и пользователями</p>
+    <div className="min-h-screen bg-[#F6F7FB]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-6">
+        {/* Левое меню */}
+        <aside className="lg:w-64 shrink-0">
+          <div className="bg-white rounded-2xl p-3 lg:sticky lg:top-6">
+            <h1 className="px-3 pt-2 pb-3 text-lg font-bold text-gray-900">Админ-панель</h1>
+            {([
+              { group: 'Контент', items: [
+                { id: 'dashboard', label: 'Дашборд' },
+                { id: 'press', label: 'СМИ о нас' },
+                { id: 'utm', label: 'UTM-метки' },
+              ] },
+              { group: 'Аналитика', items: [
+                { id: 'metrika', label: 'Посещаемость' },
+                { id: 'email', label: 'Email-активность' },
+                { id: 'leads', label: 'Лиды' },
+                { id: 'social', label: 'Соцсети' },
+              ] },
+            ] as const).map((section) => (
+              <div key={section.group} className="mb-2">
+                <div className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-[#9AA6B2]">
+                  {section.group}
+                </div>
+                {section.items.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      activeTab === item.id ? 'bg-[#029cda]/10 text-[#029cda] font-medium' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Контент */}
+        <div className="flex-1 min-w-0">
           {status && (
-            <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+            <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
               <p className="text-blue-800">{status}</p>
             </div>
           )}
-        </div>
 
-        {/* Вкладки */}
-        <div className="flex gap-1 mb-8 border-b border-gray-200">
-          {([
-            { id: 'dashboard', label: 'Дашборд' },
-            { id: 'utm',       label: 'UTM-метки' },
-            { id: 'press',     label: 'СМИ о нас' },
-          ] as const).map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors -mb-px ${
-                activeTab === tab.id
-                  ? 'bg-white border border-b-white border-gray-200 text-[#029cda]'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+          {activeTab === 'utm' && <UtmGenerator />}
+          {activeTab === 'press' && <PressAdmin />}
+          {(activeTab === 'metrika' || activeTab === 'email' || activeTab === 'leads' || activeTab === 'social') && (
+            <AnalyticsDashboard only={activeTab} />
+          )}
 
-        {activeTab === 'utm' && <UtmGenerator />}
-        {activeTab === 'press' && <PressAdmin />}
-
-        {activeTab === 'dashboard' && (<>
+          {activeTab === 'dashboard' && (<>
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -250,6 +270,7 @@ export default function AdminPanel() {
           </div>
         </div>
         </>)}
+        </div>
       </div>
     </div>
   );

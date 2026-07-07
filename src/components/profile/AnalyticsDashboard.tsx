@@ -42,6 +42,19 @@ interface CrmLead {
 }
 interface LeadsResponse { configured: boolean; error?: string; total?: number; leads?: CrmLead[] }
 
+interface SocialMetric { label: string; value: string }
+interface SocialPlatform {
+  key: 'vk' | 'max' | 'dzen' | 'instagram';
+  name: string;
+  configured: boolean;
+  url?: string;
+  note?: string;
+  metrics?: SocialMetric[];
+}
+interface SocialResponse { configured: boolean; error?: string; platforms?: SocialPlatform[] }
+
+type AnalyticsView = 'metrika' | 'email' | 'leads' | 'social';
+
 const DATE_TABS = [
   { value: 'today', label: 'Сегодня' },
   { value: 'week', label: 'Неделя' },
@@ -150,7 +163,9 @@ function EmailChart({ points }: { points: EmailPoint[] }) {
   );
 }
 
-export default function AnalyticsDashboard() {
+export default function AnalyticsDashboard({ only }: { only?: AnalyticsView }) {
+  const show = (v: AnalyticsView) => !only || only === v;
+
   const [dateMode, setDateMode] = useState<DateMode>('month');
   const [customFrom, setCustomFrom] = useState<string>(daysAgoDate(29));
   const [customTo, setCustomTo] = useState<string>(todayDate());
@@ -161,48 +176,61 @@ export default function AnalyticsDashboard() {
   const [emailLoading, setEmailLoading] = useState(true);
   const [leads, setLeads] = useState<LeadsResponse | null>(null);
   const [leadsLoading, setLeadsLoading] = useState(true);
+  const [socialData, setSocialData] = useState<SocialResponse | null>(null);
+  const [socialLoading, setSocialLoading] = useState(true);
   const [leadSource, setLeadSource] = useState<string>('all');
   const [leadQuality, setLeadQuality] = useState<string>('all');
   const [leadsOpen, setLeadsOpen] = useState(false);
 
-  const loadMetrika = useCallback(async (from: string, to: string) => {
+  const loadMetrika = useCallback(async (f: string, t: string) => {
     setMetrikaLoading(true);
     try {
-      const res = await fetch(`/api/analytics/metrika?from=${from}&to=${to}`, { credentials: 'include' });
+      const res = await fetch(`/api/analytics/metrika?from=${f}&to=${t}`, { credentials: 'include' });
       setMetrika(await res.json());
     } catch {
       setMetrika({ configured: true, error: 'Не удалось загрузить данные Метрики' });
     } finally { setMetrikaLoading(false); }
   }, []);
 
-  const loadEmail = useCallback(async (from: string, to: string) => {
+  const loadEmail = useCallback(async (f: string, t: string) => {
     setEmailLoading(true);
     try {
-      const res = await fetch(`/api/analytics/email-activity?from=${from}&to=${to}`, { credentials: 'include' });
+      const res = await fetch(`/api/analytics/email-activity?from=${f}&to=${t}`, { credentials: 'include' });
       setEmail(await res.json());
     } catch {
       setEmail({ configured: true, error: 'Не удалось загрузить данные Битрикс24' });
     } finally { setEmailLoading(false); }
   }, []);
 
-  const loadLeads = useCallback(async (from: string, to: string) => {
+  const loadLeads = useCallback(async (f: string, t: string) => {
     setLeadsLoading(true);
     try {
-      const res = await fetch(`/api/analytics/leads?from=${from}&to=${to}`, { credentials: 'include' });
+      const res = await fetch(`/api/analytics/leads?from=${f}&to=${t}`, { credentials: 'include' });
       setLeads(await res.json());
     } catch {
       setLeads({ configured: true, error: 'Не удалось загрузить лиды' });
     } finally { setLeadsLoading(false); }
   }, []);
 
+  const loadSocial = useCallback(async (f: string, t: string) => {
+    setSocialLoading(true);
+    try {
+      const res = await fetch(`/api/analytics/social?from=${f}&to=${t}`, { credentials: 'include' });
+      setSocialData(await res.json());
+    } catch {
+      setSocialData({ configured: true, error: 'Не удалось загрузить данные соцсетей' });
+    } finally { setSocialLoading(false); }
+  }, []);
+
   const { from, to } = rangeForMode(dateMode, customFrom, customTo);
 
   useEffect(() => {
     if (!from || !to) return;
-    loadMetrika(from, to);
-    loadEmail(from, to);
-    loadLeads(from, to);
-  }, [from, to, loadMetrika, loadEmail, loadLeads]);
+    if (!only || only === 'metrika') loadMetrika(from, to);
+    if (!only || only === 'email') loadEmail(from, to);
+    if (!only || only === 'leads') loadLeads(from, to);
+    if (!only || only === 'social') loadSocial(from, to);
+  }, [from, to, only, loadMetrika, loadEmail, loadLeads, loadSocial]);
 
   const s = metrika?.summary;
   const es = email?.summary;
@@ -268,6 +296,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       {/* ── Посещаемость сайта ── */}
+      {show('metrika') && (
       <Card>
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-[#313131]">Посещаемость сайта</h3>
@@ -312,8 +341,10 @@ export default function AnalyticsDashboard() {
           </>
         ) : null}
       </Card>
+      )}
 
       {/* ── Email-активность (Битрикс24 CRM) ── */}
+      {show('email') && (
       <Card>
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-[#313131]">Email-активность</h3>
@@ -373,8 +404,10 @@ export default function AnalyticsDashboard() {
           </>
         ) : null}
       </Card>
+      )}
 
       {/* ── Новые лиды (Битрикс24 CRM) ── */}
+      {show('leads') && (
       <Card>
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-[#313131]">Новые лиды</h3>
@@ -459,7 +492,60 @@ export default function AnalyticsDashboard() {
           </>
         )}
       </Card>
+      )}
+
+      {show('social') && <SocialPanel data={socialData} loading={socialLoading} />}
     </div>
+  );
+}
+
+/* ── Панель соцсетей ── */
+function SocialPanel({ data, loading }: { data: SocialResponse | null; loading: boolean }) {
+  const platforms = data?.platforms ?? [];
+  return (
+    <Card>
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-[#313131]">Соцсети</h3>
+        <p className="text-sm text-[#7C8A9A]">ВКонтакте, MAX, Дзен, Instagram</p>
+      </div>
+
+      {loading ? <Spinner /> : data?.configured === false ? (
+        <Notice>Соцсети не настроены. См. переменные окружения в описании (<code className="font-mono">VK_STATS_TOKEN</code> и др.).</Notice>
+      ) : data?.error ? (
+        <Notice>Ошибка: {data.error}</Notice>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {platforms.map((p) => (
+            <div key={p.key} className="rounded-xl border border-gray-100 bg-[#F9FAFB] p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[#313131] font-semibold">{p.name}</span>
+                {!p.configured && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-[#9AA6B2]">не подключено</span>
+                )}
+              </div>
+              {p.configured && p.metrics && p.metrics.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {p.metrics.map((m) => (
+                    <div key={m.label}>
+                      <div className="text-xl font-bold text-[#313131]">{m.value}</div>
+                      <div className="text-xs text-[#7C8A9A] mt-0.5">{m.label}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[#9AA6B2]">{p.note || 'Нет данных.'}</p>
+              )}
+              {p.url && (
+                <a href={p.url} target="_blank" rel="noopener noreferrer"
+                  className="inline-block mt-3 text-sm text-[#029cda] hover:text-[#0280b5] font-medium">
+                  Открыть страницу →
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 
