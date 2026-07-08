@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   experimental: {
     turbo: undefined,
   },
+  // включаем шрифт письма в серверную функцию генерации PDF
+  outputFileTracingIncludes: {
+    '/api/letters/generate': ['./public/fonts/involve/**'],
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },

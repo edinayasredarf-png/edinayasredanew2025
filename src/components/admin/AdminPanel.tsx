@@ -7,6 +7,7 @@ import { sb_listAllComments } from '@/lib/commentsStore';
 import UtmGenerator from './UtmGenerator';
 import PressAdmin from './PressAdmin';
 import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
+import LettersAdmin from './LettersAdmin';
 
 interface AdminStats {
   totalPosts: number;
@@ -29,7 +30,7 @@ export default function AdminPanel() {
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press'
+    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters'
   >('dashboard');
 
   useEffect(() => {
@@ -138,6 +139,7 @@ export default function AdminPanel() {
                 { id: 'dashboard', label: 'Дашборд' },
                 { id: 'press', label: 'СМИ о нас' },
                 { id: 'utm', label: 'UTM-метки' },
+                { id: 'letters', label: 'Письма' },
               ] },
               { group: 'Аналитика', items: [
                 { id: 'metrika', label: 'Посещаемость' },
@@ -177,6 +179,7 @@ export default function AdminPanel() {
 
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
+          {activeTab === 'letters' && <LettersAdmin />}
           {(activeTab === 'metrika' || activeTab === 'email' || activeTab === 'leads' || activeTab === 'social') && (
             <AnalyticsDashboard only={activeTab} />
           )}
