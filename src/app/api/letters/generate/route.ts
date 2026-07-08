@@ -5,6 +5,22 @@ import { dbGetTemplate } from "@/lib/server/letterTemplatesDb";
 import { renderLetterPdf } from "@/lib/server/letterPdf";
 import { buildTags, mergeTags, safeFilename, RecipientRow } from "@/lib/server/letterMerge";
 import { computeRecipient } from "@/lib/server/nameTransforms";
+import { dbGetEditorMedia } from "@/lib/server/dataDb";
+
+/** /api/media/<id> → data-URI (движок PDF не умеет относительные URL). */
+async function resolveImage(url?: string): Promise<string | undefined> {
+  const u = (url || "").trim();
+  if (!u) return undefined;
+  const m = /^\/api\/media\/([\w-]+)$/.exec(u);
+  if (!m) return u; // абсолютный URL — как есть
+  try {
+    const media = await dbGetEditorMedia(m[1]);
+    if (!media) return undefined;
+    return `data:${media.mimeType};base64,${media.data.toString("base64")}`;
+  } catch {
+    return undefined;
+  }
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,12 +57,18 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // картинки одинаковы для всех получателей — резолвим один раз
+    const [headerImage, signatureImage] = await Promise.all([
+      resolveImage(template.header_image),
+      resolveImage(template.signature_image),
+    ]);
+
     const files = await Promise.all(
       recipients.map(async (r) => {
         const tags = buildTags(r);
         const c = computeRecipient(r.fio, r.position);
         const buffer = await renderLetterPdf({
-          headerImage: template.header_image || undefined,
+          headerImage,
           number: r.number || "",
           date: r.date || "",
           position: r.position || "",
@@ -54,7 +76,7 @@ export async function POST(request: NextRequest) {
           greeting: `${c.address} ${c.io}!`,
           body: mergeTags(template.body, tags),
           signerRole: template.signer_role || "",
-          signatureImage: template.signature_image || undefined,
+          signatureImage,
           signerName: template.signer_name || "",
           executor: mergeTags(template.executor, tags),
         });

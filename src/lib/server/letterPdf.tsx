@@ -58,8 +58,10 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   footerText: { fontSize: 10, color: "#333", lineHeight: 1.25 },
+  topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 },
+  reqCol: {},
   req: { fontSize: 13, marginBottom: 2 },
-  addressee: { alignSelf: "flex-end", width: "55%", marginTop: 8, marginBottom: 16 },
+  addresseeCol: { width: "52%" },
   addresseeText: { fontSize: 13 },
   greeting: { textAlign: "center", marginBottom: 12, fontSize: 14 },
   para: { textAlign: "justify", textIndent: 32, marginBottom: 6 },
@@ -121,14 +123,16 @@ export async function renderLetterPdf(d: LetterRenderData): Promise<Buffer> {
           ))}
         </View>
 
-        {/* Реквизиты */}
-        <Text style={styles.req}>№ {d.number || "____"}</Text>
-        <Text style={styles.req}>от {d.date || "____"}</Text>
-
-        {/* Адресат (справа) */}
-        <View style={styles.addressee}>
-          <Text style={styles.addresseeText}>{d.position}</Text>
-          <Text style={styles.addresseeText}>{d.fioDative}</Text>
+        {/* Реквизиты (слева) + адресат (справа) на одной линии */}
+        <View style={styles.topRow}>
+          <View style={styles.reqCol}>
+            <Text style={styles.req}>№ {d.number || "____"}</Text>
+            <Text style={styles.req}>от {d.date || "____"}</Text>
+          </View>
+          <View style={styles.addresseeCol}>
+            <Text style={styles.addresseeText}>{d.position}</Text>
+            <Text style={styles.addresseeText}>{d.fioDative}</Text>
+          </View>
         </View>
 
         {/* Обращение */}
