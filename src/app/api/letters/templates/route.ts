@@ -39,7 +39,11 @@ export async function PUT(request: NextRequest) {
       key: b.key,
       name: b.name ?? "",
       body: b.body ?? "",
-      signature: b.signature ?? "",
+      header_image: b.header_image ?? "",
+      signer_role: b.signer_role ?? "",
+      signature_image: b.signature_image ?? "",
+      signer_name: b.signer_name ?? "",
+      executor: b.executor ?? "",
       filename_pattern: b.filename_pattern ?? "",
     });
     return NextResponse.json({ ok: true });

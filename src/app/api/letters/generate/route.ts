@@ -4,6 +4,7 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbGetTemplate } from "@/lib/server/letterTemplatesDb";
 import { renderLetterPdf } from "@/lib/server/letterPdf";
 import { buildTags, mergeTags, safeFilename, RecipientRow } from "@/lib/server/letterMerge";
+import { computeRecipient } from "@/lib/server/nameTransforms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,9 +44,19 @@ export async function POST(request: NextRequest) {
     const files = await Promise.all(
       recipients.map(async (r) => {
         const tags = buildTags(r);
+        const c = computeRecipient(r.fio, r.position);
         const buffer = await renderLetterPdf({
+          headerImage: template.header_image || undefined,
+          number: r.number || "",
+          date: r.date || "",
+          position: r.position || "",
+          fioDative: c.fioDative,
+          greeting: `${c.address} ${c.io}!`,
           body: mergeTags(template.body, tags),
-          signature: mergeTags(template.signature, tags),
+          signerRole: template.signer_role || "",
+          signatureImage: template.signature_image || undefined,
+          signerName: template.signer_name || "",
+          executor: mergeTags(template.executor, tags),
         });
         const filename = `${safeFilename(mergeTags(template.filename_pattern, tags))}.pdf`;
         return { filename, buffer };

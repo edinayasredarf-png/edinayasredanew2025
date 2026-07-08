@@ -6,7 +6,11 @@ interface Template {
   key: string;
   name: string;
   body: string;
-  signature: string;
+  header_image: string;
+  signer_role: string;
+  signature_image: string;
+  signer_name: string;
+  executor: string;
   filename_pattern: string;
 }
 interface Recipient {
@@ -28,6 +32,7 @@ export default function LettersAdmin() {
   const [activeKey, setActiveKey] = useState<string>('');
   const [draft, setDraft] = useState<Template | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
 
@@ -73,6 +78,21 @@ export default function LettersAdmin() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ошибка сохранения');
     } finally { setSaving(false); }
+  };
+
+  const uploadImage = async (field: 'header_image' | 'signature_image', file: File) => {
+    if (!draft) return;
+    setUploading(field); setError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/uploads/image', { method: 'POST', body: form, credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || 'Ошибка загрузки');
+      setDraft({ ...draft, [field]: data.url });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ошибка загрузки изображения');
+    } finally { setUploading(''); }
   };
 
   const setRow = (i: number, patch: Partial<Recipient>) =>
@@ -164,9 +184,9 @@ export default function LettersAdmin() {
             </button>
           </div>
 
-          <div className="text-xs text-[#7C8A9A]">
-            Доступные теги (вставляются в тело, подпись и имя файла):{' '}
-            <span className="font-mono text-[#0a7bb0]">{TAGS.join('  ')}</span>
+          <div className="text-xs text-[#7C8A9A] space-y-1">
+            <div>Реквизиты (№, дата), адресат (должность + ФИО в дат. падеже) и обращение формируются автоматически — их в тело писать не нужно.</div>
+            <div>Теги для тела, исполнителя и имени файла: <span className="font-mono text-[#0a7bb0]">{TAGS.join('  ')}</span></div>
           </div>
 
           <div>
@@ -179,25 +199,59 @@ export default function LettersAdmin() {
             />
           </div>
 
+          {/* Шапка (верхний колонтитул) */}
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Шапка бланка (верхний колонтитул — на каждой странице)</label>
+            <div className="flex items-center gap-3">
+              {draft.header_image
+                ? <img src={draft.header_image} alt="Шапка" className="h-12 object-contain border border-gray-200 rounded bg-white" />
+                : <span className="text-xs text-[#9AA6B2]">не загружено</span>}
+              <label className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
+                {uploading === 'header_image' ? 'Загрузка…' : 'Загрузить'}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage('header_image', e.target.files[0])} />
+              </label>
+              {draft.header_image && <button onClick={() => setDraft({ ...draft, header_image: '' })} className="text-xs text-red-500 hover:underline">убрать</button>}
+            </div>
+          </div>
+
+          {/* Подписант */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-[#7C8A9A] mb-1">Подпись</label>
-              <textarea
-                value={draft.signature}
-                onChange={(e) => setDraft({ ...draft, signature: e.target.value })}
-                rows={6}
-                className={`${inputCls} font-mono text-[13px]`}
-              />
+              <label className="block text-sm text-[#7C8A9A] mb-1">Должность подписанта</label>
+              <input value={draft.signer_role} onChange={(e) => setDraft({ ...draft, signer_role: e.target.value })} className={inputCls} placeholder="Директор ООО «Сфера»" />
             </div>
             <div>
-              <label className="block text-sm text-[#7C8A9A] mb-1">Шаблон имени файла</label>
-              <input
-                value={draft.filename_pattern}
-                onChange={(e) => setDraft({ ...draft, filename_pattern: e.target.value })}
-                className={`${inputCls} font-mono`}
-              />
-              <p className="text-xs text-[#9AA6B2] mt-2">Пример: Сфера_&lt;&lt;Должность сокр&gt;&gt;_&lt;&lt;Дательный падеж ФИО&gt;&gt;_№&lt;&lt;Номер письма&gt;&gt;</p>
+              <label className="block text-sm text-[#7C8A9A] mb-1">ФИО подписанта</label>
+              <input value={draft.signer_name} onChange={(e) => setDraft({ ...draft, signer_name: e.target.value })} className={inputCls} placeholder="А.В. Статов" />
             </div>
+          </div>
+
+          {/* Подпись-картинка */}
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Подпись руководителя (изображение)</label>
+            <div className="flex items-center gap-3">
+              {draft.signature_image
+                ? <img src={draft.signature_image} alt="Подпись" className="h-12 object-contain border border-gray-200 rounded bg-white" />
+                : <span className="text-xs text-[#9AA6B2]">не загружено</span>}
+              <label className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
+                {uploading === 'signature_image' ? 'Загрузка…' : 'Загрузить'}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage('signature_image', e.target.files[0])} />
+              </label>
+              {draft.signature_image && <button onClick={() => setDraft({ ...draft, signature_image: '' })} className="text-xs text-red-500 hover:underline">убрать</button>}
+            </div>
+          </div>
+
+          {/* Исполнитель */}
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Исполнитель (нижний колонтитул — на каждой странице)</label>
+            <textarea value={draft.executor} onChange={(e) => setDraft({ ...draft, executor: e.target.value })} rows={3} className={`${inputCls} font-mono text-[13px]`} />
+          </div>
+
+          {/* Имя файла */}
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Шаблон имени файла</label>
+            <input value={draft.filename_pattern} onChange={(e) => setDraft({ ...draft, filename_pattern: e.target.value })} className={`${inputCls} font-mono`} />
+            <p className="text-xs text-[#9AA6B2] mt-2">Пример: Сфера_&lt;&lt;Должность сокр&gt;&gt;_&lt;&lt;Дательный падеж ФИО&gt;&gt;_№&lt;&lt;Номер письма&gt;&gt;</p>
           </div>
         </div>
       )}
