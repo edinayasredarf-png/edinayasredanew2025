@@ -11,6 +11,7 @@ import {
   StyleSheet,
   renderToBuffer,
 } from "@react-pdf/renderer";
+import { renderHtmlBody } from "./letterHtml";
 
 // Tinos — метрически совместим с Times New Roman, с кириллицей (SIL OFL).
 const FONT_DIR = path.join(process.cwd(), "public", "fonts", "tinos");
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
     left: 50,
     right: 50,
   },
-  headerImg: { width: "100%", maxHeight: 82, objectFit: "contain" },
+  headerImg: { width: "100%", maxHeight: 82, objectFit: "contain", objectPositionX: 0 },
   footerBox: {
     position: "absolute",
     bottom: 22,
@@ -70,11 +71,11 @@ const styles = StyleSheet.create({
   signRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
+    alignItems: "center",
     marginTop: 6,
   },
-  signName: { alignItems: "center" },
-  signImg: { width: 130, height: 48, objectFit: "contain", marginBottom: -6 },
+  signCenter: { flex: 1, alignItems: "center" },
+  signImg: { width: 150, height: 55, objectFit: "contain" },
 });
 
 export interface LetterRenderData {
@@ -91,17 +92,8 @@ export interface LetterRenderData {
   executor: string;
 }
 
-function bodyBlocks(body: string) {
-  return body
-    .replace(/\r/g, "")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
-}
-
 export async function renderLetterPdf(d: LetterRenderData): Promise<Buffer> {
   ensureFont();
-  const blocks = bodyBlocks(d.body);
   const execLines = d.executor.replace(/\r/g, "").split("\n").filter(Boolean);
 
   const doc = (
@@ -138,28 +130,18 @@ export async function renderLetterPdf(d: LetterRenderData): Promise<Buffer> {
         {/* Обращение */}
         <Text style={styles.greeting}>{d.greeting}</Text>
 
-        {/* Тело */}
-        {blocks.map((b, i) =>
-          b.startsWith("•") ? (
-            <Text key={`b${i}`} style={styles.bullet}>
-              {b}
-            </Text>
-          ) : (
-            <Text key={`b${i}`} style={styles.para}>
-              {b}
-            </Text>
-          )
-        )}
+        {/* Тело (HTML из редактора) */}
+        {renderHtmlBody(d.body)}
 
         {/* Подпись */}
         <View style={styles.signWrap} wrap={false}>
           <Text>С уважением,</Text>
           <View style={styles.signRow}>
             <Text>{d.signerRole}</Text>
-            <View style={styles.signName}>
+            <View style={styles.signCenter}>
               {d.signatureImage ? <Image src={d.signatureImage} style={styles.signImg} /> : null}
-              <Text>{d.signerName}</Text>
             </View>
+            <Text>{d.signerName}</Text>
           </View>
         </View>
       </Page>

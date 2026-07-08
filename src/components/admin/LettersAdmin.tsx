@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import nextDynamic from 'next/dynamic';
+
+const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
 interface Template {
   key: string;
@@ -191,12 +194,13 @@ export default function LettersAdmin() {
 
           <div>
             <label className="block text-sm text-[#7C8A9A] mb-1">Тело письма</label>
-            <textarea
-              value={draft.body}
-              onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-              rows={14}
-              className={`${inputCls} font-mono text-[13px] leading-relaxed`}
-            />
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <RichEditor
+                key={draft.key}
+                initialHtml={draft.body}
+                onChange={(html) => setDraft((d) => (d ? { ...d, body: html } : d))}
+              />
+            </div>
           </div>
 
           {/* Шапка (верхний колонтитул) */}

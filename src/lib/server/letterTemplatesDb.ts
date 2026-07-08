@@ -1,6 +1,34 @@
 import "server-only";
 import { getTimewebPool } from "@/lib/timewebPg";
 
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** Простой текст (абзацы + «•»-списки) → HTML для TipTap-редактора. */
+export function plainToHtml(text: string): string {
+  const lines = text.replace(/\r/g, "").split("\n");
+  const out: string[] = [];
+  let list: string[] = [];
+  const flush = () => {
+    if (list.length) {
+      out.push(`<ul>${list.map((li) => `<li><p>${escapeHtml(li)}</p></li>`).join("")}</ul>`);
+      list = [];
+    }
+  };
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { flush(); continue; }
+    if (line.startsWith("•")) {
+      list.push(line.replace(/^•\s*/, "").replace(/;$/, ""));
+    } else {
+      flush();
+      out.push(`<p>${escapeHtml(line)}</p>`);
+    }
+  }
+  flush();
+  return out.join("");
+}
+
 export interface LetterTemplate {
   key: string; // 'sfera' | 'ekostroy'
   name: string;
@@ -14,7 +42,7 @@ export interface LetterTemplate {
   updated_at?: string;
 }
 
-const DEFAULT_BODY = `В рамках реализации Указа Президента РФ от 7 мая 2024 года N 309 «О национальных целях развития Российской Федерации на период до 2030 года и на перспективу до 2036 года» регионам необходимо обеспечить инвентаризацию и цифровизацию данных о местах захоронений.
+const DEFAULT_BODY_TEXT = `В рамках реализации Указа Президента РФ от 7 мая 2024 года N 309 «О национальных целях развития Российской Федерации на период до 2030 года и на перспективу до 2036 года» регионам необходимо обеспечить инвентаризацию и цифровизацию данных о местах захоронений.
 
 В этой связи особенно важно обеспечить своевременный и качественный цифровой учет данных. Для решения этой задачи предлагаем рассмотреть внедрение автоматизированной информационной системы «Единая среда» для Вашего муниципалитета, что позволит снизить затраты на содержание объектов и их инвентаризацию, сократит сроки проведения работ.
 
@@ -38,6 +66,8 @@ const DEFAULT_BODY = `В рамках реализации Указа Прези
 В связи с вышеизложенным, прошу назначить ответственных для проведения встречи по ВКС 23.07.2026 (ЧТ) в 13.00 мск, где обсудим: как провести инвентаризацию наиболее эффективно, как вести электронный учет захоронений и зеленых насаждений, как правильно выстроить техническое задание и осуществить контроль подрядчика, как экономить бюджет при повторной инвентаризации и актуализации данных.
 
 Активная ссылка на ВКС: https://my.mts-link.ru/j/EdinayaSreda/22094070028`;
+
+const DEFAULT_BODY = plainToHtml(DEFAULT_BODY_TEXT);
 
 const EXECUTOR = `Исп.: Бабаева Наталья Владимировна
 Тел.: 8 (800) 550-56-12
@@ -115,6 +145,17 @@ async function ensureTable() {
        where key = $1`,
       [t.key, t.body, t.signer_role, t.signer_name, t.executor]
     );
+  }
+
+  // миграция тел из простого текста в HTML (для редактора и рендера)
+  const { rows } = await pool.query("select key, body from letter_templates");
+  for (const r of rows as Array<{ key: string; body: string }>) {
+    if (r.body && !r.body.includes("<")) {
+      await pool.query("update letter_templates set body = $2 where key = $1", [
+        r.key,
+        plainToHtml(r.body),
+      ]);
+    }
   }
   ensured = true;
 }
