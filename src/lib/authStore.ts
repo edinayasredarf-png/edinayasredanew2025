@@ -49,6 +49,7 @@ export class AuthStore {
       this.user = null;
       this.profile = null;
     }
+    this.notifyListeners();
   }
 
   private notifyListeners() {

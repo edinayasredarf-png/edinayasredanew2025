@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.единаясреда.рф', pathname: '/**' },
       { protocol: 'https', hostname: 'storage.yandexcloud.net', pathname: '/**' },
       { protocol: 'https', hostname: '*.storage.yandexcloud.net', pathname: '/**' },
+      // Аватары OAuth: ВКонтакте и Яндекс
+      { protocol: 'https', hostname: '*.userapi.com', pathname: '/**' },
+      { protocol: 'https', hostname: '*.vkuserphoto.ru', pathname: '/**' },
+      { protocol: 'https', hostname: '*.vk.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'avatars.yandex.net', pathname: '/**' },
+      { protocol: 'https', hostname: 'avatars.mds.yandex.net', pathname: '/**' },
     ],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
   },
