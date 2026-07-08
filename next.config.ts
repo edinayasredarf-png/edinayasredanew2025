@@ -7,9 +7,9 @@ const nextConfig: NextConfig = {
   experimental: {
     turbo: undefined,
   },
-  // включаем шрифт письма в серверную функцию генерации PDF
+  // включаем шрифт письма (Tinos, Times-совместимый) в серверную функцию генерации PDF
   outputFileTracingIncludes: {
-    '/api/letters/generate': ['./public/fonts/involve/**'],
+    '/api/letters/generate': ['./public/fonts/tinos/**'],
   },
   images: {
     remotePatterns: [

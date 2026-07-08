@@ -11,7 +11,8 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 
-const FONT_DIR = path.join(process.cwd(), "public", "fonts", "involve");
+// Tinos — метрически совместим с Times New Roman, с кириллицей (SIL OFL).
+const FONT_DIR = path.join(process.cwd(), "public", "fonts", "tinos");
 
 let registered = false;
 function ensureFont() {
@@ -19,8 +20,10 @@ function ensureFont() {
   Font.register({
     family: "Letter",
     fonts: [
-      { src: path.join(FONT_DIR, "Involve-Regular.ttf") },
-      { src: path.join(FONT_DIR, "Involve-Medium.ttf"), fontWeight: "bold" },
+      { src: path.join(FONT_DIR, "Tinos-Regular.ttf") },
+      { src: path.join(FONT_DIR, "Tinos-Bold.ttf"), fontWeight: "bold" },
+      { src: path.join(FONT_DIR, "Tinos-Italic.ttf"), fontStyle: "italic" },
+      { src: path.join(FONT_DIR, "Tinos-BoldItalic.ttf"), fontWeight: "bold", fontStyle: "italic" },
     ],
   });
   // не переносить слова по слогам
