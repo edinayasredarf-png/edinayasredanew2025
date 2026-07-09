@@ -56,10 +56,19 @@ function spanStyle(inh: Inline) {
   };
 }
 
+// чёрный/дефолтный цвет игнорируем — иначе редактор оборачивает весь текст в
+// цветной span, из-за чего ломается textIndent (красная строка).
+function normColor(c?: string): string | undefined {
+  if (!c) return undefined;
+  const v = c.trim().toLowerCase().replace(/\s+/g, "");
+  if (["#000", "#000000", "black", "rgb(0,0,0)", "rgba(0,0,0,1)"].includes(v)) return undefined;
+  return c.trim();
+}
+
 function colorFromStyle(el: HTMLElement): string | undefined {
   const style = el.getAttribute("style") || "";
   const m = /(?:^|;)\s*color:\s*([^;]+)/i.exec(style);
-  return m ? m[1].trim() : undefined;
+  return normColor(m ? m[1] : undefined);
 }
 
 function bgFromStyle(el: HTMLElement): string | undefined {
