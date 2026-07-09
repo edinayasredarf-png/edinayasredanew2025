@@ -6,9 +6,11 @@ import { renderLetterPdf } from "@/lib/server/letterPdf";
 import { buildTags, mergeTags, safeFilename, RecipientRow } from "@/lib/server/letterMerge";
 import { computeRecipient } from "@/lib/server/nameTransforms";
 import { dbGetEditorMedia } from "@/lib/server/dataDb";
+import { Jimp } from "jimp";
 
-/** /api/media/<id> → data-URI (движок PDF не умеет относительные URL). */
-async function resolveImage(url?: string): Promise<string | undefined> {
+/** /api/media/<id> → data-URI (движок PDF не умеет относительные URL).
+ *  trim=true — авто-обрезка пустых полей (для шапки/подписи). */
+async function resolveImage(url?: string, trim = false): Promise<string | undefined> {
   const u = (url || "").trim();
   if (!u) return undefined;
   const m = /^\/api\/media\/([\w-]+)$/.exec(u);
@@ -16,7 +18,19 @@ async function resolveImage(url?: string): Promise<string | undefined> {
   try {
     const media = await dbGetEditorMedia(m[1]);
     if (!media) return undefined;
-    return `data:${media.mimeType};base64,${media.data.toString("base64")}`;
+    let buffer = media.data;
+    let mime = media.mimeType;
+    if (trim) {
+      try {
+        const img = await Jimp.read(buffer);
+        img.autocrop({ tolerance: 0.02, cropOnlyFrames: false });
+        buffer = await img.getBuffer("image/png");
+        mime = "image/png";
+      } catch {
+        /* если обрезка не удалась — используем оригинал */
+      }
+    }
+    return `data:${mime};base64,${buffer.toString("base64")}`;
   } catch {
     return undefined;
   }
@@ -59,8 +73,8 @@ export async function POST(request: NextRequest) {
   try {
     // картинки одинаковы для всех получателей — резолвим один раз
     const [headerImage, signatureImage] = await Promise.all([
-      resolveImage(template.header_image),
-      resolveImage(template.signature_image),
+      resolveImage(template.header_image, true),
+      resolveImage(template.signature_image, true),
     ]);
 
     const files = await Promise.all(

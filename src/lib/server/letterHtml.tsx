@@ -14,8 +14,9 @@ const st = StyleSheet.create({
   h1: { fontSize: 17, fontWeight: "bold", marginTop: 4, marginBottom: 8 },
   h2: { fontSize: 15, fontWeight: "bold", marginTop: 4, marginBottom: 6 },
   h3: { fontSize: 14, fontWeight: "bold", marginTop: 4, marginBottom: 5 },
-  liRow: { flexDirection: "row", marginBottom: 3 },
-  liMarker: { width: 20 },
+  liList: { marginLeft: 22, marginTop: 2, marginBottom: 6 },
+  liRow: { flexDirection: "row", marginBottom: 4 },
+  liMarker: { width: 18 },
   liBody: { flex: 1, textAlign: "justify" },
 });
 
@@ -114,13 +115,13 @@ function paraStyle(el: HTMLElement, base: ParaBase): ParaBase {
 }
 
 function renderList(el: HTMLElement, ordered: boolean, key: string): React.ReactNode {
-  const items = el.childNodes.filter(
+  const items = (el.childNodes.filter(
     (n) => n.nodeType === NodeType.ELEMENT_NODE && (n as HTMLElement).rawTagName?.toLowerCase() === "li"
-  ) as HTMLElement[];
+  ) as HTMLElement[]).filter((li) => li.text.trim());
   return (
-    <View key={key} style={{ marginBottom: 6 }}>
+    <View key={key} style={st.liList}>
       {items.map((li, i) => (
-        <View key={`${key}-li${i}`} style={st.liRow}>
+        <View key={`${key}-li${i}`} style={st.liRow} wrap={false}>
           <Text style={st.liMarker}>{ordered ? `${i + 1}.` : "•"}</Text>
           <Text style={st.liBody}>{inlineSpans(li, {}, `${key}-li${i}`)}</Text>
         </View>
