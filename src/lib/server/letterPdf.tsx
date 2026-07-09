@@ -34,7 +34,7 @@ function ensureFont() {
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 112, // место под шапку (фикс. колонтитул)
+    paddingTop: 138, // место под шапку (фикс. колонтитул)
     paddingBottom: 64, // место под исполнителя (фикс. колонтитул)
     paddingHorizontal: 50,
     fontFamily: "Letter",
@@ -44,11 +44,11 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     position: "absolute",
-    top: 18,
+    top: 24,
     left: 50,
     right: 50,
   },
-  headerImg: { width: "100%", maxHeight: 82, objectFit: "contain", objectPositionX: 0 },
+  headerImg: { width: "100%", maxHeight: 108, objectFit: "contain", objectPositionX: 0 },
   footerBox: {
     position: "absolute",
     bottom: 22,

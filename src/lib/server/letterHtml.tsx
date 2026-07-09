@@ -72,7 +72,10 @@ function inlineSpans(node: Node, inh: Inline, key: string): React.ReactNode[] {
   kids.forEach((child, i) => {
     if (child.nodeType === NodeType.TEXT_NODE) {
       const txt = decode((child as unknown as { rawText: string }).rawText || "");
-      if (txt) out.push(<Text key={`${key}-t${i}`} style={spanStyle(inh)}>{txt}</Text>);
+      if (!txt) return;
+      // без форматирования — отдаём строкой (иначе textIndent/красная строка не работает)
+      const styled = inh.bold || inh.italic || inh.underline || inh.strike || Boolean(inh.bg);
+      out.push(styled ? <Text key={`${key}-t${i}`} style={spanStyle(inh)}>{txt}</Text> : txt);
       return;
     }
     const el = child as HTMLElement;
@@ -99,8 +102,15 @@ type ParaBase = typeof st.para | typeof st.h1 | typeof st.h2 | typeof st.h3;
 
 function paraStyle(el: HTMLElement, base: ParaBase): ParaBase {
   const align = alignFromStyle(el);
-  if (!align || align === "justify") return base;
-  return { ...base, textAlign: align, textIndent: 0 } as unknown as ParaBase;
+  // по центру/справа — без красной строки
+  if (align === "center" || align === "right") {
+    return { ...base, textAlign: align, textIndent: 0 } as unknown as ParaBase;
+  }
+  // left/justify — сохраняем красную строку (textIndent из base)
+  if (align === "left") {
+    return { ...base, textAlign: "left" } as unknown as ParaBase;
+  }
+  return base;
 }
 
 function renderList(el: HTMLElement, ordered: boolean, key: string): React.ReactNode {
