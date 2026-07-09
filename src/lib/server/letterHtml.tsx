@@ -26,6 +26,7 @@ interface Inline {
   underline?: boolean;
   strike?: boolean;
   bg?: string;
+  color?: string;
 }
 
 const ENTITIES: Record<string, string> = {
@@ -51,7 +52,14 @@ function spanStyle(inh: Inline) {
     fontStyle: (inh.italic ? "italic" : "normal") as "italic" | "normal",
     textDecoration: (deco.join(" ") || "none") as "underline" | "line-through" | "none",
     backgroundColor: inh.bg,
+    color: inh.color,
   };
+}
+
+function colorFromStyle(el: HTMLElement): string | undefined {
+  const style = el.getAttribute("style") || "";
+  const m = /(?:^|;)\s*color:\s*([^;]+)/i.exec(style);
+  return m ? m[1].trim() : undefined;
 }
 
 function bgFromStyle(el: HTMLElement): string | undefined {
@@ -75,7 +83,8 @@ function inlineSpans(node: Node, inh: Inline, key: string): React.ReactNode[] {
       const txt = decode((child as unknown as { rawText: string }).rawText || "");
       if (!txt) return;
       // без форматирования — отдаём строкой (иначе textIndent/красная строка не работает)
-      const styled = inh.bold || inh.italic || inh.underline || inh.strike || Boolean(inh.bg);
+      const styled =
+        inh.bold || inh.italic || inh.underline || inh.strike || Boolean(inh.bg) || Boolean(inh.color);
       out.push(styled ? <Text key={`${key}-t${i}`} style={spanStyle(inh)}>{txt}</Text> : txt);
       return;
     }
@@ -88,11 +97,18 @@ function inlineSpans(node: Node, inh: Inline, key: string): React.ReactNode[] {
     if (tag === "u") next.underline = true;
     if (tag === "s" || tag === "strike" || tag === "del") next.strike = true;
     if (tag === "mark") next.bg = bgFromStyle(el);
+    if (tag === "a") {
+      next.underline = true;
+      next.color = colorFromStyle(el) || "#0645ad";
+    }
     if (tag === "span") {
       const style = el.getAttribute("style") || "";
       if (/font-weight:\s*(bold|[6-9]00)/i.test(style)) next.bold = true;
       if (/font-style:\s*italic/i.test(style)) next.italic = true;
+      if (/text-decoration:[^;]*underline/i.test(style)) next.underline = true;
       if (/background(?:-color)?:/i.test(style)) next.bg = bgFromStyle(el);
+      const c = colorFromStyle(el);
+      if (c) next.color = c;
     }
     out.push(...inlineSpans(el, next, `${key}-${i}`));
   });

@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   req: { fontSize: 13, marginBottom: 2 },
   addresseeCol: { maxWidth: "58%" },
   addresseeText: { fontSize: 13 },
-  greeting: { textAlign: "center", marginBottom: 12, fontSize: 14 },
+  greeting: { textAlign: "center", marginBottom: 12, fontSize: 14, fontWeight: "bold" },
   para: { textAlign: "justify", textIndent: 32, marginBottom: 6 },
   bullet: { textAlign: "justify", marginLeft: 16, marginBottom: 3 },
   signWrap: { marginTop: 22 },
