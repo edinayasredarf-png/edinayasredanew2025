@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 },
   reqCol: {},
   req: { fontSize: 13, marginBottom: 2 },
-  addresseeCol: { width: "52%" },
+  addresseeCol: { maxWidth: "58%" },
   addresseeText: { fontSize: 13 },
   greeting: { textAlign: "center", marginBottom: 12, fontSize: 14 },
   para: { textAlign: "justify", textIndent: 32, marginBottom: 6 },
@@ -71,11 +71,19 @@ const styles = StyleSheet.create({
   signRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginTop: 6,
+    position: "relative",
   },
-  signCenter: { flex: 1, alignItems: "center" },
-  signImg: { width: 150, height: 55, objectFit: "contain" },
+  signImg: {
+    position: "absolute",
+    left: "50%",
+    marginLeft: -75,
+    top: -16,
+    width: 150,
+    height: 52,
+    objectFit: "contain",
+  },
 });
 
 export interface LetterRenderData {
@@ -138,10 +146,8 @@ export async function renderLetterPdf(d: LetterRenderData): Promise<Buffer> {
           <Text>С уважением,</Text>
           <View style={styles.signRow}>
             <Text>{d.signerRole}</Text>
-            <View style={styles.signCenter}>
-              {d.signatureImage ? <Image src={d.signatureImage} style={styles.signImg} /> : null}
-            </View>
             <Text>{d.signerName}</Text>
+            {d.signatureImage ? <Image src={d.signatureImage} style={styles.signImg} /> : null}
           </View>
         </View>
       </Page>
