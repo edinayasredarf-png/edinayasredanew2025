@@ -82,6 +82,11 @@ export async function sendLetterEmail(opts: {
     subject: opts.subject,
     text: opts.text,
     html: opts.html,
+    // как в веб-почте Timeweb: quoted-printable вместо base64 + обычный приоритет
+    // (base64-тело — слабый спам-сигнал; qp выглядит как обычное письмо)
+    textEncoding: "quoted-printable",
+    priority: "normal",
+    headers: { "X-Priority": "3 (Normal)" },
     ...(unsubscribe ? { list: { unsubscribe } } : {}),
     attachments: opts.attachments?.map((a) => ({
       filename: a.filename,
