@@ -68,7 +68,13 @@ export async function sendLetterEmail(opts: {
 }): Promise<void> {
   const c = config();
   const transport = getTransporter();
-  const unsubscribe = c.user ? `mailto:${c.user}?subject=unsubscribe` : undefined;
+  // List-Unsubscribe помогает настоящим массовым рассылкам, но помечает письмо
+  // как «bulk». Веб-почта его НЕ шлёт — поэтому по умолчанию выключен, чтобы
+  // именное письмо выглядело как личное (и не уходило в спам/промоакции).
+  // Включить для больших рассылок: SMTP_LIST_UNSUBSCRIBE=true
+  const wantUnsub =
+    (process.env.SMTP_LIST_UNSUBSCRIBE || "").trim().toLowerCase() === "true";
+  const unsubscribe = wantUnsub && c.user ? `mailto:${c.user}?subject=unsubscribe` : undefined;
   await transport.sendMail({
     from: c.from,
     to: opts.to,
