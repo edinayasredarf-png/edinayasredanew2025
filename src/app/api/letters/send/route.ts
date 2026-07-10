@@ -22,6 +22,22 @@ const SEND_DELAY_MS = 400; // пауза между письмами внутр�
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Грубое HTML → текст для plain-text части письма. */
+function htmlToPlain(html: string): string {
+  return html
+    .replace(/<\s*br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
+}
+
 interface SendResult {
   email: string;
   fio: string;
@@ -110,11 +126,14 @@ export async function POST(request: NextRequest) {
         .replace(/\s*\n\s*/g, " ")
         .trim();
       const mergedBody = mergeTags(template.email_body || "", tags);
-      const html = mergedBody.includes("<") ? mergedBody : plainToHtml(mergedBody);
+      const isHtml = mergedBody.includes("<");
+      const html = isHtml ? mergedBody : plainToHtml(mergedBody);
+      const text = isHtml ? htmlToPlain(mergedBody) : mergedBody;
       await sendLetterEmail({
         to: email,
         subject,
         html,
+        text,
         attachments: [{ filename, content: buffer, contentType: "application/pdf" }],
       });
       results[i] = { ...base, ok: true };

@@ -18,7 +18,11 @@ function config() {
   const user = process.env.SMTP_USER?.trim();
   const pass = process.env.SMTP_PASS;
   const from = process.env.SMTP_FROM?.trim() || user;
-  return { host, port, secure, user, pass, from };
+  // имя клиента для EHLO/HELO — по умолчанию домен ящика (а не MacBook-Pro.local),
+  // это заметно улучшает доверие принимающих серверов.
+  const helo =
+    process.env.SMTP_EHLO_NAME?.trim() || (user?.split("@")[1] || "").trim() || undefined;
+  return { host, port, secure, user, pass, from, helo };
 }
 
 export function isMailerConfigured(): boolean {
@@ -43,6 +47,7 @@ function getTransporter(): Transporter {
     port: c.port,
     secure: c.secure,
     auth: { user: c.user, pass: c.pass },
+    ...(c.helo ? { name: c.helo } : {}),
   });
   cachedKey = key;
   return transporter;
@@ -58,15 +63,20 @@ export async function sendLetterEmail(opts: {
   to: string;
   subject: string;
   html: string;
+  text?: string; // текстовая версия (без неё письмо чаще уходит в спам)
   attachments?: LetterAttachment[];
 }): Promise<void> {
   const c = config();
   const transport = getTransporter();
+  const unsubscribe = c.user ? `mailto:${c.user}?subject=unsubscribe` : undefined;
   await transport.sendMail({
     from: c.from,
     to: opts.to,
+    replyTo: c.from,
     subject: opts.subject,
+    text: opts.text,
     html: opts.html,
+    ...(unsubscribe ? { list: { unsubscribe } } : {}),
     attachments: opts.attachments?.map((a) => ({
       filename: a.filename,
       content: a.content,
