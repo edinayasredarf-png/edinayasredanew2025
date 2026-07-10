@@ -1,139 +1,49 @@
 // Файл: sitemap.ts
 
 import { MetadataRoute } from 'next'
+import { IZN_CITIES, IMZ_CITIES } from '@/lib/serviceCities'
+
+// Без завершающего слэша — иначе `${baseUrl}/about` даёт двойной слэш `//about`.
+const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai/'
+  // Статичная дата последнего обновления статических страниц.
+  const staticDate = '2026-07-10'
 
-  return [
-    {
-      // Главная страница - самый высокий приоритет, обновляется часто (например, за счет новостей)
-      url: baseUrl,
-      lastModified: new Date(), // Оставляем new Date(), так как контент на главной может меняться
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      // Статичная страница, которая не меняется месяцами
-      url: `${baseUrl}/about`,
-      lastModified: '2026-04-06', // Установлена статичная дата. Замените на реальную дату последнего обновления.
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-		{
-      // Важный раздел, который может обновляться, но не каждый день
-      url: `${baseUrl}/blog`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      // Важный раздел, который может обновляться, но не каждый день
-      url: `${baseUrl}/services`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/services/forest-management`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-		{
-      url: `${baseUrl}/services/imz`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-		{
-      url: `${baseUrl}/services/izn`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-		{
-      url: `${baseUrl}/services/les`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/services/green-inventory`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/services/inventory-burials`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-    {
-      // Раздел с кейсами/портфолио, обновляется периодически
-      url: `${baseUrl}/cases`,
-      lastModified: new Date(), // Оставляем new Date(), так как список кейсов может пополняться
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      // Динамический раздел, обновляется часто
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(), // Оставляем new Date() для страницы списка постов
-      changeFrequency: 'daily',
-      priority: 0.7,
-    },
-    {
-      // Динамический раздел, обновляется часто
-      url: `${baseUrl}/news`,
-      lastModified: new Date(), // Оставляем new Date() для страницы списка новостей
-      changeFrequency: 'daily',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/partnership`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/pricing`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      // Контакты меняются крайне редко
-      url: `${baseUrl}/contacts`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'yearly', // Изменено на "yearly" - это более корректно
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/documents`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      // Раздел с вакансиями, может обновляться
-      url: `${baseUrl}/career`,
-      lastModified: new Date(), // Оставляем new Date(), так как список вакансий может меняться
-      changeFrequency: 'weekly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/implementations`,
-      lastModified: new Date(), // Оставляем new Date(), так как список может пополняться
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/welcome-bonus`,
-      lastModified: '2026-04-06', // Установлена статичная дата
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
+  // ── Основные страницы ─────────────────────────────────────────────
+  const core: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/`, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
+    { url: `${baseUrl}/about`, lastModified: staticDate, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/services`, lastModified: staticDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/services/izn`, lastModified: staticDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/services/imz`, lastModified: staticDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/services/les`, lastModified: staticDate, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
+    { url: `${baseUrl}/news`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
+    { url: `${baseUrl}/cases`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/implementations`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/pricing`, lastModified: staticDate, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/partnership`, lastModified: staticDate, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/career`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.5 },
+    { url: `${baseUrl}/documents`, lastModified: staticDate, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/welcome-bonus`, lastModified: staticDate, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/contacts`, lastModified: staticDate, changeFrequency: 'yearly', priority: 0.6 },
   ]
+
+  // ── Городские страницы услуг (локальное SEO) ──────────────────────
+  const iznCities: MetadataRoute.Sitemap = IZN_CITIES.map(({ slug }) => ({
+    url: `${baseUrl}/services/izn/${slug}`,
+    lastModified: staticDate,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  const imzCities: MetadataRoute.Sitemap = IMZ_CITIES.map(({ slug }) => ({
+    url: `${baseUrl}/services/imz/${slug}`,
+    lastModified: staticDate,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [...core, ...iznCities, ...imzCities]
 }

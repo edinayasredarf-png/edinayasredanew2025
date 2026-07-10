@@ -13,6 +13,8 @@ import AdvantagesGridSection from '../../../components/services/izn/AdvantagesGr
 import WorkflowStepsSection from '../../../components/services/izn/WorkflowStepsSection';
 import CTASection from '../../../components/services/izn/CTASection';
 import FAQSection from '../../../components/services/izn/FAQSection';
+import CityLinksSection from '../../../components/services/CityLinksSection';
+import { IZN_CITIES } from '@/lib/serviceCities';
 
 export default function GreenInventoryPage() {
   const handleKP = () => {
@@ -97,6 +99,14 @@ export default function GreenInventoryPage() {
         <CTASection onButtonClick={handleKP} />
 
         <FAQSection />
+
+        <CityLinksSection
+          service="izn"
+          cities={IZN_CITIES}
+          heading="Инвентаризация зелёных насаждений по городам России"
+          intro="Проводим инвентаризацию зелёных насаждений с созданием цифрового реестра в городах по всей России. Выберите свой город, чтобы узнать детали услуги, сроки и получить расчёт стоимости для вашей территории."
+          anchor={(city) => `Инвентаризация зелёных насаждений в ${city}`}
+        />
 
       </div>
     </Layout>

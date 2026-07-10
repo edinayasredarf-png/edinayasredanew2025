@@ -5,7 +5,8 @@ import { MetadataRoute } from 'next'
 export default function robots(): MetadataRoute.Robots {
 
 
-  const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai/'
+  // Без завершающего слэша — иначе `${baseUrl}/sitemap.xml` даёт `//sitemap.xml`.
+  const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 
 
 

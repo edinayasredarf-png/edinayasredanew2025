@@ -13,6 +13,8 @@ import ComplianceSection from "../../../components/services/imz/ComplianceSectio
 import ResultsSection from "../../../components/services/imz/ResultsSection";
 import ConsultationCTA from "../../../components/services/imz/ConsultationCTA";
 import FAQSection from "../../../components/services/imz/FAQSection";
+import CityLinksSection from "../../../components/services/CityLinksSection";
+import { IMZ_CITIES } from "@/lib/serviceCities";
 
 export default function InventoryBurialsPage() {
   const handleKP = () =>
@@ -84,6 +86,14 @@ export default function InventoryBurialsPage() {
         <DemoIframeSection />
         <ConsultationCTA onKP={handleKP} />
         <FAQSection />
+
+        <CityLinksSection
+          service="imz"
+          cities={IMZ_CITIES}
+          heading="Инвентаризация мест захоронений и оцифровка кладбищ по городам России"
+          intro="Выполняем инвентаризацию мест захоронений и оцифровку кладбищ с созданием электронного реестра в городах по всей России. Выберите свой город, чтобы узнать детали услуги, сроки и получить расчёт стоимости."
+          anchor={(city) => `Инвентаризация мест захоронений в ${city}`}
+        />
       </div>
     </Layout>
   );
