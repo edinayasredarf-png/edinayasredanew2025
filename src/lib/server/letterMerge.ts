@@ -6,6 +6,7 @@ export interface RecipientRow {
   position: string;
   number: string;
   date: string;
+  email?: string;
 }
 
 /** Собирает значения тегов для одного получателя. */

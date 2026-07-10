@@ -2,39 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import JSZip from "jszip";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbGetTemplate } from "@/lib/server/letterTemplatesDb";
-import { renderLetterPdf } from "@/lib/server/letterPdf";
-import { buildTags, mergeTags, safeFilename, RecipientRow } from "@/lib/server/letterMerge";
-import { computeRecipient } from "@/lib/server/nameTransforms";
-import { dbGetEditorMedia } from "@/lib/server/dataDb";
-import { Jimp } from "jimp";
-
-/** /api/media/<id> → data-URI (движок PDF не умеет относительные URL).
- *  trim=true — авто-обрезка пустых полей (для шапки/подписи). */
-async function resolveImage(url?: string, trim = false): Promise<string | undefined> {
-  const u = (url || "").trim();
-  if (!u) return undefined;
-  const m = /^\/api\/media\/([\w-]+)$/.exec(u);
-  if (!m) return u; // абсолютный URL — как есть
-  try {
-    const media = await dbGetEditorMedia(m[1]);
-    if (!media) return undefined;
-    let buffer = media.data;
-    let mime = media.mimeType;
-    if (trim) {
-      try {
-        const img = await Jimp.read(buffer);
-        img.autocrop({ tolerance: 0.02, cropOnlyFrames: false });
-        buffer = await img.getBuffer("image/png");
-        mime = "image/png";
-      } catch {
-        /* если обрезка не удалась — используем оригинал */
-      }
-    }
-    return `data:${mime};base64,${buffer.toString("base64")}`;
-  } catch {
-    return undefined;
-  }
-}
+import { RecipientRow } from "@/lib/server/letterMerge";
+import {
+  resolveTemplateImages,
+  buildLetterPdf,
+  mapWithConcurrency,
+} from "@/lib/server/letterBuild";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -72,31 +45,11 @@ export async function POST(request: NextRequest) {
 
   try {
     // картинки одинаковы для всех получателей — резолвим один раз
-    const [headerImage, signatureImage] = await Promise.all([
-      resolveImage(template.header_image, true),
-      resolveImage(template.signature_image, true),
-    ]);
+    const images = await resolveTemplateImages(template);
 
-    const files = await Promise.all(
-      recipients.map(async (r) => {
-        const tags = buildTags(r);
-        const c = computeRecipient(r.fio, r.position);
-        const buffer = await renderLetterPdf({
-          headerImage,
-          number: r.number || "",
-          date: r.date || "",
-          position: r.position || "",
-          fioDative: c.fioDative,
-          greeting: `${c.address} ${c.io}!`,
-          body: mergeTags(template.body, tags),
-          signerRole: template.signer_role || "",
-          signatureImage,
-          signerName: template.signer_name || "",
-          executor: mergeTags(template.executor, tags),
-        });
-        const filename = `${safeFilename(mergeTags(template.filename_pattern, tags))}.pdf`;
-        return { filename, buffer };
-      })
+    // ограничиваем конкуренцию: рендер PDF + jimp тяжёлые по памяти
+    const files = await mapWithConcurrency(recipients, 4, (r) =>
+      buildLetterPdf(template, r, images)
     );
 
     // один получатель → PDF, несколько → ZIP

@@ -45,6 +45,8 @@ export async function PUT(request: NextRequest) {
       signer_name: b.signer_name ?? "",
       executor: b.executor ?? "",
       filename_pattern: b.filename_pattern ?? "",
+      email_subject: b.email_subject ?? "",
+      email_body: b.email_body ?? "",
     });
     return NextResponse.json({ ok: true });
   } catch (e) {

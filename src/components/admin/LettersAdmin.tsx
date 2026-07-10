@@ -15,12 +15,21 @@ interface Template {
   signer_name: string;
   executor: string;
   filename_pattern: string;
+  email_subject: string;
+  email_body: string;
 }
 interface Recipient {
   fio: string;
   position: string;
   number: string;
   date: string;
+  email: string;
+}
+interface SendResult {
+  email: string;
+  fio: string;
+  ok: boolean;
+  error?: string;
 }
 
 const TAGS = [
@@ -28,7 +37,7 @@ const TAGS = [
   '<<Дательный падеж ФИО>>', '<<ОБРАЩЕНИЕ>>', '<<ИО>>', '<<Инициалы>>', '<<ФИО>>',
 ];
 
-const emptyRow = (): Recipient => ({ fio: '', position: '', number: '', date: '' });
+const emptyRow = (): Recipient => ({ fio: '', position: '', number: '', date: '', email: '' });
 
 export default function LettersAdmin() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -42,6 +51,9 @@ export default function LettersAdmin() {
   const [rows, setRows] = useState<Recipient[]>([emptyRow()]);
   const [pasteText, setPasteText] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendResults, setSendResults] = useState<SendResult[] | null>(null);
+  const [testEmail, setTestEmail] = useState('');
 
   const loadTemplates = useCallback(async () => {
     try {
@@ -109,7 +121,13 @@ export default function LettersAdmin() {
       .filter(Boolean)
       .map((l) => {
         const c = l.split('\t').length > 1 ? l.split('\t') : l.split(/\s*[;|]\s*/);
-        return { fio: c[0] || '', position: c[1] || '', number: c[2] || '', date: c[3] || '' };
+        return {
+          fio: (c[0] || '').trim(),
+          position: (c[1] || '').trim(),
+          number: (c[2] || '').trim(),
+          date: (c[3] || '').trim(),
+          email: (c[4] || '').trim(),
+        };
       });
     if (parsed.length) {
       setRows((rs) => [...rs.filter((r) => r.fio || r.position), ...parsed]);
@@ -141,6 +159,53 @@ export default function LettersAdmin() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ошибка генерации');
     } finally { setGenerating(false); }
+  };
+
+  const postSend = async (body: object): Promise<SendResult[]> => {
+    const res = await fetch('/api/letters/send', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Ошибка отправки');
+    return (data.results || []) as SendResult[];
+  };
+
+  const sendLetters = async () => {
+    const recipients = rows.filter((r) => r.fio.trim());
+    if (!activeKey || recipients.length === 0) { setError('Заполните хотя бы одного получателя'); return; }
+    const withEmail = recipients.filter((r) => r.email.trim());
+    if (withEmail.length === 0) { setError('Ни у одного получателя не указан email'); return; }
+    const noEmail = recipients.length - withEmail.length;
+    const msg = `Отправить ${withEmail.length} ${withEmail.length === 1 ? 'письмо' : 'писем'} на указанные адреса?` +
+      (noEmail ? `\n(${noEmail} без email — будут пропущены)` : '');
+    if (!window.confirm(msg)) return;
+    setSending(true); setError(''); setStatus(''); setSendResults(null);
+    try {
+      const results = await postSend({ templateKey: activeKey, recipients });
+      setSendResults(results);
+      const sent = results.filter((r) => r.ok).length;
+      setStatus(`Отправлено: ${sent} из ${results.length}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ошибка отправки');
+    } finally { setSending(false); }
+  };
+
+  const sendTest = async () => {
+    const recipients = rows.filter((r) => r.fio.trim());
+    if (!activeKey || recipients.length === 0) { setError('Заполните хотя бы одного получателя (для теста берётся первый)'); return; }
+    if (!testEmail.trim()) { setError('Укажите адрес для теста'); return; }
+    setSending(true); setError(''); setStatus(''); setSendResults(null);
+    try {
+      const results = await postSend({ templateKey: activeKey, recipients: [recipients[0]], test: true, testEmail: testEmail.trim() });
+      setSendResults(results);
+      const ok = results[0]?.ok;
+      setStatus(ok ? `Тестовое письмо отправлено на ${testEmail.trim()}` : 'Не удалось отправить тестовое письмо');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ошибка отправки теста');
+    } finally { setSending(false); }
   };
 
   const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
@@ -257,6 +322,21 @@ export default function LettersAdmin() {
             <input value={draft.filename_pattern} onChange={(e) => setDraft({ ...draft, filename_pattern: e.target.value })} className={`${inputCls} font-mono`} />
             <p className="text-xs text-[#9AA6B2] mt-2">Пример: Сфера_&lt;&lt;Должность сокр&gt;&gt;_&lt;&lt;Дательный падеж ФИО&gt;&gt;_№&lt;&lt;Номер письма&gt;&gt;</p>
           </div>
+
+          {/* Email-рассылка */}
+          <div className="pt-4 border-t border-gray-100 space-y-4">
+            <h4 className="font-semibold text-[#313131] text-sm">Email-рассылка</h4>
+            <p className="text-xs text-[#7C8A9A]">Тема и текст письма поддерживают те же теги. Сам PDF уходит вложением.</p>
+            <div>
+              <label className="block text-sm text-[#7C8A9A] mb-1">Тема письма</label>
+              <input value={draft.email_subject} onChange={(e) => setDraft({ ...draft, email_subject: e.target.value })} className={inputCls} placeholder="Внедрение АИС «Единая среда» — <<Должность сокр>>" />
+            </div>
+            <div>
+              <label className="block text-sm text-[#7C8A9A] mb-1">Текст письма (email)</label>
+              <textarea value={draft.email_body} onChange={(e) => setDraft({ ...draft, email_body: e.target.value })} rows={6} className={`${inputCls} text-[13px]`} placeholder="<<ОБРАЩЕНИЕ>> <<ИО>>! Направляем Вам официальное письмо…" />
+              <p className="text-xs text-[#9AA6B2] mt-1">Можно обычный текст (переносы строк сохранятся) или HTML.</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -265,13 +345,14 @@ export default function LettersAdmin() {
         <h3 className="font-semibold text-[#313131]">Получатели</h3>
 
         <div className="overflow-x-auto -mx-5 px-5">
-          <table className="w-full text-sm min-w-[720px]">
+          <table className="w-full text-sm min-w-[880px]">
             <thead>
               <tr className="text-left text-[#7C8A9A]">
                 <th className="py-1 pr-2 font-medium">ФИО (Фамилия Имя Отчество)</th>
                 <th className="py-1 pr-2 font-medium">Должность (в дат. падеже)</th>
                 <th className="py-1 pr-2 font-medium w-20">Номер</th>
                 <th className="py-1 pr-2 font-medium w-28">Дата</th>
+                <th className="py-1 pr-2 font-medium w-48">Email</th>
                 <th className="w-8" />
               </tr>
             </thead>
@@ -282,6 +363,7 @@ export default function LettersAdmin() {
                   <td className="py-1 pr-2"><input value={r.position} onChange={(e) => setRow(i, { position: e.target.value })} placeholder="Главе … муниципального района …" className={inputCls} /></td>
                   <td className="py-1 pr-2"><input value={r.number} onChange={(e) => setRow(i, { number: e.target.value })} placeholder="710" className={inputCls} /></td>
                   <td className="py-1 pr-2"><input value={r.date} onChange={(e) => setRow(i, { date: e.target.value })} placeholder="21.05.2026" className={inputCls} /></td>
+                  <td className="py-1 pr-2"><input value={r.email} onChange={(e) => setRow(i, { email: e.target.value })} placeholder="glava@example.ru" type="email" className={inputCls} /></td>
                   <td className="py-1 text-center">
                     <button onClick={() => removeRow(i)} className="text-gray-400 hover:text-red-500" title="Удалить">✕</button>
                   </td>
@@ -294,23 +376,68 @@ export default function LettersAdmin() {
         <button onClick={() => setRows((rs) => [...rs, emptyRow()])} className="text-sm text-[#029cda] hover:text-[#0280b5]">+ Добавить строку</button>
 
         <div>
-          <label className="block text-sm text-[#7C8A9A] mb-1">Вставить списком (из таблицы: ФИО ⇥ Должность ⇥ Номер ⇥ Дата, по строке на получателя)</label>
-          <textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} rows={4} className={`${inputCls} font-mono text-[13px]`} placeholder={'Боровлёв Павел Михайлович\tГлаве … муниципального района …\t710\t21.05.2026'} />
+          <label className="block text-sm text-[#7C8A9A] mb-1">Вставить списком (из таблицы: ФИО ⇥ Должность ⇥ Номер ⇥ Дата ⇥ Email, по строке на получателя)</label>
+          <textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} rows={4} className={`${inputCls} font-mono text-[13px]`} placeholder={'Боровлёв Павел Михайлович\tГлаве … муниципального района …\t710\t21.05.2026\tglava@example.ru'} />
           <button onClick={importPaste} disabled={!pasteText.trim()} className="mt-2 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
         </div>
 
-        <div className="pt-2 border-t border-gray-100 flex items-center gap-3">
+        <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center gap-3">
           <button
             onClick={generate}
-            disabled={generating}
+            disabled={generating || sending}
             className="px-6 py-2.5 rounded-lg bg-[#029cda] text-white font-medium hover:bg-[#0280b5] disabled:opacity-50"
           >
             {generating ? 'Генерация…' : 'Сгенерировать PDF'}
+          </button>
+          <button
+            onClick={sendLetters}
+            disabled={sending || generating}
+            className="px-6 py-2.5 rounded-lg bg-[#16a34a] text-white font-medium hover:bg-[#128a3f] disabled:opacity-50"
+          >
+            {sending ? 'Отправка…' : 'Отправить письма'}
           </button>
           <span className="text-sm text-[#9AA6B2]">
             {rows.filter((r) => r.fio.trim()).length > 1 ? 'Несколько получателей → ZIP-архив' : 'Один получатель → PDF'}
           </span>
         </div>
+
+        {/* Тест на себя */}
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="ваш@адрес.ру"
+            type="email"
+            className={`${inputCls} max-w-xs`}
+          />
+          <button
+            onClick={sendTest}
+            disabled={sending || generating || !testEmail.trim()}
+            className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40"
+          >
+            Тест на себя
+          </button>
+          <span className="text-xs text-[#9AA6B2]">Одно письмо (первый получатель) на указанный адрес</span>
+        </div>
+
+        {/* Результаты отправки */}
+        {sendResults && (
+          <div className="rounded-xl border border-gray-100 overflow-hidden">
+            <div className="px-4 py-2 bg-gray-50 text-sm text-[#313131] font-medium">
+              Результат: отправлено {sendResults.filter((r) => r.ok).length} из {sendResults.length}
+            </div>
+            <ul className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+              {sendResults.map((r, i) => (
+                <li key={i} className="px-4 py-2 text-sm flex items-center gap-2">
+                  <span className={r.ok ? 'text-green-600' : 'text-red-500'}>{r.ok ? '✓' : '✕'}</span>
+                  <span className="text-[#313131]">{r.email || '—'}</span>
+                  <span className="text-[#9AA6B2]">{r.fio}</span>
+                  {!r.ok && r.error && <span className="text-red-500 ml-auto">{r.error}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
