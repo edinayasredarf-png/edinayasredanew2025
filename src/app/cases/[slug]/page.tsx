@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import CasePageClient from './CasePageClient';
 import { getCaseSeoBySlug } from '@/lib/seoServer';
+import { getCaseForRender } from '@/lib/server/contentRender';
 
 // ISR вместо force-dynamic: страница кэшируется и ревалидируется раз в час.
 // Мета/JSON-LD рендерятся сервером, свежие правки статьи подхватываются за ≤1 ч.
@@ -49,6 +50,8 @@ export default async function CaseSlugPage(props: any) {
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
 
+  const initialCase = await getCaseForRender(slug);
+
   let jsonLd: object | null = null;
   try {
     const seo = await getCaseSeoBySlug(slug);
@@ -93,7 +96,7 @@ export default async function CaseSlugPage(props: any) {
         />
       )}
       <Suspense fallback={null}>
-        <CasePageClient slug={slug} />
+        <CasePageClient slug={slug} initialCase={initialCase} />
       </Suspense>
     </>
   );

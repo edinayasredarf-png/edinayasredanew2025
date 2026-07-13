@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import PostPageClient from '@/components/blog/PostPageClient';
 import { getPostSeoBySlug } from '@/lib/seoServer';
+import { getPostForRender } from '@/lib/server/contentRender';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
@@ -73,6 +74,8 @@ export default async function BlogPostPage(props: any) {
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
 
+  const initialPost = await getPostForRender(slug);
+
   let jsonLd: object | null = null;
   try {
     const seo = await getPostSeoBySlug(slug);
@@ -116,7 +119,7 @@ export default async function BlogPostPage(props: any) {
         />
       )}
       <Suspense fallback={<PostSkeleton />}>
-        <PostPageClient slug={slug} />
+        <PostPageClient slug={slug} initialPost={initialPost} />
       </Suspense>
     </>
   );

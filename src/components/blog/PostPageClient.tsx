@@ -23,9 +23,11 @@ import PostActionBar from '@/components/blog/PostActionBar';
 import AuthModal from '@/components/auth/AuthModal';
 
 
-export default function PostPageClient({ slug }: { slug: string }) {
+export default function PostPageClient({ slug, initialPost }: { slug: string; initialPost?: BlogPost }) {
   const router = useRouter();
-  const [post, setPost] = useState<BlogPost | undefined>();
+  // initialPost приходит с сервера (SSR) → тело статьи есть в исходном HTML,
+  // хайдрация совпадает, useEffect ниже лишь обновляет данные/счётчики.
+  const [post, setPost] = useState<BlogPost | undefined>(initialPost);
   const [more, setMore] = useState<BlogPost[]>([]);
   const [mine, setMine] = useState<string[]>([]);
   const [isEditor, setIsEditor] = useState(false);

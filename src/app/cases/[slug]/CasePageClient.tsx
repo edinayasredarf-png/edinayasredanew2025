@@ -46,16 +46,17 @@ function formatCaseDate(ts: number): string {
   }).format(new Date(ts));
 }
 
-export default function CasePageClient({ slug }: { slug?: string }) {
+export default function CasePageClient({ slug, initialCase }: { slug?: string; initialCase?: CaseItem | null }) {
   const params = useParams();
   const router = useRouter();
   const routeSlug = params?.slug as string;
   const effectiveSlug = slug || routeSlug;
   const modal = useModal() as { openSolutionRequest?: () => void; openConsult?: () => void };
 
-  const [caseData, setCaseData] = useState<CaseItem | null>(null);
+  // initialCase с сервера (SSR) → тело кейса в исходном HTML.
+  const [caseData, setCaseData] = useState<CaseItem | null>(initialCase ?? null);
   const [relatedCases, setRelatedCases] = useState<CaseItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialCase ? false : true);
   const [isEditor, setIsEditor] = useState(false);
 
   useEffect(() => {
