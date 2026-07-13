@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next'
 import { getTimewebPool } from '@/lib/timewebPg'
+import { IZN_CITY_SLUGS, IMZ_CITY_SLUGS, LES_CITY_SLUGS } from '@/lib/serviceCitySlugs'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
 
-const baseUrl = 'https://единаясреда.рф'
+const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 
 const staticRoutes: MetadataRoute.Sitemap = [
   { url: `${baseUrl}/`,                      changeFrequency: 'daily',   priority: 1.0, lastModified: new Date() },
@@ -13,6 +14,9 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: `${baseUrl}/services/imz`,          changeFrequency: 'monthly', priority: 0.9, lastModified: '2026-04-06' },
   { url: `${baseUrl}/services/izn`,          changeFrequency: 'monthly', priority: 0.9, lastModified: '2026-04-06' },
   { url: `${baseUrl}/services/les`,          changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
+  { url: `${baseUrl}/services/green-inventory`,      changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
+  { url: `${baseUrl}/services/inventory-burials`,    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
+  { url: `${baseUrl}/services/inventory-burials-seo`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
   { url: `${baseUrl}/blog`,                  changeFrequency: 'weekly',  priority: 0.9, lastModified: new Date() },
   { url: `${baseUrl}/cases`,                 changeFrequency: 'weekly',  priority: 0.8, lastModified: new Date() },
   { url: `${baseUrl}/news`,                  changeFrequency: 'daily',   priority: 0.7, lastModified: new Date() },
@@ -69,7 +73,32 @@ async function getDynamicRoutes(): Promise<MetadataRoute.Sitemap> {
   }
 }
 
+// ── Городские страницы услуг (локальное SEO) ────────────────────────
+// Слаги берём из src/lib/serviceCitySlugs.ts (сгенерирован из реально
+// существующих маршрутов /services/{izn,imz}/<slug>), чтобы в карту не
+// попали 404. Дизайн и содержимое страниц не затрагиваются.
+const cityRoutes: MetadataRoute.Sitemap = [
+  ...IZN_CITY_SLUGS.map(slug => ({
+    url: `${baseUrl}/services/izn/${slug}`,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+    lastModified: '2026-04-06',
+  })),
+  ...IMZ_CITY_SLUGS.map(slug => ({
+    url: `${baseUrl}/services/imz/${slug}`,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+    lastModified: '2026-04-06',
+  })),
+  ...LES_CITY_SLUGS.map(slug => ({
+    url: `${baseUrl}/services/les/${slug}`,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+    lastModified: '2026-04-06',
+  })),
+]
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const dynamic = await getDynamicRoutes()
-  return [...staticRoutes, ...dynamic]
+  return [...staticRoutes, ...cityRoutes, ...dynamic]
 }

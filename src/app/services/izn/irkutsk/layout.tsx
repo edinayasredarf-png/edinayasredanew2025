@@ -6,8 +6,8 @@ import Script from 'next/script';
 
 
 export const metadata: Metadata = {
-	title: 'Инвентаризация зеленых насаждений  в Иркутске под ключ с созданием цифрового реестра',
-	description: 'Профессиональная инвентаризация деревьев и зелёных насаждений в Иркутске: ГИС-учёт, аналитика, паспорта объектов.  Соответствие требованиям и высокая точность.',
+	title: 'Инвентаризация зеленых насаждений в Иркутске под ключ с созданием цифрового реестра',
+	description: 'Профессиональная инвентаризация деревьев и зелёных насаждений в Иркутске: ГИС-учёт, аналитика, паспорта объектов. Соответствие требованиям и высокая точность.',
 	alternates: { canonical: '/services/izn/irkutsk' },
 	openGraph: {
 		title: 'Инвентаризация зеленых насаждений в Иркутске — Единая среда',
@@ -37,14 +37,14 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					name: "АИС «Единая среда»",
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
-					url: "https://единаясреда.рф/services/izn/irkutsk",
-					screenshot: "https://единаясреда.рф/img/услуга_изн.png",
+					url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/irkutsk",
+					screenshot: "https://xn--80aakbcct4b2aj7m.xn--p1ai/img/услуга_изн.png",
 					description: "Инвентаризация зеленых насаждений в Иркутске с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
 						priceCurrency: "RUB",
-						url: "https://единаясреда.рф/services/izn/irkutsk"
+						url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/irkutsk"
 					},
 					featureList: [
 						"Электронная карта зеленых насаждений",

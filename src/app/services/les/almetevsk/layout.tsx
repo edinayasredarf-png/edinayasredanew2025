@@ -30,9 +30,9 @@ export default function LesoustrojstvoLayout({ children }: { children: React.Rea
           "@type": "Service",
           name: "Лесоустройство",
           serviceType: "Лесоустройство",
-          provider: { "@type": "Organization", name: "Единая среда", url: "https://единаясреда.рф" },
+          provider: { "@type": "Organization", name: "Единая среда", url: "https://xn--80aakbcct4b2aj7m.xn--p1ai" },
           areaServed: { "@type": "City", name: "Альметьевск" },
-          url: "https://единаясреда.рф/services/les/almetevsk",
+          url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/les/almetevsk",
           description: "Лесоустройство в Альметьевске: инвентаризация лесного фонда, таксация, разработка проектов.",
         })}
       </Script>

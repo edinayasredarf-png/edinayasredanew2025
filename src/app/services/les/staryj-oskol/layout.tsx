@@ -30,9 +30,9 @@ export default function LesoustrojstvoLayout({ children }: { children: React.Rea
           "@type": "Service",
           name: "Лесоустройство",
           serviceType: "Лесоустройство",
-          provider: { "@type": "Organization", name: "Единая среда", url: "https://единаясреда.рф" },
+          provider: { "@type": "Organization", name: "Единая среда", url: "https://xn--80aakbcct4b2aj7m.xn--p1ai" },
           areaServed: { "@type": "City", name: "Старый Оскол" },
-          url: "https://единаясреда.рф/services/les/staryj-oskol",
+          url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/les/staryj-oskol",
           description: "Лесоустройство в Старом Осколе: инвентаризация лесного фонда, таксация, разработка проектов.",
         })}
       </Script>

@@ -30,9 +30,9 @@ export default function LesoustrojstvoLayout({ children }: { children: React.Rea
           "@type": "Service",
           name: "Лесоустройство",
           serviceType: "Лесоустройство",
-          provider: { "@type": "Organization", name: "Единая среда", url: "https://единаясреда.рф" },
+          provider: { "@type": "Organization", name: "Единая среда", url: "https://xn--80aakbcct4b2aj7m.xn--p1ai" },
           areaServed: { "@type": "City", name: "Новошахтинск" },
-          url: "https://единаясреда.рф/services/les/novoshahtinsk",
+          url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/les/novoshahtinsk",
           description: "Лесоустройство в Новошахтинске: инвентаризация лесного фонда, таксация, разработка проектов.",
         })}
       </Script>

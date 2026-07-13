@@ -6,8 +6,8 @@ import Script from 'next/script';
 
 
 export const metadata: Metadata = {
-	title: 'Инвентаризация зеленых насаждений  в Твери под ключ с созданием цифрового реестра',
-	description: 'Профессиональная инвентаризация деревьев и зелёных насаждений в Твери: ГИС-учёт, аналитика, паспорта объектов.  Соответствие требованиям и высокая точность.',
+	title: 'Инвентаризация зеленых насаждений в Твери под ключ с созданием цифрового реестра',
+	description: 'Профессиональная инвентаризация деревьев и зелёных насаждений в Твери: ГИС-учёт, аналитика, паспорта объектов. Соответствие требованиям и высокая точность.',
 	alternates: { canonical: '/services/izn/tver' },
 	openGraph: {
 		title: 'Инвентаризация зеленых насаждений в Твери — Единая среда',
@@ -37,14 +37,14 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					name: "АИС «Единая среда»",
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
-					url: "https://единаясреда.рф/services/izn/tver",
-					screenshot: "https://единаясреда.рф/img/услуга_изн.png",
+					url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/tver",
+					screenshot: "https://xn--80aakbcct4b2aj7m.xn--p1ai/img/услуга_изн.png",
 					description: "Инвентаризация зеленых насаждений в Твери с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
 						priceCurrency: "RUB",
-						url: "https://единаясреда.рф/services/izn/tver"
+						url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/tver"
 					},
 					featureList: [
 						"Электронная карта зеленых насаждений",

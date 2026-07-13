@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Тарифы — Единая среда',
     description: 'Стоимость платформы и услуг по инвентаризации для муниципалитетов. Запросите индивидуальное КП.',
-    url: 'https://единаясреда.рф/pricing',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/pricing',
   },
 };
 

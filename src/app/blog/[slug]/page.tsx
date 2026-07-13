@@ -86,17 +86,17 @@ export default async function BlogPostPage(props: any) {
         author: {
           '@type': 'Organization',
           name: 'Единая среда',
-          url: 'https://единаясреда.рф',
+          url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai',
         },
         publisher: {
           '@type': 'Organization',
-          '@id': 'https://единаясреда.рф/#organization',
+          '@id': 'https://xn--80aakbcct4b2aj7m.xn--p1ai/#organization',
           name: 'Единая среда',
-          logo: { '@type': 'ImageObject', url: 'https://единаясреда.рф/img/logo_dark.svg' },
+          logo: { '@type': 'ImageObject', url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/img/logo_dark.svg' },
         },
         mainEntityOfPage: {
           '@type': 'WebPage',
-          '@id': `https://единаясреда.рф/blog/${slug}`,
+          '@id': `https://xn--80aakbcct4b2aj7m.xn--p1ai/blog/${slug}`,
         },
         inLanguage: 'ru-RU',
       };

@@ -30,9 +30,9 @@ export default function LesoustrojstvoLayout({ children }: { children: React.Rea
           "@type": "Service",
           name: "Лесоустройство",
           serviceType: "Лесоустройство",
-          provider: { "@type": "Organization", name: "Единая среда", url: "https://единаясреда.рф" },
+          provider: { "@type": "Organization", name: "Единая среда", url: "https://xn--80aakbcct4b2aj7m.xn--p1ai" },
           areaServed: { "@type": "City", name: "Набережные Челны" },
-          url: "https://единаясреда.рф/services/les/naberezhnye-chelny",
+          url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/les/naberezhnye-chelny",
           description: "Лесоустройство в Набережных Челнах: инвентаризация лесного фонда, таксация, разработка проектов.",
         })}
       </Script>

@@ -6,11 +6,11 @@ import Script from 'next/script';
 
 
 export const metadata: Metadata = {
-	title: 'Инвентаризация зеленых насаждений  в Кызыле  под ключ с созданием цифрового реестра',
-	description: 'Профессиональная инвентаризация деревьев и зелёных насаждений в Кызыле : ГИС-учёт, аналитика, паспорта объектов.  Соответствие требованиям и высокая точность.',
+	title: 'Инвентаризация зеленых насаждений в Кызыле под ключ с созданием цифрового реестра',
+	description: 'Профессиональная инвентаризация деревьев и зелёных насаждений в Кызыле : ГИС-учёт, аналитика, паспорта объектов. Соответствие требованиям и высокая точность.',
 	alternates: { canonical: '/services/izn/kyzyl' },
 	openGraph: {
-		title: 'Инвентаризация зеленых насаждений в Кызыле  — Единая среда',
+		title: 'Инвентаризация зеленых насаждений в Кызыле — Единая среда',
 		description: 'Полный учёт зелёных зон в Кызыле : координаты, атрибуты, аналитика в ГИС.',
 		url: '/services/izn/kyzyl',
 		type: 'article',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: 'Инвентаризация зеленых насаждений в Кызыле  Единая среда',
+		title: 'Инвентаризация зеленых насаждений в Кызыле Единая среда',
 		description: 'Профессиональная инвентаризация зеленых насаждений в Кызыле : точные данные и аналитика.',
 		images: ['/img/услуга_изн.png'],
 	},
@@ -37,14 +37,14 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					name: "АИС «Единая среда»",
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
-					url: "https://единаясреда.рф/services/izn/kyzyl",
-					screenshot: "https://единаясреда.рф/img/услуга_изн.png",
-					description: "Инвентаризация зеленых насаждений в Кызыле  с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
+					url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/kyzyl",
+					screenshot: "https://xn--80aakbcct4b2aj7m.xn--p1ai/img/услуга_изн.png",
+					description: "Инвентаризация зеленых насаждений в Кызыле с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
 						priceCurrency: "RUB",
-						url: "https://единаясреда.рф/services/izn/kyzyl"
+						url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/kyzyl"
 					},
 					featureList: [
 						"Электронная карта зеленых насаждений",

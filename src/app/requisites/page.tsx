@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Реквизиты компании — Единая среда',
     description: 'ООО «Сфера»: ИНН 6150100608, ОГРН 1206100037670. Юридический адрес, банковские реквизиты, контакты директора.',
-    url: 'https://единаясреда.рф/requisites',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/requisites',
   },
 };
 

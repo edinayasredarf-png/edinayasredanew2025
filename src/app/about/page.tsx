@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'О компании — ГК Единая среда',
     description: 'Более 15 лет на рынке. 500+ проектов в 40+ регионах. Резидент Сколково, реестр отечественного ПО.',
-    url: 'https://единаясреда.рф/about',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/about',
   },
 };
 
