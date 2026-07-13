@@ -2,7 +2,8 @@ import { MetadataRoute } from 'next'
 import { getTimewebPool } from '@/lib/timewebPg'
 import { IZN_CITY_SLUGS, IMZ_CITY_SLUGS, LES_CITY_SLUGS } from '@/lib/serviceCitySlugs'
 
-export const dynamic = 'force-dynamic'
+// ISR: карта пересобирается не чаще раза в час (свежий контент из БД
+// подхватывается автоматически), без запроса к БД на каждый заход робота.
 export const revalidate = 3600
 
 const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
@@ -30,45 +31,56 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: `${baseUrl}/welcome-bonus`,         changeFrequency: 'monthly', priority: 0.5, lastModified: '2026-04-06' },
 ]
 
+// createdat/updatedat в БД — bigint (epoch, мс), node-postgres отдаёт их строкой.
+function epochToDate(value: unknown): Date {
+  const n = Number(value)
+  return Number.isFinite(n) && n > 0 ? new Date(n) : new Date()
+}
+
+type ContentRow = { slug: string; createdat?: string | number; updatedat?: string | number }
+
 async function getDynamicRoutes(): Promise<MetadataRoute.Sitemap> {
   try {
     const pool = getTimewebPool()
 
+    // В схеме (timeweb_public_schema.sql) колонки называются createdat/updatedat
+    // и НЕТ поля published — весь сохранённый контент считается опубликованным.
     const [postsRes, newsRes, casesRes] = await Promise.all([
-      pool.query<{ slug: string; updated_at?: string; created_at?: string }>(
-        `SELECT slug, updated_at, created_at FROM posts WHERE published = true ORDER BY created_at DESC`
+      pool.query<ContentRow>(
+        `SELECT slug, createdat, updatedat FROM posts ORDER BY createdat DESC`
       ),
-      pool.query<{ slug: string; updated_at?: string; created_at?: string }>(
-        `SELECT slug, updated_at, created_at FROM news ORDER BY created_at DESC`
+      pool.query<ContentRow>(
+        `SELECT slug, createdat, updatedat FROM news ORDER BY createdat DESC`
       ),
-      pool.query<{ slug: string; updated_at?: string; created_at?: string }>(
-        `SELECT slug, updated_at, created_at FROM cases ORDER BY created_at DESC`
+      pool.query<ContentRow>(
+        `SELECT slug, createdat, updatedat FROM cases ORDER BY createdat DESC`
       ),
     ])
 
     const posts: MetadataRoute.Sitemap = postsRes.rows.map(r => ({
       url: `${baseUrl}/blog/${r.slug}`,
-      lastModified: r.updated_at ?? r.created_at ?? new Date(),
+      lastModified: epochToDate(r.updatedat ?? r.createdat),
       changeFrequency: 'monthly',
       priority: 0.7,
     }))
 
     const newsItems: MetadataRoute.Sitemap = newsRes.rows.map(r => ({
       url: `${baseUrl}/news/${r.slug}`,
-      lastModified: r.updated_at ?? r.created_at ?? new Date(),
+      lastModified: epochToDate(r.updatedat ?? r.createdat),
       changeFrequency: 'monthly',
       priority: 0.6,
     }))
 
     const cases: MetadataRoute.Sitemap = casesRes.rows.map(r => ({
       url: `${baseUrl}/cases/${r.slug}`,
-      lastModified: r.updated_at ?? r.created_at ?? new Date(),
+      lastModified: epochToDate(r.updatedat ?? r.createdat),
       changeFrequency: 'monthly',
       priority: 0.7,
     }))
 
     return [...posts, ...newsItems, ...cases]
-  } catch {
+  } catch (e) {
+    console.error('sitemap: getDynamicRoutes failed', e)
     return []
   }
 }

@@ -3,7 +3,9 @@ import type { Metadata } from 'next';
 import CasePageClient from './CasePageClient';
 import { getCaseSeoBySlug } from '@/lib/seoServer';
 
-export const dynamic = 'force-dynamic';
+// ISR вместо force-dynamic: страница кэшируется и ревалидируется раз в час.
+// Мета/JSON-LD рендерятся сервером, свежие правки статьи подхватываются за ≤1 ч.
+export const revalidate = 3600;
 
 export async function generateMetadata(props: any): Promise<Metadata> {
   const raw = props?.params;

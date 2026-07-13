@@ -5,7 +5,9 @@ import { getPostSeoBySlug } from '@/lib/seoServer';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
-export const dynamic = 'force-dynamic';
+// ISR вместо force-dynamic: страница кэшируется и ревалидируется раз в час.
+// Мета/JSON-LD рендерятся сервером, свежие правки статьи подхватываются за ≤1 ч.
+export const revalidate = 3600;
 
 export async function generateMetadata(props: any): Promise<Metadata> {
   const raw = props?.params;
