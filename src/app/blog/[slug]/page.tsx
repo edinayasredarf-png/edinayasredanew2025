@@ -2,10 +2,13 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import PostPageClient from '@/components/blog/PostPageClient';
 import { getPostSeoBySlug } from '@/lib/seoServer';
+import { getPostForRender } from '@/lib/server/contentRender';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
-export const dynamic = 'force-dynamic';
+// ISR вместо force-dynamic: страница кэшируется и ревалидируется раз в час.
+// Мета/JSON-LD рендерятся сервером, свежие правки статьи подхватываются за ≤1 ч.
+export const revalidate = 3600;
 
 export async function generateMetadata(props: any): Promise<Metadata> {
   const raw = props?.params;
@@ -71,6 +74,8 @@ export default async function BlogPostPage(props: any) {
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
 
+  const initialPost = await getPostForRender(slug);
+
   let jsonLd: object | null = null;
   try {
     const seo = await getPostSeoBySlug(slug);
@@ -86,17 +91,17 @@ export default async function BlogPostPage(props: any) {
         author: {
           '@type': 'Organization',
           name: 'Единая среда',
-          url: 'https://единаясреда.рф',
+          url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai',
         },
         publisher: {
           '@type': 'Organization',
-          '@id': 'https://единаясреда.рф/#organization',
+          '@id': 'https://xn--80aakbcct4b2aj7m.xn--p1ai/#organization',
           name: 'Единая среда',
-          logo: { '@type': 'ImageObject', url: 'https://единаясреда.рф/img/logo_dark.svg' },
+          logo: { '@type': 'ImageObject', url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/img/logo_dark.svg' },
         },
         mainEntityOfPage: {
           '@type': 'WebPage',
-          '@id': `https://единаясреда.рф/blog/${slug}`,
+          '@id': `https://xn--80aakbcct4b2aj7m.xn--p1ai/blog/${slug}`,
         },
         inLanguage: 'ru-RU',
       };
@@ -114,7 +119,7 @@ export default async function BlogPostPage(props: any) {
         />
       )}
       <Suspense fallback={<PostSkeleton />}>
-        <PostPageClient slug={slug} />
+        <PostPageClient slug={slug} initialPost={initialPost} />
       </Suspense>
     </>
   );

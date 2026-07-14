@@ -16,7 +16,7 @@ interface BreadcrumbsProps {
   customLabels?: Record<string, string>
 }
 
-const DEFAULT_SITE_URL = 'https://единаясреда.рф'
+const DEFAULT_SITE_URL = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 
 const resolveSiteUrl = () => {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()

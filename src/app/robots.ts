@@ -5,7 +5,7 @@ import { MetadataRoute } from 'next'
 export default function robots(): MetadataRoute.Robots {
 
 
-  const baseUrl = 'https://единаясреда.рф'
+  const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 
   return {
     rules: [

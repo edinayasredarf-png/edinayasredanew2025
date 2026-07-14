@@ -34,14 +34,14 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					name: "АИС «Единая среда»",
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
-					url: "https://единаясреда.рф/services/imz/joshkar-ola",
-					screenshot: "https://единаясреда.рф/img/cemetery.png",
+					url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/imz/joshkar-ola",
+					screenshot: "https://xn--80aakbcct4b2aj7m.xn--p1ai/img/cemetery.png",
 					description: "Инвентаризация мест захоронений и кладбищ в Йошкар-Оле с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
 						priceCurrency: "RUB",
-						url: "https://единаясреда.рф/services/imz/joshkar-ola"
+						url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/imz/joshkar-ola"
 					},
 					featureList: [
 						"Электронная карта кладбищ",

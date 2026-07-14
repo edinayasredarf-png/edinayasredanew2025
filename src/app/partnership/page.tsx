@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Партнёрство — Единая среда',
     description: 'Партнёрские и агентские программы по цифровому управлению муниципальными территориями.',
-    url: 'https://единаясреда.рф/partnership',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/partnership',
   },
 };
 

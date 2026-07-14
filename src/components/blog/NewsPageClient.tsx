@@ -20,10 +20,11 @@ import CommentSection from '@/components/blog/CommentSection';
 import AuthModal from '@/components/auth/AuthModal';
 import { formatContentDate } from '@/lib/contentDates';
 
-export default function NewsPageClient({ slug }: { slug: string }) {
+export default function NewsPageClient({ slug, initialNews }: { slug: string; initialNews?: NewsItem }) {
   const router = useRouter();
-  const [news, setNews] = useState<NewsItem | undefined>();
-  const [newsLoading, setNewsLoading] = useState(true);
+  // initialNews с сервера (SSR) → тело новости в исходном HTML.
+  const [news, setNews] = useState<NewsItem | undefined>(initialNews);
+  const [newsLoading, setNewsLoading] = useState(initialNews ? false : true);
   const [isEditor, setIsEditor] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);

@@ -2,8 +2,11 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import CasePageClient from './CasePageClient';
 import { getCaseSeoBySlug } from '@/lib/seoServer';
+import { getCaseForRender } from '@/lib/server/contentRender';
 
-export const dynamic = 'force-dynamic';
+// ISR вместо force-dynamic: страница кэшируется и ревалидируется раз в час.
+// Мета/JSON-LD рендерятся сервером, свежие правки статьи подхватываются за ≤1 ч.
+export const revalidate = 3600;
 
 export async function generateMetadata(props: any): Promise<Metadata> {
   const raw = props?.params;
@@ -47,6 +50,8 @@ export default async function CaseSlugPage(props: any) {
   const params = raw && typeof raw.then === 'function' ? await raw : raw;
   const slug = params?.slug as string;
 
+  const initialCase = await getCaseForRender(slug);
+
   let jsonLd: object | null = null;
   try {
     const seo = await getCaseSeoBySlug(slug);
@@ -63,17 +68,17 @@ export default async function CaseSlugPage(props: any) {
         author: {
           '@type': 'Organization',
           name: 'Единая среда',
-          url: 'https://единаясреда.рф',
+          url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai',
         },
         publisher: {
           '@type': 'Organization',
-          '@id': 'https://единаясреда.рф/#organization',
+          '@id': 'https://xn--80aakbcct4b2aj7m.xn--p1ai/#organization',
           name: 'Единая среда',
-          logo: { '@type': 'ImageObject', url: 'https://единаясреда.рф/img/logo_dark.svg' },
+          logo: { '@type': 'ImageObject', url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/img/logo_dark.svg' },
         },
         mainEntityOfPage: {
           '@type': 'WebPage',
-          '@id': `https://единаясреда.рф/cases/${slug}`,
+          '@id': `https://xn--80aakbcct4b2aj7m.xn--p1ai/cases/${slug}`,
         },
         inLanguage: 'ru-RU',
       };
@@ -91,7 +96,7 @@ export default async function CaseSlugPage(props: any) {
         />
       )}
       <Suspense fallback={null}>
-        <CasePageClient slug={slug} />
+        <CasePageClient slug={slug} initialCase={initialCase} />
       </Suspense>
     </>
   );

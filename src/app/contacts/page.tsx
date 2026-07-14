@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Контакты — Единая среда',
     description: 'Телефон: +7 (800) 550-56-12. Email: info@единаясреда.рф. Консультации по цифровому управлению территориями.',
-    url: 'https://единаясреда.рф/contacts',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/contacts',
   },
 };
 

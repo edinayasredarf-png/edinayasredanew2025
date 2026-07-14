@@ -18,13 +18,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Единая среда — цифровая мультплатформа для управления территориями и муниципальными объектами на ней',
     description: 'Российская платформа для цифрового управления муниципальными территориями. Учёт объектов городской инфраструктуры, контроль подрядчиков, аналитика.',
-    url: 'https://единаясреда.рф',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai',
     siteName: 'Единая среда',
     type: 'website',
     locale: 'ru_RU',
     images: [
       {
-        url: 'https://единаясреда.рф/img/og-image.jpg',
+        url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/img/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Единая среда — цифровая платформа для управления объектами на ввереных территориях',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Единая среда — цифровая платформа управления территориями',
     description: 'Российская платформа для цифрового управления муниципальными территориями.',
-    images: ['https://единаясреда.рф/img/og-image.jpg'],
+    images: ['https://xn--80aakbcct4b2aj7m.xn--p1ai/img/og-image.jpg'],
   },
 
   robots: {

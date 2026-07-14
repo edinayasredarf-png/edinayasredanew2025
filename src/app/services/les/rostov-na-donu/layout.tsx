@@ -30,9 +30,9 @@ export default function LesoustrojstvoLayout({ children }: { children: React.Rea
           "@type": "Service",
           name: "Лесоустройство",
           serviceType: "Лесоустройство",
-          provider: { "@type": "Organization", name: "Единая среда", url: "https://единаясреда.рф" },
+          provider: { "@type": "Organization", name: "Единая среда", url: "https://xn--80aakbcct4b2aj7m.xn--p1ai" },
           areaServed: { "@type": "City", name: "Ростов-на-Дону" },
-          url: "https://единаясреда.рф/services/les/rostov-na-donu",
+          url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/les/rostov-na-donu",
           description: "Лесоустройство в Ростове-на-Дону: инвентаризация лесного фонда, таксация, разработка проектов.",
         })}
       </Script>

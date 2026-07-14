@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Услуги — инвентаризация и управление территориями | Единая среда',
     description: 'Профессиональная инвентаризация зелёных насаждений, мест захоронений и лесоустройство для муниципалитетов.',
-    url: 'https://единаясреда.рф/services',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/services',
   },
 };
 

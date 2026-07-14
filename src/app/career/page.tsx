@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Карьера — Единая среда',
     description: 'Вакансии в компании по цифровому управлению муниципальными территориями.',
-    url: 'https://единаясреда.рф/career',
+    url: 'https://xn--80aakbcct4b2aj7m.xn--p1ai/career',
   },
 };
 
