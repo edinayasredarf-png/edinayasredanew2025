@@ -155,7 +155,7 @@ const ProductsTeamsSection = () => {
   }, [videoSrc, isPlaying]);
 
   return (
-    <section className="bg-white w-full py-12 md:py-20 font-[Raleway] font-medium">
+    <section className="bg-[#F6F7F9] w-full py-12 md:py-20 font-[Raleway] font-medium">
       <div className="w-full h-[520px] md:h-[640px] xl:h-[760px] relative rounded-[28px] md:rounded-[40px] overflow-hidden">
         {/* Фоновое видео */}
         <div className="absolute inset-0 w-full h-full bg-black">
@@ -197,7 +197,7 @@ const ProductsTeamsSection = () => {
                 <button
                   key={index}
                   onClick={() => setActiveSlide(index)}
-                  className="relative rounded-[10px] overflow-hidden bg-white/90 border border-gray-200 px-3 py-2 md:px-4 md:py-2.5 backdrop-blur-sm"
+                  className="relative rounded-[10px] overflow-hidden bg-[#F6F7F9]/90 border border-gray-200 px-3 py-2 md:px-4 md:py-2.5 backdrop-blur-sm"
                 >
                   {/* Заливка прогресса */}
                   <div className="absolute inset-0">
@@ -229,7 +229,7 @@ const ProductsTeamsSection = () => {
           {/* Карточки поверх видео */}
           <div className="w-full flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-end md:justify-between mt-4 md:mt-0">
             {/* Основная карточка */}
-            <div className="w-full md:w-[420px] bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 mx-auto md:mx-0 text-center md:text-left">
+            <div className="w-full md:w-[420px] bg-[#F6F7F9] rounded-2xl md:rounded-3xl p-4 md:p-5 mx-auto md:mx-0 text-center md:text-left">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-center md:justify-start gap-4">
                   <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg flex items-center justify-center">
@@ -273,7 +273,7 @@ const ProductsTeamsSection = () => {
             </div>
 
             {/* Статистика (только на md+) */}
-            <div className="hidden md:block bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 w-full md:w-[260px]">
+            <div className="hidden md:block bg-[#F6F7F9] rounded-2xl md:rounded-3xl p-4 md:p-5 w-full md:w-[260px]">
               <div className="flex flex-col">
                 {slides[activeSlide].stats && (
                   <div className="text-[26px] md:text-[32px] font-normal font-helvetica leading-tight text-gray-800">

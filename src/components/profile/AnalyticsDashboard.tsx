@@ -91,7 +91,7 @@ const fmtDate = (d: string) => {
 
 /* ── Блоки ── */
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`bg-white rounded-2xl p-6 ${className}`}>{children}</div>;
+  return <div className={`bg-[#F6F7F9] rounded-2xl p-6 ${className}`}>{children}</div>;
 }
 function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
@@ -265,7 +265,7 @@ export default function AnalyticsDashboard({ only }: { only?: AnalyticsView }) {
                 key={t.value}
                 onClick={() => setDateMode(t.value)}
                 className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  dateMode === t.value ? 'bg-white text-[#029cda] shadow-sm font-medium' : 'text-[#7C8A9A] hover:text-[#313131]'
+                  dateMode === t.value ? 'bg-[#F6F7F9] text-[#029cda] shadow-sm font-medium' : 'text-[#7C8A9A] hover:text-[#313131]'
                 }`}
               >
                 {t.label}
@@ -280,7 +280,7 @@ export default function AnalyticsDashboard({ only }: { only?: AnalyticsView }) {
               value={customFrom}
               max={customTo || todayDate()}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-white"
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-[#F6F7F9]"
             />
             <span className="text-[#9AA6B2] text-sm">—</span>
             <input
@@ -289,7 +289,7 @@ export default function AnalyticsDashboard({ only }: { only?: AnalyticsView }) {
               min={customFrom}
               max={todayDate()}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-white"
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-[#F6F7F9]"
             />
           </div>
         )}
@@ -443,7 +443,7 @@ export default function AnalyticsDashboard({ only }: { only?: AnalyticsView }) {
               <select
                 value={leadSource}
                 onChange={(e) => setLeadSource(e.target.value)}
-                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-white"
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-[#F6F7F9]"
               >
                 <option value="all">Все источники</option>
                 {leadSources.map((sName) => (
@@ -461,7 +461,7 @@ export default function AnalyticsDashboard({ only }: { only?: AnalyticsView }) {
                     key={o.v}
                     onClick={() => setLeadQuality(o.v)}
                     className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                      leadQuality === o.v ? 'bg-white text-[#029cda] shadow-sm font-medium' : 'text-[#7C8A9A] hover:text-[#313131]'
+                      leadQuality === o.v ? 'bg-[#F6F7F9] text-[#029cda] shadow-sm font-medium' : 'text-[#7C8A9A] hover:text-[#313131]'
                     }`}
                   >
                     {o.label}
@@ -602,10 +602,10 @@ function LeadCard({ lead }: { lead: CrmLead }) {
       </div>
 
       <div className="flex flex-wrap gap-2 mt-3">
-        <span className="text-xs px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[#646b85]">Источник: {lead.source}</span>
-        <span className="text-xs px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[#646b85]">Стадия: {lead.status}</span>
+        <span className="text-xs px-2 py-0.5 rounded-md bg-[#F6F7F9] border border-gray-200 text-[#646b85]">Источник: {lead.source}</span>
+        <span className="text-xs px-2 py-0.5 rounded-md bg-[#F6F7F9] border border-gray-200 text-[#646b85]">Стадия: {lead.status}</span>
         {lead.sourceDescription && (
-          <span className="text-xs px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[#646b85]">{lead.sourceDescription}</span>
+          <span className="text-xs px-2 py-0.5 rounded-md bg-[#F6F7F9] border border-gray-200 text-[#646b85]">{lead.sourceDescription}</span>
         )}
       </div>
 
@@ -626,7 +626,7 @@ function LeadCard({ lead }: { lead: CrmLead }) {
       )}
 
       {lead.comment && (
-        <div className="mt-3 text-sm text-[#646b85] bg-white border border-gray-100 rounded-lg px-3 py-2">
+        <div className="mt-3 text-sm text-[#646b85] bg-[#F6F7F9] border border-gray-100 rounded-lg px-3 py-2">
           <span className="text-[#9AA6B2]">Комментарий: </span>{lead.comment}
         </div>
       )}

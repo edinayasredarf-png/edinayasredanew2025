@@ -82,7 +82,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       {/* MOBILE: возвращено как было */}
       <div className="fixed inset-x-0 bottom-0 z-[120] md:hidden pointer-events-none pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto w-full max-w-[480px] px-3 pb-3">
-          <div className="pointer-events-auto w-full rounded-[28px] border border-white/60 bg-white/80 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-[30px]">
+          <div className="pointer-events-auto w-full rounded-[28px] border border-white/60 bg-[#F6F7F9]/80 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-[30px]">
             <div className="relative flex items-stretch rounded-[28px] px-2 py-2">
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute inset-0 rounded-[28px] bg-gradient-to-b from-white/50 to-white/30" />
@@ -139,11 +139,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       <div className="hidden fixed inset-x-0 bottom-0 z-[110] pointer-events-none pb-4">
         <div className="mx-auto max-w-[620px] px-4">
           <div className="pointer-events-auto inline-flex w-full items-center gap-2">
-            <div className="relative h-[64px] flex-1 rounded-2xl bg-white/20 border border-white/50 shadow-[0px_20px_30px_0px_rgba(0,0,0,0.08),0px_8px_12px_0px_rgba(0,0,0,0.05)] backdrop-blur-[20px] overflow-hidden">
+            <div className="relative h-[64px] flex-1 rounded-2xl bg-[#F6F7F9]/20 border border-white/50 shadow-[0px_20px_30px_0px_rgba(0,0,0,0.08),0px_8px_12px_0px_rgba(0,0,0,0.05)] backdrop-blur-[20px] overflow-hidden">
               {activeIndex !== -1 && (
                 <motion.div
                   layoutId="desktop-nav-pill"
-                  className="absolute top-[6px] bottom-[6px] rounded-xl bg-white"
+                  className="absolute top-[6px] bottom-[6px] rounded-xl bg-[#F6F7F9]"
                   style={{
                     width: `calc((100% - 0.75rem) / ${navItems.length})`,
                     left: `calc(0.375rem + ((100% - 0.75rem) / ${navItems.length}) * ${activeIndex})`,

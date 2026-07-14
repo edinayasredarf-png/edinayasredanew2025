@@ -230,7 +230,7 @@ export default function LettersAdmin() {
             key={t.key}
             onClick={() => setActiveKey(t.key)}
             className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
-              activeKey === t.key ? 'bg-[#029cda] text-white border-[#029cda]' : 'bg-white text-[#313131] border-gray-200 hover:bg-gray-50'
+              activeKey === t.key ? 'bg-[#029cda] text-white border-[#029cda]' : 'bg-[#F6F7F9] text-[#313131] border-gray-200 hover:bg-gray-50'
             }`}
           >
             {t.name}
@@ -240,7 +240,7 @@ export default function LettersAdmin() {
 
       {/* Редактор шаблона */}
       {draft && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+        <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-[#313131]">Шаблон «{draft.name}»</h3>
             <button
@@ -273,7 +273,7 @@ export default function LettersAdmin() {
             <label className="block text-sm text-[#7C8A9A] mb-1">Шапка бланка (верхний колонтитул — на каждой странице)</label>
             <div className="flex items-center gap-3">
               {draft.header_image
-                ? <img src={draft.header_image} alt="Шапка" className="h-12 object-contain border border-gray-200 rounded bg-white" />
+                ? <img src={draft.header_image} alt="Шапка" className="h-12 object-contain border border-gray-200 rounded bg-[#F6F7F9]" />
                 : <span className="text-xs text-[#9AA6B2]">не загружено</span>}
               <label className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
                 {uploading === 'header_image' ? 'Загрузка…' : 'Загрузить'}
@@ -300,7 +300,7 @@ export default function LettersAdmin() {
             <label className="block text-sm text-[#7C8A9A] mb-1">Подпись руководителя (изображение)</label>
             <div className="flex items-center gap-3">
               {draft.signature_image
-                ? <img src={draft.signature_image} alt="Подпись" className="h-12 object-contain border border-gray-200 rounded bg-white" />
+                ? <img src={draft.signature_image} alt="Подпись" className="h-12 object-contain border border-gray-200 rounded bg-[#F6F7F9]" />
                 : <span className="text-xs text-[#9AA6B2]">не загружено</span>}
               <label className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
                 {uploading === 'signature_image' ? 'Загрузка…' : 'Загрузить'}
@@ -341,7 +341,7 @@ export default function LettersAdmin() {
       )}
 
       {/* Получатели */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4">
         <h3 className="font-semibold text-[#313131]">Получатели</h3>
 
         <div className="overflow-x-auto -mx-5 px-5">

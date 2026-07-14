@@ -29,7 +29,7 @@ export function CaseDetailSidebar({ toc, onTocClick, onRequest, related }: CaseD
 
   return (
     <aside className="space-y-3 lg:sticky lg:top-24 lg:self-start">
-      <div className="bg-white rounded-2xl px-3 py-3 md:px-4 md:py-4 overflow-hidden">
+      <div className="bg-[#F6F7F9] rounded-2xl px-3 py-3 md:px-4 md:py-4 overflow-hidden">
         <button
           type="button"
           onClick={() => needsCollapse && setTocExpanded((v) => !v)}
@@ -101,7 +101,7 @@ export function CaseDetailSidebar({ toc, onTocClick, onRequest, related }: CaseD
       </button>
 
       {related.length > 0 && (
-        <div className="bg-white rounded-2xl px-3 py-3 md:px-4 md:py-4">
+        <div className="bg-[#F6F7F9] rounded-2xl px-3 py-3 md:px-4 md:py-4">
           <p className="text-base text-[#2c2d2e] mb-3">Вам может быть интересно</p>
           <ul className="space-y-3">
             {related.map((item) => (

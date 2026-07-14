@@ -49,13 +49,13 @@ export default function FormPageShell({
   }, [b24Form, b24Loader, containerId]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F6F7F9] font-[Raleway]">
+    <div className="min-h-screen flex flex-col bg-white font-[Raleway]">
       <RedesignHeader />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12 md:py-20">
         <div className="w-full max-w-[460px]">
           {/* Card */}
-          <div className="bg-white rounded-[28px] p-8">
+          <div className="bg-[#F6F7F9] rounded-[28px] p-8">
             {/* Logo + title */}
             <div className="flex items-center gap-3 mb-6">
               <Image

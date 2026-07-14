@@ -15,7 +15,7 @@ function CaseCard({
   const [loaded, setLoaded] = useState(false);
   return (
     <article className="grid items-stretch gap-8 lg:grid-cols-2">
-      <div className="relative overflow-hidden rounded-2xl border border-[#f2f3f8] bg-white">
+      <div className="relative overflow-hidden rounded-2xl border border-[#f2f3f8] bg-[#F6F7F9]">
         <div className="relative h-[280px] w-full sm:h-[360px]">
           {!loaded && (
             <div className="absolute inset-0 overflow-hidden rounded-2xl bg-neutral-200">
@@ -141,7 +141,7 @@ export default function CaseSlider({
         <button
           type="button"
           onClick={() => snapTo(index - 1)}
-          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-white text-[#029cda] disabled:opacity-40"
+          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-[#F6F7F9] text-[#029cda] disabled:opacity-40"
           aria-label="Назад"
           disabled={index <= 0}
         >
@@ -150,7 +150,7 @@ export default function CaseSlider({
         <button
           type="button"
           onClick={() => snapTo(index + 1)}
-          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-white text-[#029cda] disabled:opacity-40"
+          className="inline-grid h-12 w-12 place-items-center rounded-full border border-[#e4e7f1] bg-[#F6F7F9] text-[#029cda] disabled:opacity-40"
           aria-label="Вперёд"
           disabled={index >= max}
         >

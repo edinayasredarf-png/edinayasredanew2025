@@ -56,11 +56,11 @@ const ServiceCardsSection: React.FC = () => {
         {data.cards.map((card, i) => (
           <div
             key={i}
-            className="bg-white rounded-3xl flex flex-col overflow-hidden"
+            className="bg-[#F6F7F9] rounded-3xl flex flex-col overflow-hidden"
           >
             {/* IMAGE */}
             <div className="p-2">
-              <div className="bg-[#f6f7f9] rounded-2xl flex items-center justify-center h-[260px]">
+              <div className="bg-white rounded-2xl flex items-center justify-center h-[260px]">
                 <Image
                   src={card.image}
                   alt={card.title}

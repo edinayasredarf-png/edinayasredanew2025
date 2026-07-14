@@ -37,7 +37,7 @@ const LogoCard: React.FC<Logo> = ({ src, alt, href }) => (
     aria-label={alt}
     className="
       block w-full rounded-2xl border border-[#EEF1F5]
-      bg-white hover:bg-[#F1F3F6] transition-colors
+      bg-[#F6F7F9] hover:bg-[#F1F3F6] transition-colors
       h-24 md:h-28 p-4
       flex items-center justify-center
     "

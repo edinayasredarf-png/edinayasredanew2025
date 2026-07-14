@@ -24,12 +24,12 @@ export default function BurgerMenu({ isOpen, onToggle, onNavigate }: BurgerMenuP
       {/* Burger Button */}
       <button
         onClick={onToggle}
-        className="fixed top-6 right-6 z-50 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all duration-300"
+        className="fixed top-6 right-6 z-50 w-12 h-12 bg-[#F6F7F9]/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 hover:bg-[#F6F7F9]/20 transition-all duration-300"
       >
         <div className="relative w-6 h-6">
-          <span className={`absolute top-0 left-0 w-6 h-0.5 bg-white transform transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-          <span className={`absolute top-2 left-0 w-6 h-0.5 bg-white transform transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`}></span>
-          <span className={`absolute top-4 left-0 w-6 h-0.5 bg-white transform transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          <span className={`absolute top-0 left-0 w-6 h-0.5 bg-[#F6F7F9] transform transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+          <span className={`absolute top-2 left-0 w-6 h-0.5 bg-[#F6F7F9] transform transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`}></span>
+          <span className={`absolute top-4 left-0 w-6 h-0.5 bg-[#F6F7F9] transform transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
         </div>
       </button>
 

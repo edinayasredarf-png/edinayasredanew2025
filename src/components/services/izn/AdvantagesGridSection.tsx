@@ -46,7 +46,7 @@ const AdvantagesGridSection: React.FC = () => {
           {/* Ряд 1: узкая | широкая | узкая */}
           <div className="hidden lg:grid grid-cols-[1fr_2fr_1fr] gap-2">
             {/* Карточка 1 */}
-            <div className="bg-white rounded-3xl flex flex-col p-2">
+            <div className="bg-[#F6F7F9] rounded-3xl flex flex-col p-2">
               <div className="flex flex-col gap-3 px-7 pt-[27px] pb-7">
                 <h3 className="text-[#313131] text-[28px] font-medium leading-9">
                   Новое оборудование
@@ -58,7 +58,7 @@ const AdvantagesGridSection: React.FC = () => {
             </div>
 
             {/* Карточка 2 с изображением */}
-            <div className="bg-white rounded-3xl flex gap-2 p-2 min-h-[300px]">
+            <div className="bg-[#F6F7F9] rounded-3xl flex gap-2 p-2 min-h-[300px]">
               <div className="flex-1 flex flex-col gap-3 px-7 pt-[27px] pb-7">
                 <h3 className="text-[#313131] text-[28px] font-medium leading-9">
                   Экспертная команда
@@ -67,7 +67,7 @@ const AdvantagesGridSection: React.FC = () => {
                   Объединяем специалистов в области озеленения и цифровых решений.
                 </p>
               </div>
-              <div className="flex-1 bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10">
+              <div className="flex-1 bg-white rounded-2xl flex items-center justify-center px-10">
                 <Image
                   src="/img/services/izn/8.png"
                   alt="Экспертная команда"
@@ -78,7 +78,7 @@ const AdvantagesGridSection: React.FC = () => {
             </div>
 
             {/* Карточка 3 */}
-            <div className="bg-white rounded-3xl flex flex-col p-2">
+            <div className="bg-[#F6F7F9] rounded-3xl flex flex-col p-2">
               <div className="flex flex-col gap-3 px-7 pt-[27px] pb-7">
                 <h3 className="text-[#313131] text-[28px] font-medium leading-9">
                   Безопасность данных
@@ -93,8 +93,8 @@ const AdvantagesGridSection: React.FC = () => {
           {/* Ряд 2: две равные карточки */}
           <div className="hidden lg:grid grid-cols-2 gap-2">
             {/* Карточка 4 с изображением */}
-            <div className="bg-white rounded-3xl flex gap-2 p-2 min-h-[300px]">
-              <div className="flex-1 bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10 py-10">
+            <div className="bg-[#F6F7F9] rounded-3xl flex gap-2 p-2 min-h-[300px]">
+              <div className="flex-1 bg-white rounded-2xl flex items-center justify-center px-10 py-10">
                 <Image
                   src="/img/services/izn/9.png"
                   alt="Масштабируемость"
@@ -113,7 +113,7 @@ const AdvantagesGridSection: React.FC = () => {
             </div>
 
             {/* Карточка 5 с изображением */}
-            <div className="bg-white rounded-3xl flex gap-2 p-2 min-h-[300px]">
+            <div className="bg-[#F6F7F9] rounded-3xl flex gap-2 p-2 min-h-[300px]">
               <div className="flex-1 flex flex-col gap-3 px-7 pt-[27px] pb-7">
                 <h3 className="text-[#313131] text-[28px] font-medium">
                   Постоплата
@@ -122,7 +122,7 @@ const AdvantagesGridSection: React.FC = () => {
                   Предлагаем уникальную возможность. Сначала получаете услугу, а оплачиваете позже.
                 </p>
               </div>
-              <div className="flex-1 bg-[#f6f7f9] rounded-2xl flex items-center justify-center px-10">
+              <div className="flex-1 bg-white rounded-2xl flex items-center justify-center px-10">
                 <Image
                   src="/img/services/izn/10.png"
                   alt="Постоплата"
@@ -136,9 +136,9 @@ const AdvantagesGridSection: React.FC = () => {
           {/* Мобильная/планшетная версия */}
           <div className="flex lg:hidden flex-col gap-2">
             {data.advantagesMobile.map((card, idx) => (
-              <div key={idx} className="bg-white rounded-3xl flex flex-col md:flex-row gap-4 p-6">
+              <div key={idx} className="bg-[#F6F7F9] rounded-3xl flex flex-col md:flex-row gap-4 p-6">
                 {card.img && (
-                  <div className="flex-1 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
+                  <div className="flex-1 bg-white rounded-2xl flex items-center justify-center p-6">
                     <Image src={card.img} alt={card.title} width={320} height={320} />
                   </div>
                 )}

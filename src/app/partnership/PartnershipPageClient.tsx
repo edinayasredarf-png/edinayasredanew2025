@@ -145,8 +145,8 @@ export default function PartnershipPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Карточка 1 */}
-              <div className="flex-1 p-2 bg-white rounded-3xl flex flex-col md:flex-row gap-2">
-                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-[#F6F7F9] rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
+              <div className="flex-1 p-2 bg-[#F6F7F9] rounded-3xl flex flex-col md:flex-row gap-2">
+                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-white rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
                   <Image
                     src="/img/partners/1.svg"
                     alt="Продукты Единая Среда"
@@ -166,8 +166,8 @@ export default function PartnershipPage() {
               </div>
 
               {/* Карточка 2 */}
-              <div className="flex-1 p-2 bg-white rounded-3xl flex flex-col md:flex-row gap-2">
-                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-[#F6F7F9] rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
+              <div className="flex-1 p-2 bg-[#F6F7F9] rounded-3xl flex flex-col md:flex-row gap-2">
+                <div className="w-full md:w-[244px] md:flex-shrink-0 bg-white rounded-2xl flex justify-center items-center overflow-hidden order-1 md:order-none">
                   <Image
                     src="/img/partners/2.svg"
                     alt="Варианты участия"
@@ -200,7 +200,7 @@ export default function PartnershipPage() {
         </section>
 
         {/* Варианты участия в программе */}
-        <section className="py-16 md:py-24 bg-[#F6F7F9]">
+        <section className="py-16 md:py-24 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className={`text-3xl md:text-4xl lg:text-5xl text-center mb-16 ${headingBase} ${headingColor}`}>
               Варианты участия в программе
@@ -208,7 +208,7 @@ export default function PartnershipPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Партнёр */}
-              <div className="p-2 bg-white rounded-[20px]">
+              <div className="p-2 bg-[#F6F7F9] rounded-[20px]">
                 <div className="px-7 pt-6 pb-10">
                   <h3 className={`text-[32px] md:text-[39px] leading-[44px] ${headingBase} ${headingColor}`}>Партнёр</h3>
                   <p className="mt-4 text-[19px] leading-7 text-[#667085]">
@@ -217,7 +217,7 @@ export default function PartnershipPage() {
                 </div>
 
                 <div className="space-y-2 px-0 pb-2">
-                  <details className="group bg-[#F6F7F9] rounded-2xl px-7 py-5">
+                  <details className="group bg-white rounded-2xl px-7 py-5">
                     <summary className="flex items-center justify-between cursor-pointer select-none">
                       <span className={`text-[23px] leading-9 ${headingBase} ${headingColor}`}>Как это работает</span>
                       <span className="ml-4 inline-flex w-5 h-5 relative">
@@ -230,7 +230,7 @@ export default function PartnershipPage() {
                     </div>
                   </details>
 
-                  <details className="group bg-[#F6F7F9] rounded-2xl px-7 py-5">
+                  <details className="group bg-white rounded-2xl px-7 py-5">
                     <summary className="flex items-center justify-between cursor-pointer select-none">
                       <span className={`text-2xl leading-9 ${headingBase} ${headingColor}`}>Преимущества</span>
                       <span className="ml-4 inline-flex w-5 h-5 relative">
@@ -249,7 +249,7 @@ export default function PartnershipPage() {
                 <div className="px-2 pt-2">
                   <button
                     onClick={() => setPartnersOpen(true)}
-                    className="w-full px-5 py-3.5 rounded-xl bg-white text-[#029cda] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
+                    className="w-full px-5 py-3.5 rounded-xl bg-[#F6F7F9] text-[#029cda] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
                   >
                     Стать партнёром
                   </button>
@@ -257,7 +257,7 @@ export default function PartnershipPage() {
               </div>
 
               {/* Агент */}
-              <div className="p-2 bg-white rounded-[20px]">
+              <div className="p-2 bg-[#F6F7F9] rounded-[20px]">
                 <div className="px-7 pt-6 pb-10">
                   <h3 className={`text-[32px] md:text-[39px] leading-[44px] ${headingBase} ${headingColor}`}>Агент</h3>
                   <p className="mt-4 text-[19px] leading-7 text-[#667085]">
@@ -266,7 +266,7 @@ export default function PartnershipPage() {
                 </div>
 
                 <div className="space-y-2 px-0 pb-2">
-                  <details className="group bg-[#F6F7F9] rounded-2xl px-7 py-5">
+                  <details className="group bg-white rounded-2xl px-7 py-5">
                     <summary className="flex items-center justify-between cursor-pointer select-none">
                       <span className={`text-[23px] leading-9 ${headingBase} ${headingColor}`}>Как это работает</span>
                       <span className="ml-4 inline-flex w-5 h-5 relative">
@@ -279,7 +279,7 @@ export default function PartnershipPage() {
                     </div>
                   </details>
 
-                  <details className="group bg-[#F6F7F9] rounded-2xl px-7 py-5">
+                  <details className="group bg-white rounded-2xl px-7 py-5">
                     <summary className="flex items-center justify-between cursor-pointer select-none">
                       <span className={`text-2xl leading-9 ${headingBase} ${headingColor}`}>Преимущества</span>
                       <span className="ml-4 inline-flex w-5 h-5 relative">
@@ -298,7 +298,7 @@ export default function PartnershipPage() {
                 <div className="px-2 pt-2">
                   <button
                     onClick={() => setPartnersOpen(true)}
-                    className="w-full px-5 py-3.5 rounded-xl bg-white text-[#029cda] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
+                    className="w-full px-5 py-3.5 rounded-xl bg-[#F6F7F9] text-[#029cda] font-medium border border-[#E5E7EB] hover:bg-gray-50 transition"
                   >
                     Стать агентом
                   </button>
@@ -342,16 +342,16 @@ export default function PartnershipPage() {
         </section>
 
         {/* Кому подойдёт программа */}
-        <section className="py-16 md:py-24 bg-[#F6F7F9]">
+        <section className="py-16 md:py-24 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-3xl px-9 pt-14 pb-5">
+            <div className="bg-[#F6F7F9] rounded-3xl px-9 pt-14 pb-5">
               <h2 className={`text-3xl md:text-4xl lg:text-[48px] text-center mb-12 ${headingBase} ${headingColor}`}>
                 Кому подойдёт программа
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {whoIsItFor.map((item, idx) => (
-                  <div key={idx} className="px-4 py-3.5 bg-[#F6F7F9] rounded-xl inline-flex items-center gap-2">
+                  <div key={idx} className="px-4 py-3.5 bg-white rounded-xl inline-flex items-center gap-2">
                     <span className="w-5 h-5 relative inline-flex items-center justify-center">
                       <Image src={item.icon} alt="" width={20} height={20} />
                     </span>
@@ -377,7 +377,7 @@ export default function PartnershipPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="flex-1 p-8 bg-white rounded-[20px]">
+              <div className="flex-1 p-8 bg-[#F6F7F9] rounded-[20px]">
                 <div className="w-full rounded-xl overflow-hidden border border-[#E5E7EB]">
                   <Image
                     src="/img/partners/4.svg"
@@ -393,7 +393,7 @@ export default function PartnershipPage() {
                 </p>
               </div>
 
-              <div className="flex-1 p-8 bg-white rounded-[20px]">
+              <div className="flex-1 p-8 bg-[#F6F7F9] rounded-[20px]">
                 <div className="w-full rounded-xl overflow-hidden border border-[#E5E7EB]">
                   <Image
                     src="/img/partners/5.svg"
@@ -422,7 +422,7 @@ export default function PartnershipPage() {
 
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
       {/* Public Cloud */}
-      <div className="p-2 bg-white rounded-3xl flex flex-col lg:flex-row justify-center items-start gap-9">
+      <div className="p-2 bg-[#F6F7F9] rounded-3xl flex flex-col lg:flex-row justify-center items-start gap-9">
         {/* Текстовый блок */}
         <div className="w-full lg:w-[464px] p-7 flex flex-col justify-between items-start">
           <div>
@@ -444,7 +444,7 @@ export default function PartnershipPage() {
         </div>
 
         {/* Картинка — снизу на мобиле, справа на десктопе */}
-        <div className="w-full lg:w-[220px] lg:h-[324px] bg-white rounded-2xl flex justify-center items-center overflow-hidden">
+        <div className="w-full lg:w-[220px] lg:h-[324px] bg-[#F6F7F9] rounded-2xl flex justify-center items-center overflow-hidden">
           <Image
             src="/img/partners/6.svg"
             alt="Иллюстрация ES"
@@ -456,7 +456,7 @@ export default function PartnershipPage() {
       </div>
 
       {/* Private Cloud */}
-      <div className="p-2 bg-white rounded-3xl flex flex-col lg:flex-row justify-center items-start gap-9">
+      <div className="p-2 bg-[#F6F7F9] rounded-3xl flex flex-col lg:flex-row justify-center items-start gap-9">
         {/* Текстовый блок */}
         <div className="w-full lg:w-[464px] p-7 flex flex-col justify-between items-start">
           <div>
@@ -478,7 +478,7 @@ export default function PartnershipPage() {
         </div>
 
         {/* Картинка — снизу на мобиле, справа на десктопе */}
-        <div className="w-full lg:w-[220px] lg:h-[324px] bg-white rounded-2xl flex justify-center items-center overflow-hidden">
+        <div className="w-full lg:w-[220px] lg:h-[324px] bg-[#F6F7F9] rounded-2xl flex justify-center items-center overflow-hidden">
           <Image
             src="/img/partners/7.svg"
             alt="Иллюстрация услуг"
@@ -560,9 +560,9 @@ export default function PartnershipPage() {
 
         {/* CTA финальный */}
 
-<section className="py-16 md:py-24 bg-[#F6F7F9]">
+<section className="py-16 md:py-24 bg-white">
   <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden">
+    <div className="rounded-3xl border border-[#E5E7EB] bg-[#F6F7F9] overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2">
         {/* Лево: заголовок, текст и кнопки */}
         <div className="p-8 md:p-12 flex flex-col justify-center">

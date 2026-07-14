@@ -79,10 +79,10 @@ export default function DocumentsPage() {
 
   return (
 
-    <div className="min-h-screen bg-white font-[Raleway] font-medium lining-nums">
-      <main className="flex flex-col lg:flex-row w-full max-w-none m-0 pt-4 min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F6F7F9] font-[Raleway] font-medium lining-nums">
+      <main className="flex flex-col lg:flex-row w-full max-w-none m-0 pt-4 min-h-screen bg-[#F6F7F9]">
         {/* Sidebar */}
-        <aside className="w-full lg:w-80 bg-[#F6F7F9] rounded-2xl  p-6 lg:mr-8 lg:ml-0 lg:rounded-r-2xl flex flex-col min-h-screen mb-6 lg:mb-0">
+        <aside className="w-full lg:w-80 bg-white rounded-2xl  p-6 lg:mr-8 lg:ml-0 lg:rounded-r-2xl flex flex-col min-h-screen mb-6 lg:mb-0">
           <div className="mb-6">
             <Link href="/" className="flex items-center">
               <Image
@@ -113,7 +113,7 @@ export default function DocumentsPage() {
                   key={doc.file}
                   onClick={() => handleDocClick(doc.file)}
                   className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center ${
-                    activeDoc === doc.file ? "bg-[#029cda]/10 text-[#029cda] font-medium" : "text-[#313131] hover:bg-[#F6F7F9]"
+                    activeDoc === doc.file ? "bg-[#029cda]/10 text-[#029cda] font-medium" : "text-[#313131] hover:bg-white"
                   }`}
                 >
                   <span className="inline-flex items-center mr-3">
@@ -134,7 +134,7 @@ export default function DocumentsPage() {
         </aside>
 
         {/* Content */}
-        <section className="flex-1 bg-white rounded-2xl border border-2 border-[#F6F7F9] p-8 lg:p-12 min-h-screen hidden lg:flex lg:flex-col ">
+        <section className="flex-1 bg-[#F6F7F9] rounded-2xl border border-2 border-[#F6F7F9] p-8 lg:p-12 min-h-screen hidden lg:flex lg:flex-col ">
           <nav className="flex items-center gap-2 text-sm text-[#7C8A9A] mb-6">
             <Link href="/" className="hover:text-blue-600 transition-colors">Единая Среда</Link>
             <span>/</span>
@@ -158,7 +158,7 @@ export default function DocumentsPage() {
               <div className="mb-6">
                 <iframe
                   src={`${activeUrl}#toolbar=1&navpanes=0&scrollbar=1`}
-                  className="w-full min-h-[600px] border border-[#F6F7F9] rounded-lg bg-white"
+                  className="w-full min-h-[600px] border border-[#F6F7F9] rounded-lg bg-[#F6F7F9]"
                   title={docTitles[activeDoc]}
                 />
               </div>

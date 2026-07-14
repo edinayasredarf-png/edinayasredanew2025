@@ -132,7 +132,7 @@ export default function AdminPanel() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-6">
         {/* Левое меню */}
         <aside className="lg:w-64 shrink-0">
-          <div className="bg-white rounded-2xl p-3 lg:sticky lg:top-6">
+          <div className="bg-[#F6F7F9] rounded-2xl p-3 lg:sticky lg:top-6">
             <h1 className="px-3 pt-2 pb-3 text-lg font-bold text-gray-900">Админ-панель</h1>
             {([
               { group: 'Контент', items: [
@@ -187,7 +187,7 @@ export default function AdminPanel() {
           {activeTab === 'dashboard' && (<>
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +201,7 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +215,7 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,7 +231,7 @@ export default function AdminPanel() {
         </div>
 
         {/* Последние статьи */}
-        <div className="bg-white rounded-lg shadow mb-8">
+        <div className="bg-[#F6F7F9] rounded-lg shadow mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900">Последние статьи</h2>
           </div>
@@ -253,7 +253,7 @@ export default function AdminPanel() {
         </div>
 
         {/* Последние комментарии */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-[#F6F7F9] rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900">Последние комментарии</h2>
           </div>

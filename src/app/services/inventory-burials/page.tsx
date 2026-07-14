@@ -90,7 +90,7 @@ export default function InventoryBurialsPage() {
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-block bg-white text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/10 transition-colors"
+                  className="inline-block bg-[#F6F7F9] text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/10 transition-colors"
                 >
                   Получить консультацию
                 </button>
@@ -158,7 +158,7 @@ export default function InventoryBurialsPage() {
               4 шага до полной инвентаризации
             </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                <div className="bg-[#F6F7F9] rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 01.png" alt="Выбор программного продукта" width={240} height={160} className="w-full h-full object-cover" />
@@ -174,7 +174,7 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                              <div className="bg-[#F6F7F9] rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 02.png" alt="Внесение имеющихся данных" width={240} height={160} className="w-full h-full object-cover" />
@@ -190,7 +190,7 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                              <div className="bg-[#F6F7F9] rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 03.png" alt="Подготовительные и полевые работы" width={240} height={160} className="w-full h-full object-cover" />
@@ -206,7 +206,7 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-                              <div className="bg-white rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
+                              <div className="bg-[#F6F7F9] rounded-[20px] p-0 min-h-[160px] md:min-h-[200px] transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97 overflow-hidden">
                   <div className="flex h-full flex-col sm:flex-row">
                   <div className="w-full sm:w-[160px] md:w-[200px] lg:w-[240px] h-[160px] sm:h-auto flex-shrink-0">
                     <Image src="/img/Step 04.png" alt="Камеральные работы" width={240} height={160} className="w-full h-full object-cover" />
@@ -230,7 +230,7 @@ export default function InventoryBurialsPage() {
               Возможности системы
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+              <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
                 <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
                   <Image src="/icons/information.svg" alt="Полная информация" width={28} height={28} className="w-7 h-7" />
                 </div>
@@ -244,7 +244,7 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+              <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
                 <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
 								<Image src="/icons/Eye.svg" alt="Контроль и безопасность" width={28} height={28} className="w-7 h-7" />
 
@@ -259,7 +259,7 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+              <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
                 <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
 								<Image src="/icons/Statistic.svg" alt="Статистика" width={28} height={28} className="w-7 h-7" />
 
@@ -274,7 +274,7 @@ export default function InventoryBurialsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+              <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
                 <div className="w-[60px] h-[60px] flex items-center justify-center bg-[#029cda] rounded-[20px] mb-4 mx-auto">
 								<Image src="/icons/Actual.svg" alt="Актуальные данные" width={28} height={28} className="w-7 h-7" />
 
@@ -314,7 +314,7 @@ export default function InventoryBurialsPage() {
             <h2 className="text-4xl text-black font-medium mb-8">
               Стоимость услуги
             </h2>
-            <div className="bg-white rounded-4xl p-8 md:p-12 ">
+            <div className="bg-[#F6F7F9] rounded-4xl p-8 md:p-12 ">
 
               <p className="text-gray-600 mb-8">
                 Точная стоимость рассчитывается индивидуально в зависимости от объема работ и площади территории кладбища

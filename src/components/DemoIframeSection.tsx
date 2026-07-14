@@ -124,7 +124,7 @@ export default function DemoIframeSection() {
             {/* Fullscreen */}
             <button
               onClick={handleFullscreen}
-              className="absolute bottom-4 right-4 bg-white/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+              className="absolute bottom-4 right-4 bg-[#F6F7F9]/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-[#F6F7F9] transition shadow-lg z-30"
             >
               Открыть на полный экран
             </button>
@@ -133,7 +133,7 @@ export default function DemoIframeSection() {
             {isFullscreen && (
               <button
                 onClick={exitFullscreen}
-                className="absolute bottom-4 left-4 bg-white/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+                className="absolute bottom-4 left-4 bg-[#F6F7F9]/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-[#F6F7F9] transition shadow-lg z-30"
               >
                 Вернуться на страницу
               </button>

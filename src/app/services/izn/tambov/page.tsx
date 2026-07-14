@@ -25,7 +25,7 @@ export default function GreenInventoryPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#F6F7F9] font-raleway font-medium lining-nums">
+      <div className="min-h-screen bg-white font-raleway font-medium lining-nums">
   {/* Hero Section */}
 	<section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
         <div className="rd-content-column py-10 md:py-20 relative z-10">
@@ -45,7 +45,7 @@ export default function GreenInventoryPage() {
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-block  text-white border border-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-white/10 transition-colors"
+                  className="inline-block  text-white border border-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#F6F7F9]/10 transition-colors"
                 >
                  Бесплатная консультация
                 </button>

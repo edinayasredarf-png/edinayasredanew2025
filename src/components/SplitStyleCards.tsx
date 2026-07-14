@@ -1,109 +1,117 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-
-
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 type Feature = {
-  tab: string;
   title: string;
   description: string;
   image: string;
-  link?: string;
+  icon: ReactNode;
 };
 
-const AUTO_SWITCH_DELAY = 12000;
+// Интервал автопереключения (мс) — только для десктопной версии.
+const AUTO_SWITCH_DELAY = 5000;
+
+// Тематические иконки в фирменном цвете #029cda (для мобильных карточек).
+const iconProps = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "#029CDA",
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  className: "w-6 h-6",
+};
 
 const features: Feature[] = [
   {
-    tab: "Контролируйте работы удаленно",
     title: "Контролируйте работы удалённо",
-    description:
-      "Подрядчики сами вносят данные — вы принимаете работы онлайн.",
+    description: "Подрядчики сами вносят данные — вы принимаете работы онлайн.",
     image: "/img/card1.png",
-    link: "#",
+    icon: (
+      <svg {...iconProps} aria-hidden>
+        <rect x="8" y="2" width="8" height="4" rx="1" />
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+        <path d="m9 14 2 2 4-4" />
+      </svg>
+    ),
   },
   {
-    tab: "Актуальные данные",
     title: "Всегда актуальная информация",
     description:
       "Система автоматически обновляет информацию и отображает изменения в режиме реального времени.",
     image: "/img/card2.png",
-    link: "#",
+    icon: (
+      <svg {...iconProps} aria-hidden>
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+        <path d="M21 3v5h-5" />
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+        <path d="M3 21v-5h5" />
+      </svg>
+    ),
   },
   {
-    tab: "Все объекты",
     title: "Все объекты в одном интерфейсе",
     description:
       "Получайте доступ ко всем объектам и территориям через единое рабочее пространство.",
     image: "/img/card3.png",
-    link: "#",
+    icon: (
+      <svg {...iconProps} aria-hidden>
+        <rect width="7" height="7" x="3" y="3" rx="1" />
+        <rect width="7" height="7" x="14" y="3" rx="1" />
+        <rect width="7" height="7" x="14" y="14" rx="1" />
+        <rect width="7" height="7" x="3" y="14" rx="1" />
+      </svg>
+    ),
   },
   {
-    tab: "Прозрачность действий",
     title: "Полная прозрачность процессов",
     description:
       "Все действия подрядчиков и сотрудников фиксируются и доступны для проверки.",
     image: "/img/card4.png",
-    link: "#",
+    icon: (
+      <svg {...iconProps} aria-hidden>
+        <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    ),
   },
   {
-    tab: "Доступы",
     title: "Гибкое управление доступами",
     description:
       "Настраивайте права доступа для сотрудников и подрядчиков по ролям.",
     image: "/img/card5.png",
-    link: "#",
+    icon: (
+      <svg {...iconProps} aria-hidden>
+        <path d="M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.42-.59l.81-.81a6.5 6.5 0 1 0-4-4z" />
+        <circle cx="16.5" cy="7.5" r=".5" fill="#029CDA" />
+      </svg>
+    ),
   },
 ];
 
 export default function FeaturesTabsSection() {
+  // Стартуем с верхней вкладки — автопереключение идёт сверху вниз.
   const [activeTab, setActiveTab] = useState(0);
-
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const tabsContainerRef = useRef<HTMLDivElement>(null);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const restartTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
+      // Сверху вниз: индекс растёт, после нижней — снова к верхней.
       setActiveTab((prev) => (prev + 1) % features.length);
     }, AUTO_SWITCH_DELAY);
   };
 
   useEffect(() => {
     restartTimer();
-
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    const container = tabsContainerRef.current;
-    const activeElement = tabRefs.current[activeTab];
-
-    if (!container || !activeElement) return;
-
-    const containerWidth = container.offsetWidth;
-
-    const targetScroll =
-      activeElement.offsetLeft -
-      containerWidth / 2 +
-      activeElement.offsetWidth / 2;
-
-    container.scrollTo({
-      left: targetScroll,
-      behavior: "smooth",
-    });
-  }, [activeTab]);
 
   const handleTabClick = (index: number) => {
     setActiveTab(index);
@@ -113,202 +121,97 @@ export default function FeaturesTabsSection() {
   const current = features[activeTab];
 
   return (
-    <section className="bg-[#F6F7F9] w-full py-16 md:py-20 overflow-hidden">
-      <div className="rd-content-column">
+    <section className="bg-white w-full pt-6 md:pt-10 pb-6 md:pb-8" aria-label="Всё для удобного цифрового контроля и учёта вашей территории">
+      <div className="rd-content-column flex flex-col gap-5">
         {/* HEADER */}
-
-        <div className="flex justify-center">
-          <h2 className="max-w-[900px] text-center font-involve text-[#222222] text-[32px] md:text-[48px] font-medium leading-[1.2]">
-            Все возможности в одном месте
+        <div className="flex flex-col items-center">
+          <h2 className="max-w-[1120px] text-center font-involve text-[#313131] text-[28px] sm:text-[32px] md:text-[40px] font-medium leading-[1.15] md:leading-[44px] tracking-wide">
+            Всё для удобного цифрового контроля
+            <br className="hidden sm:block" />
+            {" "}и учёта вашей территории
           </h2>
         </div>
 
-        {/* TABS */}
-
-        <div className="mt-10 border-b border-[#E7EBF0]">
-          <div
-            ref={tabsContainerRef}
-            className="
-              flex
-              flex-nowrap
-              lg:justify-center
-              gap-8
-              overflow-x-auto
-              overflow-y-hidden
-              px-4
-              lg:px-0
-
-              snap-x
-              snap-mandatory
-
-              [-ms-overflow-style:none]
-              [scrollbar-width:none]
-              [&::-webkit-scrollbar]:hidden
-            "
-          >
-            {features.map((item, index) => {
-              const active = index === activeTab;
-
-              return (
-                <button
-                  key={item.tab}
-                  ref={(el) => {
-                    tabRefs.current[index] = el;
-                  }}
-                  onClick={() => handleTabClick(index)}
-                  className="
-                    relative
-                    shrink-0
-                    whitespace-nowrap
-                    pb-4
-                    snap-center
-                    group
-                  "
-                >
-                  <span
-                    className={`
-                      font-involve
-                      transition-colors
-                      duration-300
-                      text-[18px]
-                      lg:text-xl
-                      leading-8
-
-                      ${
-                        active
-                          ? "text-[#029CDA] font-bold"
-                          : "text-[#7C8A9A] font-medium group-hover:text-[#029CDA]"
-                      }
-                    `}
-                  >
-                    {item.tab}
-                  </span>
-
-                  {active && (
-                    <>
-                      <motion.div
-                        layoutId="active-tab"
-                        className="absolute bottom-0 left-0 h-[2px] w-full bg-[#029CDA]"
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 35,
-                        }}
-                      />
-
-                      {/* Progress Bar */}
-                      <motion.div
-                        key={activeTab}
-                        className="absolute bottom-0 left-0 h-[2px] bg-[#029CDA]"
-                        initial={{ width: "0%" }}
-                        animate={{ width: "100%" }}
-                        transition={{
-                          duration: AUTO_SWITCH_DELAY / 1000,
-                          ease: "linear",
-                        }}
-                      />
-                    </>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* CONTENT */}
-
-        <div className="mt-8 bg-[#F6F7F9] rounded-[32px] overflow-hidden">
-          <div className="grid lg:grid-cols-[420px_1fr] min-h-[530px]">
-            {/* LEFT */}
-
-            <div className="flex items-center px-6 md:px-10 py-8 md:py-10">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`content-${activeTab}`}
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -24 }}
-                  transition={{
-                    duration: 0.35,
-                    ease: "easeOut",
-                  }}
-                >
-                  <h3 className="font-involve text-[#222222] text-[24px] md:text-[28px] font-medium leading-9">
-                    {current.title}
-                  </h3>
-
-									<p className="mt-6 font-[Raleway] font-medium lining-nums text-[#7C8A9A] text-[15px] leading-7">
-  {current.description}
-</p>
-
-                  {current.link && (
-                    <a
-                      href={current.link}
-                      className="
-                        inline-flex
-                        items-center
-                        mt-10
-                        text-[#029CDA]
-                        text-lg
-                        md:text-xl
-                        font-bold
-                        hover:opacity-80
-                        transition-opacity
-                      "
-                    >
-                      Подробнее
-                    </a>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* IMAGE */}
-
-						<div className="relative flex items-end justify-center px-6 md:px-8 pt-6 md:pt-8">
+        {/* ===== ДЕСКТОП: картинка + вертикальные вкладки ===== */}
+        <div className="hidden lg:grid pt-8 grid-cols-[minmax(0,684px)_minmax(0,418px)] gap-12 items-center">
+          {/* LEFT — картинка на подложке */}
+          <div className="bg-[#F6F7F9] rounded-[32px] flex items-end justify-center px-[72px] pt-[72px] pb-0 h-[572px] overflow-hidden">
+            <div className="relative w-full max-w-[500px] aspect-square">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`image-${activeTab}`}
-                  initial={{
-                    opacity: 0,
-                    scale: 0.95,
-                    x: 30,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    x: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    scale: 0.95,
-                    x: -30,
-                  }}
-                  transition={{
-                    duration: 0.45,
-                    ease: "easeOut",
-                  }}
-                  className="
-                    relative
-                    w-full
-                    max-w-[320px]
-                    md:max-w-[420px]
-                    lg:max-w-[506px]
-                    aspect-square
-                  "
+                  initial={{ opacity: 0, scale: 0.96, y: 16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: -16 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="absolute inset-0"
                 >
                   <Image
                     src={current.image}
                     alt={current.title}
                     fill
                     priority
-                    className="object-contain"
-                    sizes="(max-width: 768px) 320px, (max-width: 1024px) 420px, 506px"
+                    className="object-contain object-bottom"
+                    sizes="500px"
                   />
                 </motion.div>
               </AnimatePresence>
             </div>
           </div>
+
+          {/* RIGHT — вертикальные вкладки */}
+          <div className="relative flex flex-col">
+            {features.map((item, index) => {
+              const active = index === activeTab;
+              return (
+                <button
+                  key={item.title}
+                  type="button"
+                  onClick={() => handleTabClick(index)}
+                  aria-pressed={active}
+                  className="group relative text-left border-l-2 border-transparent pl-6 py-4"
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="feature-active-line"
+                      className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#029CDA] rounded-full"
+                      transition={{ type: "spring", stiffness: 350, damping: 35 }}
+                    />
+                  )}
+                  <span className="block font-involve text-[#313131] text-xl font-medium leading-7 tracking-wide">
+                    {item.title}
+                  </span>
+                  <span
+                    className={`mt-2 block font-[Raleway] text-base leading-6 tracking-tight transition-colors duration-300 ${
+                      active ? "text-[#646b85]" : "text-[#646b85]/60 group-hover:text-[#646b85]"
+                    }`}
+                  >
+                    {item.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ===== МОБИЛЬНАЯ ВЕРСИЯ: только блоки с иконками, без слайдшоу ===== */}
+        <div className="lg:hidden pt-2 flex flex-col gap-4">
+          {features.map((item) => (
+            <div
+              key={item.title}
+              className="bg-[#F6F7F9] rounded-3xl p-6"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center mb-4">
+                {item.icon}
+              </div>
+              <h3 className="font-involve text-[#313131] text-xl font-medium leading-7 tracking-wide">
+                {item.title}
+              </h3>
+              <p className="mt-2 font-[Raleway] text-base leading-6 tracking-tight text-[#646b85]">
+                {item.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -112,15 +112,15 @@ const Header: React.FC<HeaderProps> = ({
 	const navLinkBase =
 		'px-3 py-2.5 rounded-xl text-sm md:text-base lg:text-md transition-colors';
 	const navText = isLight ? 'text-[#212121]' : 'text-white';
-	const navHover = isLight ? 'hover:bg-black/5' : 'hover:bg-white/10';
+	const navHover = isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10';
 	const activeBox = isLight
 		? 'outline outline-1 outline-[#E3E8F2]'
 		: 'outline outline-1 outline-white/25';
 
-	const dropdownMenuCls = `dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'
+	const dropdownMenuCls = `dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w[320px] ${isLight ? 'bg-[#F6F7F9] text-[#19191a]' : 'bg-black text-white'
 		} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'
 		}`;
-	const dropdownItemHover = `flex items-center gap-3 py-2 px-3 rounded-xl ${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'
+	const dropdownItemHover = `flex items-center gap-3 py-2 px-3 rounded-xl ${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'
 		} transition-colors`;
 
 	return (
@@ -131,7 +131,7 @@ const Header: React.FC<HeaderProps> = ({
 					}`}
 				aria-hidden={!showSticky}
 			>
-				<div className="bg-[#F6F7F9]/95 backdrop-blur supports-[backdrop-filter]:bg-[#F6F7F9]/80 border-b border-white">
+				<div className="bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-white">
 					<div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 						{/* Лого */}
 						<Link href="/" className="flex items-center">
@@ -183,7 +183,7 @@ const Header: React.FC<HeaderProps> = ({
 							{!isAuthenticated && onAuthClick ? (
 								<button
 									onClick={onAuthClick}
-									className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-[Raleway] font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
+									className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-[Raleway] font-medium rounded-xl bg-white hover:bg-black/5 transition-colors"
 								>
 									<ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
 									<span>Вход</span>
@@ -191,7 +191,7 @@ const Header: React.FC<HeaderProps> = ({
 							) : !isAuthenticated ? (
 								<a
 									href="https://edinayasreda.ru/"
-									className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-[Raleway] font-medium   rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors"
+									className="hidden md:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-[Raleway] font-medium   rounded-xl bg-white hover:bg-black/5 transition-colors"
 								>
 									<ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
 									<span>Вход</span>
@@ -231,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({
 			</div>
 
 			{/* Основной header (тема меняется по роуту) */}
-			<header className={`${isLight ? 'bg-[#F6F7F9]' : 'bg-black'} rounded-t-[20px] relative z-20 w-full`}>
+			<header className={`${isLight ? 'bg-white' : 'bg-black'} rounded-t-[20px] relative z-20 w-full`}>
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					{/* Оверлей блюра при открытом подменю на десктопе */}
 					{openMenu && (
@@ -295,7 +295,7 @@ const Header: React.FC<HeaderProps> = ({
 								<span>Получить консультацию</span>
 							</a>
 							<a href="https://edinayasreda.ru/" className={isLight
-								? 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-medium rounded-xl bg-[#F6F7F9] hover:bg-black/5 transition-colors'
+								? 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-[#212121] text-base font-[Raleway] font-medium rounded-xl bg-white hover:bg-black/5 transition-colors'
 								: 'hidden lg:inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-white text-base font-[Raleway] font-medium rounded-xl bg-[#212121] hover:bg-opacity-80 transition-colors'}
 							>
 								<ThemedIcon src="/icons/icon4.svg"  size={24} alt="" />
@@ -345,12 +345,12 @@ const Header: React.FC<HeaderProps> = ({
 										</svg>
 									</button>
 									{openMenu === 'platform' && (
-										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
-											<a href="https://edinayasreda.ru/" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-[#F6F7F9] text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
+											<a href="https://edinayasreda.ru/" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/icon4.svg"  size={24} className="mr-1" /> Войти в ЛК
 											</a>
 
-											<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+											<a href="https://www.rustore.ru/catalog/app/ru.edinayasreda" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Mobile.svg" size={24} className="mr-1" /> Мобильное приложение
 											</a>
 										</div>
@@ -383,16 +383,16 @@ const Header: React.FC<HeaderProps> = ({
 										</svg>
 									</button>
 									{openMenu === 'services' && (
-										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
-											<Link href="/services/imz" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-[#F6F7F9] text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
+											<Link href="/services/imz" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Cemetery.svg" size={24} className="mr-1" />
 												Инвентаризация мест захоронений
 											</Link>
-											<Link href="/services/izn" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+											<Link href="/services/izn" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Tree.svg" size={24} className="mr-1" />
 												Инвентаризация зеленых насаждений
 											</Link>
-											<Link href="/services/les" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+											<Link href="/services/les" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Forest.svg" size={24} className="mr-1" />
 												Лесоустройство
 											</Link>
@@ -401,8 +401,8 @@ const Header: React.FC<HeaderProps> = ({
 												<Link
 													href="/services"
 													className={`w-full inline-flex ${isLight
-														? 'bg-[#F6F7F9] text-[#212121] hover:bg-black/5'
-														: 'bg-white/10 text-white hover:bg-white/20'
+														? 'bg-white text-[#212121] hover:bg-black/5'
+														: 'bg-[#F6F7F9]/10 text-white hover:bg-[#F6F7F9]/20'
 														} items-center justify-center gap-2 py-2.5 rounded-xl transition-colors`}
 												>
 													<ThemedIcon src="/icons/arrow-right.svg" size={20} />
@@ -449,11 +449,11 @@ const Header: React.FC<HeaderProps> = ({
 										</svg>
 									</button>
 									{openMenu === 'company' && (
-										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-white text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
-											<Link href="/about" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+										<div className={`dropdown-menu absolute left-0 top-full mt-3 flex flex-col min-w-[320px] ${isLight ? 'bg-[#F6F7F9] text-[#19191a]' : 'bg-black text-white'} rounded-2xl shadow-xl z-50 p-6 gap-2 animate-fade-in border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
+											<Link href="/about" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/City.svg" size={24} className="mr-1" /> О компании
 											</Link>
-											<Link href="/career" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-white/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+											<Link href="/career" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
 												<ThemedIcon src="/icons/Job.svg" size={24} className="mr-1" /> Карьера
 											</Link>
 										</div>
@@ -508,7 +508,7 @@ const Header: React.FC<HeaderProps> = ({
 					role="dialog"
 				>
 					<div
-						className="absolute inset-0 bg-[#F6F7F9] overflow-y-auto"
+						className="absolute inset-0 bg-white overflow-y-auto"
 						onClick={(e) => e.stopPropagation()}
 					>
 						{/* Верхняя панель */}
@@ -611,7 +611,7 @@ const Header: React.FC<HeaderProps> = ({
 											<Link
 												href="/services"
 												onClick={() => setIsMobileNavOpen(false)}
-												className="mt-2 bg-[#F6F7F9] text-[#212121] hover:bg-black/5 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors"
+												className="mt-2 bg-white text-[#212121] hover:bg-black/5 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors"
 											>
 												<ThemedIcon src="/icons/arrow-right.svg" size={18} color="#212121" />
 												Посмотреть все услуги
@@ -704,7 +704,7 @@ const Header: React.FC<HeaderProps> = ({
 									</button>
 									<a
 										href="https://edinayasreda.ru/"
-										className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#212121] bg-[#F6F7F9] hover:bg-black/5"
+										className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#212121] bg-white hover:bg-black/5"
 									>
 										<ThemedIcon src="/icons/icon4.svg" size={20} color="#212121" />
 										Вход

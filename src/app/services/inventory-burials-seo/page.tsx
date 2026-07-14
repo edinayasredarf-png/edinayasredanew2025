@@ -37,7 +37,7 @@ export default function InventoryBurialsSeoPage() {
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-flex items-center justify-center bg-white text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#F6F7F9] text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
                 >
                   Бесплатная консультация по учету захоронений
                 </button>
@@ -59,7 +59,7 @@ export default function InventoryBurialsSeoPage() {
               <strong>учет мест захоронения и инвентаризацию кладбищ</strong>.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Органы местного самоуправления
                 </h3>
@@ -69,7 +69,7 @@ export default function InventoryBurialsSeoPage() {
                   отчетности и планирование развития кладбищ.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Муниципальные кладбища и МУПы
                 </h3>
@@ -79,7 +79,7 @@ export default function InventoryBurialsSeoPage() {
                   ошибок и потерь записей в бумажных книгах.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Подрядчики по инвентаризации кладбищ
                 </h3>
@@ -105,7 +105,7 @@ export default function InventoryBurialsSeoPage() {
               бесхозных захоронений и наведения порядка в учете.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Полная картина заполненности кладбищ
                 </h3>
@@ -115,7 +115,7 @@ export default function InventoryBurialsSeoPage() {
                   <strong>реестра бесхозных захоронений</strong>.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Наведение порядка в книгах захоронений
                 </h3>
@@ -125,7 +125,7 @@ export default function InventoryBurialsSeoPage() {
                   <strong>единой базы захоронений</strong>.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Исполнение нормативных требований
                 </h3>
@@ -135,7 +135,7 @@ export default function InventoryBurialsSeoPage() {
                   <strong>инвентаризации муниципальных кладбищ</strong>.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Повышение качества сервисов для граждан
                 </h3>
@@ -160,7 +160,7 @@ export default function InventoryBurialsSeoPage() {
               захоронений и инструменты аналитики для управления территорией.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Электронная карта кладбища
                 </h3>
@@ -170,7 +170,7 @@ export default function InventoryBurialsSeoPage() {
                   участков и инфраструктуры.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Реестр мест захоронений
                 </h3>
@@ -179,7 +179,7 @@ export default function InventoryBurialsSeoPage() {
                   лиц, надмогильных сооружений и участков с историей изменений.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Поиск захоронений для граждан
                 </h3>
@@ -203,7 +203,7 @@ export default function InventoryBurialsSeoPage() {
               полевых работ и загрузки данных в систему.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Подготовка и анализ архивов
                 </h3>
@@ -213,7 +213,7 @@ export default function InventoryBurialsSeoPage() {
                   <strong>инвентаризации кладбищ</strong>.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Полевые работы и съемка
                 </h3>
@@ -223,7 +223,7 @@ export default function InventoryBurialsSeoPage() {
                   фиксация координат, фото и атрибутов мест захоронения.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Камеральная обработка и загрузка в систему
                 </h3>
@@ -259,7 +259,7 @@ export default function InventoryBurialsSeoPage() {
               Результат для муниципалитета и граждан
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Для администрации и служб
                 </h3>
@@ -269,7 +269,7 @@ export default function InventoryBurialsSeoPage() {
                   планирование развития территорий и сокращение ручного труда.
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6">
+              <div className="bg-[#F6F7F9] rounded-3xl p-6">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-[#313131]">
                   Для жителей
                 </h3>
@@ -324,7 +324,7 @@ export default function InventoryBurialsSeoPage() {
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-flex items-center justify-center bg-white text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#F6F7F9] text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
                 >
                   Задать вопросы по учету захоронений
                 </button>

@@ -18,7 +18,7 @@ export default function MessengerRequestLinks({
 }: Props) {
   return (
     <div className={className}>
-      <div className="mt-4 rounded-xl border border-dashed border-[#029cda] bg-[#F6F7F9] px-4 py-3">
+      <div className="mt-4 rounded-xl border border-dashed border-[#029cda] bg-white px-4 py-3">
         <div className="text-center text-sm font-medium text-[#313131]">{title}</div>
         <div className="mt-2 flex items-center justify-center gap-4">
           <a href={MAX_URL} title="Max" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">

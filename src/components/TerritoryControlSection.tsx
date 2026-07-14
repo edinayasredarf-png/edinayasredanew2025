@@ -45,7 +45,7 @@ function CardImage({
 }) {
   return (
     <div className="p-2">
-      <div className="bg-white rounded-2xl flex items-center justify-center overflow-hidden min-h-[260px]">
+      <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center overflow-hidden min-h-[260px]">
         <div className="relative w-[240px] max-w-full aspect-[240/145]">
           <Image
             src={card.img}
@@ -76,7 +76,7 @@ export default function TerritoryControlSection({
 }) {
   return (
     <section
-      className="bg-[#F6F7F9] w-full py-16"
+      className="bg-white w-full py-16"
       aria-label="Цифровой контроль территории"
     >
       <div className="rd-content-column">
@@ -90,7 +90,7 @@ export default function TerritoryControlSection({
           {cards.map((card, i) => (
             <article
               key={i}
-              className="bg-white rounded-3xl flex flex-col overflow-hidden h-full"
+              className="bg-[#F6F7F9] rounded-3xl flex flex-col overflow-hidden h-full"
             >
               {!card.imageBottom && (
                 <CardImage card={card} priority={i === 0} />

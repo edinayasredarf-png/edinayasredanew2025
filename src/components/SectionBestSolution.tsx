@@ -70,7 +70,7 @@ const SectionBestSolution: React.FC = () => {
             <p className="text-black text-sm md:text-lg lg:text-xl leading-snug">
               Находится в реестре российского ПО
             </p>
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center mt-3 mx-auto md:mx-0">
+            <div className="w-10 h-10 bg-[#F6F7F9] rounded-lg flex items-center justify-center mt-3 mx-auto md:mx-0">
               <Link
                 href="https://reestr.digital.gov.ru/reestr/685429/?sphrase_id=6357918"
                 target="_blank"

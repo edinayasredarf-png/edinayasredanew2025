@@ -68,7 +68,7 @@ const InlineImages: React.FC<Props> = ({
         return (
           <div
             key={`${item.src}-${i}`}
-            className={`relative ${aspect} rounded-xl overflow-hidden bg-[#F6F7F9] ${item.className || ''}`}
+            className={`relative ${aspect} rounded-xl overflow-hidden bg-white ${item.className || ''}`}
           >
             <Image
               src={item.src}

@@ -44,7 +44,7 @@ const GalleryViewer: React.FC = () => {
         type="button"
         onClick={close}
         aria-label="Закрыть"
-        className="fixed top-4 right-4 z-[10000] inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 hover:bg-white
+        className="fixed top-4 right-4 z-[10000] inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F6F7F9]/90 hover:bg-[#F6F7F9]
                    shadow-lg transition outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">

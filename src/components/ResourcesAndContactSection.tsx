@@ -38,7 +38,7 @@ function MessengerPopup() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-3 bg-white text-[#029CDA] font-involve font-bold text-base md:text-lg px-6 py-3 rounded-2xl hover:bg-white/90 transition-colors"
+        className="inline-flex items-center gap-3 bg-[#F6F7F9] text-[#029CDA] font-involve font-bold text-base md:text-lg px-6 py-3 rounded-2xl hover:bg-[#F6F7F9]/90 transition-colors"
       >
         Написать нам
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -47,7 +47,7 @@ function MessengerPopup() {
       </button>
 
       {open && (
-        <div className="absolute bottom-full mb-3 left-0 bg-white rounded-2xl shadow-xl p-2 flex flex-col gap-1 min-w-[220px] z-50">
+        <div className="absolute bottom-full mb-3 left-0 bg-[#F6F7F9] rounded-2xl shadow-xl p-2 flex flex-col gap-1 min-w-[220px] z-50">
           {MESSENGERS.map((m) => (
             <a
               key={m.label}
@@ -55,7 +55,7 @@ function MessengerPopup() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#F6F7F9] transition-colors text-[#313131] font-involve font-medium text-base"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white transition-colors text-[#313131] font-involve font-medium text-base"
             >
               <Image src={m.icon} alt={m.label} width={24} height={24} className="shrink-0" />
               {m.label}
@@ -80,7 +80,7 @@ const resources = [
 
 export default function ResourcesAndContactSection() {
   return (
-    <section className="bg-[#F6F7F9] w-full py-16 md:py-24">
+    <section className="bg-white w-full py-16 md:py-24">
       <div className="rd-content-column">
         {/* TOP CARDS */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -88,7 +88,7 @@ export default function ResourcesAndContactSection() {
             <article
               key={index}
               className="
-                bg-white
+                bg-[#F6F7F9]
                 rounded-[32px]
                 p-8 md:p-10
                 min-h-[258px]

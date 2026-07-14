@@ -61,7 +61,7 @@ export default function CoursePage() {
 
             {/* Course Info */}
             <div className="lg:col-span-1 ">
-                              <div className="bg-[#F6F7F9] rounded-3xl p-8 sticky top-8  bg-white">
+                              <div className="bg-white rounded-3xl p-8 sticky top-8  bg-[#F6F7F9]">
                 <h3 className="text-2xl font-bold text-[#313131] mb-6">
                   Информация о курсе
                 </h3>

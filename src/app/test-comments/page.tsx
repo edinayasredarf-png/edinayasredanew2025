@@ -96,7 +96,7 @@ export default function TestCommentsPage() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Тест комментариев</h1>
         
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-[#F6F7F9] rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Статус</h2>
           <p className="text-lg">{status}</p>
         </div>
@@ -124,7 +124,7 @@ export default function TestCommentsPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-[#F6F7F9] rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Создать комментарий</h2>
           <div className="flex gap-2">
             <input
@@ -144,7 +144,7 @@ export default function TestCommentsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4">Комментарии ({comments.length})</h2>
           {comments.length === 0 ? (
             <p className="text-gray-500">Нет комментариев</p>

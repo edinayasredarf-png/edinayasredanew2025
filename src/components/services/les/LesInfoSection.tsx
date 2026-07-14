@@ -9,7 +9,7 @@ export default function LesInfoSection() {
           Мы более 17 лет работаем на этом рынке и знаем об лесоустройстве всё
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-          <div className="bg-white rounded-3xl p-9 flex flex-col justify-between min-h-[420px]">
+          <div className="bg-[#F6F7F9] rounded-3xl p-9 flex flex-col justify-between min-h-[420px]">
             <h3 className="text-[#313131] text-2xl md:text-[26px] leading-snug">
               Что такое лесоустройство
             </h3>
@@ -18,8 +18,8 @@ export default function LesInfoSection() {
               В ходе работ формируется достоверная информационная база о лесных территориях: определяется состав насаждений, их возраст, состояние, экологическая ценность и потенциал использования.
             </p>
           </div>
-          <div className="bg-white rounded-3xl p-2 flex items-center">
-            <div className="w-full h-full min-h-[420px] bg-[#f6f7f9] rounded-2xl flex items-center justify-center">
+          <div className="bg-[#F6F7F9] rounded-3xl p-2 flex items-center">
+            <div className="w-full h-full min-h-[420px] bg-white rounded-2xl flex items-center justify-center">
               <Image
                 src="/img/services/izn/7.png"
                 alt="Цифровая система"
@@ -30,7 +30,7 @@ export default function LesInfoSection() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <div className="bg-white rounded-3xl p-9">
+            <div className="bg-[#F6F7F9] rounded-3xl p-9">
               <h3 className="text-[#313131] text-2xl mb-4">
                 Результаты лесоустройства становятся основой для:
               </h3>
@@ -50,7 +50,7 @@ export default function LesInfoSection() {
                 ))}
               </ul>
             </div>
-            <div className="bg-white rounded-3xl px-9 py-6">
+            <div className="bg-[#F6F7F9] rounded-3xl px-9 py-6">
               <p className="text-[#7c8a9a] text-lg leading-relaxed">
                 Грамотно проведённое лесоустройство помогает не только сохранить природный потенциал, но и использовать его максимально рационально.
               </p>

@@ -101,7 +101,7 @@ export default function GreenInventoryPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#F6F7F9] font-raleway font-medium lining-nums">
+      <div className="min-h-screen bg-white font-raleway font-medium lining-nums">
         {/* Hero Section */}
         <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
         <div className="rd-content-column py-10 md:py-20 relative z-10">
@@ -121,7 +121,7 @@ export default function GreenInventoryPage() {
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-block bg-white text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/10 transition-colors"
+                  className="inline-block bg-[#F6F7F9] text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/10 transition-colors"
                 >
                   Получить консультацию
                 </button>
@@ -214,7 +214,7 @@ export default function GreenInventoryPage() {
           <div className="max-w-[1200px] mx-auto px-5 md:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Left Big Card */}
-              <a href="/about" className="group bg-white rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]">
+              <a href="/about" className="group bg-[#F6F7F9] rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]">
                 <div className="relative z-10 flex flex-col flex-grow h-full w-full">
                   <h3 className="text-3xl md:text-4xl lg:text-[40px] font-medium text-black leading-tight">
                     17 лет<br />помогаем муниципалитетам<br />в управлении зелеными насаждениями
@@ -232,13 +232,13 @@ export default function GreenInventoryPage() {
               {/* Right Column */}
               <div className="flex flex-col gap-5 h-full">
                 {/* Top Card */}
-                <div className="group bg-white rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center gap-8 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda] flex-grow">
+                <div className="group bg-[#F6F7F9] rounded-3xl p-8 flex flex-col md:flex-row items-start md:items-center gap-8 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda] flex-grow">
                   <div className="order-2 md:order-1 w-full md:w-auto">
                     <h4 className="text-2xl font-normal text-black leading-snug mb-4 md:mb-0">
                       Лидер в инвентаризации зелёных насаждений – точность, качество, технологии по всей России.
                     </h4>
                   </div>
-                  <div className="bg-[#F6F7F9] rounded-2xl flex items-center justify-center p-2.5 w-full md:w-1/2 h-full mx-auto">
+                  <div className="bg-white rounded-2xl flex items-center justify-center p-2.5 w-full md:w-1/2 h-full mx-auto">
                     <div className="text-center">
                       <div className="text-4xl mb-2">🥇</div>
                       <div className="text-2xl font-bold text-black">Топ-1</div>
@@ -263,9 +263,9 @@ export default function GreenInventoryPage() {
                   ].map((card, idx) => (
                     <div
                       key={idx}
-                      className="group bg-white rounded-3xl p-5 flex flex-col gap-4 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]"
+                      className="group bg-[#F6F7F9] rounded-3xl p-5 flex flex-col gap-4 transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]"
                     >
-                      <div className="w-16 h-16 bg-[#F6F7F9] rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-[#029cda]/10">
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-[#029cda]/10">
                         {card.icon}
                       </div>
                       <p className="text-base text-gray-400">
@@ -351,7 +351,7 @@ export default function GreenInventoryPage() {
               {/* Right Column - Support Block */}
               <div className="space-y-6">
                 {/* Support Block */}
-                <div className="bg-[#F6F7F9] rounded-3xl p-8">
+                <div className="bg-white rounded-3xl p-8">
                   <h3 className="text-2xl font-bold text-black mb-4">Не нашли ответ на свой вопрос?</h3>
                   <p className="text-gray-600 mb-6">Задайте его нам на портале поддержки, и мы оперативно ответим.</p>
                   <a
@@ -377,7 +377,7 @@ export default function GreenInventoryPage() {
             </p>
             <button
               onClick={handleKP}
-              className="inline-flex items-center justify-center bg-white text-[#029cda] px-6 md:px-10 py-3 md:py-5 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none"
+              className="inline-flex items-center justify-center bg-[#F6F7F9] text-[#029cda] px-6 md:px-10 py-3 md:py-5 rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none"
             >
               Рассчитать стоимость
             </button>

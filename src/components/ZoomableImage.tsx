@@ -43,7 +43,7 @@ const ZoomableImage: React.FC<Props> = ({
   const canZoom = useMemo(() => !disableZoom && typeof idx === 'number', [disableZoom, idx]);
 
   return (
-    <div className={`relative ${aspectClass} rounded-xl overflow-hidden bg-[#F6F7F9] group ${className}`}>
+    <div className={`relative ${aspectClass} rounded-xl overflow-hidden bg-white group ${className}`}>
       {/* превью */}
       <Image
         src={src}

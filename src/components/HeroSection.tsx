@@ -26,14 +26,14 @@ const HeroSection: React.FC = () => {
 						<button
 							type="button"
 							onClick={() => openRegister()}
-							className="flex items-center justify-center w-full sm:w-auto h-[54px] sm:min-w-[200px] px-8 rounded-xl bg-white text-[#029cda] text-[19px] font-semibold font-involve hover:bg-white/90 transition-colors"
+							className="flex items-center justify-center w-full sm:w-auto h-[54px] sm:min-w-[200px] px-8 rounded-xl bg-[#F6F7F9] text-[#029cda] text-[19px] font-semibold font-involve hover:bg-[#F6F7F9]/90 transition-colors"
 						>
 							Оставить заявку
 						</button>
 						<button
 							type="button"
 							onClick={() => openConsult()}
-							className="flex items-center justify-center w-full sm:w-auto h-[54px] sm:min-w-[160px] px-8 rounded-xl border border-white text-white text-[19px] font-semibold font-involve hover:bg-white/10 transition-colors"
+							className="flex items-center justify-center w-full sm:w-auto h-[54px] sm:min-w-[160px] px-8 rounded-xl border border-white text-white text-[19px] font-semibold font-involve hover:bg-[#F6F7F9]/10 transition-colors"
 						>
 							Консультация
 						</button>

@@ -23,7 +23,7 @@ const variants = {
   primary:
     'bg-[#029cda] text-white hover:bg-[#029cda]/90',
   secondary:
-    'bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10',
+    'bg-[#F6F7F9] text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10',
 };
 
 const Button: React.FC<ButtonProps> = ({

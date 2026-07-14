@@ -116,7 +116,7 @@ export default function UtmGenerator() {
       </div>
 
       {/* Основные поля */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <div className="bg-[#F6F7F9] rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
         <h3 className="font-medium text-gray-700 text-sm uppercase tracking-wide">Статья / кампания</h3>
 
         <div>
@@ -158,7 +158,7 @@ export default function UtmGenerator() {
       </div>
 
       {/* Каналы */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-[#F6F7F9] rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h3 className="font-medium text-gray-700 text-sm uppercase tracking-wide">Каналы</h3>
           <span className="text-xs text-gray-400">{channels.filter((c) => c.enabled).length} активных</span>
@@ -177,7 +177,7 @@ export default function UtmGenerator() {
                   }`}
                 >
                   <span
-                    className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 bg-[#F6F7F9] rounded-full shadow transition-transform ${
                       ch.enabled ? 'translate-x-4' : ''
                     }`}
                   />
@@ -250,7 +250,7 @@ export default function UtmGenerator() {
 
       {/* Результаты */}
       {results.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-[#F6F7F9] rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 className="font-medium text-gray-700 text-sm uppercase tracking-wide">Готовые ссылки</h3>
             <button

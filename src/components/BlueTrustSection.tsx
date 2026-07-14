@@ -73,9 +73,9 @@ const BlueTrustWithScreen: React.FC<{
                 {cards.slice(0, 4).map((item, idx) => (
                   <div
                     key={idx}
-                    className="rounded-2xl bg-white border border-white/80 px-5 py-5 lg:px-6 lg:py-6 flex flex-col"
+                    className="rounded-2xl bg-[#F6F7F9] border border-white/80 px-5 py-5 lg:px-6 lg:py-6 flex flex-col"
                   >
-                    <div className="mb-4 h-[96px] w-[96px] md:h-[120px] md:w-[120px] rounded-[18px] border border-[#E6ECF4] bg-white flex items-center justify-center overflow-hidden relative">
+                    <div className="mb-4 h-[96px] w-[96px] md:h-[120px] md:w-[120px] rounded-[18px] border border-[#E6ECF4] bg-[#F6F7F9] flex items-center justify-center overflow-hidden relative">
                       <Image
                         src={item.iconSrc}
                         alt={item.iconAlt || ''}

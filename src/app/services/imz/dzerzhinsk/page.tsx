@@ -52,7 +52,7 @@ export default function InventoryBurialsPage() {
 
                   <button
                     onClick={handleConsult}
-                    className="inline-flex items-center justify-center border border-white text-white font-medium text-xl px-16 py-5 rounded-2xl hover:bg-white/10 transition"
+                    className="inline-flex items-center justify-center border border-white text-white font-medium text-xl px-16 py-5 rounded-2xl hover:bg-[#F6F7F9]/10 transition"
                   >
                     Получить консультацию
                   </button>

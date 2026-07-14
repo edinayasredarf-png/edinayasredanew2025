@@ -101,7 +101,7 @@ export default function CasesPage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-2xl overflow-hidden bg-white animate-pulse">
+                <div key={i} className="rounded-2xl overflow-hidden bg-[#F6F7F9] animate-pulse">
                   <div className="h-48 bg-[#e4e7ec]" />
                   <div className="p-5 space-y-3">
                     <div className="h-4 bg-[#e4e7ec] rounded-lg w-3/4" />

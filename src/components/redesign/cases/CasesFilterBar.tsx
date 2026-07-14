@@ -29,7 +29,7 @@ export function CasesFilterBar({
   return (
     <section className="sticky top-0 z-30 py-4 font-involve font-medium lining-nums">
       <div className="case-page-column">
-        <div className="bg-white/90 border border-[var(--rd-border,#e4e7ec)] rounded-2xl px-4 py-4 md:px-6 md:py-5">
+        <div className="bg-[#F6F7F9]/90 border border-[var(--rd-border,#e4e7ec)] rounded-2xl px-4 py-4 md:px-6 md:py-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-3 min-w-0 flex-1">
               {hasIndustry && (

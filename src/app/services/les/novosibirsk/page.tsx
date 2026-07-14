@@ -16,7 +16,7 @@ export default function ForestManagementCityPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#F6F7F9] font-raleway font-medium lining-nums">
+      <div className="min-h-screen bg-white font-raleway font-medium lining-nums">
         <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
           <div className="rd-content-column py-10 md:py-20 relative z-10">
             <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
@@ -29,7 +29,7 @@ export default function ForestManagementCityPage() {
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
                   <button onClick={handleKP} className="inline-flex items-center justify-center bg-[#029cda] text-white font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none">Получить расчет</button>
-                  <button onClick={handleConsult} className="inline-block text-white border border-white font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-white/10 transition-colors">Бесплатная консультация</button>
+                  <button onClick={handleConsult} className="inline-block text-white border border-white font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#F6F7F9]/10 transition-colors">Бесплатная консультация</button>
                 </div>
               </div>
               <div className="flex-1 w-full h-full relative flex justify-center items-end lg:hidden z-10">

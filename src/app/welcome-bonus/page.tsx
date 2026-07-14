@@ -39,7 +39,7 @@ export default function WelcomeBonusPage() {
                   </button>
                   <a
                     href="#terms"
-                    className="inline-flex items-center justify-center border border-white/30 text-white px-8 py-4 rounded-xl hover:bg-white hover:text-black transition-colors"
+                    className="inline-flex items-center justify-center border border-white/30 text-white px-8 py-4 rounded-xl hover:bg-[#F6F7F9] hover:text-black transition-colors"
                   >
                     Условия акции
                   </a>
@@ -108,7 +108,7 @@ export default function WelcomeBonusPage() {
                   text: "Импорт и нормализация до 50 000 записей из ваших Excel/старых реестров с проверкой качества.",
                 },
               ].map((c, i) => (
-                <div key={i} className="p-6 rounded-2xl border border-[#E5E7EB] bg-white">
+                <div key={i} className="p-6 rounded-2xl border border-[#E5E7EB] bg-[#F6F7F9]">
                   <span className="inline-flex w-12 h-12 rounded-lg bg-[#029cda] items-center justify-center">
                     <Image src={c.icon} alt="" width={20} height={20} />
                   </span>
@@ -132,7 +132,7 @@ export default function WelcomeBonusPage() {
                 { step: "02", title: "Созвон", text: "Уточним задачи, подберём сценарий и состав бонуса." },
                 { step: "03", title: "Запуск", text: "Выдаем доступы, материалы и сопровождаем старт." },
               ].map((x, i) => (
-                <div key={i} className="p-6 rounded-2xl border border-[#E5E7EB] bg-white">
+                <div key={i} className="p-6 rounded-2xl border border-[#E5E7EB] bg-[#F6F7F9]">
                   <div className="text-[#029cda] text-sm font-semibold">{x.step}</div>
                   <h3 className={`mt-2 text-xl ${headingBase} ${headingColor}`}>{x.title}</h3>
                   <p className={`mt-3 text-[15px] leading-6 ${paragraphMuted}`}>{x.text}</p>
@@ -152,9 +152,9 @@ export default function WelcomeBonusPage() {
         </section>
 
         {/* Условия акции */}
-        <section id="terms" className="py-16 md:py-24 bg-[#F6F7F9]">
+        <section id="terms" className="py-16 md:py-24 bg-white">
           <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <div className="bg-white rounded-3xl p-8 md:p-12">
+            <div className="bg-[#F6F7F9] rounded-3xl p-8 md:p-12">
               <h2 className={`text-3xl md:text-4xl ${headingBase} ${headingColor}`}>Условия акции</h2>
               <ul className={`mt-6 space-y-3 text-lg ${paragraphMuted}`}>
                 <li>• Бонус доступен новым клиентам при первой регистрации в «Единой Среде».</li>
@@ -249,9 +249,9 @@ export default function WelcomeBonusPage() {
         </section>
 
         {/* CTA финальный — слева текст/кнопки, справа картинка */}
-        <section className="py-16 md:py-24 bg-[#F6F7F9]">
+        <section className="py-16 md:py-24 bg-white">
           <div className="max-w-[1480px] mx-auto px-5 md:px-8">
-            <div className="rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden">
+            <div className="rounded-3xl border border-[#E5E7EB] bg-[#F6F7F9] overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 {/* Лево */}
                 <div className="p-8 md:p-12 flex flex-col justify-center">

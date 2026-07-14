@@ -13,16 +13,16 @@ const SOCIALS = [
 
 export function RedesignFooter() {
 	return (
-		<footer className="bg-[#F6F7F9] font-[Raleway]">
+		<footer className="bg-white font-[Raleway]">
 			<div className="mx-auto max-w-[1200px] px-5">
 
 				{/* ── Верхняя полоса: соцсети + рассылка ── */}
 				<div className="py-5">
-					<div className="bg-white rounded-2xl px-5 py-3 flex flex-wrap items-center gap-3">
+					<div className="bg-[#F6F7F9] rounded-2xl px-5 py-3 flex flex-wrap items-center gap-3">
 						<div className="flex items-center gap-2 flex-wrap">
 							{SOCIALS.map((s) => (
 								<a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer"
-									className="w-11 h-11 bg-[#f6f7f9] rounded-2xl flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0">
+									className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center hover:bg-[#e8eaed] transition-colors shrink-0">
 									<Image src={s.src} alt={s.alt} width={22} height={22} />
 								</a>
 							))}
@@ -34,7 +34,7 @@ export function RedesignFooter() {
 								<rect x="0" y="0" width="20" height="16" rx="3" fill="white" fillOpacity="0.3"/>
 								<path d="M1 1L10 9L19 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
 							</svg>
-							<div className="w-px h-4 bg-white/40" />
+							<div className="w-px h-4 bg-[#F6F7F9]/40" />
 							Подписаться на рассылку
 						</a>
 					</div>
@@ -112,7 +112,7 @@ export function RedesignFooter() {
 								<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Поддержка</p>
 								<ul className="space-y-3">
 									<li><Link href="/requisites" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Реквизиты</Link></li>
-									<li><Link href="/help" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Техподдержка</Link></li>
+									<li><a href="https://max.ru/join/o9Qsp_ls9FThf7PTGJkQIm1as_Uknlw_zFRNV28FtVY" target="_blank" rel="noopener noreferrer" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Техподдержка</a></li>
 									<li><Link href="/documents" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Документация</Link></li>
 									<li><Link href="/faq" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">FAQ</Link></li>
 									<li><Link href="/idea" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Предложить идею</Link></li>

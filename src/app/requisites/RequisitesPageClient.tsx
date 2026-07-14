@@ -18,7 +18,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-3xl border border-[#E5E7EB] bg-white p-6 md:p-8">
+    <div className="rounded-3xl border border-[#E5E7EB] bg-[#F6F7F9] p-6 md:p-8">
       <h2 className="text-2xl font-bold text-[#313131] mb-4">{title}</h2>
       {children}
     </div>
@@ -47,7 +47,7 @@ export default function RequisitesPageClient() {
         </section>
 
         {/* Requisites Content */}
-        <section className="py-16 md:py-24 bg-[#F6F7F9]">
+        <section className="py-16 md:py-24 bg-white">
           <div className="max-w-[1200px] mx-auto px-5 md:px-8 space-y-8">
 
             {/* General Info */}
@@ -87,7 +87,7 @@ export default function RequisitesPageClient() {
             </div>
 
             {/* VAT note */}
-            <div className="rounded-3xl border border-[#E5E7EB] bg-white p-6 md:p-8">
+            <div className="rounded-3xl border border-[#E5E7EB] bg-[#F6F7F9] p-6 md:p-8">
               <p className="text-[#7C8A9A] text-base leading-relaxed">
                 НДС не облагается в связи с тем, что ООО «Сфера» является резидентом инновационного центра «Сколково»,
                 в соответствии с Федеральным законом от 28.09.2010 № 244-ФЗ «Об инновационном центре «Сколково»
@@ -106,7 +106,7 @@ export default function RequisitesPageClient() {
               </a>
               <a
                 href="mailto:info@единаясреда.рф"
-                className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-medium rounded-xl hover:bg-[#F6F7F9] transition-colors text-center"
+                className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-medium rounded-xl hover:bg-white transition-colors text-center"
               >
                 Написать нам
               </a>

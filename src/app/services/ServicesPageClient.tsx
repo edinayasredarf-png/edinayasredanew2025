@@ -125,7 +125,7 @@ export default function ServicesPage() {
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-block  text-white border border-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-white/10 transition-colors"
+                  className="inline-block  text-white border border-white text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 text-lg md:text-2xl rounded-xl hover:bg-[#F6F7F9]/10 transition-colors"
                 >
                  Бесплатная консультация
                 </button>
@@ -166,7 +166,7 @@ export default function ServicesPage() {
           {/* Сетка карточек */}
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* “Единая среда” — первая карточка */}
-            <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-6 transition-all duration-300">
+            <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-6 transition-all duration-300">
               <Image
                 src="/img/ес.svg"
                 alt="Единая среда"
@@ -191,7 +191,7 @@ export default function ServicesPage() {
                   </Link>
                   <button
                     onClick={handleOpenKP}
-                    className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-4 rounded-2xl text-base transition-colors"
+                    className="w-full bg-[#F6F7F9] text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-4 rounded-2xl text-base transition-colors"
                   >
                     Оставить заявку
                   </button>
@@ -203,7 +203,7 @@ export default function ServicesPage() {
             {services.map((s, i) => (
               <div
                 key={i}
-                className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-6 transition-all duration-300 "
+                className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-6 transition-all duration-300 "
               >
                 {/* Изображение услуги */}
                 <Image
@@ -236,7 +236,7 @@ export default function ServicesPage() {
 
                     <button
                       onClick={handleOpenKP}
-                      className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-4 rounded-2xl text-base transition-colors"
+                      className="w-full bg-[#F6F7F9] text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-4 rounded-2xl text-base transition-colors"
                     >
                       Оставить заявку
                     </button>
@@ -302,7 +302,7 @@ export default function ServicesPage() {
 				</section >
 
 				<section className="max-w-[980px] mx-auto px-4 py-24">
-					<div className="bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
+					<div className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
 
 						{/* Текст слева */}
 						<div className="lg:w-1/2 flex flex-col justify-center p-6">
@@ -327,7 +327,7 @@ export default function ServicesPage() {
 						</div>
 
 						{/* Изображение справа */}
-						<div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-6">
+						<div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-6">
 							<Image
 								src="/img/imz_cta.png"
 								alt="Получить консультацию по инвентаризации и оцифровке мест"

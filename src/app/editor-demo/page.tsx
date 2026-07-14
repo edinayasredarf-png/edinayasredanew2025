@@ -23,7 +23,7 @@ export default function EditorDemo() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-[#F6F7F9] rounded-xl shadow-lg p-6">
           <div className="mb-4">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Особенности:</h2>
             <ul className="list-disc list-inside text-gray-600 space-y-1">

@@ -82,7 +82,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 font-[Raleway] font-medium lining-nums">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+      <div className="bg-[#F6F7F9] rounded-2xl p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-medium text-[#313131]">
             {mode === 'signin' ? 'Вход' : 'Регистрация'}
@@ -186,7 +186,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Или войдите через</span>
+              <span className="px-2 bg-[#F6F7F9] text-gray-500">Или войдите через</span>
             </div>
           </div>
 

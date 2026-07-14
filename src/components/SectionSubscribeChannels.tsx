@@ -74,7 +74,7 @@ const SectionSubscribeChannels = () => {
   }, [swiperInstance]);
 
   return (
-    <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]">
       <div className="rd-content-column">
         <div className="text-center mb-10 lg:mb-12">
           <h2 className="font-involve text-[#313131] text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] mb-0">

@@ -178,7 +178,7 @@ export default function DemoPage() {
                     {/* Fullscreen button */}
                     <button
                       onClick={handleFullscreen}
-                      className="absolute bottom-4 right-4 bg-white/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+                      className="absolute bottom-4 right-4 bg-[#F6F7F9]/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-[#F6F7F9] transition shadow-lg z-30"
                     >
                       Открыть на полный экран
                     </button>
@@ -187,7 +187,7 @@ export default function DemoPage() {
                     {isFullscreen && (
                       <button
                         onClick={exitFullscreen}
-                        className="absolute bottom-4 left-4 bg-white/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-white transition shadow-lg z-30"
+                        className="absolute bottom-4 left-4 bg-[#F6F7F9]/90 text-[#029cda] px-4 py-2 rounded-xl font-medium hover:bg-[#F6F7F9] transition shadow-lg z-30"
                       >
                         Вернуться на страницу
                       </button>
@@ -228,7 +228,7 @@ export default function DemoPage() {
               </button>
               <button
                 onClick={handleKP}
-                className="bg-white text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition"
+                className="bg-[#F6F7F9] text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition"
               >
                 Получить коммерческое предложение
               </button>

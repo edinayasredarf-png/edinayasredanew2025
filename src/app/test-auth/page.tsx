@@ -165,7 +165,7 @@ function TestAuthPageInner() {
     <Layout>
       <div className="min-h-screen bg-[#F6F7FB] py-12 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <div className="bg-[#F6F7F9] rounded-2xl shadow-lg p-8 mb-8">
             <h1 className="text-3xl font-bold text-[#313131] mb-2 font-[Raleway]">
               Тестирование авторизации
             </h1>
@@ -264,7 +264,7 @@ function TestAuthPageInner() {
                 <button
                   onClick={() => handleProviderAuth('google')}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 font-[Raleway] font-medium"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#F6F7F9] border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 font-[Raleway] font-medium"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

@@ -8,13 +8,13 @@ const SectionMigration = () => {
   const { openConsult } = useModal();
 
   return (
-    <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16">
       <div className="rd-content-column font-[Raleway]">
         <h2 className="font-involve text-[#313131] text-center text-[clamp(1.75rem,4vw,3rem)] leading-[1.2] mb-8 md:mb-12 max-w-[560px] mx-auto">
           Бесплатный перенос данных в платформу
         </h2>
 
-        <div className="bg-white rounded-2xl p-2">
+        <div className="bg-[#F6F7F9] rounded-2xl p-2">
           <div className="flex flex-col lg:flex-row gap-6">
 
             {/* Левая часть */}

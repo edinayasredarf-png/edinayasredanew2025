@@ -1,8 +1,8 @@
 /* Design tokens — глобальный редизайн v2 */
 .redesign {
-	--rd-bg: #F6F7F9;
-	--rd-block: #ffffff;
-	--rd-surface: #ffffff;
+	--rd-bg: #ffffff;
+	--rd-block: #F6F7F9;
+	--rd-surface: #F6F7F9;
 	--rd-ink: #101828;
 	--rd-text: #000000;
 	--rd-muted: #667085;

@@ -59,7 +59,7 @@ const WorkflowStepsSection: React.FC = () => {
                   className={`
                     relative z-10
                     max-w-full
-                    bg-white
+                    bg-[#F6F7F9]
                     rounded-2xl
                     px-4 py-2
                     flex items-center gap-6

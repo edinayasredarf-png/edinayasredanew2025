@@ -109,7 +109,7 @@ const ZoomGallery: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <button
                 aria-label="Закрыть"
                 onClick={close}
-                className="absolute top-2 right-2 sm:top-3 sm:right-3 md:top-4 md:right-4 z-50 inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/90 hover:bg-white shadow-lg"
+                className="absolute top-2 right-2 sm:top-3 sm:right-3 md:top-4 md:right-4 z-50 inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[#F6F7F9]/90 hover:bg-[#F6F7F9] shadow-lg"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M6 6l12 12M18 6L6 18" stroke="#111" strokeWidth="2" strokeLinecap="round" />

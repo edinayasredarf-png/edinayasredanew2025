@@ -58,7 +58,7 @@ type CaseItem = {
 };
 function CaseCard({ title, textHtml }: CaseItem) {
   return (
-    <article className="rounded-[26px] border border-[#EEF1F7] bg-white p-6 shadow-sm">
+    <article className="rounded-[26px] border border-[#EEF1F7] bg-[#F6F7F9] p-6 shadow-sm">
       <h3 className="text-[20px] font-extrabold text-[#142251]">{title}</h3>
       <div
         className="prose mt-3 max-w-none text-[14px] leading-relaxed text-[#6B7280] prose-p:my-2 prose-strong:font-extrabold prose-strong:text-[#474B57]"
@@ -137,7 +137,7 @@ function CaseSlider({ items }: { items: CaseItem[] }) {
       <div className="mt-6 flex items-center justify-end gap-3">
         <button
           onClick={() => snapTo(i - 1)}
-          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-white text-[#029cda] disabled:opacity-40"
+          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-[#F6F7F9] text-[#029cda] disabled:opacity-40"
           disabled={i <= 0}
           aria-label="Назад"
         >
@@ -145,7 +145,7 @@ function CaseSlider({ items }: { items: CaseItem[] }) {
         </button>
         <button
           onClick={() => snapTo(i + 1)}
-          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-white text-[#029cda] disabled:opacity-40"
+          className="inline-grid h-10 w-10 place-items-center rounded-full border border-[#E6E9F2] bg-[#F6F7F9] text-[#029cda] disabled:opacity-40"
           disabled={i >= max}
           aria-label="Вперёд"
         >
@@ -195,7 +195,7 @@ function TopSheetMenu({
           open ? "!translate-y-0" : ""
         }`}
       >
-        <div className="mx-4 mt-3 rounded-b-2xl border border-[#E6E9F2] bg-white shadow-2xl">
+        <div className="mx-4 mt-3 rounded-b-2xl border border-[#E6E9F2] bg-[#F6F7F9] shadow-2xl">
           {/* хедер меню */}
           <div className="flex items-center justify-between px-4 py-4">
             <span className="text-base font-extrabold text-[#142251]">Меню</span>
@@ -239,7 +239,7 @@ function TopSheetMenu({
               <a
                 href="mailto:info@единаясреда.рф"
                 onClick={onClose}
-                className="flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-white px-4 py-3 text-[#029cda] underline transition hover:bg-[#f7f8fc]"
+                className="flex items-center gap-3 rounded-[14px] border border-[#E6E9F2] bg-[#F6F7F9] px-4 py-3 text-[#029cda] underline transition hover:bg-[#f7f8fc]"
               >
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-[#029cda]/10 text-[#029cda]">
                   ✉
@@ -254,7 +254,7 @@ function TopSheetMenu({
                 className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#029cda] px-4 py-3 text-white"
               >
                 Оставить заявку{" "}
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[#029cda]">+</span>
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#F6F7F9] text-[#029cda]">+</span>
               </Link>
 
               {/* Быстрые ссылки */}
@@ -455,7 +455,7 @@ export default function ImplementationsPage() {
   );
 
   return (
-    <main className={`${gilroy.className} bg-white overflow-x-hidden`}>
+    <main className={`${gilroy.className} bg-[#F6F7F9] overflow-x-hidden`}>
       {/* ---------- ХЕДЕР ---------- */}
       <header className="w-full">
         <Container>
@@ -497,7 +497,7 @@ export default function ImplementationsPage() {
             <div className="hidden items-center justify-end sm:flex">
               <a href="#form" className="inline-flex items-center gap-2 rounded-[12px] bg-[#029cda] px-4 py-2 text-white">
                 Оставить заявку
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[#029cda]">+</span>
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#F6F7F9] text-[#029cda]">+</span>
               </a>
             </div>
 
@@ -599,7 +599,7 @@ export default function ImplementationsPage() {
             {STEPS.map((s, idx) => (
               <article
                 key={idx}
-                className="rounded-[22px] bg-white p-4 sm:p-5 md:rounded-[28px] md:p-6"
+                className="rounded-[22px] bg-[#F6F7F9] p-4 sm:p-5 md:rounded-[28px] md:p-6"
               >
                 <TopImage src={s.img} alt={s.alt} />
                 <p className="mt-4 text-[16px] font-extrabold leading-snug text-[#2E2E2E] md:text-[18px]">
@@ -622,7 +622,7 @@ export default function ImplementationsPage() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {/* item 1 */}
-            <div className="rounded-[28px] bg-white p-2 shadow-sm md:rounded-[32px]">
+            <div className="rounded-[28px] bg-[#F6F7F9] p-2 shadow-sm md:rounded-[32px]">
               <Image
                 src="/img/primer1.webp"
                 alt="Ситуация 1"
@@ -636,7 +636,7 @@ export default function ImplementationsPage() {
             </div>
 
             {/* item 2 */}
-            <div className="rounded-[28px] bg-white p-2 shadow-sm md:rounded-[32px]">
+            <div className="rounded-[28px] bg-[#F6F7F9] p-2 shadow-sm md:rounded-[32px]">
               <Image
                 src="/img/primer2.webp"
                 alt="Ситуация 2"
@@ -649,7 +649,7 @@ export default function ImplementationsPage() {
             </div>
 
             {/* item 3 */}
-            <div className="rounded-[28px] bg-white p-2 shadow-sm md:rounded-[32px]">
+            <div className="rounded-[28px] bg-[#F6F7F9] p-2 shadow-sm md:rounded-[32px]">
               <Image
                 src="/img/primer3.webp"
                 alt="Ситуация 3"
@@ -669,7 +669,7 @@ export default function ImplementationsPage() {
         <Container>
           <h2 className="text-center text-[42px] font-extrabold text-[#029cda] md:text-[64px]">Попробуй сейчас</h2>
 
-          <div id="b24-form-wrapper" className="mx-auto mt-10 max-w-[760px] rounded-[20px] bg-white p-4 md:p-6">
+          <div id="b24-form-wrapper" className="mx-auto mt-10 max-w-[760px] rounded-[20px] bg-[#F6F7F9] p-4 md:p-6">
             <div id="b24-form-anchor" />
           </div>
 

@@ -20,7 +20,7 @@ const VideoInvite: React.FC<VideoInviteProps> = ({
   const { openDemo } = useModal();
 
   return (
-    <section className={`bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16 font-[Raleway] ${className}`}>
+    <section className={`bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] ${className}`}>
       <div className="rd-content-column">
         <div className="w-full px-6 md:px-9 pt-8 md:pt-9 pb-8 md:pb-9 rd-block rounded-2xl flex flex-col md:flex-row justify-between items-center gap-8 md:gap-10">
           {/* Текст */}

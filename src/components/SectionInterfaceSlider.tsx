@@ -181,7 +181,7 @@ const SectionInterfaceDemoSplit70: React.FC = () => {
             <p className="mt-3 text-white/90">Посмотрим ваши процессы и покажем, как «Единая Среда» ускоряет инвентаризацию, контроль и отчётность.</p>
           </div>
           <div className="relative z-10 mt-auto pt-6">
-            <Button onClick={openDemo} variant="primary" size="large" className="w-full bg-white hover:bg-white/90 !text-[#029cda] focus:outline-none focus:ring-4 focus:ring-white/40">Протестировать</Button>
+            <Button onClick={openDemo} variant="primary" size="large" className="w-full bg-[#F6F7F9] hover:bg-[#F6F7F9]/90 !text-[#029cda] focus:outline-none focus:ring-4 focus:ring-white/40">Протестировать</Button>
             <p className="mt-3 text-xs text-white/70 text-center">Демо 20–30 минут. Онлайн в удобной ВКС-платформе.</p>
           </div>
         </aside>
@@ -190,7 +190,7 @@ const SectionInterfaceDemoSplit70: React.FC = () => {
       {/* LIGHTBOX: полностью отключается на мобилке */}
       {isLightboxOpen && !isMobile && (
         <div className="fixed inset-0 z-[100] w-screen h-screen bg-black/90 backdrop-blur-[1px]">
-          <button aria-label="Закрыть" onClick={closeLightbox} className="absolute top-3 right-3 md:top-6 md:right-6 h-10 w-10 md:h-12 md:w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center z-[110]">
+          <button aria-label="Закрыть" onClick={closeLightbox} className="absolute top-3 right-3 md:top-6 md:right-6 h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#F6F7F9]/10 hover:bg-[#F6F7F9]/20 flex items-center justify-center z-[110]">
             <svg width="22" height="22" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6l-12 12" stroke="#fff" strokeWidth="2" strokeLinecap="round" /></svg>
           </button>
 

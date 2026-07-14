@@ -23,9 +23,9 @@ const DEFAULT_ITEMS: [BadgeItem, BadgeItem, BadgeItem] = [
 ];
 
 const Card: React.FC<BadgeItem> = ({ title, iconSrc, iconAlt }) => (
-  <div className="w-full bg-white rounded-2xl p-2">
+  <div className="w-full bg-[#F6F7F9] rounded-2xl p-2">
     <div className="rd-block w-full h-[250px] rounded-2xl relative overflow-hidden">
-      <div className="absolute left-1/2 -translate-x-1/2 top-[18px] w-[110px] h-[110px] rounded-[18px] outline outline-1 outline-offset-[-1px] outline-[#e6ecf4] overflow-hidden flex items-center justify-center bg-white">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[18px] w-[110px] h-[110px] rounded-[18px] outline outline-1 outline-offset-[-1px] outline-[#e6ecf4] overflow-hidden flex items-center justify-center bg-[#F6F7F9]">
         <Image
           src={iconSrc}
           alt={iconAlt ?? ''}
@@ -50,7 +50,7 @@ const CompanyBadges: React.FC<CompanyBadgesProps> = ({
   ctaHref = '/about',
 }) => {
   return (
-    <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16 font-[Raleway]" aria-label="Факты о компании">
+    <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway]" aria-label="Факты о компании">
       <div className="rd-content-column">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-2.5 items-stretch">
           <Card {...items[0]} />

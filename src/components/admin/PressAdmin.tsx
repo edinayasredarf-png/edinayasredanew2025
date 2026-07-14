@@ -138,7 +138,7 @@ export default function PressAdmin() {
 
       {/* Форма добавления/редактирования */}
       {showForm && (
-        <div className="bg-white rounded-2xl border border-[#e8eaed] p-5 mb-6">
+        <div className="bg-[#F6F7F9] rounded-2xl border border-[#e8eaed] p-5 mb-6">
           <h3 className="text-[16px] font-semibold text-[#1a1a1a] mb-5">
             {editingId ? "Редактировать публикацию" : "Новая публикация"}
           </h3>
@@ -236,17 +236,17 @@ export default function PressAdmin() {
       {loading ? (
         <div className="space-y-3">
           {[1,2,3].map(i => (
-            <div key={i} className="bg-white rounded-2xl h-[72px] animate-pulse" />
+            <div key={i} className="bg-[#F6F7F9] rounded-2xl h-[72px] animate-pulse" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-dashed border-[#e0e0e0] p-12 text-center text-[#8c9099] text-[14px]">
+        <div className="bg-[#F6F7F9] rounded-2xl border border-dashed border-[#e0e0e0] p-12 text-center text-[#8c9099] text-[14px]">
           Публикаций пока нет. Нажмите «Добавить публикацию»
         </div>
       ) : (
         <div className="space-y-3">
           {items.map(item => (
-            <div key={item.id} className="bg-white rounded-2xl border border-[#e8eaed] px-5 py-4 flex items-center gap-4">
+            <div key={item.id} className="bg-[#F6F7F9] rounded-2xl border border-[#e8eaed] px-5 py-4 flex items-center gap-4">
               {item.source_logo && (
                 <div className="w-[80px] h-8 shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -43,7 +43,7 @@ export default function ContactsPage() {
       </section>
 
       {/* Contact Information */}
-              <section className="py-16 md:py-24 bg-[#F6F7F9]">
+              <section className="py-16 md:py-24 bg-white">
         <div className="max-w-[1200px] mx-auto px-5 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
             {/* Contact Info */}
@@ -90,7 +90,7 @@ export default function ContactsPage() {
                 </a>
                 <a
                   href="mailto:info@единаясреда.рф"
-                  className="w-full px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-medium rounded-xl hover:bg-[#F6F7F9] transition-colors text-center block"
+                  className="w-full px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-medium rounded-xl hover:bg-white transition-colors text-center block"
                 >
                   Написать письмо
                 </a>

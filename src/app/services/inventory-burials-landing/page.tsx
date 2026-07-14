@@ -37,7 +37,7 @@ export default function InventoryBurialsLandingPage() {
                 </button>
                 <button
                   onClick={handleConsult}
-                  className="inline-flex items-center justify-center bg-white text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
+                  className="inline-flex items-center justify-center bg-[#F6F7F9] text-[#029cda] border border-[#029cda] text-sm md:text-base lg:text-lg font-medium px-6 py-4 md:px-8 md:py-5 rounded-xl hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
                 >
                   Обсудить проект инвентаризации
                 </button>
@@ -48,7 +48,7 @@ export default function InventoryBurialsLandingPage() {
                 <strong>инвентаризации мест захоронений</strong>.
               </p>
             </div>
-            <div className="bg-white/5 rounded-3xl p-6 md:p-8 space-y-5">
+            <div className="bg-[#F6F7F9]/5 rounded-3xl p-6 md:p-8 space-y-5">
               <h2 className="text-lg md:text-xl font-semibold text-white">
                 Почему выбирают нашу систему инвентаризации кладбищ
               </h2>
@@ -113,9 +113,9 @@ export default function InventoryBurialsLandingPage() {
               ].map((item, index) => (
                 <div
                   key={item.step}
-                  className="relative md:pl-16 bg-white md:bg-transparent rounded-3xl md:rounded-none"
+                  className="relative md:pl-16 bg-[#F6F7F9] md:bg-transparent rounded-3xl md:rounded-none"
                 >
-                  <div className="flex items-start gap-4 md:gap-6 bg-white rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
+                  <div className="flex items-start gap-4 md:gap-6 bg-[#F6F7F9] rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
                     <div className="flex flex-col items-center md:items-start">
                       <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-[#029cda] text-white flex items-center justify-center text-xs md:text-base font-semibold">
                         {item.step}
@@ -202,7 +202,7 @@ export default function InventoryBurialsLandingPage() {
               Частые вопросы об инвентаризации мест захоронений
             </h2>
             <div className="space-y-4">
-              <details className="group bg-white rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
+              <details className="group bg-[#F6F7F9] rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
                 <summary className="flex items-center justify-between cursor-pointer text-sm md:text-base font-semibold text-black">
                   Как проводится инвентаризация кладбищ и сколько это стоит?
                   <span className="ml-3 text-xl text-gray-400 group-open:rotate-45 transition-transform">
@@ -216,7 +216,7 @@ export default function InventoryBurialsLandingPage() {
                   рассчитывается индивидуально.
                 </div>
               </details>
-              <details className="group bg-white rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
+              <details className="group bg-[#F6F7F9] rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
                 <summary className="flex items-center justify-between cursor-pointer text-sm md:text-base font-semibold text-black">
                   Какие данные собираются при инвентаризации мест захоронений?
                   <span className="ml-3 text-xl text-gray-400 group-open:rotate-45 transition-transform">
@@ -229,7 +229,7 @@ export default function InventoryBurialsLandingPage() {
                   лице и статусе захоронения.
                 </div>
               </details>
-              <details className="group bg-white rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
+              <details className="group bg-[#F6F7F9] rounded-3xl p-5 md:p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.04)]">
                 <summary className="flex items-center justify-between cursor-pointer text-sm md:text-base font-semibold text-black">
                   Можно ли публиковать электронную карту кладбищ для граждан?
                   <span className="ml-3 text-xl text-gray-400 group-open:rotate-45 transition-transform">
@@ -267,7 +267,7 @@ export default function InventoryBurialsLandingPage() {
               </button>
               <button
                 onClick={handleConsult}
-                className="inline-flex items-center justify-center bg-white text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
+                className="inline-flex items-center justify-center bg-[#F6F7F9] text-[#029cda] border border-[#029cda] px-8 py-4 rounded-xl font-medium hover:bg-[#029cda]/10 transition-colors duration-200 focus:outline-none"
               >
                 Задать вопросы по проекту
               </button>

@@ -8,8 +8,8 @@ import { useModal } from "./ModalProvider";
 
 // Чипы в бегущей строке
 const Chip: React.FC<{ label: string }> = ({ label }) => (
-  <div className="inline-flex items-center gap-4 rounded-3xl px-3 py-2 whitespace-nowrap bg-white/15 hover:bg-white/25 transition-colors">
-    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#029cda] text-[13px] leading-7">#</span>
+  <div className="inline-flex items-center gap-4 rounded-3xl px-3 py-2 whitespace-nowrap bg-[#F6F7F9]/15 hover:bg-[#F6F7F9]/25 transition-colors">
+    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#F6F7F9] text-[#029cda] text-[13px] leading-7">#</span>
     <span className="text-white text-sm md:text-[15px] leading-6">{label}</span>
   </div>
 );
@@ -21,7 +21,7 @@ const IconSquareOutlined: React.FC<{ icon?: string; alt?: string; className?: st
   className = "",
 }) => (
   <div
-    className={`flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-white ${className}`}
+    className={`flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-[#F6F7F9] ${className}`}
     aria-hidden={!alt}
   >
     {icon ? <Image src={icon} alt={alt} width={24} height={24} className="h-6 w-6 object-contain" /> : <div className="h-6 w-6" />}
@@ -36,7 +36,7 @@ const Card: React.FC<{
   iconAlt?: string;
   className?: string;
 }> = ({ title, text, icon, iconAlt = "", className = "" }) => (
-  <div className={`relative rounded-2xl bg-white p-6 lg:p-7 transition-transform ${className}`}>
+  <div className={`relative rounded-2xl bg-[#F6F7F9] p-6 lg:p-7 transition-transform ${className}`}>
     <div className="flex items-start justify-between">
       <h3 className="text-[17px] md:text-[19px] font-medium leading-snug text-black max-w-[80%]">{title}</h3>
       <div className="min-w-12">
@@ -49,7 +49,7 @@ const Card: React.FC<{
 
 /* ServiceCard с иконкой и кнопкой в вашем стиле */
 const ServiceCard: React.FC = () => (
-  <div className="rounded-2xl bg-white p-6 lg:p-7">
+  <div className="rounded-2xl bg-[#F6F7F9] p-6 lg:p-7">
     <div className="flex items-start justify-between">
       <h3 className="text-[17px] md:text-[19px] font-medium leading-snug text-black">Инвентаризация и сопровождение</h3>
       <div className="min-w-12">
@@ -63,7 +63,7 @@ const ServiceCard: React.FC = () => (
     </p>
 
     <a href="/services" className="group mt-5 inline-flex">
-      <span className="inline-flex items-center justify-center self-start px-6 py-3 bg-[#F6F7F9] text-black text-lg font-medium rounded-xl border border-transparent group-hover:outline-1 group-hover:outline-[#029cda]">
+      <span className="inline-flex items-center justify-center self-start px-6 py-3 bg-white text-black text-lg font-medium rounded-xl border border-transparent group-hover:outline-1 group-hover:outline-[#029cda]">
         Подробнее
       </span>
     </a>
@@ -113,7 +113,7 @@ const RevealPanel: React.FC<{
       initial={false}
       animate={{ y: isOpen ? 0 : closedY }}
       transition={panelTransition}
-      className="hidden md:block absolute inset-x-0 bottom-0 z-30 h-[76%] rounded-t-2xl overflow-hidden bg-white"
+      className="hidden md:block absolute inset-x-0 bottom-0 z-30 h-[76%] rounded-t-2xl overflow-hidden bg-[#F6F7F9]"
       style={{ willChange: "transform" }}
     >
       <div className="relative h-auto w-auto p-1">
@@ -147,7 +147,7 @@ const RevealPanel: React.FC<{
         {/* Белый круг-хэндл — только когда панель скрыта */}
         {!isOpen && (
           <div
-            className="absolute left-1/2 -translate-x-1/2 -top-[12px] rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+            className="absolute left-1/2 -translate-x-1/2 -top-[12px] rounded-full bg-[#F6F7F9] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
             style={{ width: handleSize, height: handleSize }}
             aria-hidden
           />

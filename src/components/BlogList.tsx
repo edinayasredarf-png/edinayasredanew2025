@@ -32,13 +32,13 @@ const blogPosts: BlogPost[] = [
 
 const BlogList = () => {
   return (
-    <div className="w-full bg-[#F6F7F9]">
+    <div className="w-full bg-white">
       <div className="max-w-[1440px] mx-auto px-[34px] py-10">
         <h1 className="text-[32px] font-bold text-[#292c32] mb-8">Блог</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogPosts.map((post) => (
-            <article key={post.id} className="bg-white rounded-xl overflow-hidden">
+            <article key={post.id} className="bg-[#F6F7F9] rounded-xl overflow-hidden">
               <div className="relative h-[240px]">
                 <Image
                   src={post.image}

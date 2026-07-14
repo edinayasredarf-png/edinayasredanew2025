@@ -1,110 +1,57 @@
-'use client';
-
 import React from 'react';
-import Image from 'next/image';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { FreeMode } from 'swiper/modules';
-import 'swiper/css';
 
-const cards = [
-  {
-    title: 'Муниципалитеты',
-    img: '/img/audience/municipal.webp',
-    alt: 'Муниципалитеты',
-  },
-  {
-    title: 'Ритуальные службы',
-    img: '/img/audience/ritual.webp',
-    alt: 'Ритуальные службы',
-  },
-  {
-    title: 'Застройщики',
-    img: '/img/audience/developer.webp',
-    alt: 'Застройщики',
-  },
-  {
-    title: 'Управляющие\nкомпании ЖКХ',
-    img: '/img/audience/zhkh.webp',
-    alt: 'Управляющие компании ЖКХ',
-  },
-  {
-    title: 'Отели и санатории',
-    img: '/img/audience/hotel.webp',
-    alt: 'Отели и санатории',
-  },
-  {
-    title: 'Крупные\nтерриториальные\nкомплексы',
-    img: '/img/audience/complex.webp',
-    alt: 'Крупные территориальные комплексы',
-  },
+type Item = {
+  title: string; // \n → перенос строки
+  icon: string;
+};
+
+// Иконки из public/img/who (1–6.svg), порядок = порядок категорий.
+const items: Item[] = [
+  { title: 'Органы власти\nи муниципалитетам', icon: '/img/who/1.svg' },
+  { title: 'Управляющие\nкомпании ЖКХ', icon: '/img/who/2.svg' },
+  { title: 'Ритуальные службы', icon: '/img/who/3.svg' },
+  { title: 'Образовательным\nучреждениям', icon: '/img/who/4.svg' },
+  { title: 'Медицинским\nорганизациям', icon: '/img/who/5.svg' },
+  { title: 'Отели и санатории', icon: '/img/who/6.svg' },
 ];
-
-const CardContent: React.FC<{ title: string; img: string; alt: string }> = ({ title, img, alt }) => (
-  <div className="bg-white rounded-3xl flex flex-col h-full min-h-[320px]">
-    <div className="px-8 pt-8 pb-4">
-      <h3 className="font-involve text-[#222222] text-2xl font-bold leading-8 whitespace-pre-line">
-        {title}
-      </h3>
-    </div>
-    <div className="flex-1 flex items-end justify-center px-8 pb-6">
-      <div className="relative w-full h-[190px]">
-        <Image
-          src={img}
-          alt={alt}
-          fill
-          className="object-contain object-bottom"
-          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 33vw"
-        />
-      </div>
-    </div>
-  </div>
-);
 
 const SectionAudience: React.FC = () => {
   return (
-    <section className="w-full py-10 md:py-14 lg:py-16">
-      {/* Заголовок — внутри rd-content-column */}
+    <section className="bg-white w-full py-16 md:py-24" aria-label="Кому подходит система">
       <div className="rd-content-column">
-        <div className="text-center mb-10 md:mb-14">
-          <h2 className="font-involve text-[#222222] text-[clamp(2rem,4.5vw,3rem)] leading-[1.14] font-bold">
-            Кому подходит{' '}
-            <br className="hidden sm:block" />
-            Единая Среда
+        {/* Заголовок + подзаголовок */}
+        <div className="flex flex-col items-center text-center">
+          <h2 className="max-w-[1120px] font-involve text-[#050c26] text-[32px] md:text-[40px] font-medium leading-[1.15] md:leading-[44px] tracking-wide">
+            Кому подходит система
           </h2>
-          <p className="mt-5 text-[#222222] text-lg md:text-xl leading-[1.5] font-[Raleway] max-w-[860px] mx-auto">
-            Управляйте территориями, объектами инфраструктуры и подрядчиками в единой цифровой системе — независимо от масштаба организации.
+          <p className="mt-4 max-w-[680px] font-[Raleway] text-base leading-6 tracking-tight text-[#646b85]">
+            Единая среда работает там, где важно видеть объекты на карте и управлять ими
           </p>
         </div>
-      </div>
 
-      {/* Мобильный слайдер — overflow-hidden на обёртке блокирует горизонтальный скролл страницы */}
-      <div className="lg:hidden overflow-hidden">
-        <div className="pl-4 sm:pl-6">
-        <Swiper
-          modules={[FreeMode]}
-          slidesPerView={1.15}
-          spaceBetween={8}
-          freeMode
-          breakpoints={{
-            480: { slidesPerView: 1.5, spaceBetween: 8 },
-            640: { slidesPerView: 2.1, spaceBetween: 8 },
-          }}
-        >
-          {cards.map((card) => (
-            <SwiperSlide key={card.alt} className="!h-auto">
-              <CardContent {...card} />
-            </SwiperSlide>
+        {/* Карточки-категории */}
+        <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {items.map((item) => (
+            <div
+              key={item.title}
+              className="bg-[#F6F7F9] rounded-[32px] p-6 flex flex-col items-center text-center"
+            >
+              <div className="w-12 h-12 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.icon} alt="" className="w-12 h-12 object-contain" />
+              </div>
+              <span className="mt-6 font-involve text-[#050c26] text-base font-medium leading-6 tracking-wide whitespace-pre-line">
+                {item.title}
+              </span>
+            </div>
           ))}
-        </Swiper>
         </div>
-      </div>
 
-      {/* Десктоп — обычная сетка */}
-      <div className="rd-content-column hidden lg:block">
-        <div className="grid grid-cols-3 gap-2">
-          {cards.map((card) => (
-            <CardContent key={card.alt} {...card} />
-          ))}
+        {/* Нижняя строка */}
+        <div className="mt-8 flex justify-center">
+          <p className="max-w-[448px] text-center font-[Raleway] text-base font-medium leading-6 tracking-tight text-[#646b85]">
+            + любая организация, которой нужно видеть свои объекты на карте и вести по ним учёт
+          </p>
         </div>
       </div>
     </section>

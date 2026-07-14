@@ -20,7 +20,7 @@ const smallCards = [
 ];
 
 const SectionExpertise = () => (
-  <section className="bg-[#F6F7F9] w-full py-10 md:py-14 lg:py-16 font-[Raleway] lining-nums">
+  <section className="bg-white w-full py-10 md:py-14 lg:py-16 font-[Raleway] lining-nums">
     <div className="rd-content-column">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-2.5">
         <a
@@ -56,7 +56,7 @@ const SectionExpertise = () => (
                 <strong>«Единая Среда»</strong> — флагманский продукт российской компании для цифровизации городов и муниципальных территорий.
               </h3>
             </div>
-            <div className="order-1 md:order-2 bg-white rounded-2xl flex items-center justify-center p-2.5 w-full md:w-1/2 h-full mx-auto">
+            <div className="order-1 md:order-2 bg-[#F6F7F9] rounded-2xl flex items-center justify-center p-2.5 w-full md:w-1/2 h-full mx-auto">
               <Image
                 src="/img/logo-mobile-black.svg"
                 alt="Логотип платформы Единая среда"
@@ -73,7 +73,7 @@ const SectionExpertise = () => (
                 key={idx}
                 className="group rd-block rounded-2xl p-5 flex flex-col gap-3 transition-all duration-300"
               >
-                <div className="w-16 h-16 rounded-2xl border border-[#e0e4ea] bg-white flex items-center justify-center transition-all duration-300 group-hover:border-[#029cda]">
+                <div className="w-16 h-16 rounded-2xl border border-[#e0e4ea] bg-[#F6F7F9] flex items-center justify-center transition-all duration-300 group-hover:border-[#029cda]">
                   <Image
                     src={card.iconUrl}
                     alt={card.alt}

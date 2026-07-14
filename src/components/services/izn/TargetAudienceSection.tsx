@@ -44,7 +44,7 @@ const TargetAudienceSection: React.FC<TargetAudienceSectionProps> = ({ onButtonC
         {/* Верхний ряд — 3 карточки */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
           {data.cards.slice(0, 3).map((card, index) => (
-            <div key={index} className="bg-white rounded-3xl p-6">
+            <div key={index} className="bg-[#F6F7F9] rounded-3xl p-6">
               <h3 className="text-[#313131] text-2xl font-medium mb-4">{card.title}</h3>
               <p className="text-[#7c8a9a] text-lg leading-6">{card.description}</p>
             </div>
@@ -54,18 +54,18 @@ const TargetAudienceSection: React.FC<TargetAudienceSectionProps> = ({ onButtonC
         {/* Нижний ряд */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-12">
           {/* Левая карточка */}
-          <div className="bg-white rounded-3xl p-6">
+          <div className="bg-[#F6F7F9] rounded-3xl p-6">
             <h3 className="text-[#313131] text-2xl font-medium mb-4">{data.cards[3].title}</h3>
             <p className="text-[#7c8a9a] text-lg leading-6">{data.cards[3].description}</p>
           </div>
 
           {/* Правая большая карточка (занимает 2 колонки) */}
-          <div className="lg:col-span-2 bg-white rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
+          <div className="lg:col-span-2 bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
             <div className="lg:w-1/2 flex flex-col p-4">
               <h3 className="text-2xl text-[#313131] mb-4">{data.cards[4].title}</h3>
               <p className="text-lg text-[#7c8a9a]">{data.cards[4].description}</p>
             </div>
-            <div className="lg:w-1/2 bg-[#f6f7f9] rounded-2xl flex items-center justify-center p-2">
+            <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-2">
               <Image
                 src="/img/services/izn/3.png"
                 alt="Система нужна всем"

@@ -53,13 +53,13 @@ export default function TestSupabasePage() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Тест Supabase</h1>
         
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-[#F6F7F9] rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Статус подключения</h2>
           <p className="text-lg">{status}</p>
         </div>
 
         {details && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Детали</h2>
             <pre className="bg-gray-100 p-4 rounded overflow-auto">
               {JSON.stringify(details, null, 2)}

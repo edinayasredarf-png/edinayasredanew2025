@@ -64,7 +64,7 @@ export default function PricingPage() {
             </div>
           </div>
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+            <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
 
                 <Image src="/img/ес.svg" alt="Единая среда" width={360} height={360} className="object-contain max-w-[100%] max-h-[100%] mr-4" onError={e => e.currentTarget.style.display='none'} />
 
@@ -86,14 +86,14 @@ export default function PricingPage() {
                   </button>
                   <button
                     onClick={openConsult}
-                    className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
+                    className="w-full bg-[#F6F7F9] text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
                   >
                     Получить консультацию
                   </button>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+            <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
                 <Image src="/img/услуга_имз.png" alt="Инвентаризация мест захоронений" width={360} height={360} className="object-contain max-w-[100%] max-h-[100%] mr-4" onError={e => e.currentTarget.style.display='none'} />
               <div className="flex flex-col justify-center h-full pl-2 md:pl-4">
                 <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
@@ -117,14 +117,14 @@ export default function PricingPage() {
                   </button>
                   <button
                     onClick={openConsult}
-                    className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
+                    className="w-full bg-[#F6F7F9] text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
                   >
                     Получить консультацию
                   </button>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+            <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
                 <Image src="/img/услуга_лес.png" alt="Лесоустройство" width={360} height={360} className="object-contain max-w-[100%] max-h-[100%] mr-4" onError={e => e.currentTarget.style.display='none'} />
               <div className="flex flex-col justify-center h-full pl-2 md:pl-4">
                 <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
@@ -148,14 +148,14 @@ export default function PricingPage() {
                   </button>
                   <button
                     onClick={openConsult}
-                    className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
+                    className="w-full bg-[#F6F7F9] text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
                   >
                     Получить консультацию
                   </button>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
+            <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-2 transition-all duration-300 hover:ring-1 hover:ring-[#029cda] hover:ring-offset-2 hover:ring-offset-grey-97">
                 <Image src="/img/услуга_изн.png" alt="Инвентаризация зеленых насаждений" width={360} height={360} className="object-contain max-w-[100%] max-h-[100%] mr-4" onError={e => e.currentTarget.style.display='none'} />
               <div className="flex flex-col justify-center h-full pl-2 md:pl-4">
                 <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
@@ -180,7 +180,7 @@ export default function PricingPage() {
                   </button>
                   <button
                     onClick={openConsult}
-                    className="w-full bg-white text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
+                    className="w-full bg-[#F6F7F9] text-[#029cda] border border-[#029cda] hover:bg-[#029cda]/10 font-bold py-2 rounded-xl text-base transition-colors"
                   >
                     Получить консультацию
                   </button>

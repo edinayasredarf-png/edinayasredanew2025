@@ -90,7 +90,7 @@ const SectionFeatures = () => {
               className={`mb-12 p-8 rounded-lg transition-all duration-300 ${
                 index === activeIndex
                   ? 'bg-blue-500 text-white shadow-xl'
-                  : 'bg-white text-gray-700'
+                  : 'bg-[#F6F7F9] text-gray-700'
               }`}
             >
               <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>

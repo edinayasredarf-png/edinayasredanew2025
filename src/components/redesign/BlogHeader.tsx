@@ -76,7 +76,7 @@ export function BlogHeader() {
 		<header className="sticky top-0 z-[60] w-full font-[Raleway]">
 			{/* ── Desktop ── */}
 			<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-2">
-				<div className="flex items-center w-full h-[68px] bg-white rounded-3xl px-4 relative">
+				<div className="flex items-center w-full h-[68px] bg-[#F6F7F9] rounded-3xl px-4 relative">
 
 				{/* Логотип */}
 				<Link href="/" className="shrink-0">
@@ -151,7 +151,7 @@ export function BlogHeader() {
 								{profileButtonContent}
 							</button>
 							{showProfileMenu && (
-								<div className="absolute right-[-1rem] top-full mt-5 w-56 bg-white rounded-2xl shadow-xl z-[200] overflow-hidden">
+								<div className="absolute right-[-1rem] top-full mt-5 w-56 bg-[#F6F7F9] rounded-2xl shadow-xl z-[200] overflow-hidden">
 									<div className="px-4 py-3 border-b border-[#f0f1f3]">
 										<div className="text-[12px] text-[#8c9099]">Профиль</div>
 										<div className="text-[14px] font-semibold text-[#313131]">{isEditor ? 'Редактор' : 'Пользователь'}</div>
@@ -181,7 +181,7 @@ export function BlogHeader() {
 			</div>
 
 			{/* ── Mobile ── */}
-			<div className="lg:hidden bg-white">
+			<div className="lg:hidden bg-[#F6F7F9]">
 				<div className="h-[70px] flex items-center justify-between gap-4 px-4">
 					<Link href="/" aria-label="Главная">
 						<Image src="/img/logo_dark.svg" alt="Единая среда" width={140} height={38} className="h-[38px] w-auto object-contain" />
@@ -207,7 +207,7 @@ export function BlogHeader() {
 									{profileButtonContent}
 								</button>
 								{showProfileMenu && (
-									<div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-[#e8eaed] z-50 overflow-hidden">
+									<div className="absolute right-0 top-full mt-2 w-52 bg-[#F6F7F9] rounded-2xl shadow-xl border border-[#e8eaed] z-50 overflow-hidden">
 										<div className="py-1.5">
 											{isAdmin && (
 												<Link href="/admin" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-[#313131] text-[14px]">

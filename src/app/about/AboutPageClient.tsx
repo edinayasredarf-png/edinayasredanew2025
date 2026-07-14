@@ -122,7 +122,7 @@ export default function AboutPage() {
         </section>
 
         {/* Projects Statistics */}
-        <section className="pt-4 pb-20 bg-[#F6F7F9]">
+        <section className="pt-4 pb-20 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 border-t border-gray-200">
@@ -305,7 +305,7 @@ export default function AboutPage() {
                       <p className="text-base flex-1">{item.description}</p>
                     </div>
                     {index < historyItems.length - 1 && (
-                      <div className="h-px bg-white/30 mt-8" />
+                      <div className="h-px bg-[#F6F7F9]/30 mt-8" />
                     )}
                   </div>
                 ))}
