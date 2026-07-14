@@ -3,7 +3,6 @@
 "use client";
 
 import React from 'react';
-import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
 import SectionAudience from '../components/SectionAudience';
@@ -21,18 +20,6 @@ import CtaSection from '../components/CtaSection';
 import BenefitsSection from "@/components/BenefitsSection";
 import PressSection from "@/components/PressSection";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
-// Динамические импорты для секций ниже fold (ленивая загрузка)
-
-const HomeNews = dynamic(() => import('../components/HomeNews'), {
-	loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
-	ssr: false
-});
-
-const HomePosts = dynamic(() => import('../components/HomePosts'), {
-	loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-2xl" />,
-	ssr: false
-});
 
 // ========================================
 // FAQ ДАННЫЕ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ
@@ -100,11 +87,8 @@ export default function HomePage() {
 			{/* 6 веских причин */}
 			<BenefitsSection />
 
-			{/* Новости */}
-			<HomeNews />
-
-			{/* Посты */}
-			<HomePosts />
+			{/* Кейсы */}
+			<HomeCases/>
 
 			{/* Полезные разделы (документация/блог/новости/чат) */}
 			<ResourcesLinksSection />
@@ -123,9 +107,6 @@ export default function HomePage() {
 
 			{/* CTA — развивайте территорию */}
 			<CtaSection />
-
-			{/* Кейсы */}
-			<HomeCases/>
 		</Layout>
 	);
 }
