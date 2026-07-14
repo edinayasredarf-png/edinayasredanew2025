@@ -84,13 +84,13 @@ function Card({ card, tall = false }: { card: Card; tall?: boolean }) {
       {/* КРУГЛАЯ КНОПКА-СТРЕЛКА — плавно появляется при наведении */}
       <ArrowCircle tall={tall} />
 
-      {/* МОБАЙЛ: полноразмерная картинка на всю ширину, после текста */}
-      <div className="sm:hidden mt-6 relative w-full h-[200px]">
+      {/* МОБАЙЛ: полноразмерная картинка на всю ширину, прижата к низу блока */}
+      <div className="sm:hidden mt-auto pt-6 -mb-8 relative w-full h-[200px]">
         <Image
           src={card.image}
           alt={card.title.replace(/\n/g, " ")}
           fill
-          className="object-contain"
+          className="object-contain object-bottom"
           sizes="100vw"
         />
       </div>

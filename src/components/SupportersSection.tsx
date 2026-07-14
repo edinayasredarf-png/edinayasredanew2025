@@ -14,7 +14,6 @@ const DEFAULT_LOGOS: Logo[] = [
 	{ src: '/img/logos/frii_logo.svg', alt: 'ФРИИ' },
 	{ src: '/img/logos/mincifry.svg', alt: 'Минцифры' },
 	{ src: '/img/logos/minstroy.svg', alt: 'Минстрой' },
-	{ src: '/img/logos/myroots.svg', alt: 'myroots' },
 	{ src: '/img/logos/skolkovo.svg', alt: 'Сколково' },
 ];
 
@@ -30,7 +29,7 @@ export default function SupportersSection({
 					<ul className="flex flex-row flex-wrap justify-center items-center gap-4 md:gap-6 max-w-[984px]">
 						{logos.map((logo) => (
 							<li key={logo.alt}>
-								<div className="w-[120px] h-[80px] rounded-2xl flex items-center justify-center p-[15px] shrink-0 border border-white">
+								<div className="w-[120px] h-[80px] rounded-2xl flex items-center justify-center p-[15px] shrink-0 border border-[#F6F7F9]">
 									<div className="relative w-[90px] h-[50px]">
 										<Image
 											src={logo.src}

@@ -11,14 +11,17 @@ const HeroSection: React.FC = () => {
 			<div className="relative mx-auto w-full max-w-[1200px] flex flex-col lg:flex-row lg:items-stretch px-6 lg:px-5">
 
 				{/* Текст и кнопки — левая колонка, от левого края 1200px */}
-				<div className="relative z-10 flex flex-col justify-center shrink-0 lg:w-[460px] xl:w-[490px] lg:pl-0 lg:pr-8 pt-[120px] pb-10 lg:pt-[160px] lg:pb-[80px]">
-					<h1 className="font-involve text-white text-[2.4rem] sm:text-[2.6rem] lg:text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.14] tracking-[0.6px]">
+				<div className="relative z-10 flex flex-col justify-center shrink-0 lg:w-[600px] xl:w-[662px] lg:pl-0 lg:pr-8 pt-[140px] pb-14 lg:pt-[200px] lg:pb-[120px]">
+					<h1
+						style={{ fontWeight: 700 }}
+						className="font-involve text-white text-[2.4rem] sm:text-[3rem] lg:text-[clamp(2.6rem,4.6vw,3.4rem)] leading-[1.14] tracking-[0.4px] lg:whitespace-nowrap"
+					>
 						Цифровое управление
 						<br />
 						территориями
 					</h1>
 
-					<p className="mt-6 text-white/70 text-[17px] md:text-[16px] leading-[1.55] font-semibold max-w-[420px]">
+					<p className="mt-6 text-white/75 text-[22px] md:text-[21px] leading-[1.5] font-bold self-stretch">
 						Платформа для эффективного учёта, управления и мониторинга территорий и объектов в организациях любого типа и масштаба
 					</p>
 
@@ -40,13 +43,13 @@ const HeroSection: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Изображение — правая колонка, прижато к правому краю 1200px и к низу */}
-				<div className="flex flex-1 items-end justify-center lg:justify-end pointer-events-none select-none pb-0 lg:pr-0 -mx-6 lg:mx-0">
+				{/* Изображение — правая колонка, вынос вправо за край 1200px и к низу */}
+				<div className="relative flex flex-1 items-end justify-center lg:justify-end pointer-events-none select-none pb-0 lg:pr-0 -mx-6 lg:mx-0">
 					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img
 						src="/img/hero-tablet.webp"
 						alt="Платформа АИС Единая среда"
-						className="w-full lg:w-auto lg:max-h-[800px] xl:max-h-[840px] object-contain object-bottom"
+						className="w-full max-w-none lg:w-[720px] xl:w-[820px] object-contain object-bottom lg:-translate-x-16 xl:-translate-x-28"
 						loading="eager"
 					/>
 				</div>
