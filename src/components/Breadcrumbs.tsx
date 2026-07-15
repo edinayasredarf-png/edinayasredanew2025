@@ -83,6 +83,11 @@ export default function Breadcrumbs({ items, customLabels }: BreadcrumbsProps) {
     return null
   }
 
+  // Страница «Кейсы» — крошки показываются внутри hero-секции
+  if (pathname === '/cases') {
+    return null
+  }
+
   const labels = { ...DEFAULT_LABELS, ...customLabels }
 
   const breadcrumbItems: BreadcrumbItem[] = [

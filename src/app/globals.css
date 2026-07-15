@@ -232,3 +232,54 @@ select:focus {
 	transform: rotate(180deg);
 	transition: transform 0.2s ease;
 }
+
+/* Hero: размытые шары — разовая анимация при загрузке. Оба стартуют из центра
+   секции, вращаются по часовой стрелке и по спирали расходятся на свои статичные
+   позиции. Последний кадр = transform: none, т.е. ровно статика.
+
+   --sx/--sy — вектор от статичной позиции шара до центра секции (стартовая точка).
+   Ширина секции = 100vw, поэтому X считается через vw точно; Y — от высоты hero. */
+.hero-orb {
+	will-change: transform;
+	animation: heroOrbSpiral 6s cubic-bezier(0.3, 0.1, 0.2, 1) both;
+}
+
+/* Мобильный: высота hero ≈ 990px, центр по Y ≈ 495px.
+   Шар 1 статичный центр (110px, 118px); шар 2 — (100vw - 150px, 892px). */
+.hero-orb--1 {
+	--sx: calc(50vw - 110px);
+	--sy: 377px;
+}
+
+.hero-orb--2 {
+	--sx: calc(150px - 50vw);
+	--sy: -397px;
+}
+
+/* Десктоп: высота hero ≈ 657px, центр по Y ≈ 328px.
+   Шар 2 статичный центр по Y здесь — 559px. */
+@media (min-width: 1024px) {
+	.hero-orb--1 {
+		--sy: 210px;
+	}
+
+	.hero-orb--2 {
+		--sy: -230px;
+	}
+}
+
+/* Поворот стартового вектора по часовой стрелке (x,y) → (-y,x) с уменьшением
+   радиуса: спираль из центра к финальной точке. */
+@keyframes heroOrbSpiral {
+	0%   { transform: translate(var(--sx), var(--sy)) scale(0.35); }
+	25%  { transform: translate(calc(var(--sy) * -0.75), calc(var(--sx) * 0.75)) scale(0.6); }
+	50%  { transform: translate(calc(var(--sx) * -0.5), calc(var(--sy) * -0.5)) scale(0.8); }
+	75%  { transform: translate(calc(var(--sy) * 0.25), calc(var(--sx) * -0.25)) scale(0.93); }
+	100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hero-orb {
+		animation: none;
+	}
+}

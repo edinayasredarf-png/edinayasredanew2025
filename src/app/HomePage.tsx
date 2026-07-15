@@ -69,44 +69,47 @@ export default function HomePage() {
 			{/* Speed Insights от Vercel */}
 			<SpeedInsights />
 
-			{/* Hero секция с главным заголовком */}
+			{/* Hero секция с главным заголовком — закреплена, остальное едет поверх неё */}
 			<HeroSection />
-			<SupportersSection />
 
-			{/* Карточки с разделением стилей */}
-			<SplitStyleCards />
-			<InventorySupportSection />
-			<TrustSection/>
+			<div className="relative z-10 bg-white rounded-t-[40px]">
+				<SupportersSection />
 
-			{/* Кому подходит */}
-			<SectionAudience />
+				{/* Карточки с разделением стилей */}
+				<SplitStyleCards />
+				<InventorySupportSection />
+				<TrustSection/>
 
-			{/* Мощная картографическая платформа */}
-			<MapPlatformSection />
+				{/* Кому подходит */}
+				<SectionAudience />
 
-			{/* 6 веских причин */}
-			<BenefitsSection />
+				{/* Мощная картографическая платформа */}
+				<MapPlatformSection />
 
-			{/* Кейсы */}
-			<HomeCases/>
+				{/* 6 веских причин */}
+				<BenefitsSection />
 
-			{/* Полезные разделы (документация/блог/новости/чат) */}
-			<ResourcesLinksSection />
+				{/* Кейсы */}
+				<HomeCases/>
 
-			{/* СМИ о нас */}
-			<PressSection />
+				{/* Полезные разделы (документация/блог/новости/чат) */}
+				<ResourcesLinksSection />
 
-			{/* Подробный FAQ */}
-			<FAQ
-				items={homeFaqData}
-				title="Подробный FAQ"
-			/>
+				{/* СМИ о нас */}
+				<PressSection />
 
-			{/* Не нашли ответ — каналы связи */}
-			<ContactChannelsSection />
+				{/* Подробный FAQ */}
+				<FAQ
+					items={homeFaqData}
+					title="Подробный FAQ"
+				/>
 
-			{/* CTA — развивайте территорию */}
-			<CtaSection />
+				{/* Не нашли ответ — каналы связи */}
+				<ContactChannelsSection />
+
+				{/* CTA — развивайте территорию */}
+				<CtaSection />
+			</div>
 		</Layout>
 	);
 }

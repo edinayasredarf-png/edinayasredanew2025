@@ -7,8 +7,19 @@ const HeroSection: React.FC = () => {
 	const { openRegister, openConsult } = useModal();
 
 	return (
-		<section className="w-full overflow-hidden bg-gradient-to-bl from-[#029eda]/50 to-[#0c5fe1] -mt-[80px]">
-			<div className="relative mx-auto w-full max-w-[1200px] flex flex-col lg:flex-row lg:items-stretch px-6 lg:px-5">
+		<section className="sticky top-0 z-0 w-full -mt-[80px]">
+			<div className="relative w-full overflow-hidden bg-[#029cda]">
+				{/* Размытые круги-свечения по бокам */}
+				<div
+					aria-hidden
+					className="hero-orb hero-orb--1 pointer-events-none absolute z-0 -left-[200px] -top-[180px] w-[621px] h-[596px] bg-white/60 rounded-full blur-[150px]"
+				/>
+				<div
+					aria-hidden
+					className="hero-orb hero-orb--2 pointer-events-none absolute z-0 -right-[160px] -bottom-[200px] w-[621px] h-[596px] bg-white/60 rounded-full blur-[150px]"
+				/>
+
+				<div className="relative z-10 mx-auto w-full max-w-[1200px] flex flex-col lg:flex-row lg:items-stretch px-6 lg:px-5">
 
 				{/* Текст и кнопки — левая колонка, от левого края 1200px */}
 				<div className="relative z-10 flex flex-col justify-center shrink-0 lg:w-[600px] xl:w-[662px] lg:pl-0 lg:pr-8 pt-[140px] pb-14 lg:pt-[200px] lg:pb-[120px]">
@@ -54,6 +65,7 @@ const HeroSection: React.FC = () => {
 					/>
 				</div>
 
+				</div>
 			</div>
 		</section>
 	);

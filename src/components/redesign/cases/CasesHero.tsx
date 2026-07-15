@@ -1,48 +1,76 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
+import { useModal } from '@/components/ModalProvider';
 
 type CasesHeroProps = {
   onConsult: () => void;
   caseCount?: number;
 };
 
-export function CasesHero({ onConsult, caseCount }: CasesHeroProps) {
+export function CasesHero({ onConsult }: CasesHeroProps) {
+  const { openRegister } = useModal();
+
   return (
-    <section className="w-full page-hero relative overflow-hidden lining-nums pb-4 md:pb-6">
-      <div className="case-page-column">
-        <div className="flex flex-col lg:flex-row lg:items-end gap-10 lg:gap-16">
-          <div className="flex-1 max-w-3xl">
-            <h1 className="font-involve text-[#101828] text-[2.75rem] sm:text-5xl md:text-[4.5rem] leading-[1.05] tracking-tight">
+    <section className="w-full bg-white pt-6 pb-4 md:pb-6">
+      <div className="max-w-[1200px] mx-auto px-4 lg:px-5">
+        <div className="relative overflow-hidden rounded-[32px] bg-[#f6f7f9] px-6 sm:px-10 lg:px-[94px] pt-14 lg:pt-20 pb-10 lg:min-h-[425px]">
+          {/* Контент слева */}
+          <div className="relative z-10 max-w-full lg:max-w-[640px]">
+            {/* Хлебные крошки */}
+            <nav aria-label="Навигационная цепочка" className="h-7 flex items-center">
+              <ol className="flex items-center text-sm font-medium font-involve leading-5 tracking-tight">
+                <li className="flex items-center">
+                  <Link href="/" className="text-[#050c26] hover:text-[#029cda] transition-colors">
+                    Главная
+                  </Link>
+                  <span className="px-2 text-[#050c26]">/</span>
+                </li>
+                <li>
+                  <span className="text-[#646b85]">Кейсы</span>
+                </li>
+              </ol>
+            </nav>
+
+            {/* Заголовок */}
+            <h1 className="pt-4 font-involve text-[#050c26] text-[40px] sm:text-[48px] lg:text-[56px] font-medium leading-[1.05] lg:leading-[56px] tracking-wide">
               Кейсы
             </h1>
-            <p className="mt-6 text-lg md:text-2xl text-[#667085] max-w-xl leading-relaxed">
-              Реальные проекты и решения, которые мы реализовали для муниципалитетов и бизнеса
+
+            {/* Подзаголовок */}
+            <p className="pt-4 font-[Raleway] text-[#050c26] text-base font-medium leading-6 tracking-tight">
+              Реальные проекты и решения, которые мы реализовали
+              <br className="hidden sm:block" /> для муниципалитетов и бизнеса
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+
+            {/* Кнопки */}
+            <div className="pt-10 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => openRegister()}
+                className="inline-flex items-center justify-center h-11 px-5 py-2.5 rounded-xl bg-[#029cda] text-white text-base font-normal font-involve leading-6 tracking-tight hover:bg-[#0288bd] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]/40"
+              >
+                Оставить заявку
+              </button>
               <button
                 type="button"
                 onClick={onConsult}
-                className="inline-flex items-center justify-center bg-[#029cda] text-[#ffffff] text-base font-medium px-7 py-4 rounded-xl hover:bg-[#0288bd] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]/40"
+                className="inline-flex items-center justify-center h-11 px-5 py-2.5 rounded-xl text-[#029cda] text-base font-normal font-involve leading-6 tracking-tight hover:bg-[#029cda]/5 transition-colors"
               >
                 Получить консультацию
               </button>
-              <a
-                href="#cases-grid"
-                className="inline-flex items-center justify-center text-[#202020] text-base font-medium px-7 py-4 rounded-xl border border-[#d0d5dd] bg-transparent hover:bg-[#f2f3f5] transition-colors"
-              >
-                Смотреть проекты
-              </a>
             </div>
-           
           </div>
-          <div className="flex-shrink-0 w-full max-w-[380px] lg:max-w-[420px] mx-auto lg:mx-0 lg:ml-auto">
+
+          {/* Изображение справа на постаменте */}
+          <div className="pointer-events-none select-none hidden lg:block absolute right-[40px] xl:right-[80px] bottom-0 w-[360px] h-[400px]">
             <Image
-              src="/img/cases/cases-hero.svg"
+              src="/img/cases/cases.webp"
               alt=""
-              width={420}
-              height={340}
-              className="w-full h-auto object-contain"
+              fill
+              sizes="360px"
+              className="object-contain object-bottom"
               priority
             />
           </div>
