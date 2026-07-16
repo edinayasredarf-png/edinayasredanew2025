@@ -18,7 +18,7 @@ export default function ProfileLayout({ children }: ProfileLayoutProps) {
   }, []);
 
   return (
-    <div className="bg-[#F6F7FB] min-h-screen flex flex-col">
+    <div className="bg-white min-h-screen flex flex-col">
       <Suspense>
         <BlogHeader />
       </Suspense>

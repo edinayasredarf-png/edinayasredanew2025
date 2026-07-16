@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type DeliveryStatus = 'accepted' | 'delivered' | 'bounced' | 'rejected' | 'error';
 
@@ -88,6 +88,12 @@ export default function LetterNotifications() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [onlyUncalled, setOnlyUncalled] = useState(false);
+
+  // Горизонтальная прокрутка таблицы кнопками — тянуть мышкой до крайних колонок
+  // (телефон, комментарий) неудобно.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollBy = (dir: -1 | 1) =>
+    scrollRef.current?.scrollBy({ left: dir * 420, behavior: 'smooth' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -244,16 +250,6 @@ export default function LetterNotifications() {
         </button>
       </div>
 
-      {/* Честное пояснение: статусы приблизительные, и это важно понимать */}
-      <p className="text-xs text-[#9AA6B2] leading-relaxed bg-[#F6F7F9] rounded-lg p-3">
-        «Принято сервером» значит, что письмо принял SMTP — это ещё не доставка в
-        инбокс. Статус меняется на «Доставлено», если за отведённое время не пришёл
-        возврат, и на «Не доставлено», если возврат пришёл. «Открыто» определяется
-        картинкой-пикселем: если у получателя картинки заблокированы, открытие не
-        зафиксируется, а Gmail и Apple Mail наоборот могут подгрузить пиксель сами,
-        без участия человека. Считайте эти данные ориентиром, а не точным фактом.
-      </p>
-
       {error && (
         <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
           {error}
@@ -265,15 +261,39 @@ export default function LetterNotifications() {
         </div>
       )}
 
-      <div className="text-sm text-[#7C8A9A]">
-        Писем: <b className="text-[#313131]">{stats.total}</b> · открытий:{' '}
-        <b className="text-[#313131]">{stats.opened}</b> · проблемных:{' '}
-        <b className="text-[#313131]">{stats.bad}</b> · прозвонено:{' '}
-        <b className="text-[#313131]">{stats.called}</b>
+      <div className="flex items-center gap-3">
+        <div className="text-sm text-[#7C8A9A]">
+          Писем: <b className="text-[#313131]">{stats.total}</b> · открытий:{' '}
+          <b className="text-[#313131]">{stats.opened}</b> · проблемных:{' '}
+          <b className="text-[#313131]">{stats.bad}</b> · прозвонено:{' '}
+          <b className="text-[#313131]">{stats.called}</b>
+        </div>
+
+        {/* Стрелки прокрутки таблицы по горизонтали */}
+        <div className="ml-auto flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => scrollBy(-1)}
+            aria-label="Прокрутить таблицу влево"
+            title="Влево"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollBy(1)}
+            aria-label="Прокрутить таблицу вправо (к комментарию)"
+            title="Вправо — к телефону и комментарию"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50"
+          >
+            ›
+          </button>
+        </div>
       </div>
 
       {/* Таблица */}
-      <div className="overflow-x-auto -mx-5 px-5">
+      <div ref={scrollRef} className="overflow-x-auto -mx-5 px-5 scroll-smooth">
         <table className="w-full text-sm min-w-[1180px]">
           <thead>
             <tr className="text-left text-[#7C8A9A] border-b border-gray-100">

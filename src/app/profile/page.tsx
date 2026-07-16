@@ -133,7 +133,7 @@ export default function ProfilePage() {
   if (!authChecked) {
     return (
       <ProfileLayout>
-        <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
+        <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#029cda]" />
         </div>
       </ProfileLayout>
@@ -143,7 +143,7 @@ export default function ProfilePage() {
   if (!isAuthenticated) {
     return (
       <ProfileLayout>
-        <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
+        <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-[#313131] mb-4">Необходима авторизация</h1>
             <p className="text-gray-600 mb-6">Для доступа к личному кабинету необходимо войти в систему</p>
@@ -162,7 +162,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <ProfileLayout>
-        <div className="min-h-screen bg-[#F6F7FB] flex items-center justify-center">
+        <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#029cda] mx-auto mb-4"></div>
             <p className="text-gray-600">Загрузка профиля...</p>
@@ -174,7 +174,7 @@ export default function ProfilePage() {
 
   return (
     <ProfileLayout>
-      <div className="min-h-screen bg-[#F6F7FB] py-8">
+      <div className="min-h-screen bg-white py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#F6F7F9] rounded-2xl p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
