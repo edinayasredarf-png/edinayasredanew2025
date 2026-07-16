@@ -175,8 +175,8 @@ export default function ProfilePage() {
   return (
     <ProfileLayout>
       <div className="min-h-screen bg-white py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#F6F7F9] rounded-2xl p-6 mb-6">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-2xl border border-[#e8eaed] p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-[#313131]">Личный кабинет</h1>
               <button
@@ -341,7 +341,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Избранные статьи */}
-          <div className="bg-[#F6F7F9] rounded-2xl p-6">
+          <div className="bg-white rounded-2xl border border-[#e8eaed] p-6">
             <h2 className="text-lg font-semibold text-[#313131] mb-4">Избранные статьи</h2>
             {favoritePosts.length === 0 ? (
               <p className="text-gray-500 text-center py-8">У вас пока нет избранных статей</p>
@@ -364,13 +364,13 @@ export default function ProfilePage() {
 
           {/* СМИ о нас — для редакторов и админов */}
           {(profile.role === 'author' || profile.role === 'admin') && (
-            <div className="bg-[#F6F7F9] rounded-2xl p-6 mt-6">
+            <div className="bg-white rounded-2xl border border-[#e8eaed] p-6 mt-6">
               <PressAdmin />
             </div>
           )}
 
           {/* Заказ услуг */}
-          <div className="bg-[#F6F7F9] rounded-2xl p-6 mt-6">
+          <div className="bg-white rounded-2xl border border-[#e8eaed] p-6 mt-6">
             <h2 className="text-lg font-semibold text-[#313131] mb-4">Заказать услуги</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-gray-200 rounded-lg p-4">

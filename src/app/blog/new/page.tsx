@@ -478,15 +478,15 @@ export default function NewPostPage() {
 
   if (!authed) {
     return (
-      <div className="bg-[#F6F7F9] min-h-screen font-[Raleway]">
+      <div className="bg-white min-h-screen font-[Raleway]">
         <div className="max-w-[640px] mx-auto px-4 md:px-8 py-8 md:py-16">
-          <div className="bg-white rounded-2xl p-6 border">
+          <div className="bg-white rounded-2xl p-6 border border-[#e8eaed]">
             <h1 className="text-2xl font-semibold mb-4 text-[#313131]">Авторизация редактора</h1>
-            <input className="w-full border rounded-lg px-4 py-3 mb-3 text-[#313131]" placeholder="Логин" value={login} onChange={e=>setLogin(e.target.value)} />
-            <input className="w-full border rounded-lg px-4 py-3 mb-4 text-[#313131]" placeholder="Пароль" type="password" value={pass} onChange={e=>setPass(e.target.value)} />
+            <input className="w-full border border-[#e8eaed] rounded-lg px-4 py-3 mb-3 text-[#313131]" placeholder="Логин" value={login} onChange={e=>setLogin(e.target.value)} />
+            <input className="w-full border border-[#e8eaed] rounded-lg px-4 py-3 mb-4 text-[#313131]" placeholder="Пароль" type="password" value={pass} onChange={e=>setPass(e.target.value)} />
             <div className="flex gap-2">
               <button onClick={doLogin} className="bg-[#029cda] text-white px-5 py-2.5 rounded-lg">Войти</button>
-              <Link href="/blog" className="px-5 py-2.5 rounded-lg border  text-[#313131]">Назад</Link>
+              <Link href="/blog" className="px-5 py-2.5 rounded-lg border border-[#e8eaed]  text-[#313131]">Назад</Link>
             </div>
           </div>
         </div>
@@ -504,8 +504,8 @@ export default function NewPostPage() {
 
   return (
     <Suspense fallback={<div className="min-h-screen" /> }>
-      <div className="bg-[#F6F7F9] min-h-screen" dir="ltr">
-        <div className="max-w-[1000px] mx-auto px-4 md:px-8 py-8">
+      <div className="bg-white min-h-screen" dir="ltr">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl bg-[#313131] px-4 py-2 text-white hover:bg-[#313131]/90">
@@ -516,7 +516,7 @@ export default function NewPostPage() {
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               {editSlug && editType && (
-                <button onClick={doDelete} className="px-4 py-2 rounded-lg border hover:bg-gray-50 text-[#313131]">Удалить</button>
+                <button onClick={doDelete} className="px-4 py-2 rounded-lg border border-[#e8eaed] hover:bg-gray-50 text-[#313131]">Удалить</button>
               )}
               <button
                 onClick={() => setShowScheduled(!showScheduled)}
@@ -530,7 +530,7 @@ export default function NewPostPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border">
+          <div className="bg-white rounded-2xl p-6 border border-[#e8eaed]">
             {/* шаги */}
             <div className="mb-6 flex flex-wrap items-center gap-2 text-sm overflow-x-auto">
               {[0,1,2,3].map(i=>(
@@ -547,7 +547,7 @@ export default function NewPostPage() {
                 <h3 className="text-lg font-semibold text-yellow-800 mb-3">📅 Отложенные публикации</h3>
                 <div className="space-y-2">
                   {scheduledPosts.map(post => (
-                    <div key={post.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                    <div key={post.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-[#e8eaed]">
                       <div>
                         <div className="font-medium text-[#313131]">{post.title}</div>
                         <div className="text-sm text-gray-500">
@@ -571,7 +571,7 @@ export default function NewPostPage() {
                     </div>
                   ))}
                   {scheduledNews.map(news => (
-                    <div key={news.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                    <div key={news.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-[#e8eaed]">
                       <div>
                         <div className="font-medium text-[#313131]">{news.title}</div>
                         <div className="text-sm text-gray-500">
@@ -622,7 +622,7 @@ export default function NewPostPage() {
               <div className="space-y-4">
                 <StepTitle>Заголовок</StepTitle>
                 <input
-                  className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-xl text-[#313131]"
+                  className="w-full border border-[#e8eaed] rounded-xl px-4 py-3 text-xl text-[#313131]"
                   placeholder={
                     kind==='news' ? 'Заголовок новости' :
                     kind==='case' ? 'Заголовок кейса' :
@@ -632,7 +632,7 @@ export default function NewPostPage() {
                 />
                 {(kind==='post' || kind==='case') && (
                   <input
-                    className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-[#313131]"
+                    className="w-full border border-[#e8eaed] rounded-xl px-4 py-3 text-[#313131]"
                     placeholder="Подзаголовок (необязательно)"
                     value={subtitle} onChange={e=>setSubtitle(e.target.value)}
                   />
@@ -642,7 +642,7 @@ export default function NewPostPage() {
                     <div>
                       <label className="block text-sm font-medium text-[#313131] mb-2">Тип кейса</label>
                       <select
-                        className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-[#313131] bg-white"
+                        className="w-full border border-[#e8eaed] rounded-xl px-4 py-3 text-[#313131] bg-white"
                         value={caseApplication}
                         onChange={e=>setCaseApplication(e.target.value)}
                       >
@@ -655,7 +655,7 @@ export default function NewPostPage() {
                     <div>
                       <label className="block text-sm font-medium text-[#313131] mb-2">Место проведения работ</label>
                       <input
-                        className="w-full border-2 border-[#F6F7FB] rounded-xl px-4 py-3 text-[#313131]"
+                        className="w-full border border-[#e8eaed] rounded-xl px-4 py-3 text-[#313131]"
                         placeholder="Например: Ростов-на-Дону, Красноярский край"
                         value={caseLocation}
                         onChange={e=>setCaseLocation(e.target.value)}
@@ -704,7 +704,7 @@ export default function NewPostPage() {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <input id="newtag" className="flex-1 border-2 border-[#F6F7FB]  rounded-xl px-3 py-2 text-[#313131]" placeholder="Создать новый тег" />
+                      <input id="newtag" className="flex-1 border border-[#e8eaed]  rounded-xl px-3 py-2 text-[#313131]" placeholder="Создать новый тег" />
                       <button onClick={()=>{
                         const el = document.getElementById('newtag') as HTMLInputElement;
                         const t = (el?.value||'').trim(); if (!t) return;
@@ -715,7 +715,7 @@ export default function NewPostPage() {
                       <div className="mt-3 flex flex-wrap gap-2">
                         {allTags.map(t=>(
                           <button key={t} onClick={()=>{ if(!tags.includes(t)) setTags([...tags,t]); }}
-                            className="px-3 py-1.5 rounded-xl border-2 border-[#F6F7FB]  hover:bg-gray-50 text-[#313131]">#{t}</button>
+                            className="px-3 py-1.5 rounded-xl border border-[#e8eaed]  hover:bg-gray-50 text-[#313131]">#{t}</button>
                         ))}
                       </div>
                     )}
@@ -735,7 +735,7 @@ export default function NewPostPage() {
                         value={scheduledDate}
                         onChange={(e) => setScheduledDate(e.target.value)}
                         min={new Date().toISOString().slice(0, 16)}
-                        className="w-full border-2 border-[#F6F7FB]  rounded-lg px-3 py-2 text-[#313131]"
+                        className="w-full border border-[#e8eaed]  rounded-lg px-3 py-2 text-[#313131]"
                       />
                       <div className="text-sm text-[#52555a] mt-1">
                         Оставьте пустым для немедленной публикации

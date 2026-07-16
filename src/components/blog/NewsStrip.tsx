@@ -26,7 +26,7 @@ export default function NewsStrip() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-5 mb-3">
+      <div className="bg-white rounded-2xl border border-[#e8eaed] p-5 mb-3">
         <div className="flex items-center justify-between mb-4">
           <div className="h-5 w-20 bg-gray-100 rounded animate-pulse" />
           <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
@@ -50,7 +50,7 @@ export default function NewsStrip() {
   const hasMore = visible < news.length;
 
   return (
-    <div className="bg-white rounded-2xl p-5 mb-3">
+    <div className="bg-white rounded-2xl border border-[#e8eaed] p-5 mb-3">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[17px] font-bold text-[#313131] font-[Raleway]">Новости</h2>
         <Link href="/news" className="text-[14px] text-[#029cda] hover:text-[#0280b5] font-[Raleway] font-semibold flex items-center gap-1">

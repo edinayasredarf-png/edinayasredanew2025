@@ -129,7 +129,7 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-6">
         {/* Левое меню */}
         <aside className="lg:w-64 shrink-0">
           <div className="bg-[#F6F7F9] rounded-2xl p-3 lg:sticky lg:top-6">
