@@ -136,7 +136,7 @@ export default function NewsPageClient({ slug, initialNews }: { slug: string; in
 
   if (newsLoading) {
     return (
-      <div className="bg-[#F6F7F9] min-h-screen">
+      <div className="bg-white min-h-screen">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
@@ -160,7 +160,7 @@ export default function NewsPageClient({ slug, initialNews }: { slug: string; in
 
   if (!news) {
     return (
-      <div className="bg-[#F6F7F9] min-h-screen">
+      <div className="bg-white min-h-screen">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
           <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
@@ -180,12 +180,12 @@ export default function NewsPageClient({ slug, initialNews }: { slug: string; in
   const views = news.views || 0;
 
   return (
-    <div className="bg-[#F6F7F9] min-h-screen">
+    <div className="bg-white min-h-screen">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-16">
         <div className="flex flex-col xl:flex-row gap-4 xl:gap-[15px]">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 min-w-0">
-            <div className="bg-white rounded-2xl p-6 font-[Raleway] font-medium lining-nums">
+            <div className="bg-white rounded-2xl border border-[#e8eaed] p-6 font-[Raleway] font-medium lining-nums">
               <section>
                 <h1 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-[#313131]">{news.title}</h1>
 

@@ -135,7 +135,7 @@ export default function PostPageClient({ slug, initialPost }: { slug: string; in
 
   if (!post) {
     return (
-      <div className="bg-[#f5f6f8] min-h-screen">
+      <div className="bg-white min-h-screen">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-16 font-[Raleway]">
           <div className="flex gap-4">
             <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
@@ -204,14 +204,14 @@ export default function PostPageClient({ slug, initialPost }: { slug: string; in
   };
 
   return (
-    <div className="bg-[#f5f6f8] min-h-screen">
+    <div className="bg-white min-h-screen">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-16 font-[Raleway]">
         <div className="flex gap-4">
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
           <main className="flex-1 min-w-0">
 
             {/* Карточка статьи — такой же размер и подложка как PostCard */}
-            <article className="bg-white rounded-2xl overflow-hidden">
+            <article className="bg-white rounded-2xl border border-[#e8eaed] overflow-hidden">
 
               {/* Заголовок */}
               <div className="px-5 pt-5">

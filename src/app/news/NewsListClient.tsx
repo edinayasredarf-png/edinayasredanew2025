@@ -44,7 +44,7 @@ export default function NewsListClient() {
           <LeftNav activeTab={activeTab} onTabChange={handleTabChange} />
 
           <main className="flex-1 min-w-0">
-            <div className="bg-white rounded-2xl p-5">
+            <div className="bg-white rounded-2xl border border-[#e8eaed] p-5">
               {/* Заголовок */}
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-[17px] font-bold text-[#313131] font-[Raleway]">Новости</h1>

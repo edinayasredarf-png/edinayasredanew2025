@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-[#F6F7F9] min-h-screen">
+    <div className="bg-white min-h-screen">
       <Suspense>
         <BlogHeader />
       </Suspense>

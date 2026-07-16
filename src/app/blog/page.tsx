@@ -199,7 +199,7 @@ function BlogHomeInner() {
 export default function BlogHome() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f5f6f8] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#029cda]" />
       </div>
     }>
