@@ -7,6 +7,8 @@ export interface RecipientRow {
   number: string;
   date: string;
   email?: string;
+  /** Телефон для обзвона продажником. В текст письма не подставляется. */
+  phone?: string;
 }
 
 /** Собирает значения тегов для одного получателя. */

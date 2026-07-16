@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import nextDynamic from 'next/dynamic';
+import LetterNotifications from './LetterNotifications';
 
 const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
@@ -24,7 +25,11 @@ interface Recipient {
   number: string;
   date: string;
   email: string;
+  /** Для последующего обзвона продажником; в текст письма не подставляется. */
+  phone: string;
 }
+
+type Tab = 'send' | 'notifications';
 interface SendResult {
   email: string;
   fio: string;
@@ -37,9 +42,10 @@ const TAGS = [
   '<<Дательный падеж ФИО>>', '<<ОБРАЩЕНИЕ>>', '<<ИО>>', '<<Инициалы>>', '<<ФИО>>',
 ];
 
-const emptyRow = (): Recipient => ({ fio: '', position: '', number: '', date: '', email: '' });
+const emptyRow = (): Recipient => ({ fio: '', position: '', number: '', date: '', email: '', phone: '' });
 
 export default function LettersAdmin() {
+  const [tab, setTab] = useState<Tab>('send');
   const [templates, setTemplates] = useState<Template[]>([]);
   const [activeKey, setActiveKey] = useState<string>('');
   const [draft, setDraft] = useState<Template | null>(null);
@@ -127,6 +133,7 @@ export default function LettersAdmin() {
           number: (c[2] || '').trim(),
           date: (c[3] || '').trim(),
           email: (c[4] || '').trim(),
+          phone: (c[5] || '').trim(),
         };
       });
     if (parsed.length) {
@@ -216,6 +223,31 @@ export default function LettersAdmin() {
         <h2 className="text-xl font-bold text-[#313131]">Письма (именные рассылки)</h2>
         <p className="text-sm text-[#7C8A9A]">Шаблон + получатели → готовые PDF со склонением ФИО</p>
       </div>
+
+      {/* Вкладки */}
+      <div className="flex items-center gap-2 border-b border-gray-100">
+        {([
+          { key: 'send', label: 'Рассылка' },
+          { key: 'notifications', label: 'Уведомления' },
+        ] as { key: Tab; label: string }[]).map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 transition-colors ${
+              tab === t.key
+                ? 'border-[#029cda] text-[#029cda]'
+                : 'border-transparent text-[#7C8A9A] hover:text-[#313131]'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'notifications' && <LetterNotifications />}
+
+      {tab === 'send' && (
+      <>
 
       {(status || error) && (
         <div className={`rounded-xl px-4 py-3 text-sm ${error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
@@ -353,6 +385,7 @@ export default function LettersAdmin() {
                 <th className="py-1 pr-2 font-medium w-20">Номер</th>
                 <th className="py-1 pr-2 font-medium w-28">Дата</th>
                 <th className="py-1 pr-2 font-medium w-48">Email</th>
+                <th className="py-1 pr-2 font-medium w-40">Телефон</th>
                 <th className="w-8" />
               </tr>
             </thead>
@@ -364,6 +397,7 @@ export default function LettersAdmin() {
                   <td className="py-1 pr-2"><input value={r.number} onChange={(e) => setRow(i, { number: e.target.value })} placeholder="710" className={inputCls} /></td>
                   <td className="py-1 pr-2"><input value={r.date} onChange={(e) => setRow(i, { date: e.target.value })} placeholder="21.05.2026" className={inputCls} /></td>
                   <td className="py-1 pr-2"><input value={r.email} onChange={(e) => setRow(i, { email: e.target.value })} placeholder="glava@example.ru" type="email" className={inputCls} /></td>
+                  <td className="py-1 pr-2"><input value={r.phone} onChange={(e) => setRow(i, { phone: e.target.value })} placeholder="+7 900 000-00-00" type="tel" className={inputCls} /></td>
                   <td className="py-1 text-center">
                     <button onClick={() => removeRow(i)} className="text-gray-400 hover:text-red-500" title="Удалить">✕</button>
                   </td>
@@ -376,8 +410,8 @@ export default function LettersAdmin() {
         <button onClick={() => setRows((rs) => [...rs, emptyRow()])} className="text-sm text-[#029cda] hover:text-[#0280b5]">+ Добавить строку</button>
 
         <div>
-          <label className="block text-sm text-[#7C8A9A] mb-1">Вставить списком (из таблицы: ФИО ⇥ Должность ⇥ Номер ⇥ Дата ⇥ Email, по строке на получателя)</label>
-          <textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} rows={4} className={`${inputCls} font-mono text-[13px]`} placeholder={'Боровлёв Павел Михайлович\tГлаве … муниципального района …\t710\t21.05.2026\tglava@example.ru'} />
+          <label className="block text-sm text-[#7C8A9A] mb-1">Вставить списком (из таблицы: ФИО ⇥ Должность ⇥ Номер ⇥ Дата ⇥ Email ⇥ Телефон, по строке на получателя)</label>
+          <textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} rows={4} className={`${inputCls} font-mono text-[13px]`} placeholder={'Боровлёв Павел Михайлович\tГлаве … муниципального района …\t710\t21.05.2026\tglava@example.ru\t+7 900 000-00-00'} />
           <button onClick={importPaste} disabled={!pasteText.trim()} className="mt-2 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
         </div>
 
@@ -439,6 +473,8 @@ export default function LettersAdmin() {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }

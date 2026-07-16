@@ -11,6 +11,7 @@ import {
 } from "@/lib/server/letterBuild";
 import { sendLetterEmail, isMailerConfigured } from "@/lib/server/mailer";
 import { dbLogLetterSend } from "@/lib/server/letterSendsDb";
+import { randomUUID } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
 
   const sendOne = async (r: RecipientRow, i: number): Promise<void> => {
     const email = (r.email || "").trim();
+    const phone = (r.phone || "").trim();
     const base = { email, fio: r.fio };
     if (!EMAIL_RE.test(email)) {
       results[i] = { ...base, ok: false, error: "Не указан корректный email" };
@@ -114,9 +116,11 @@ export async function POST(request: NextRequest) {
         template_name: template.name,
         fio: r.fio,
         email,
+        phone,
         subject: "",
         status: "error",
         error: "Не указан корректный email",
+        delivery_status: "error",
       });
       return;
     }
@@ -129,21 +133,34 @@ export async function POST(request: NextRequest) {
       const isHtml = mergedBody.includes("<");
       const html = isHtml ? mergedBody : plainToHtml(mergedBody);
       const text = isHtml ? htmlToPlain(mergedBody) : mergedBody;
-      await sendLetterEmail({
+      // Токен — и Message-ID (для сопоставления возвратов), и адрес пикселя.
+      // Для теста на себя трекинг не нужен: он бы засорял статистику.
+      const trackToken = payload.test ? undefined : randomUUID();
+      const info = await sendLetterEmail({
         to: email,
         subject,
         html,
         text,
+        trackToken,
         attachments: [{ filename, content: buffer, contentType: "application/pdf" }],
       });
-      results[i] = { ...base, ok: true };
+      const rejected = !info.accepted;
+      results[i] = rejected
+        ? { ...base, ok: false, error: `SMTP отклонил адрес: ${info.response}` }
+        : { ...base, ok: true };
       await dbLogLetterSend({
         template_key: template.key,
         template_name: template.name,
         fio: r.fio,
         email,
+        phone,
         subject,
-        status: "ok",
+        status: rejected ? "error" : "ok",
+        error: rejected ? `SMTP отклонил адрес: ${info.response}` : "",
+        track_token: trackToken,
+        message_id: info.messageId,
+        smtp_response: info.response,
+        delivery_status: rejected ? "rejected" : "accepted",
       });
     } catch (e) {
       const error = e instanceof Error ? e.message : "Ошибка отправки";
@@ -153,9 +170,11 @@ export async function POST(request: NextRequest) {
         template_name: template.name,
         fio: r.fio,
         email,
+        phone,
         subject: "",
         status: "error",
         error,
+        delivery_status: "error",
       });
     }
   };
