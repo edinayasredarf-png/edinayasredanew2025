@@ -20,7 +20,6 @@ function BlogHomeInner() {
   const sp = useSearchParams();
   const qFromUrl = sp.get('q') || '';
   const tag = sp.get('tag') || '';
-  const sortFromUrl = (sp.get('sort') as 'popular' | 'fresh') || 'popular';
   const tabFromUrl = (sp.get('tab') as 'feed' | 'subscriptions' | 'favorites') || 'feed';
 
   const [q, setQ] = useState(qFromUrl);
@@ -92,10 +91,9 @@ function BlogHomeInner() {
         );
       }
     }
-    return [...arr].sort((a, b) =>
-      sortFromUrl === 'popular' ? (b.views || 0) - (a.views || 0) : (b.createdAt || 0) - (a.createdAt || 0)
-    );
-  }, [posts, q, tag, activeTab, favoritePostIds, isAuthenticated, sortFromUrl]);
+    // Всегда свежие сверху: последние статьи в начале, дальше по дате.
+    return [...arr].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  }, [posts, q, tag, activeTab, favoritePostIds, isAuthenticated]);
 
   return (
     <BlogLayout>
@@ -191,7 +189,7 @@ function BlogHomeInner() {
           </div>
         </div>
       </div>
-      <MobileBottomNav mode="blog" blogSort={sortFromUrl} />
+      <MobileBottomNav />
     </BlogLayout>
   );
 }

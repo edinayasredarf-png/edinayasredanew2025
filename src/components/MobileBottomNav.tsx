@@ -7,11 +7,6 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { useModal } from "./ModalProvider";
 
-type MobileBottomNavProps = {
-  mode?: "default" | "blog";
-  blogSort?: "popular" | "fresh";
-};
-
 const NAV_ITEMS_DEFAULT = [
   {
     key: "services",
@@ -43,39 +38,16 @@ const NAV_ITEMS_DEFAULT = [
   },
 ] as const;
 
-const NAV_ITEMS_BLOG = [
-  {
-    key: "popular",
-    label: "Популярное",
-    href: "/blog?sort=popular",
-    icon: "/icons/navbar/cases.svg",
-    iconActive: "/icons/navbar/cases_active.svg",
-  },
-  {
-    key: "fresh",
-    label: "Свежее",
-    href: "/blog?sort=fresh",
-    icon: "/icons/navbar/blog.svg",
-    iconActive: "/icons/navbar/blog_active.svg",
-  },
-] as const;
-
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
-  mode = "default",
-  blogSort = "fresh",
-}) => {
+export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
   const { openRegister } = useModal();
-  const navItems = mode === "blog" ? NAV_ITEMS_BLOG : NAV_ITEMS_DEFAULT;
-  const activeIndex =
-    mode === "blog"
-      ? navItems.findIndex((item) => item.key === blogSort)
-      : navItems.findIndex((item) => isActive(pathname, item.href));
+  const navItems = NAV_ITEMS_DEFAULT;
+  const activeIndex = navItems.findIndex((item) => isActive(pathname, item.href));
 
   return (
     <>
@@ -102,8 +74,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               )}
 
               {navItems.map((item) => {
-                const active =
-                  mode === "blog" ? item.key === blogSort : isActive(pathname, item.href);
+                const active = isActive(pathname, item.href);
                 return (
                   <div key={item.key} className="relative flex-1 min-w-0 flex items-stretch justify-center">
                     <Link href={item.href} className="relative z-10 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 w-full">
@@ -156,8 +127,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}
               >
                 {navItems.map((item) => {
-                  const active =
-                    mode === "blog" ? item.key === blogSort : isActive(pathname, item.href);
+                  const active = isActive(pathname, item.href);
                   return (
                     <Link
                       key={item.key}
@@ -187,11 +157,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
             <button
               type="button"
-              onClick={
-                mode === "blog"
-                  ? () => window.dispatchEvent(new CustomEvent("openAuthModal"))
-                  : openRegister
-              }
+              onClick={openRegister}
               className="w-[130px] h-[64px] rounded-2xl bg-[#029cda] text-white shadow-[0px_20px_30px_0px_rgba(0,0,0,0.08),0px_8px_12px_0px_rgba(0,0,0,0.05)] backdrop-blur-[20px] flex items-center justify-center"
             >
               <div className="w-[118px] h-[52px] rounded-xl bg-[#029cda] flex flex-col items-center justify-center gap-0.5">
@@ -199,7 +165,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   <path d="M12 3a1 1 0 0 1 1 1v7h7a1 1 0 1 1 0 2h-7v7a1 1 0 1 1-2 0v-7H4a1 1 0 1 1 0-2h7V4a1 1 0 0 1 1-1Z" />
                 </svg>
                 <span className="text-[12px] leading-4 font-medium font-[Raleway]">
-                  {mode === "blog" ? "Войти" : "Оставить заявку"}
+                  Оставить заявку
                 </span>
               </div>
             </button>
