@@ -68,7 +68,17 @@ import 'prism-code-editor-lightweight/layout.css';
 import 'prism-code-editor-lightweight/themes/github-dark.css';
 
 import { EditorContent, useEditor } from '@tiptap/react';
+import nextDynamic from 'next/dynamic';
 import { uploadEditorImage } from '@/lib/imageUpload';
+
+// Редактор изображений (тяжёлый, только браузер) — динамический импорт.
+const ImageEditorModal = nextDynamic(() => import('./ImageEditorModal'), {
+  ssr: false,
+});
+
+// Мост между module-level upload-хуком Tiptap и состоянием компонента:
+// компонент выставляет обработчик на маунте, хук картинок его вызывает.
+let imageEditBeforeUpload: ((file: File) => Promise<string>) | null = null;
 
 const DocumentColumn = Document.extend({
   content: '(block|columns)+',
@@ -117,7 +127,11 @@ const extensions = [
   TaskList,
   Link,
   Image.configure({
-    upload: (file: File) => uploadEditorImage(file),
+    // Перед загрузкой картинки открываем редактор (обрезка/текст/фильтры).
+    // Обработчик выставляет компонент RichEditor на маунте; без него —
+    // прямая загрузка (напр. если редактор ещё не готов).
+    upload: (file: File) =>
+      imageEditBeforeUpload ? imageEditBeforeUpload(file) : uploadEditorImage(file),
   }),
   Video.configure({
     upload: (file: File) =>
@@ -216,9 +230,47 @@ type Props = {
   onChange?: (html: string) => void;
 };
 
+type PendingEdit = {
+  src: string;
+  file: File;
+  resolve: (url: string) => void;
+  reject: (err: unknown) => void;
+};
+
 export default function RichEditor({ initialHtml = '', onChange }: Props) {
   const onChangeRef = React.useRef(onChange);
   onChangeRef.current = onChange;
+
+  // Картинка, ожидающая редактирования перед вставкой в текст.
+  const [pendingEdit, setPendingEdit] = useState<PendingEdit | null>(null);
+
+  // Ставим мост для upload-хука картинок: открыть редактор и дождаться результата.
+  useEffect(() => {
+    imageEditBeforeUpload = (file: File) =>
+      new Promise<string>((resolve, reject) => {
+        const src = URL.createObjectURL(file);
+        setPendingEdit({ src, file, resolve, reject });
+      });
+    return () => {
+      imageEditBeforeUpload = null;
+    };
+  }, []);
+
+  // Завершение работы с редактором: загрузить файл и вернуть URL в Tiptap.
+  const finishPendingEdit = useCallback(
+    async (fileToUpload: File) => {
+      const p = pendingEdit;
+      if (!p) return;
+      URL.revokeObjectURL(p.src);
+      setPendingEdit(null);
+      try {
+        p.resolve(await uploadEditorImage(fileToUpload));
+      } catch (e) {
+        p.reject(e);
+      }
+    },
+    [pendingEdit],
+  );
 
   const onValueChange = useCallback(
     debounce((value: string) => {
@@ -275,6 +327,16 @@ export default function RichEditor({ initialHtml = '', onChange }: Props) {
           <RichTextBubbleMenuDragHandle />
         </div>
       </div>
+
+      {pendingEdit && (
+        <ImageEditorModal
+          source={pendingEdit.src}
+          saveName="image"
+          onSave={(edited) => finishPendingEdit(edited)}
+          // Закрыли без сохранения — вставляем оригинал как есть.
+          onClose={() => finishPendingEdit(pendingEdit.file)}
+        />
+      )}
     </RichTextProvider>
   );
 }
