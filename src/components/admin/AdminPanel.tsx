@@ -8,6 +8,7 @@ import UtmGenerator from './UtmGenerator';
 import PressAdmin from './PressAdmin';
 import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
 import LettersAdmin from './LettersAdmin';
+import NewsRadar from './NewsRadar';
 
 interface AdminStats {
   totalPosts: number;
@@ -30,7 +31,7 @@ export default function AdminPanel() {
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters'
+    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar'
   >('dashboard');
 
   useEffect(() => {
@@ -141,6 +142,9 @@ export default function AdminPanel() {
                 { id: 'utm', label: 'UTM-метки' },
                 { id: 'letters', label: 'Письма' },
               ] },
+              { group: 'Мониторинг', items: [
+                { id: 'radar', label: 'Новостной радар' },
+              ] },
               { group: 'Аналитика', items: [
                 { id: 'metrika', label: 'Посещаемость' },
                 { id: 'email', label: 'Email-активность' },
@@ -180,6 +184,7 @@ export default function AdminPanel() {
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
+          {activeTab === 'radar' && <NewsRadar />}
           {(activeTab === 'metrika' || activeTab === 'email' || activeTab === 'leads' || activeTab === 'social') && (
             <AnalyticsDashboard only={activeTab} />
           )}
