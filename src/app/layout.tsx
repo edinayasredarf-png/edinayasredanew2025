@@ -233,7 +233,7 @@ export default function RootLayout({
               b242yaScript.addEventListener('load', function() {
                 B242YAInit({
                   portal:'https://oooecostroy.bitrix24.ru/',
-                  pid:'6d58ab7105a24788c2a432f25d252c52'
+                  pid:'6d58ab7105a24788c2a432f25d252c52',
 									presets: {YA_COUNTER:"89202191"}
                 });
               });
