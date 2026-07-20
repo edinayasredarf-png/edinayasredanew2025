@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: 'Инвентаризация зеленых насаждений— Единая среда',
-		description: 'Профессиональная инвентаризация кладбищ : точные данные и аналитика.',
+		title: 'Инвентаризация зеленых насаждений — Единая среда',
+		description: 'Профессиональная инвентаризация зелёных насаждений: цифровые паспорта, ГИС-карта и аналитика.',
 		images: ['/img/услуга_изн.png'],
 	},
 };
@@ -38,8 +38,8 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					applicationCategory: "BusinessApplication",
 					operatingSystem: "Web",
 					url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn",
-					screenshot: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/услуга_изн.png",
-					description: "Инвентаризация зеленых насаждений и кладбищ в Санкт-Петербурге с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
+					screenshot: "https://xn--80aakbcct4b2aj7m.xn--p1ai/img/услуга_изн.png",
+					description: "Инвентаризация зелёных насаждений с созданием цифрового реестра деревьев и кустарников: геопривязка, фотофиксация, цифровые паспорта объектов, ГИС-карта и аналитика. Соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",
@@ -47,47 +47,15 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 						url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn"
 					},
 					featureList: [
-						"Электронная карта кладбищ",
-						"Цифровой реестр мест захоронений",
-						"Удобный поиск для граждан",
-						"Соответствие законодательным требованиям"
+						"Цифровой реестр зелёных насаждений",
+						"Цифровой паспорт дерева с геопривязкой",
+						"ГИС-карта насаждений",
+						"Аналитика состояния зелёного фонда"
 					]
 				})}
 			</Script>
 
-			{/* FAQ JSON-LD */}
-			<Script id="json-ld-faq" type="application/ld+json">
-				{JSON.stringify({
-					"@context": "https://schema.org",
-					"@type": "FAQPage",
-					mainEntity: [
-						{
-							"@type": "Question",
-							name: "Обязательна ли инвентаризация зеленых насаждений?",
-							acceptedAnswer: {
-								"@type": "Answer",
-								text: "Во многих регионах учет зеленого фонда является частью системы управления территориями и необходим для корректной эксплуатации объектов."
-							}
-						},
-						{
-							"@type": "Question",
-							name: "Как часто нужно проводить инвентаризацию?",
-							acceptedAnswer: {
-								"@type": "Answer",
-								text: "Рекомендуется обновлять данные каждые несколько лет или после значительных изменений территории."
-							}
-						},
-						{
-							"@type": "Question",
-							name: "Что получает заказчик по итогам работ?",
-							acceptedAnswer: {
-								"@type": "Answer",
-								text: "Цифровую базу насаждений, карту, паспорта объектов и комплект отчетной документации"
-							}
-						}
-					]
-				})}
-			</Script>
+			{/* FAQPage JSON-LD генерируется компонентом FAQ внутри FAQSection — здесь не дублируем */}
 		</>
 	);
 }

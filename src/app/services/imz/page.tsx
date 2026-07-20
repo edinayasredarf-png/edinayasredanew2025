@@ -13,6 +13,7 @@ import ComplianceSection from "../../../components/services/imz/ComplianceSectio
 import ResultsSection from "../../../components/services/imz/ResultsSection";
 import ConsultationCTA from "../../../components/services/imz/ConsultationCTA";
 import FAQSection from "../../../components/services/imz/FAQSection";
+import ServiceLeadDefinition from "../../../components/services/ServiceLeadDefinition";
 
 export default function InventoryBurialsPage() {
   const handleKP = () =>
@@ -73,6 +74,13 @@ export default function InventoryBurialsPage() {
             </div>
           </div>
         </section>
+
+        <ServiceLeadDefinition
+          heading="Что такое инвентаризация мест захоронений"
+          answer="Инвентаризация мест захоронений — это сплошной учёт и оцифровка всех захоронений и участков на кладбище: полевое обследование с геопривязкой каждой могилы, фотофиксация, сверка с архивными книгами и сведение данных в единый электронный реестр и карту кладбища с поиском по фамилии. По итогам муниципалитет получает актуальную картину занятых и свободных участков, данные об ответственных лицах и состоянии территории."
+          provider="«Единая среда» выполняет полный цикл — от полевых работ и оцифровки архивов до передачи готового реестра и ГИС-карты. Модуль ИМЗ входит в АИС «Единая среда»: платформа включена в реестр отечественного ПО Минцифры, по ней реализовано более 500 проектов в 40+ регионах России с 2011 года."
+          facts={["В реестре ПО Минцифры", "500+ проектов", "40+ регионов", "Поиск по фамилии"]}
+        />
 
         {/* Остальные секции */}
         <AudienceSection />

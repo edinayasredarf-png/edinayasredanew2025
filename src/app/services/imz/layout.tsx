@@ -52,39 +52,7 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 				})}
 			</Script>
 
-			{/* FAQ JSON-LD */}
-			<Script id="json-ld-faq" type="application/ld+json">
-				{JSON.stringify({
-					"@context": "https://schema.org",
-					"@type": "FAQPage",
-					mainEntity: [
-						{
-							"@type": "Question",
-							name: "Что входит в инвентаризацию кладбищ?",
-							acceptedAnswer: {
-								"@type": "Answer",
-								text: "Анализ архивов, полевые обследования, GPS-съемка, фотофиксация и формирование цифровой карты и реестра мест захоронений."
-							}
-						},
-						{
-							"@type": "Question",
-							name: "Сколько стоит инвентаризация?",
-							acceptedAnswer: {
-								"@type": "Answer",
-								text: "Стоимость зависит от площади кладбища, состояния архивов и объема полевых работ. Мы готовим индивидуальный расчет."
-							}
-						},
-						{
-							"@type": "Question",
-							name: "Можно ли интегрировать данные в государственные системы?",
-							acceptedAnswer: {
-								"@type": "Answer",
-								text: "Да, система готова к интеграции с федеральными и региональными платформами."
-							}
-						}
-					]
-				})}
-			</Script>
+			{/* FAQPage JSON-LD генерируется компонентом FAQ внутри FAQSection — здесь не дублируем */}
 		</>
 	);
 }

@@ -9,6 +9,7 @@ import LesWorkflowSection from '../../../components/services/les/LesWorkflowSect
 import LesAdvantagesSection from '../../../components/services/les/LesAdvantagesSection';
 import LesCTASection from '../../../components/services/les/LesCTASection';
 import LesFAQSection from '../../../components/services/les/LesFAQSection';
+import ServiceLeadDefinition from '../../../components/services/ServiceLeadDefinition';
 
 export default function ForestManagementPage() {
   const handleKP = () => {
@@ -71,6 +72,13 @@ export default function ForestManagementPage() {
             </div>
           </div>
         </section>
+
+        <ServiceLeadDefinition
+          heading="Что такое лесоустройство"
+          answer="Лесоустройство — это комплекс работ по обследованию, учёту и проектированию использования лесов: таксация насаждений с определением их состава, возраста и запаса древесины, картографирование участков и подготовка лесоустроительной документации. Результат — актуальные материалы лесоустройства и цифровые лесные карты, на основе которых планируют рубки, охрану, защиту и воспроизводство леса на ближайшие 10 лет."
+          provider="«Единая среда» выполняет полевые обследования, таксацию и оцифровку материалов лесоустройства и передаёт готовые цифровые карты и документацию. Работы ведутся по требованиям лесоустроительной инструкции."
+          facts={["Таксация и дешифрирование", "Цифровые лесные карты", "Проект на 10 лет", "40+ регионов"]}
+        />
 
         <LesInfoSection />
         <LesAudienceSection onButtonClick={handleKP} />
