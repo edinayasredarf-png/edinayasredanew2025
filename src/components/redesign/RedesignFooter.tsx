@@ -96,6 +96,7 @@ export function RedesignFooter() {
 								<li><Link href="/solutions/digital-twin" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Цифровой двойник города</Link></li>
 								<li><Link href="/solutions/green-platform" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Платформа учёта зелёных насаждений города</Link></li>
 								<li><Link href="/solutions/cemetery-platform" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Платформа для инвентаризации мест захоронений</Link></li>
+								<li><Link href="/resheniya" className="text-[16px] lg:text-[15px] text-[#029cda] leading-6 hover:text-[#0280b5] transition-colors">Учёт муниципальных объектов</Link></li>
 							</ul>
 						</div>
 
