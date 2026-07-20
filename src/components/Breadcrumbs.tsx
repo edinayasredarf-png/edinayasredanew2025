@@ -5,6 +5,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { CITY_LABELS } from '@/data/cityLabels'
 
 interface BreadcrumbItem {
   label: string
@@ -34,6 +35,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'requisites': 'Реквизиты',
   'career': 'Карьера',
   'contacts': 'Контакты',
+  'online-chat': 'Онлайн-чат',
   'services': 'Услуги',
   'news': 'Новости',
   'blog': 'Блог',
@@ -88,7 +90,7 @@ export default function Breadcrumbs({ items, customLabels }: BreadcrumbsProps) {
     return null
   }
 
-  const labels = { ...DEFAULT_LABELS, ...customLabels }
+  const labels = { ...DEFAULT_LABELS, ...CITY_LABELS, ...customLabels }
 
   const breadcrumbItems: BreadcrumbItem[] = [
     { label: 'Главная', href: '/' }

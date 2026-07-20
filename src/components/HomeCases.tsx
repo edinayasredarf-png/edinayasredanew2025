@@ -105,7 +105,7 @@ export default function HomeCases() {
                   <div className="mx-5 relative h-[194px] rounded-[20px] overflow-hidden bg-[#ebebeb]">
                     <Image
                       src={cover}
-                      alt=""
+                      alt={item.title}
                       fill
                       className="object-cover object-center"
                       sizes="330px"

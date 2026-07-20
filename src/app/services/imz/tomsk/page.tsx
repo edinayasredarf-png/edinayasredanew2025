@@ -33,12 +33,12 @@ export default function InventoryBurialsPage() {
               {/* Текст */}
               <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
                 <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
-                  Инвентаризация<br /> мест захоронений<br />  <span className="text-[#029cda]">в Москве</span>
+                  Инвентаризация<br /> мест захоронений<br />  <span className="text-[#029cda]">в Томске</span>
                 </h1>
 
                 <p className="mt-8 text-lg md:text-[22.7px] leading-[1.37] text-gray-300 max-w-2xl font-raleway">
                   Выполняем инвентаризацию кладбищ и инвентаризацию мест
-                  захоронений в Москве с созданием электронной карты, реестра захоронений и удобного
+                  захоронений в Томске с созданием электронной карты, реестра захоронений и удобного
                   поиска для муниципалитетов, операторов кладбищ и граждан.
                 </p>
 

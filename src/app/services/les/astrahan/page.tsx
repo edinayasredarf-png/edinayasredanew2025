@@ -22,7 +22,7 @@ export default function ForestManagementCityPage() {
             <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
               <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
                 <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
-                  Лесоустройство<br /><span className="text-[#029cda]">в Астрахане</span>
+                  Лесоустройство<br /><span className="text-[#029cda]">в Астрахани</span>
                 </h1>
                 <p className="mt-8 text-lg md:text-[22.7px] leading-[1.37] text-gray-300 max-w-2xl font-raleway">
                   Комплекс работ по организации лесного фонда, описанию, учету и изучению лесов, разработке проектов ведения лесного хозяйства на перспективный период

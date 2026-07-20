@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 	alternates: { canonical: '/services/izn/kazan' },
 	openGraph: {
 		title: 'Инвентаризация зеленых насаждений в Казани — Единая среда',
-		description: 'Полный учёт зелёных зон в Москве: координаты, атрибуты, аналитика в ГИС.',
+		description: 'Полный учёт зелёных зон в Казани: координаты, атрибуты, аналитика в ГИС.',
 		url: '/services/izn/kazan',
 		type: 'article',
 		images: [{ url: '/img/услуга_изн.png', width: 1200, height: 630, alt: 'Инвентаризация зеленых насаждений' }],
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: 'summary_large_image',
 		title: 'Инвентаризация зеленых насаждений в Казани — Единая среда',
-		description: 'Профессиональная инвентаризация зеленых насаждений в Москве: точные данные и аналитика.',
+		description: 'Профессиональная инвентаризация зеленых насаждений в Казани: точные данные и аналитика.',
 		images: ['/img/услуга_изн.png'],
 	},
 };
@@ -39,7 +39,7 @@ export default function ServicesInventoryLayout({ children }: { children: React.
 					operatingSystem: "Web",
 					url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/izn/kazan",
 					screenshot: "https://xn--80aakbcct4b2aj7m.xn--p1ai/img/услуга_изн.png",
-					description: "Инвентаризация зеленых насаждений в Москве с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
+					description: "Инвентаризация зеленых насаждений в Казани с созданием цифрового реестра. Сбор, оцифровка и аналитика данных, соответствие требованиям законодательства.",
 					offers: {
 						"@type": "Offer",
 						price: "0",

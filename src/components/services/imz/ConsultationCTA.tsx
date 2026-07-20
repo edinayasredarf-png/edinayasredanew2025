@@ -18,7 +18,7 @@ export default function ConsultationCTA({ onKP }: any) {
         </div>
 
         <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-6">
-          <Image src="/img/imz_cta.png" alt="" width={320} height={320} />
+          <Image src="/img/imz_cta.png" alt="Консультация и расчёт стоимости инвентаризации кладбищ" width={320} height={320} />
         </div>
       </div>
     </section>

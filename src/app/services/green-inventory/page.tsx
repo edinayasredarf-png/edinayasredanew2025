@@ -226,7 +226,7 @@ export default function GreenInventoryPage() {
                 </div>
                 {/* Картинка для десктопа */}
                 <div className="hidden md:block absolute right-0 bottom-0 w-1/2 h-auto z-0">
-                  <Image src="/img/17izn.png" alt="" width={300} height={300} className="w-full h-auto object-contain" />
+                  <Image src="/img/17izn.png" alt="17 лет помогаем муниципалитетам в управлении зелёными насаждениями" width={300} height={300} className="w-full h-auto object-contain" />
                 </div>
               </a>
               {/* Right Column */}

@@ -36,7 +36,7 @@ export function CaseCard({ item, size = 'default' }: { item: CaseCardItem; size?
         <div className="relative w-full aspect-[341/471] rounded-2xl overflow-hidden bg-neutral-100">
           <Image
             src={item.image}
-            alt=""
+            alt={item.title}
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
             sizes={

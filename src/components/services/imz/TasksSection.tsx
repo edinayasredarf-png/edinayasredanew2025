@@ -11,7 +11,7 @@ export default function TasksSection() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
         <div className="lg:col-span-2 bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-2">
           <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center">
-            <Image src="/img/imz4.png" alt="" width={320} height={320} />
+            <Image src="/img/imz4.png" alt="Учёт заполненности кладбища: занятые и свободные места" width={320} height={320} />
           </div>
           <div className="lg:w-1/2 flex flex-col justify-center px-8 py-4">
             <h3 className="text-2xl text-[#313131] mb-4">Полная картина заполненности кладбищ</h3>
@@ -35,7 +35,7 @@ export default function TasksSection() {
             <p className="text-lg text-[#7c8a9a]">Поиск захоронений по фамилии и оформление обращений онлайн на основе актуальных данных.</p>
           </div>
           <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center">
-            <Image src="/img/imz5.png" alt="" width={320} height={320} />
+            <Image src="/img/imz5.png" alt="Онлайн-поиск захоронений по фамилии" width={320} height={320} />
           </div>
         </div>
       </div>

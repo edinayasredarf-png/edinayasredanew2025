@@ -153,28 +153,28 @@ const Footer = () => {
             {/* Socials */}
             <div className="flex items-center gap-4">
 
-              <a href="https://max.ru/id6150100608_biz">
-                <Image src="/icons/max.svg" alt="" width={24} height={24} />
+              <a href="https://max.ru/id6150100608_biz" aria-label="Единая среда в MAX">
+                <Image src="/icons/max.svg" alt="MAX" width={24} height={24} />
               </a>
 
-              <a href="https://t.me/edinayasredarf">
-                <Image src="/icons/tg.svg" alt="" width={24} height={24} />
+              <a href="https://t.me/edinayasredarf" aria-label="Единая среда в Telegram">
+                <Image src="/icons/tg.svg" alt="Telegram" width={24} height={24} />
               </a>
 
-              <a href="https://vk.com/edinayasredarf">
-                <Image src="/icons/vk.svg" alt="" width={24} height={24} />
+              <a href="https://vk.com/edinayasredarf" aria-label="Единая среда во ВКонтакте">
+                <Image src="/icons/vk.svg" alt="ВКонтакте" width={24} height={24} />
               </a>
 
-              <a href="https://vkvideo.ru/@edinayasreda">
-                <Image src="/icons/vkvideo.svg" alt="" width={24} height={24} />
+              <a href="https://vkvideo.ru/@edinayasreda" aria-label="Единая среда в VK Видео">
+                <Image src="/icons/vkvideo.svg" alt="VK Видео" width={24} height={24} />
               </a>
 
-              <a href="https://dzen.ru/edinayasreda">
-                <Image src="/icons/dzen.svg" alt="" width={24} height={24} />
+              <a href="https://dzen.ru/edinayasreda" aria-label="Единая среда в Дзен">
+                <Image src="/icons/dzen.svg" alt="Дзен" width={24} height={24} />
               </a>
 
-              <a href="https://youtube.com/@edinayasreda">
-                <Image src="/icons/youtube.svg" alt="" width={24} height={24} />
+              <a href="https://youtube.com/@edinayasreda" aria-label="Единая среда на YouTube">
+                <Image src="/icons/youtube.svg" alt="YouTube" width={24} height={24} />
               </a>
 
             </div>

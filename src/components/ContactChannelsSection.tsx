@@ -45,7 +45,7 @@ export default function ContactChannelsSection() {
               </a>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/chanel/1.svg" alt="" className="shrink-0 w-[68px] h-[68px] object-contain" />
+            <img src="/img/chanel/1.svg" alt="Личная переписка в мессенджере" className="shrink-0 w-[68px] h-[68px] object-contain" />
           </div>
 
           {/* В чате */}
@@ -60,7 +60,7 @@ export default function ContactChannelsSection() {
               </button>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/chanel/2.svg" alt="" className="shrink-0 w-[68px] h-[68px] object-contain" />
+            <img src="/img/chanel/2.svg" alt="Чат с командой поддержки" className="shrink-0 w-[68px] h-[68px] object-contain" />
           </div>
 
           {/* На почту */}
@@ -75,7 +75,7 @@ export default function ContactChannelsSection() {
               </a>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/chanel/3.svg" alt="" className="shrink-0 w-[68px] h-[68px] object-contain" />
+            <img src="/img/chanel/3.svg" alt="Связаться по электронной почте" className="shrink-0 w-[68px] h-[68px] object-contain" />
           </div>
 
           {/* По телефону */}
@@ -93,7 +93,7 @@ export default function ContactChannelsSection() {
               </button>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/chanel/4.svg" alt="" className="shrink-0 w-[68px] h-[68px] object-contain" />
+            <img src="/img/chanel/4.svg" alt="Бесплатный звонок по телефону" className="shrink-0 w-[68px] h-[68px] object-contain" />
           </div>
         </div>
       </div>

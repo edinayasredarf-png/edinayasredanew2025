@@ -6,7 +6,7 @@ export default function ComplianceSection() {
     <section className="max-w-[1200px] mx-auto px-4">
       <div className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-4">
-          <Image src="/img/imz9.png" alt="" width={320} height={320} />
+          <Image src="/img/imz9.png" alt="Инвентаризация мест захоронений по требованиям законодательства" width={320} height={320} />
         </div>
         <div className="lg:w-1/2 flex flex-col justify-center px-4 py-8">
           <h3 className="text-[#313131] text-2xl font-medium mb-4">

@@ -2,20 +2,20 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Лесоустройство в Астрахане под ключ — комплексные работы',
-  description: 'Профессиональное лесоустройство в Астрахане: инвентаризация лесного фонда, таксация, разработка проектов. Соответствие требованиям законодательства.',
+  title: 'Лесоустройство в Астрахани под ключ — комплексные работы',
+  description: 'Профессиональное лесоустройство в Астрахани: инвентаризация лесного фонда, таксация, разработка проектов. Соответствие требованиям законодательства.',
   alternates: { canonical: '/services/les/astrahan' },
   openGraph: {
-    title: 'Лесоустройство в Астрахане — Единая среда',
-    description: 'Комплексное лесоустройство в Астрахане: оценка состояния лесов, картографирование, планирование лесохозяйственных мероприятий.',
+    title: 'Лесоустройство в Астрахани — Единая среда',
+    description: 'Комплексное лесоустройство в Астрахани: оценка состояния лесов, картографирование, планирование лесохозяйственных мероприятий.',
     url: '/services/les/astrahan',
     type: 'article',
     images: [{ url: '/img/les.png', width: 1200, height: 630, alt: 'Лесоустройство' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Лесоустройство в Астрахане — Единая среда',
-    description: 'Профессиональное лесоустройство в Астрахане: точные данные и аналитика.',
+    title: 'Лесоустройство в Астрахани — Единая среда',
+    description: 'Профессиональное лесоустройство в Астрахани: точные данные и аналитика.',
     images: ['/img/les.png'],
   },
 };
@@ -33,7 +33,7 @@ export default function LesoustrojstvoLayout({ children }: { children: React.Rea
           provider: { "@type": "Organization", name: "Единая среда", url: "https://xn--80aakbcct4b2aj7m.xn--p1ai" },
           areaServed: { "@type": "City", name: "Астрахань" },
           url: "https://xn--80aakbcct4b2aj7m.xn--p1ai/services/les/astrahan",
-          description: "Лесоустройство в Астрахане: инвентаризация лесного фонда, таксация, разработка проектов.",
+          description: "Лесоустройство в Астрахани: инвентаризация лесного фонда, таксация, разработка проектов.",
         })}
       </Script>
       <Script id="json-ld-faq" type="application/ld+json">
