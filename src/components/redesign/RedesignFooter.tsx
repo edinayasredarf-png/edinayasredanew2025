@@ -46,7 +46,7 @@ export function RedesignFooter() {
 					{/* Левая колонка */}
 					<div className="shrink-0 lg:w-[220px] flex flex-col gap-5">
 						<Link href="/">
-							<Image src="/img/logo_footer.svg" alt="Единая Среда" width={150} height={42} className="h-auto" />
+							<Image src="/img/logoes_blue.svg" alt="Единая Среда" width={150} height={42} className="h-auto" />
 						</Link>
 
 						<div className="flex flex-col gap-2.5 text-[15px] text-[#050c26]">
