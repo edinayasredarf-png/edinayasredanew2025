@@ -11,9 +11,12 @@ export const SITE_CONFIG = {
   },
 
   social: {
-    // Добавьте ссылки на соцсети, если есть:
+    // Профили-сущности для sameAs (entity-склейка для поиска и ИИ).
+    // ВАЖНО: только официальные и рабочие ссылки.
     vk: 'https://vk.com/edinayasredarf',
-   telegram: 'https://t.me/@edinayasredarf',
+    telegram: 'https://t.me/edinayasredarf',
+    rustore: 'https://www.rustore.ru/catalog/app/ru.edinayasreda',
+    yandex: 'https://yandex.ru/maps/org/80012739748/',
   },
 
   analytics: {
