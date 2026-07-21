@@ -30,6 +30,7 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: `${baseUrl}/resheniya/lesoustrojstvo`,                     changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
   { url: `${baseUrl}/resheniya/ocifrovka-territorij`,               changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
   { url: `${baseUrl}/resheniya/inventarizaciya-kladbishch`,         changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
+  { url: `${baseUrl}/resheniya/luchshie-sistemy-inventarizacii`,    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-21' },
   { url: `${baseUrl}/blog`,                  changeFrequency: 'weekly',  priority: 0.9, lastModified: new Date() },
   { url: `${baseUrl}/cases`,                 changeFrequency: 'weekly',  priority: 0.8, lastModified: new Date() },
   { url: `${baseUrl}/news`,                  changeFrequency: 'daily',   priority: 0.7, lastModified: new Date() },
