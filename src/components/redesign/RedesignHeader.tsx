@@ -120,7 +120,7 @@ export function RedesignHeader() {
 						{/* Логотип — слева */}
 						<Link href="/" onClick={closeMobile} className="shrink-0">
 							<Image
-								src="/img/logoes_blue.svg"
+								src="/img/es_logo_blue.svg"
 								alt="Единая Среда"
 								width={148}
 								height={40}
@@ -225,7 +225,7 @@ export function RedesignHeader() {
 					<div className="h-20 flex items-center justify-between gap-4 px-4">
 						<Link href="/" onClick={closeMobile}>
 							<Image
-								src="/img/logoes_blue.svg"
+								src="/img/es_logo_blue.svg"
 								alt="Единая Среда"
 								width={140}
 								height={38}

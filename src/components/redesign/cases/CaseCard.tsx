@@ -15,58 +15,72 @@ export type CaseCardItem = {
   featured?: boolean;
 };
 
-function formatCaseCardDate(ts: number): string {
-  const d = new Date(ts);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  return `${day}.${month}.${d.getFullYear()}`;
-}
-
 export function CaseCard({ item, size = 'default' }: { item: CaseCardItem; size?: 'default' | 'featured' }) {
   const isFeatured = size === 'featured' || item.featured;
   const serviceType = item.application?.trim();
-  const dateLabel = item.date ? formatCaseCardDate(item.date) : null;
+  const city = item.location?.trim();
 
   return (
     <Link
       href={item.href}
-      className={`group block font-[Inter] ${isFeatured ? 'md:col-span-2' : ''}`}
+      className={`group flex flex-col h-full bg-[#F6F7F9] rounded-[32px] pt-5 pb-8 transition-shadow hover:shadow-[0_10px_34px_rgba(15,23,42,0.08)] ${
+        isFeatured ? 'md:col-span-2' : ''
+      }`}
     >
-      <article className="relative flex flex-col w-full">
-        <div className="relative w-full aspect-[341/471] rounded-2xl overflow-hidden bg-neutral-100">
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
-            sizes={
-              isFeatured
-                ? '(max-width: 768px) 100vw, 66vw'
-                : '(max-width: 768px) 100vw, 33vw'
-            }
-          />
-          {dateLabel && (
-            <div className="absolute left-4 bottom-4 z-10 rounded-xl bg-black/30 px-2 py-1">
-              <time
-                dateTime={new Date(item.date!).toISOString()}
-                className="text-[15px] font-medium leading-[18px] text-white lining-nums"
-              >
-                {dateLabel}
-              </time>
-            </div>
-          )}
-        </div>
+      {/* Изображение */}
+      <div className="mx-5 relative aspect-[16/10] rounded-[20px] overflow-hidden bg-[#ebebeb]">
+        <Image
+          src={item.image}
+          alt={item.title}
+          fill
+          className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
+          sizes={
+            isFeatured
+              ? '(max-width: 768px) 100vw, 66vw'
+              : '(max-width: 768px) 100vw, 33vw'
+          }
+        />
 
-        <h3 className="mt-3 px-1 text-base font-medium leading-6 tracking-tight text-[#202020] line-clamp-3 group-hover:text-[#029cda] transition-colors">
-          {item.title}
-        </h3>
-
-        {serviceType && (
-          <p className="mt-1.5 px-1 text-[15px] font-medium leading-5 tracking-tight text-[#6D7885] line-clamp-1">
-            {serviceType}
-          </p>
+        {/* Город проведения кейса */}
+        {city && (
+          <div className="absolute left-4 bottom-4 z-10 inline-flex items-center gap-1.5 rounded-xl bg-white/90 backdrop-blur px-3 py-1.5 shadow-sm">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#029cda"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span className="text-[14px] font-medium leading-none text-[#050c26]">
+              {city}
+            </span>
+          </div>
         )}
-      </article>
+      </div>
+
+      {/* Заголовок */}
+      <h3 className="mt-6 mx-8 font-involve text-[#050c26] text-xl font-medium leading-7 tracking-wide line-clamp-3">
+        {item.title}
+      </h3>
+
+      {/* Тип услуги */}
+      {serviceType && (
+        <p className="mt-2 mx-8 text-[15px] font-medium leading-5 tracking-tight text-[#6D7885] line-clamp-1">
+          {serviceType}
+        </p>
+      )}
+
+      {/* Подробнее */}
+      <span className="mt-auto pt-6 mx-8 text-[#029cda] text-lg font-medium font-involve leading-7 group-hover:underline">
+        Подробнее
+      </span>
     </Link>
   );
 }

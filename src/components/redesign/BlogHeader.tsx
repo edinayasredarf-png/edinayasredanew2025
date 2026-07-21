@@ -80,7 +80,7 @@ export function BlogHeader() {
 
 				{/* Логотип */}
 				<Link href="/" className="shrink-0">
-					<Image src="/img/logo_dark.svg" alt="Единая Среда" width={148} height={40} className="w-[148px] h-auto" priority />
+					<Image src="/img/es_logo_blue.svg" alt="Единая Среда" width={148} height={40} className="w-[148px] h-auto" priority />
 				</Link>
 
 				{/* Правая часть */}
@@ -184,7 +184,7 @@ export function BlogHeader() {
 			<div className="lg:hidden bg-[#F6F7F9]">
 				<div className="h-[70px] flex items-center justify-between gap-4 px-4">
 					<Link href="/" aria-label="Главная">
-						<Image src="/img/logo_dark.svg" alt="Единая среда" width={140} height={38} className="h-[38px] w-auto object-contain" />
+						<Image src="/img/es_logo_blue.svg" alt="Единая среда" width={140} height={38} className="h-[38px] w-auto object-contain" />
 					</Link>
 					<div className="flex items-center gap-2">
 						<button onClick={() => setShowMobileSearch(true)} className="w-9 h-9 rounded-xl flex items-center justify-center text-[#52555a] hover:bg-[#f5f6f8]" aria-label="Поиск">
