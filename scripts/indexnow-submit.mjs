@@ -33,6 +33,7 @@ const PATHS = [
   "/resheniya/ocifrovka-territorij",
   "/resheniya/inventarizaciya-kladbishch",
   "/resheniya/luchshie-sistemy-inventarizacii",
+  "/reviews",
 ];
 
 async function main() {
