@@ -23,7 +23,7 @@ export function CaseCard({ item, size = 'default' }: { item: CaseCardItem; size?
   return (
     <Link
       href={item.href}
-      className={`group flex flex-col h-full bg-[#F6F7F9] rounded-[32px] pt-5 pb-8 transition-shadow hover:shadow-[0_10px_34px_rgba(15,23,42,0.08)] ${
+      className={`flex flex-col h-full bg-[#F6F7F9] rounded-[32px] pt-5 pb-8 ${
         isFeatured ? 'md:col-span-2' : ''
       }`}
     >
@@ -33,7 +33,7 @@ export function CaseCard({ item, size = 'default' }: { item: CaseCardItem; size?
           src={item.image}
           alt={item.title}
           fill
-          className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
+          className="object-cover object-center"
           sizes={
             isFeatured
               ? '(max-width: 768px) 100vw, 66vw'
@@ -76,11 +76,6 @@ export function CaseCard({ item, size = 'default' }: { item: CaseCardItem; size?
           {serviceType}
         </p>
       )}
-
-      {/* Подробнее */}
-      <span className="mt-auto pt-6 mx-8 text-[#029cda] text-lg font-medium font-involve leading-7 group-hover:underline">
-        Подробнее
-      </span>
     </Link>
   );
 }
