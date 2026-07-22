@@ -34,6 +34,9 @@ const PATHS = [
   "/resheniya/inventarizaciya-kladbishch",
   "/resheniya/luchshie-sistemy-inventarizacii",
   "/reviews",
+  "/dlya/zhk",
+  "/dlya/sanatorii",
+  "/dlya/oteli",
 ];
 
 async function main() {
