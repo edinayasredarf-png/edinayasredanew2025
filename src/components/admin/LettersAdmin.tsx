@@ -12,6 +12,13 @@ interface Template {
   body: string;
   header_left: string;
   header_right: string;
+  greeting: string;
+  greeting_size: number;
+  greeting_bold: boolean;
+  header_left_size: number;
+  header_left_bold: boolean;
+  header_right_size: number;
+  header_right_bold: boolean;
   header_image: string;
   signer_role: string;
   signature_image: string;
@@ -59,6 +66,33 @@ const TAGS = [
 ];
 
 const emptyRow = (): Recipient => ({ fio: '', position: '', number: '', date: '', email: '', phone: '' });
+
+/** Компактные контролы формата поля верха письма: размер (pt) + жирность. */
+function FormatControls({
+  size, bold, onSize, onBold,
+}: {
+  size: number; bold: boolean;
+  onSize: (v: number) => void; onBold: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-[#7C8A9A]">
+      <span>размер</span>
+      <input
+        type="number" min={6} max={40} value={size}
+        onChange={(e) => onSize(Math.max(6, Math.min(40, Number(e.target.value) || 13)))}
+        className="w-14 px-2 py-1 border border-gray-200 rounded-md text-[13px] text-[#313131]"
+      />
+      <button
+        type="button"
+        onClick={() => onBold(!bold)}
+        className={`px-2 py-1 rounded-md border text-[13px] font-bold ${bold ? 'bg-[#029cda] text-white border-[#029cda]' : 'bg-white text-[#313131] border-gray-200'}`}
+        title="Жирный"
+      >
+        Ж
+      </button>
+    </div>
+  );
+}
 
 export default function LettersAdmin() {
   const [tab, setTab] = useState<Tab>('send');
@@ -337,7 +371,14 @@ export default function LettersAdmin() {
           {/* Верхняя часть письма — слева (реквизиты) и справа (адресат) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-[#7C8A9A] mb-1">Верх письма — слева (реквизиты)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm text-[#7C8A9A]">Верх письма — слева (реквизиты)</label>
+                <FormatControls
+                  size={draft.header_left_size} bold={draft.header_left_bold}
+                  onSize={(v) => setDraft({ ...draft, header_left_size: v })}
+                  onBold={(v) => setDraft({ ...draft, header_left_bold: v })}
+                />
+              </div>
               <textarea
                 value={draft.header_left}
                 onChange={(e) => setDraft({ ...draft, header_left: e.target.value })}
@@ -347,7 +388,14 @@ export default function LettersAdmin() {
               />
             </div>
             <div>
-              <label className="block text-sm text-[#7C8A9A] mb-1">Верх письма — справа (адресат)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm text-[#7C8A9A]">Верх письма — справа (адресат)</label>
+                <FormatControls
+                  size={draft.header_right_size} bold={draft.header_right_bold}
+                  onSize={(v) => setDraft({ ...draft, header_right_size: v })}
+                  onBold={(v) => setDraft({ ...draft, header_right_bold: v })}
+                />
+              </div>
               <textarea
                 value={draft.header_right}
                 onChange={(e) => setDraft({ ...draft, header_right: e.target.value })}
@@ -359,6 +407,26 @@ export default function LettersAdmin() {
             <p className="md:col-span-2 text-xs text-[#9AA6B2] -mt-2">
               Каждая строка — отдельная строка в письме. Поддерживаются те же теги. Оставьте пустым — заполнится автоматически (№/дата слева, должность и ФИО справа).
             </p>
+          </div>
+
+          {/* Обращение */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm text-[#7C8A9A]">Обращение</label>
+              <FormatControls
+                size={draft.greeting_size} bold={draft.greeting_bold}
+                onSize={(v) => setDraft({ ...draft, greeting_size: v })}
+                onBold={(v) => setDraft({ ...draft, greeting_bold: v })}
+              />
+            </div>
+            <textarea
+              value={draft.greeting}
+              onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
+              rows={2}
+              className={`${inputCls} text-[13px]`}
+              placeholder={'<<ОБРАЩЕНИЕ>> <<ИО>>!'}
+            />
+            <p className="text-xs text-[#9AA6B2] mt-1">Выводится по центру над текстом письма. Пусто — соберётся автоматически из обращения и имени-отчества.</p>
           </div>
 
           <div>

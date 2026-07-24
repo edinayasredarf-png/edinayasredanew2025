@@ -79,11 +79,20 @@ export async function buildLetterPdf(
   const headerRight = template.header_right?.trim()
     ? mergeTags(template.header_right, tags)
     : `${recipient.position || ""}\n${c.fioDative}`;
+  const greeting = template.greeting?.trim()
+    ? mergeTags(template.greeting, tags)
+    : `${c.address} ${c.io}!`;
   const buffer = await renderLetterPdf({
     headerImage: images.headerImage,
     headerLeft,
     headerRight,
-    greeting: `${c.address} ${c.io}!`,
+    greeting,
+    greetingSize: template.greeting_size,
+    greetingBold: template.greeting_bold,
+    headerLeftSize: template.header_left_size,
+    headerLeftBold: template.header_left_bold,
+    headerRightSize: template.header_right_size,
+    headerRightBold: template.header_right_bold,
     body: mergeTags(template.body, tags),
     signerRole: template.signer_role || "",
     signatureImage: images.signatureImage,

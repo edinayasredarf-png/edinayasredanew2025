@@ -113,7 +113,16 @@ export interface LetterRenderData {
   signatureImage?: string;
   signerName: string;
   executor: string;
+  // Формат полей верха (размер pt / жирность). Семейство шрифта единое.
+  greetingSize?: number;
+  greetingBold?: boolean;
+  headerLeftSize?: number;
+  headerLeftBold?: boolean;
+  headerRightSize?: number;
+  headerRightBold?: boolean;
 }
+
+const bold = (on?: boolean) => ({ fontWeight: (on ? "bold" : "normal") as "bold" | "normal" });
 
 export async function renderLetterPdf(d: LetterRenderData): Promise<Buffer> {
   ensureFont();
@@ -142,18 +151,18 @@ export async function renderLetterPdf(d: LetterRenderData): Promise<Buffer> {
         <View style={styles.topRow}>
           <View style={styles.reqCol}>
             {splitLines(d.headerLeft).map((ln, i) => (
-              <Text key={`hl${i}`} style={styles.req}>{ln}</Text>
+              <Text key={`hl${i}`} style={[styles.req, { fontSize: d.headerLeftSize ?? 13 }, bold(d.headerLeftBold)]}>{ln}</Text>
             ))}
           </View>
           <View style={styles.addresseeCol}>
             {splitLines(d.headerRight).map((ln, i) => (
-              <Text key={`hr${i}`} style={styles.addresseeText}>{ln}</Text>
+              <Text key={`hr${i}`} style={[styles.addresseeText, { fontSize: d.headerRightSize ?? 13 }, bold(d.headerRightBold)]}>{ln}</Text>
             ))}
           </View>
         </View>
 
         {/* Обращение */}
-        <Text style={styles.greeting}>{d.greeting}</Text>
+        <Text style={[styles.greeting, { fontSize: d.greetingSize ?? 14 }, bold(d.greetingBold ?? true)]}>{d.greeting}</Text>
 
         {/* Тело (HTML из редактора) */}
         {renderHtmlBody(d.body)}

@@ -35,6 +35,14 @@ export interface LetterTemplate {
   body: string; // основной текст письма (без шапки/адресата/обращения — они авто)
   header_left: string; // верх письма слева (реквизиты №/дата), с тегами
   header_right: string; // верх письма справа (адресат), с тегами
+  greeting: string; // обращение (с тегами), напр. «<<ОБРАЩЕНИЕ>> <<ИО>>!»
+  // Размер (pt) и жирность для полей верха письма — семейство шрифта единое.
+  greeting_size: number;
+  greeting_bold: boolean;
+  header_left_size: number;
+  header_left_bold: boolean;
+  header_right_size: number;
+  header_right_bold: boolean;
   header_image: string; // URL изображения бланка (верхний колонтитул)
   signer_role: string; // «Директор ООО «Сфера»»
   signature_image: string; // URL изображения подписи руководителя
@@ -81,6 +89,17 @@ const DEFAULT_HEADER_LEFT = `№ <<НОМЕР ПИСЬМА>>
 от <<ДАТА>>`;
 const DEFAULT_HEADER_RIGHT = `<<ДОЛЖНОСТЬ>>
 <<Дательный падеж ФИО>>`;
+const DEFAULT_GREETING = `<<ОБРАЩЕНИЕ>> <<ИО>>!`;
+
+// Формат полей верха письма по умолчанию (pt / жирность).
+const HEADER_FORMAT_DEFAULTS = {
+  greeting_size: 14,
+  greeting_bold: true,
+  header_left_size: 13,
+  header_left_bold: false,
+  header_right_size: 13,
+  header_right_bold: false,
+};
 
 const DEFAULT_EMAIL_SUBJECT = "Внедрение АИС «Единая среда» — <<Должность сокр>>";
 
@@ -96,6 +115,8 @@ const DEFAULTS: LetterTemplate[] = [
     body: DEFAULT_BODY,
     header_left: DEFAULT_HEADER_LEFT,
     header_right: DEFAULT_HEADER_RIGHT,
+    greeting: DEFAULT_GREETING,
+    ...HEADER_FORMAT_DEFAULTS,
     header_image: "",
     signer_role: "Директор ООО «Сфера»",
     signature_image: "",
@@ -111,6 +132,8 @@ const DEFAULTS: LetterTemplate[] = [
     body: DEFAULT_BODY,
     header_left: DEFAULT_HEADER_LEFT,
     header_right: DEFAULT_HEADER_RIGHT,
+    greeting: DEFAULT_GREETING,
+    ...HEADER_FORMAT_DEFAULTS,
     header_image: "",
     signer_role: "Генеральный директор ООО «Экострой»",
     signature_image: "",
@@ -123,7 +146,7 @@ const DEFAULTS: LetterTemplate[] = [
 ];
 
 const COLS =
-  "key, name, body, header_left, header_right, header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body, updated_at";
+  "key, name, body, header_left, header_right, greeting, greeting_size, greeting_bold, header_left_size, header_left_bold, header_right_size, header_right_bold, header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body, updated_at";
 
 let ensured = false;
 async function ensureTable() {
@@ -143,6 +166,13 @@ async function ensureTable() {
     alter table letter_templates
       add column if not exists header_left text default '',
       add column if not exists header_right text default '',
+      add column if not exists greeting text default '',
+      add column if not exists greeting_size integer not null default 14,
+      add column if not exists greeting_bold boolean not null default true,
+      add column if not exists header_left_size integer not null default 13,
+      add column if not exists header_left_bold boolean not null default false,
+      add column if not exists header_right_size integer not null default 13,
+      add column if not exists header_right_bold boolean not null default false,
       add column if not exists header_image text default '',
       add column if not exists signer_role text default '',
       add column if not exists signature_image text default '',
@@ -158,10 +188,14 @@ async function ensureTable() {
     // засеять, если нет
     await pool.query(
       `insert into letter_templates
-        (key, name, body, header_left, header_right, header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+        (key, name, body, header_left, header_right, greeting,
+         greeting_size, greeting_bold, header_left_size, header_left_bold, header_right_size, header_right_bold,
+         header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
        on conflict (key) do nothing`,
-      [t.key, t.name, t.body, t.header_left, t.header_right, t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body]
+      [t.key, t.name, t.body, t.header_left, t.header_right, t.greeting,
+       t.greeting_size, t.greeting_bold, t.header_left_size, t.header_left_bold, t.header_right_size, t.header_right_bold,
+       t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body]
     );
     // миграция старого тела (с шапкой «№ <<НОМЕР…») → новое; поля заполнить, если пусто
     await pool.query(
@@ -173,9 +207,10 @@ async function ensureTable() {
          email_subject = case when coalesce(email_subject,'') = '' then $6 else email_subject end,
          email_body    = case when coalesce(email_body,'')    = '' then $7 else email_body end,
          header_left  = case when coalesce(header_left,'')  = '' then $8 else header_left end,
-         header_right = case when coalesce(header_right,'') = '' then $9 else header_right end
+         header_right = case when coalesce(header_right,'') = '' then $9 else header_right end,
+         greeting     = case when coalesce(greeting,'')     = '' then $10 else greeting end
        where key = $1`,
-      [t.key, t.body, t.signer_role, t.signer_name, t.executor, t.email_subject, t.email_body, t.header_left, t.header_right]
+      [t.key, t.body, t.signer_role, t.signer_name, t.executor, t.email_subject, t.email_body, t.header_left, t.header_right, t.greeting]
     );
   }
 
@@ -214,8 +249,12 @@ export async function dbUpdateTemplate(t: LetterTemplate): Promise<void> {
        name = $2, body = $3, header_image = $4, signer_role = $5,
        signature_image = $6, signer_name = $7, executor = $8,
        filename_pattern = $9, email_subject = $10, email_body = $11,
-       header_left = $12, header_right = $13, updated_at = now()
+       header_left = $12, header_right = $13, greeting = $14,
+       greeting_size = $15, greeting_bold = $16,
+       header_left_size = $17, header_left_bold = $18,
+       header_right_size = $19, header_right_bold = $20, updated_at = now()
      where key = $1`,
-    [t.key, t.name, t.body, t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body, t.header_left ?? '', t.header_right ?? '']
+    [t.key, t.name, t.body, t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body, t.header_left ?? '', t.header_right ?? '', t.greeting ?? '',
+     t.greeting_size ?? 14, t.greeting_bold ?? true, t.header_left_size ?? 13, t.header_left_bold ?? false, t.header_right_size ?? 13, t.header_right_bold ?? false]
   );
 }
