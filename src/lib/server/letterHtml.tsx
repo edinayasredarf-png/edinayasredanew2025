@@ -197,6 +197,59 @@ function renderList(el: HTMLElement, ordered: boolean, key: string): React.React
   );
 }
 
+/** span только со шрифтом/размером (без иного форматирования) — можно «поднять» на абзац. */
+function spanIsPureFont(el: HTMLElement): boolean {
+  const style = el.getAttribute("style") || "";
+  if (!/font-family|font-size/i.test(style)) return false;
+  if (/font-weight:\s*(bold|[6-9]00)/i.test(style)) return false;
+  if (/font-style:\s*italic/i.test(style)) return false;
+  if (/text-decoration:[^;]*underline/i.test(style)) return false;
+  if (/background(?:-color)?:/i.test(style)) return false;
+  if (colorFromStyle(el)) return false;
+  return true;
+}
+
+function meaningfulChildren(node: Node): Node[] {
+  return (node.childNodes || []).filter(
+    (n) =>
+      !(
+        n.nodeType === NodeType.TEXT_NODE &&
+        !((n as unknown as { rawText?: string }).rawText || "").trim()
+      )
+  );
+}
+
+/**
+ * Редактор часто оборачивает весь абзац в <span> со шрифтом/размером. Если это
+ * так — «снимаем» шрифт/размер на уровень абзаца: текст остаётся простыми
+ * строками и сохраняется textIndent (красная строка), а шрифт всё равно
+ * применяется (наследуется дочерними Text).
+ */
+function peelParagraphFont(el: HTMLElement): { fontFamily?: string; fontSize?: number; node: Node } {
+  let fontFamily: string | undefined;
+  let fontSize: number | undefined;
+  let node: HTMLElement = el;
+  for (let depth = 0; depth < 4; depth++) {
+    const kids = meaningfulChildren(node);
+    if (kids.length !== 1 || kids[0].nodeType !== NodeType.ELEMENT_NODE) break;
+    const span = kids[0] as HTMLElement;
+    if ((span.rawTagName || "").toLowerCase() !== "span" || !spanIsPureFont(span)) break;
+    const ff = fontFamilyFromStyle(span);
+    const fs = fontSizeFromStyle(span);
+    if (ff) fontFamily = ff;
+    if (fs) fontSize = fs;
+    node = span;
+  }
+  return { fontFamily, fontSize, node };
+}
+
+function fontExtra(pf: { fontFamily?: string; fontSize?: number }) {
+  const s: { fontFamily?: string; fontSize?: number } = {};
+  if (pf.fontFamily) s.fontFamily = pf.fontFamily;
+  if (pf.fontSize) s.fontSize = pf.fontSize;
+  return s;
+}
+
 function renderBlock(node: Node, key: string): React.ReactNode | null {
   if (node.nodeType === NodeType.TEXT_NODE) {
     const txt = decode((node as unknown as { rawText: string }).rawText || "").trim();
@@ -206,16 +259,24 @@ function renderBlock(node: Node, key: string): React.ReactNode | null {
   const tag = (el.rawTagName || "").toLowerCase();
   switch (tag) {
     case "p":
-    case "div":
+    case "div": {
       if (!el.text.trim() && !el.querySelector("br")) return null;
-      return <Text key={key} style={paraStyle(el, st.para)}>{inlineSpans(el, {}, key)}</Text>;
-    case "h1":
-      return <Text key={key} style={paraStyle(el, st.h1)}>{inlineSpans(el, {}, key)}</Text>;
-    case "h2":
-      return <Text key={key} style={paraStyle(el, st.h2)}>{inlineSpans(el, {}, key)}</Text>;
+      const pf = peelParagraphFont(el);
+      return <Text key={key} style={[paraStyle(el, st.para), fontExtra(pf)]}>{inlineSpans(pf.node, {}, key)}</Text>;
+    }
+    case "h1": {
+      const pf = peelParagraphFont(el);
+      return <Text key={key} style={[paraStyle(el, st.h1), fontExtra(pf)]}>{inlineSpans(pf.node, {}, key)}</Text>;
+    }
+    case "h2": {
+      const pf = peelParagraphFont(el);
+      return <Text key={key} style={[paraStyle(el, st.h2), fontExtra(pf)]}>{inlineSpans(pf.node, {}, key)}</Text>;
+    }
     case "h3":
-    case "h4":
-      return <Text key={key} style={paraStyle(el, st.h3)}>{inlineSpans(el, {}, key)}</Text>;
+    case "h4": {
+      const pf = peelParagraphFont(el);
+      return <Text key={key} style={[paraStyle(el, st.h3), fontExtra(pf)]}>{inlineSpans(pf.node, {}, key)}</Text>;
+    }
     case "ul":
       return renderList(el, false, key);
     case "ol":
