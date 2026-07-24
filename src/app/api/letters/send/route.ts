@@ -9,8 +9,9 @@ import {
   resolveTemplateImages,
   buildLetterPdf,
 } from "@/lib/server/letterBuild";
-import { sendLetterEmail, isMailerConfigured } from "@/lib/server/mailer";
+import { sendLetterEmail, isMailerConfigured, type SmtpAccount } from "@/lib/server/mailer";
 import { dbLogLetterSend } from "@/lib/server/letterSendsDb";
+import { dbGetMailAccountSecret } from "@/lib/server/mailAccountsDb";
 import { randomUUID } from "node:crypto";
 
 export const runtime = "nodejs";
@@ -54,18 +55,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Нет доступа" }, { status });
   }
 
-  if (!isMailerConfigured()) {
-    return NextResponse.json(
-      { error: "SMTP не настроен (SMTP_HOST / SMTP_USER / SMTP_PASS)" },
-      { status: 503 }
-    );
-  }
-
   let payload: {
     templateKey?: string;
     recipients?: RecipientRow[];
     test?: boolean;
     testEmail?: string;
+    accountId?: string;
   };
   try {
     payload = await request.json();
@@ -81,6 +76,40 @@ export async function POST(request: NextRequest) {
   const template = await dbGetTemplate(payload.templateKey);
   if (!template) {
     return NextResponse.json({ error: "Шаблон не найден" }, { status: 404 });
+  }
+
+  // Ящик отправки: доп. почта из БД либо основной (ENV).
+  let account: SmtpAccount | undefined;
+  let fromEmail = (process.env.SMTP_FROM || process.env.SMTP_USER || "").trim();
+  const accountId = (payload.accountId || "").trim();
+  if (accountId && accountId !== "default") {
+    const sec = await dbGetMailAccountSecret(accountId);
+    if (!sec) {
+      return NextResponse.json({ error: "Ящик отправки не найден" }, { status: 404 });
+    }
+    if (!sec.enabled) {
+      return NextResponse.json({ error: "Выбранный ящик отключён" }, { status: 400 });
+    }
+    if (!sec.smtp_host || !sec.smtp_user || !sec.smtp_pass) {
+      return NextResponse.json(
+        { error: "У выбранного ящика не заданы SMTP-настройки или пароль" },
+        { status: 400 }
+      );
+    }
+    account = {
+      host: sec.smtp_host,
+      port: sec.smtp_port,
+      secure: sec.smtp_secure,
+      user: sec.smtp_user,
+      pass: sec.smtp_pass,
+      from: sec.from_name ? `${sec.from_name} <${sec.from_email}>` : sec.from_email,
+    };
+    fromEmail = sec.from_email;
+  } else if (!isMailerConfigured()) {
+    return NextResponse.json(
+      { error: "Основной ящик не настроен (SMTP_HOST / SMTP_USER / SMTP_PASS). Выберите другой ящик." },
+      { status: 503 }
+    );
   }
 
   // Тест на себя: одно письмо (первый получатель) на указанный адрес
@@ -121,6 +150,7 @@ export async function POST(request: NextRequest) {
         status: "error",
         error: "Не указан корректный email",
         delivery_status: "error",
+        from_email: fromEmail,
       });
       return;
     }
@@ -142,6 +172,7 @@ export async function POST(request: NextRequest) {
         html,
         text,
         trackToken,
+        account,
         attachments: [{ filename, content: buffer, contentType: "application/pdf" }],
       });
       const rejected = !info.accepted;
@@ -161,6 +192,7 @@ export async function POST(request: NextRequest) {
         message_id: info.messageId,
         smtp_response: info.response,
         delivery_status: rejected ? "rejected" : "accepted",
+        from_email: fromEmail,
       });
     } catch (e) {
       const error = e instanceof Error ? e.message : "Ошибка отправки";
@@ -175,6 +207,7 @@ export async function POST(request: NextRequest) {
         status: "error",
         error,
         delivery_status: "error",
+        from_email: fromEmail,
       });
     }
   };

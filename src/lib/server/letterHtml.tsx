@@ -27,6 +27,8 @@ interface Inline {
   strike?: boolean;
   bg?: string;
   color?: string;
+  fontSize?: number;
+  fontFamily?: string;
 }
 
 const ENTITIES: Record<string, string> = {
@@ -53,7 +55,41 @@ function spanStyle(inh: Inline) {
     textDecoration: (deco.join(" ") || "none") as "underline" | "line-through" | "none",
     backgroundColor: inh.bg,
     color: inh.color,
+    // размер и семейство шрифта из редактора (TipTap FontSize / FontFamily)
+    ...(inh.fontSize ? { fontSize: inh.fontSize } : {}),
+    ...(inh.fontFamily ? { fontFamily: inh.fontFamily } : {}),
   };
+}
+
+/**
+ * Размер шрифта из style. Значение из редактора трактуем предсказуемо для
+ * пользователя: px (или без единиц) масштабируем к базовым 14pt письма
+ * (редакторный дефолт ~16px ≈ 14pt), pt — как есть, em/rem — от базовых 14.
+ */
+function fontSizeFromStyle(el: HTMLElement): number | undefined {
+  const style = el.getAttribute("style") || "";
+  const m = /font-size:\s*([\d.]+)\s*(px|pt|em|rem)?/i.exec(style);
+  if (!m) return undefined;
+  const n = parseFloat(m[1]);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  const unit = (m[2] || "px").toLowerCase();
+  const pt = unit === "pt" ? n : unit === "em" || unit === "rem" ? n * 14 : n * 0.875;
+  return Math.max(6, Math.min(48, Math.round(pt * 10) / 10));
+}
+
+// В PDF реально зарегистрированы два семейства: серифное «Letter» (Tinos ≈ Times,
+// по умолчанию) и «LetterSans» (Involve). Любой sans/mono из редактора
+// отображаем шрифтом без засечек, серифные/по умолчанию — базовым.
+function fontFamilyFromStyle(el: HTMLElement): string | undefined {
+  const style = el.getAttribute("style") || "";
+  const m = /font-family:\s*([^;]+)/i.exec(style);
+  if (!m) return undefined;
+  const v = m[1].toLowerCase();
+  if (/serif|times|tinos|georgia|roman/.test(v) && !/sans/.test(v)) return undefined;
+  if (/sans|arial|helvetica|verdana|tahoma|roboto|inter|gilroy|involve|segoe|calibri|mono|courier|consolas|menlo/.test(v)) {
+    return "LetterSans";
+  }
+  return undefined;
 }
 
 // чёрный/дефолтный цвет игнорируем — иначе редактор оборачивает весь текст в
@@ -93,7 +129,9 @@ function inlineSpans(node: Node, inh: Inline, key: string): React.ReactNode[] {
       if (!txt) return;
       // без форматирования — отдаём строкой (иначе textIndent/красная строка не работает)
       const styled =
-        inh.bold || inh.italic || inh.underline || inh.strike || Boolean(inh.bg) || Boolean(inh.color);
+        inh.bold || inh.italic || inh.underline || inh.strike ||
+        Boolean(inh.bg) || Boolean(inh.color) ||
+        Boolean(inh.fontSize) || Boolean(inh.fontFamily);
       out.push(styled ? <Text key={`${key}-t${i}`} style={spanStyle(inh)}>{txt}</Text> : txt);
       return;
     }
@@ -118,6 +156,10 @@ function inlineSpans(node: Node, inh: Inline, key: string): React.ReactNode[] {
       if (/background(?:-color)?:/i.test(style)) next.bg = bgFromStyle(el);
       const c = colorFromStyle(el);
       if (c) next.color = c;
+      const fs = fontSizeFromStyle(el);
+      if (fs) next.fontSize = fs;
+      const ff = fontFamilyFromStyle(el);
+      if (ff) next.fontFamily = ff;
     }
     out.push(...inlineSpans(el, next, `${key}-${i}`));
   });

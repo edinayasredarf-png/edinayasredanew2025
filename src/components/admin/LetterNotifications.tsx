@@ -9,6 +9,7 @@ interface SendRow {
   template_name: string;
   fio: string;
   email: string;
+  from_email: string;
   phone: string;
   subject: string;
   error: string;
@@ -299,6 +300,7 @@ export default function LetterNotifications() {
             <tr className="text-left text-[#7C8A9A] border-b border-gray-100">
               <th className="py-2 pr-2 font-medium w-28">Отправлено</th>
               <th className="py-2 pr-2 font-medium">Получатель</th>
+              <th className="py-2 pr-2 font-medium w-44">Отправитель</th>
               <th className="py-2 pr-2 font-medium w-40">Доставка</th>
               <th className="py-2 pr-2 font-medium w-32">Открыто</th>
               <th className="py-2 pr-2 font-medium w-40">Телефон</th>
@@ -323,6 +325,9 @@ export default function LetterNotifications() {
                         {r.subject}
                       </div>
                     )}
+                  </td>
+                  <td className="py-2 pr-2 text-[#7C8A9A] text-xs break-all">
+                    {r.from_email || '—'}
                   </td>
                   <td className="py-2 pr-2">
                     <span

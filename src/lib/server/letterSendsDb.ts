@@ -50,7 +50,8 @@ async function ensureTable() {
       add column if not exists bounce_reason text not null default '',
       add column if not exists opened_at timestamptz,
       add column if not exists last_opened_at timestamptz,
-      add column if not exists open_count integer not null default 0
+      add column if not exists open_count integer not null default 0,
+      add column if not exists from_email text not null default ''
   `);
 
   await pool.query(
@@ -87,6 +88,8 @@ export interface LetterSendLog {
   message_id?: string;
   smtp_response?: string;
   delivery_status?: DeliveryStatus;
+  /** Адрес ящика, с которого отправлено (для отчётов). */
+  from_email?: string;
 }
 
 export interface LetterSendRow {
@@ -95,6 +98,7 @@ export interface LetterSendRow {
   template_name: string;
   fio: string;
   email: string;
+  from_email: string;
   phone: string;
   subject: string;
   status: "ok" | "error";
@@ -113,7 +117,7 @@ export interface LetterSendRow {
   created_at: string;
 }
 
-const ROW_COLS = `id, template_key, template_name, fio, email, phone, subject,
+const ROW_COLS = `id, template_key, template_name, fio, email, from_email, phone, subject,
   status, error, message_id, smtp_response, delivery_status, bounced_at,
   bounce_reason, opened_at, last_opened_at, open_count, called, call_comment,
   called_at, created_at`;
@@ -126,8 +130,8 @@ export async function dbLogLetterSend(log: LetterSendLog): Promise<void> {
     await pool.query(
       `insert into letter_sends
         (template_key, template_name, fio, email, phone, subject, status, error,
-         track_token, message_id, smtp_response, delivery_status)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+         track_token, message_id, smtp_response, delivery_status, from_email)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
       [
         log.template_key,
         log.template_name,
@@ -141,6 +145,7 @@ export async function dbLogLetterSend(log: LetterSendLog): Promise<void> {
         log.message_id || "",
         log.smtp_response || "",
         log.delivery_status || (log.status === "ok" ? "accepted" : "error"),
+        log.from_email || "",
       ]
     );
   } catch {

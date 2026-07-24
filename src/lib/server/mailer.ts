@@ -10,7 +10,29 @@ import nodemailer, { Transporter } from "nodemailer";
  *   SMTP_PASS   пароль ящика (НИКОГДА не в git)
  *   SMTP_FROM   ООО «Сфера» <offer@единаясреда.рф> (по умолчанию = SMTP_USER)
  */
-function config() {
+/** Конфигурация конкретного ящика для отправки (доп. ящик из БД). */
+export interface SmtpAccount {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+  /** Отображаемое «От кого»: «ООО … <mail@domain>» или просто адрес. */
+  from?: string;
+}
+
+interface MailConfig {
+  host?: string;
+  port: number;
+  secure: boolean;
+  user?: string;
+  pass?: string;
+  from?: string;
+  helo?: string;
+}
+
+/** Основной ящик из ENV (offer@). */
+function envConfig(): MailConfig {
   const host = process.env.SMTP_HOST?.trim();
   const port = Number(process.env.SMTP_PORT || 465);
   // secure=true для 465; для 587 задайте SMTP_SECURE=false (STARTTLS)
@@ -25,32 +47,48 @@ function config() {
   return { host, port, secure, user, pass, from, helo };
 }
 
+/** Конфиг из выбранного ящика (доп. почта) или ENV (по умолчанию). */
+function config(account?: SmtpAccount): MailConfig {
+  if (account) {
+    return {
+      host: account.host?.trim(),
+      port: account.port || 465,
+      secure: account.secure,
+      user: account.user?.trim(),
+      pass: account.pass,
+      from: account.from?.trim() || account.user?.trim(),
+      helo: (account.user?.split("@")[1] || "").trim() || undefined,
+    };
+  }
+  return envConfig();
+}
+
 export function isMailerConfigured(): boolean {
-  const c = config();
+  const c = envConfig();
   return Boolean(c.host && c.user && c.pass);
 }
 
-let transporter: Transporter | null = null;
-let cachedKey = "";
+const transporters = new Map<string, Transporter>();
 
-function getTransporter(): Transporter {
-  const c = config();
+function getTransporter(account?: SmtpAccount): Transporter {
+  const c = config(account);
   if (!c.host || !c.user || !c.pass) {
     throw new Error(
-      "SMTP не настроен: задайте SMTP_HOST, SMTP_USER, SMTP_PASS в переменных окружения"
+      "SMTP не настроен: укажите хост, логин и пароль ящика (или SMTP_HOST/SMTP_USER/SMTP_PASS)"
     );
   }
   const key = `${c.host}:${c.port}:${c.secure}:${c.user}`;
-  if (transporter && cachedKey === key) return transporter;
-  transporter = nodemailer.createTransport({
+  const cached = transporters.get(key);
+  if (cached) return cached;
+  const t = nodemailer.createTransport({
     host: c.host,
     port: c.port,
     secure: c.secure,
     auth: { user: c.user, pass: c.pass },
     ...(c.helo ? { name: c.helo } : {}),
   });
-  cachedKey = key;
-  return transporter;
+  transporters.set(key, t);
+  return t;
 }
 
 export interface LetterAttachment {
@@ -79,8 +117,8 @@ function siteUrl(): string {
  * Свой Message-ID: по нему возврат (DSN) сопоставляется с записью в БД.
  * Домен берём из адреса отправителя — с чужим доменом принимающие серверы ругаются.
  */
-export function buildMessageId(token: string): string {
-  const c = config();
+export function buildMessageId(token: string, account?: SmtpAccount): string {
+  const c = config(account);
   const domain = (c.user?.split("@")[1] || "localhost").trim();
   return `<${token}@${domain}>`;
 }
@@ -112,9 +150,11 @@ export async function sendLetterEmail(opts: {
   attachments?: LetterAttachment[];
   /** Токен трекинга: задаёт Message-ID и включает пиксель открытия. */
   trackToken?: string;
+  /** Ящик отправки. Не задан — основной из ENV (offer@). */
+  account?: SmtpAccount;
 }): Promise<SendInfo> {
-  const c = config();
-  const transport = getTransporter();
+  const c = config(opts.account);
+  const transport = getTransporter(opts.account);
   // List-Unsubscribe помогает настоящим массовым рассылкам, но помечает письмо
   // как «bulk». Веб-почта его НЕ шлёт — поэтому по умолчанию выключен, чтобы
   // именное письмо выглядело как личное (и не уходило в спам/промоакции).
@@ -131,7 +171,7 @@ export async function sendLetterEmail(opts: {
     subject: opts.subject,
     text: opts.text,
     html,
-    ...(token ? { messageId: buildMessageId(token) } : {}),
+    ...(token ? { messageId: buildMessageId(token, opts.account) } : {}),
     // как в веб-почте Timeweb: quoted-printable вместо base64 + обычный приоритет
     // (base64-тело — слабый спам-сигнал; qp выглядит как обычное письмо)
     textEncoding: "quoted-printable",
@@ -149,13 +189,13 @@ export async function sendLetterEmail(opts: {
   const rejected = (info.rejected || []) as string[];
   return {
     accepted: accepted.length > 0 && rejected.length === 0,
-    messageId: info.messageId || (token ? buildMessageId(token) : ""),
+    messageId: info.messageId || (token ? buildMessageId(token, opts.account) : ""),
     response: info.response || "",
     rejected: rejected.map(String),
   };
 }
 
 /** Проверка соединения/авторизации SMTP (для диагностики). */
-export async function verifyMailer(): Promise<void> {
-  await getTransporter().verify();
+export async function verifyMailer(account?: SmtpAccount): Promise<void> {
+  await getTransporter(account).verify();
 }

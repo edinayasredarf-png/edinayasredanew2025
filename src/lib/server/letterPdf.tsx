@@ -15,6 +15,8 @@ import { renderHtmlBody } from "./letterHtml";
 
 // Tinos — метрически совместим с Times New Roman, с кириллицей (SIL OFL).
 const FONT_DIR = path.join(process.cwd(), "public", "fonts", "tinos");
+// Involve — шрифт без засечек с кириллицей (для выбора «sans» в редакторе).
+const SANS_DIR = path.join(process.cwd(), "public", "fonts", "involve");
 
 let registered = false;
 function ensureFont() {
@@ -28,8 +30,21 @@ function ensureFont() {
       { src: path.join(FONT_DIR, "Tinos-BoldItalic.ttf"), fontWeight: "bold", fontStyle: "italic" },
     ],
   });
+  // Sans-семейство (Involve): есть Regular и Medium — Medium как «жирный».
+  Font.register({
+    family: "LetterSans",
+    fonts: [
+      { src: path.join(SANS_DIR, "Involve-Regular.ttf") },
+      { src: path.join(SANS_DIR, "Involve-Medium.ttf"), fontWeight: "bold" },
+    ],
+  });
   Font.registerHyphenationCallback((word) => [word]);
   registered = true;
+}
+
+/** Многострочная строка (теги уже раскрыты) → массив непустых строк. */
+function splitLines(s?: string): string[] {
+  return (s || "").replace(/\r/g, "").split("\n").filter((l) => l.trim() !== "");
 }
 
 const styles = StyleSheet.create({
@@ -88,10 +103,10 @@ const styles = StyleSheet.create({
 
 export interface LetterRenderData {
   headerImage?: string;
-  number: string;
-  date: string;
-  position: string;
-  fioDative: string;
+  /** Верх письма слева (реквизиты). Многострочно, теги уже раскрыты. */
+  headerLeft: string;
+  /** Верх письма справа (адресат). Многострочно, теги уже раскрыты. */
+  headerRight: string;
   greeting: string;
   body: string;
   signerRole: string;
@@ -123,15 +138,17 @@ export async function renderLetterPdf(d: LetterRenderData): Promise<Buffer> {
           ))}
         </View>
 
-        {/* Реквизиты (слева) + адресат (справа) на одной линии */}
+        {/* Верх письма: слева (реквизиты) + справа (адресат) — редактируется в шаблоне */}
         <View style={styles.topRow}>
           <View style={styles.reqCol}>
-            <Text style={styles.req}>№ {d.number || "____"}</Text>
-            <Text style={styles.req}>от {d.date || "____"}</Text>
+            {splitLines(d.headerLeft).map((ln, i) => (
+              <Text key={`hl${i}`} style={styles.req}>{ln}</Text>
+            ))}
           </View>
           <View style={styles.addresseeCol}>
-            <Text style={styles.addresseeText}>{d.position}</Text>
-            <Text style={styles.addresseeText}>{d.fioDative}</Text>
+            {splitLines(d.headerRight).map((ln, i) => (
+              <Text key={`hr${i}`} style={styles.addresseeText}>{ln}</Text>
+            ))}
           </View>
         </View>
 

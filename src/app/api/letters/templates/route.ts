@@ -39,6 +39,8 @@ export async function PUT(request: NextRequest) {
       key: b.key,
       name: b.name ?? "",
       body: b.body ?? "",
+      header_left: b.header_left ?? "",
+      header_right: b.header_right ?? "",
       header_image: b.header_image ?? "",
       signer_role: b.signer_role ?? "",
       signature_image: b.signature_image ?? "",

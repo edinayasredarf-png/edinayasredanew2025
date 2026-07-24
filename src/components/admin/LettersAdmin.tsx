@@ -10,6 +10,8 @@ interface Template {
   key: string;
   name: string;
   body: string;
+  header_left: string;
+  header_right: string;
   header_image: string;
   signer_role: string;
   signature_image: string;
@@ -18,6 +20,20 @@ interface Template {
   filename_pattern: string;
   email_subject: string;
   email_body: string;
+}
+
+interface MailAccount {
+  id: string;
+  label: string;
+  from_name: string;
+  from_email: string;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_secure: boolean;
+  smtp_user: string;
+  enabled: boolean;
+  has_password: boolean;
+  env?: boolean;
 }
 interface Recipient {
   fio: string;
@@ -29,7 +45,7 @@ interface Recipient {
   phone: string;
 }
 
-type Tab = 'send' | 'notifications';
+type Tab = 'send' | 'accounts' | 'notifications';
 interface SendResult {
   email: string;
   fio: string;
@@ -60,6 +76,30 @@ export default function LettersAdmin() {
   const [sending, setSending] = useState(false);
   const [sendResults, setSendResults] = useState<SendResult[] | null>(null);
   const [testEmail, setTestEmail] = useState('');
+
+  // Почтовые ящики отправки
+  const [accounts, setAccounts] = useState<MailAccount[]>([]);
+  const [envAccount, setEnvAccount] = useState<MailAccount | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('default');
+
+  const loadAccounts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/letters/accounts', { credentials: 'include' });
+      const data = await res.json();
+      if (res.ok) {
+        setAccounts(data.accounts || []);
+        setEnvAccount(data.env || null);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => { loadAccounts(); }, [loadAccounts]);
+
+  /** Все доступные для выбора ящики: основной (ENV) + доп. включённые. */
+  const senderOptions = [
+    ...(envAccount ? [{ ...envAccount }] : []),
+    ...accounts.filter((a) => a.enabled),
+  ];
 
   const loadTemplates = useCallback(async () => {
     try {
@@ -191,7 +231,7 @@ export default function LettersAdmin() {
     if (!window.confirm(msg)) return;
     setSending(true); setError(''); setStatus(''); setSendResults(null);
     try {
-      const results = await postSend({ templateKey: activeKey, recipients });
+      const results = await postSend({ templateKey: activeKey, recipients, accountId: selectedAccountId });
       setSendResults(results);
       const sent = results.filter((r) => r.ok).length;
       setStatus(`Отправлено: ${sent} из ${results.length}`);
@@ -206,7 +246,7 @@ export default function LettersAdmin() {
     if (!testEmail.trim()) { setError('Укажите адрес для теста'); return; }
     setSending(true); setError(''); setStatus(''); setSendResults(null);
     try {
-      const results = await postSend({ templateKey: activeKey, recipients: [recipients[0]], test: true, testEmail: testEmail.trim() });
+      const results = await postSend({ templateKey: activeKey, recipients: [recipients[0]], test: true, testEmail: testEmail.trim(), accountId: selectedAccountId });
       setSendResults(results);
       const ok = results[0]?.ok;
       setStatus(ok ? `Тестовое письмо отправлено на ${testEmail.trim()}` : 'Не удалось отправить тестовое письмо');
@@ -228,6 +268,7 @@ export default function LettersAdmin() {
       <div className="flex items-center gap-2 border-b border-gray-100">
         {([
           { key: 'send', label: 'Рассылка' },
+          { key: 'accounts', label: 'Почтовые ящики' },
           { key: 'notifications', label: 'Уведомления' },
         ] as { key: Tab; label: string }[]).map((t) => (
           <button
@@ -245,6 +286,10 @@ export default function LettersAdmin() {
       </div>
 
       {tab === 'notifications' && <LetterNotifications />}
+
+      {tab === 'accounts' && (
+        <MailAccountsPanel accounts={accounts} envAccount={envAccount} reload={loadAccounts} />
+      )}
 
       {tab === 'send' && (
       <>
@@ -287,6 +332,33 @@ export default function LettersAdmin() {
           <div className="text-xs text-[#7C8A9A] space-y-1">
             <div>Реквизиты (№, дата), адресат (должность + ФИО в дат. падеже) и обращение формируются автоматически — их в тело писать не нужно.</div>
             <div>Теги для тела, исполнителя и имени файла: <span className="font-mono text-[#0a7bb0]">{TAGS.join('  ')}</span></div>
+          </div>
+
+          {/* Верхняя часть письма — слева (реквизиты) и справа (адресат) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[#7C8A9A] mb-1">Верх письма — слева (реквизиты)</label>
+              <textarea
+                value={draft.header_left}
+                onChange={(e) => setDraft({ ...draft, header_left: e.target.value })}
+                rows={3}
+                className={`${inputCls} font-mono text-[13px]`}
+                placeholder={'№ <<НОМЕР ПИСЬМА>>\nот <<ДАТА>>'}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[#7C8A9A] mb-1">Верх письма — справа (адресат)</label>
+              <textarea
+                value={draft.header_right}
+                onChange={(e) => setDraft({ ...draft, header_right: e.target.value })}
+                rows={3}
+                className={`${inputCls} font-mono text-[13px]`}
+                placeholder={'<<ДОЛЖНОСТЬ>>\n<<Дательный падеж ФИО>>'}
+              />
+            </div>
+            <p className="md:col-span-2 text-xs text-[#9AA6B2] -mt-2">
+              Каждая строка — отдельная строка в письме. Поддерживаются те же теги. Оставьте пустым — заполнится автоматически (№/дата слева, должность и ФИО справа).
+            </p>
           </div>
 
           <div>
@@ -415,7 +487,28 @@ export default function LettersAdmin() {
           <button onClick={importPaste} disabled={!pasteText.trim()} className="mt-2 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
         </div>
 
-        <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center gap-3">
+        <div className="pt-2 border-t border-gray-100">
+          <label className="block text-sm text-[#7C8A9A] mb-1">Отправить с ящика</label>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={selectedAccountId}
+              onChange={(e) => setSelectedAccountId(e.target.value)}
+              className={`${inputCls} max-w-md`}
+            >
+              {senderOptions.length === 0 && <option value="default">Основной ящик</option>}
+              {senderOptions.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.from_email || 'ящик'}{a.label ? ` — ${a.label}` : ''}{a.env ? ' (основной)' : ''}
+                </option>
+              ))}
+            </select>
+            <button onClick={() => setTab('accounts')} className="text-sm text-[#029cda] hover:text-[#0280b5]">
+              + Настроить ящики
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={generate}
             disabled={generating || sending}
@@ -475,6 +568,217 @@ export default function LettersAdmin() {
       </div>
       </>
       )}
+    </div>
+  );
+}
+
+/* ------------------------- Управление почтовыми ящиками ------------------------- */
+
+type AccountDraft = {
+  id?: string;
+  label: string;
+  from_name: string;
+  from_email: string;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_secure: boolean;
+  smtp_user: string;
+  password: string;
+  enabled: boolean;
+};
+
+const emptyAccount = (): AccountDraft => ({
+  label: '', from_name: '', from_email: '',
+  smtp_host: '', smtp_port: 465, smtp_secure: true,
+  smtp_user: '', password: '', enabled: true,
+});
+
+function MailAccountsPanel({
+  accounts, envAccount, reload,
+}: {
+  accounts: MailAccount[];
+  envAccount: MailAccount | null;
+  reload: () => void;
+}) {
+  const [draft, setDraft] = useState<AccountDraft>(emptyAccount());
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [busy, setBusy] = useState('');
+  const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+
+  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
+
+  const startEdit = (a: MailAccount) => {
+    setEditingId(a.id);
+    setDraft({
+      id: a.id, label: a.label, from_name: a.from_name, from_email: a.from_email,
+      smtp_host: a.smtp_host, smtp_port: a.smtp_port, smtp_secure: a.smtp_secure,
+      smtp_user: a.smtp_user, password: '', enabled: a.enabled,
+    });
+    setMsg(null);
+  };
+
+  const reset = () => { setDraft(emptyAccount()); setEditingId(null); };
+
+  const post = async (body: object) => {
+    const res = await fetch('/api/letters/accounts', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Ошибка');
+    return data;
+  };
+
+  const save = async () => {
+    if (!draft.from_email.trim() || !draft.smtp_host.trim() || !draft.smtp_user.trim()) {
+      setMsg({ kind: 'err', text: 'Заполните адрес, SMTP-хост и логин' }); return;
+    }
+    if (!editingId && !draft.password.trim()) {
+      setMsg({ kind: 'err', text: 'Укажите пароль ящика' }); return;
+    }
+    setBusy('save'); setMsg(null);
+    try {
+      await post({ ...draft, id: editingId ?? undefined });
+      setMsg({ kind: 'ok', text: 'Ящик сохранён' });
+      reset(); reload();
+    } catch (e) {
+      setMsg({ kind: 'err', text: e instanceof Error ? e.message : 'Ошибка сохранения' });
+    } finally { setBusy(''); }
+  };
+
+  const testConn = async () => {
+    setBusy('test'); setMsg(null);
+    try {
+      const data = await post({ ...draft, id: editingId ?? undefined, test: true });
+      setMsg(data.verified
+        ? { kind: 'ok', text: 'Соединение успешно: SMTP отвечает и авторизация прошла' }
+        : { kind: 'err', text: `Не удалось подключиться: ${data.error || ''}` });
+    } catch (e) {
+      setMsg({ kind: 'err', text: e instanceof Error ? e.message : 'Ошибка проверки' });
+    } finally { setBusy(''); }
+  };
+
+  const toggle = async (a: MailAccount) => {
+    try { await post({ ...a, enabled: !a.enabled }); reload(); } catch { /* ignore */ }
+  };
+
+  const remove = async (id: string) => {
+    if (!window.confirm('Удалить этот почтовый ящик?')) return;
+    try {
+      await fetch(`/api/letters/accounts?id=${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
+      reload();
+    } catch { /* ignore */ }
+  };
+
+  return (
+    <div className="space-y-5 font-[Raleway]">
+      <p className="text-sm text-[#7C8A9A]">
+        Основной ящик задаётся в переменных окружения. Здесь можно добавить дополнительные ящики
+        для рассылок — их пароли хранятся в базе в зашифрованном виде.
+      </p>
+
+      {msg && (
+        <div className={`rounded-xl px-4 py-3 text-sm ${msg.kind === 'err' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+          {msg.text}
+        </div>
+      )}
+
+      {/* Основной ящик (ENV) */}
+      {envAccount && (
+        <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-semibold text-[#313131] text-sm">{envAccount.from_email || '—'}</div>
+              <div className="text-xs text-[#9AA6B2]">Основной ящик · {envAccount.smtp_host || 'SMTP из ENV'}</div>
+            </div>
+            <span className={`text-xs px-2 py-1 rounded-full ${envAccount.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
+              {envAccount.enabled ? 'подключён' : 'не настроен'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Дополнительные ящики */}
+      <div className="space-y-2">
+        {accounts.length === 0 && (
+          <div className="text-sm text-[#9AA6B2]">Дополнительных ящиков пока нет.</div>
+        )}
+        {accounts.map((a) => (
+          <div key={a.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="font-medium text-[#313131] text-sm">{a.from_email}{a.label ? ` — ${a.label}` : ''}</div>
+              <div className="text-xs text-[#9AA6B2] truncate">
+                {a.smtp_host}:{a.smtp_port} · {a.smtp_user} · {a.has_password ? 'пароль сохранён' : 'без пароля'}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <label className="inline-flex items-center cursor-pointer" title={a.enabled ? 'Включён' : 'Выключен'}>
+                <input type="checkbox" className="sr-only peer" checked={a.enabled} onChange={() => toggle(a)} />
+                <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-[#029cda] relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
+              </label>
+              <button onClick={() => startEdit(a)} className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Изменить</button>
+              <button onClick={() => remove(a.id)} className="text-sm text-red-500 hover:underline">Удалить</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Форма добавления/редактирования */}
+      <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4">
+        <h3 className="font-semibold text-[#313131]">{editingId ? 'Изменить ящик' : 'Добавить ящик'}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Название (для себя)</label>
+            <input value={draft.label} onChange={(e) => setDraft({ ...draft, label: e.target.value })} className={inputCls} placeholder="Отдел продаж" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Имя отправителя</label>
+            <input value={draft.from_name} onChange={(e) => setDraft({ ...draft, from_name: e.target.value })} className={inputCls} placeholder="ООО «Сфера»" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Адрес (от кого) *</label>
+            <input value={draft.from_email} onChange={(e) => setDraft({ ...draft, from_email: e.target.value })} className={inputCls} placeholder="sales@домен.рф" type="email" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">SMTP-логин *</label>
+            <input value={draft.smtp_user} onChange={(e) => setDraft({ ...draft, smtp_user: e.target.value })} className={inputCls} placeholder="sales@домен.рф" />
+          </div>
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">SMTP-сервер *</label>
+            <input value={draft.smtp_host} onChange={(e) => setDraft({ ...draft, smtp_host: e.target.value })} className={inputCls} placeholder="smtp.timeweb.ru" />
+          </div>
+          <div className="flex gap-3">
+            <div className="w-28">
+              <label className="block text-sm text-[#7C8A9A] mb-1">Порт</label>
+              <input value={draft.smtp_port} onChange={(e) => setDraft({ ...draft, smtp_port: Number(e.target.value) || 465 })} className={inputCls} type="number" />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-[#313131] mt-6">
+              <input type="checkbox" checked={draft.smtp_secure} onChange={(e) => setDraft({ ...draft, smtp_secure: e.target.checked })} />
+              SSL (465)
+            </label>
+          </div>
+          <div>
+            <label className="block text-sm text-[#7C8A9A] mb-1">Пароль{editingId ? ' (оставьте пустым, чтобы не менять)' : ' *'}</label>
+            <input value={draft.password} onChange={(e) => setDraft({ ...draft, password: e.target.value })} className={inputCls} type="password" placeholder="••••••••" autoComplete="new-password" />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-[#313131] mt-6">
+            <input type="checkbox" checked={draft.enabled} onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })} />
+            Активен (доступен для отправки)
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <button onClick={save} disabled={!!busy} className="px-5 py-2 rounded-lg bg-[#029cda] text-white font-medium hover:bg-[#0280b5] disabled:opacity-50">
+            {busy === 'save' ? 'Сохранение…' : editingId ? 'Сохранить' : 'Добавить ящик'}
+          </button>
+          <button onClick={testConn} disabled={!!busy} className="px-4 py-2 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-50">
+            {busy === 'test' ? 'Проверка…' : 'Проверить соединение'}
+          </button>
+          {editingId && (
+            <button onClick={reset} className="px-4 py-2 rounded-lg text-[#7C8A9A] hover:text-[#313131]">Отмена</button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

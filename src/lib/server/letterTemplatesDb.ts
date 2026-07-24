@@ -33,6 +33,8 @@ export interface LetterTemplate {
   key: string; // 'sfera' | 'ekostroy'
   name: string;
   body: string; // основной текст письма (без шапки/адресата/обращения — они авто)
+  header_left: string; // верх письма слева (реквизиты №/дата), с тегами
+  header_right: string; // верх письма справа (адресат), с тегами
   header_image: string; // URL изображения бланка (верхний колонтитул)
   signer_role: string; // «Директор ООО «Сфера»»
   signature_image: string; // URL изображения подписи руководителя
@@ -75,6 +77,11 @@ const EXECUTOR = `Исп.: Бабаева Наталья Владимировн�
 Тел.: 8 (800) 550-56-12
 Email: offer@единаясреда.рф`;
 
+const DEFAULT_HEADER_LEFT = `№ <<НОМЕР ПИСЬМА>>
+от <<ДАТА>>`;
+const DEFAULT_HEADER_RIGHT = `<<ДОЛЖНОСТЬ>>
+<<Дательный падеж ФИО>>`;
+
 const DEFAULT_EMAIL_SUBJECT = "Внедрение АИС «Единая среда» — <<Должность сокр>>";
 
 const DEFAULT_EMAIL_BODY = `<p><<ОБРАЩЕНИЕ>> <<ИО>>!</p>
@@ -87,6 +94,8 @@ const DEFAULTS: LetterTemplate[] = [
     key: "sfera",
     name: "Сфера",
     body: DEFAULT_BODY,
+    header_left: DEFAULT_HEADER_LEFT,
+    header_right: DEFAULT_HEADER_RIGHT,
     header_image: "",
     signer_role: "Директор ООО «Сфера»",
     signature_image: "",
@@ -100,6 +109,8 @@ const DEFAULTS: LetterTemplate[] = [
     key: "ekostroy",
     name: "Экострой",
     body: DEFAULT_BODY,
+    header_left: DEFAULT_HEADER_LEFT,
+    header_right: DEFAULT_HEADER_RIGHT,
     header_image: "",
     signer_role: "Генеральный директор ООО «Экострой»",
     signature_image: "",
@@ -112,7 +123,7 @@ const DEFAULTS: LetterTemplate[] = [
 ];
 
 const COLS =
-  "key, name, body, header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body, updated_at";
+  "key, name, body, header_left, header_right, header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body, updated_at";
 
 let ensured = false;
 async function ensureTable() {
@@ -130,6 +141,8 @@ async function ensureTable() {
   // новые колонки (миграция со старой схемы)
   await pool.query(`
     alter table letter_templates
+      add column if not exists header_left text default '',
+      add column if not exists header_right text default '',
       add column if not exists header_image text default '',
       add column if not exists signer_role text default '',
       add column if not exists signature_image text default '',
@@ -145,10 +158,10 @@ async function ensureTable() {
     // засеять, если нет
     await pool.query(
       `insert into letter_templates
-        (key, name, body, header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        (key, name, body, header_left, header_right, header_image, signer_role, signature_image, signer_name, executor, filename_pattern, email_subject, email_body)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        on conflict (key) do nothing`,
-      [t.key, t.name, t.body, t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body]
+      [t.key, t.name, t.body, t.header_left, t.header_right, t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body]
     );
     // миграция старого тела (с шапкой «№ <<НОМЕР…») → новое; поля заполнить, если пусто
     await pool.query(
@@ -158,9 +171,11 @@ async function ensureTable() {
          signer_name = case when coalesce(signer_name,'') = '' then $4 else signer_name end,
          executor    = case when coalesce(executor,'')    = '' then $5 else executor end,
          email_subject = case when coalesce(email_subject,'') = '' then $6 else email_subject end,
-         email_body    = case when coalesce(email_body,'')    = '' then $7 else email_body end
+         email_body    = case when coalesce(email_body,'')    = '' then $7 else email_body end,
+         header_left  = case when coalesce(header_left,'')  = '' then $8 else header_left end,
+         header_right = case when coalesce(header_right,'') = '' then $9 else header_right end
        where key = $1`,
-      [t.key, t.body, t.signer_role, t.signer_name, t.executor, t.email_subject, t.email_body]
+      [t.key, t.body, t.signer_role, t.signer_name, t.executor, t.email_subject, t.email_body, t.header_left, t.header_right]
     );
   }
 
@@ -198,8 +213,9 @@ export async function dbUpdateTemplate(t: LetterTemplate): Promise<void> {
     `update letter_templates set
        name = $2, body = $3, header_image = $4, signer_role = $5,
        signature_image = $6, signer_name = $7, executor = $8,
-       filename_pattern = $9, email_subject = $10, email_body = $11, updated_at = now()
+       filename_pattern = $9, email_subject = $10, email_body = $11,
+       header_left = $12, header_right = $13, updated_at = now()
      where key = $1`,
-    [t.key, t.name, t.body, t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body]
+    [t.key, t.name, t.body, t.header_image, t.signer_role, t.signature_image, t.signer_name, t.executor, t.filename_pattern, t.email_subject, t.email_body, t.header_left ?? '', t.header_right ?? '']
   );
 }

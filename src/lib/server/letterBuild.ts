@@ -72,12 +72,17 @@ export async function buildLetterPdf(
 ): Promise<BuiltLetter> {
   const tags = buildTags(recipient);
   const c = computeRecipient(recipient.fio, recipient.position);
+  // Верх письма: берём из шаблона (с тегами), иначе — прежнее авто-поведение.
+  const headerLeft = template.header_left?.trim()
+    ? mergeTags(template.header_left, tags)
+    : `№ ${recipient.number || "____"}\nот ${recipient.date || "____"}`;
+  const headerRight = template.header_right?.trim()
+    ? mergeTags(template.header_right, tags)
+    : `${recipient.position || ""}\n${c.fioDative}`;
   const buffer = await renderLetterPdf({
     headerImage: images.headerImage,
-    number: recipient.number || "",
-    date: recipient.date || "",
-    position: recipient.position || "",
-    fioDative: c.fioDative,
+    headerLeft,
+    headerRight,
     greeting: `${c.address} ${c.io}!`,
     body: mergeTags(template.body, tags),
     signerRole: template.signer_role || "",
