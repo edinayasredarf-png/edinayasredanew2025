@@ -50,3 +50,8 @@ export interface RadarRefreshResult {
 export async function refreshRadar(): Promise<RadarRefreshResult> {
   return (await dataFetch("/radar/refresh", { method: "POST" })) as RadarRefreshResult;
 }
+
+/** Подключает пул RSS-лент российских СМИ (идемпотентно). */
+export async function seedDefaultFeeds(): Promise<{ added: number }> {
+  return (await dataFetch("/radar/seed-feeds", { method: "POST" })) as { added: number };
+}

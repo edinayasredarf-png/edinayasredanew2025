@@ -113,3 +113,70 @@ export function radarCategoryLabel(key: string): string {
 export function radarCategoryColor(key: string): string {
   return RADAR_CATEGORIES.find((c) => c.key === key)?.color ?? '#6b7280';
 }
+
+/**
+ * Ключевые слова для фильтрации/категоризации новостей из общих RSS-лент СМИ
+ * (там всё подряд — оставляем только релевантное). Термы специфичные, чтобы
+ * не тащить нецелевые федеральные новости. Порядок важен: первое совпадение
+ * задаёт категорию.
+ */
+export const RADAR_KEYWORDS: { category: RadarCategory; terms: string[] }[] = [
+  {
+    category: 'burial',
+    terms: ['захоронени', 'кладбищ', 'погребени', 'ритуальн', 'паспорт захоронени', 'реестр кладбищ', 'мест захоронени'],
+  },
+  {
+    category: 'greening',
+    terms: ['зелёных насаждени', 'зеленых насаждени', 'озеленени', 'инвентаризац насаждени', 'снос деревьев', 'посадк деревьев', 'зелён фонд', 'зелен фонд', 'компенсацион озеленени'],
+  },
+  {
+    category: 'budget',
+    terms: ['субсиди на благоустройств', 'грант на благоустройств', 'бюджет на цифровизац', 'средства на инвентаризац', 'финансировани благоустройств', 'выделен на озеленени', 'субсиди на озеленени', 'средства на благоустройств'],
+  },
+  {
+    category: 'digital',
+    terms: ['цифровизац', 'оцифров', 'умный город', 'цифров двойник', 'геоинформацион', 'гис жкх', 'цифров платформ город'],
+  },
+  {
+    category: 'staff',
+    terms: ['назначен глав администрац', 'нов глав администрац', 'нов глав район', 'сменил глав', 'назначен мэр', 'нов мэр', 'в отставк глав', 'врио глав'],
+  },
+  {
+    category: 'municipal',
+    terms: ['благоустройств', 'комфортн городск', 'городск сред', 'муниципальн территор', 'инвентаризац территор', 'формировани комфортн'],
+  },
+];
+
+/** Категория новости по её тексту (заголовок + описание) или null, если не по теме. */
+export function classifyText(text: string): RadarCategory | null {
+  const t = (text || '').toLowerCase();
+  for (const g of RADAR_KEYWORDS) {
+    for (const term of g.terms) {
+      if (t.includes(term)) return g.category;
+    }
+  }
+  return null;
+}
+
+/**
+ * Пул RSS-лент известных российских СМИ (проверенные, отдают новости).
+ * Подключаются как источники kind='rss' и фильтруются по RADAR_KEYWORDS.
+ */
+export const DEFAULT_RADAR_FEEDS: { label: string; url: string }[] = [
+  { label: 'ТАСС', url: 'https://tass.ru/rss/v2.xml' },
+  { label: 'РИА Новости', url: 'https://ria.ru/export/rss2/archive/index.xml' },
+  { label: 'Интерфакс', url: 'https://www.interfax.ru/rss.asp' },
+  { label: 'Коммерсантъ', url: 'https://www.kommersant.ru/RSS/news.xml' },
+  { label: 'Ведомости', url: 'https://www.vedomosti.ru/rss/news' },
+  { label: 'Российская газета', url: 'https://rg.ru/xml/index.xml' },
+  { label: 'Lenta.ru', url: 'https://lenta.ru/rss' },
+  { label: 'Regnum', url: 'https://regnum.ru/rss' },
+  { label: 'Известия', url: 'https://iz.ru/xml/rss/all.xml' },
+  { label: 'Независимая газета', url: 'https://www.ng.ru/rss/' },
+  { label: 'Парламентская газета', url: 'https://www.pnp.ru/rss/index.xml' },
+  { label: 'РИА Недвижимость', url: 'https://realty.ria.ru/export/rss2/archive/index.xml' },
+  { label: 'Комсомольская правда', url: 'https://www.kp.ru/rss/allsections.xml' },
+  { label: 'Аргументы и факты', url: 'https://aif.ru/rss/all.php' },
+  { label: 'URA.RU', url: 'https://ura.news/rss' },
+  { label: 'Строительная газета', url: 'https://stroygaz.ru/rss/' },
+];

@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { getTimewebPool } from "@/lib/timewebPg";
 import {
+  DEFAULT_RADAR_FEEDS,
   DEFAULT_RADAR_TRIGGERS,
   type RadarItem,
   type RadarStatus,
@@ -100,6 +101,24 @@ export async function dbDeleteTrigger(id: string): Promise<number> {
   const pool = getTimewebPool();
   const { rowCount } = await pool.query("delete from radar_triggers where id = $1", [id]);
   return rowCount ?? 0;
+}
+
+/** Идемпотентно добавляет пул RSS-лент российских СМИ. Возвращает число новых. */
+export async function dbEnsureDefaultFeeds(): Promise<number> {
+  await dbEnsureRadarTables();
+  const pool = getTimewebPool();
+  const now = Date.now();
+  let added = 0;
+  for (const f of DEFAULT_RADAR_FEEDS) {
+    const id = "feed-" + createHash("sha1").update(f.url).digest("hex").slice(0, 12);
+    const { rowCount } = await pool.query(
+      `insert into radar_triggers (id, kind, query, label, category, enabled, created_at)
+       values ($1,'rss',$2,$3,'other',true,$4) on conflict (id) do nothing`,
+      [id, f.url, f.label, now]
+    );
+    added += rowCount ?? 0;
+  }
+  return added;
 }
 
 export interface RadarItemsQuery {

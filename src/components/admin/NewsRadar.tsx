@@ -7,11 +7,13 @@ import {
   listItems,
   listTriggers,
   refreshRadar,
+  seedDefaultFeeds,
   setItemStatus,
   upsertTrigger,
   type RadarRefreshResult,
 } from '@/lib/radarStore';
 import {
+  DEFAULT_RADAR_FEEDS,
   RADAR_CATEGORIES,
   RADAR_STATUSES,
   radarCategoryColor,
@@ -412,10 +414,49 @@ function TriggersView(props: {
     } catch { /* ignore */ }
   };
 
+  const [seeding, setSeeding] = useState(false);
+  const connectFeeds = async () => {
+    setSeeding(true);
+    try {
+      const res = await seedDefaultFeeds();
+      reload();
+      notify({
+        kind: 'ok',
+        text: res.added > 0
+          ? `Подключено лент СМИ: ${res.added}. Нажмите «Обновить» на вкладке «Лента».`
+          : 'Ленты СМИ уже подключены.',
+      });
+    } catch (e) {
+      notify({ kind: 'err', text: e instanceof Error ? e.message : 'Ошибка подключения лент' });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const feedsConnected = triggers.filter((t) => t.kind === 'rss').length;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
       {/* Список триггеров */}
       <div className="lg:col-span-2 space-y-4">
+        {/* Пул российских СМИ */}
+        <div className="bg-[#029cda]/5 border border-[#029cda]/20 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm text-[#313131]">
+            <div className="font-medium">Российские СМИ ({DEFAULT_RADAR_FEEDS.length} лент)</div>
+            <div className="text-xs text-gray-500">
+              ТАСС, РИА, Интерфакс, Коммерсантъ, РГ и др. — фильтруются по вашим темам.
+              {feedsConnected > 0 && ` Сейчас подключено RSS-лент: ${feedsConnected}.`}
+            </div>
+          </div>
+          <button
+            className={`${btn} bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-60`}
+            onClick={connectFeeds}
+            disabled={seeding}
+          >
+            {seeding ? 'Подключаю…' : 'Подключить СМИ'}
+          </button>
+        </div>
+
         {triggers.length === 0 && (
           <div className="bg-[#F6F7F9] rounded-xl p-8 text-center text-gray-500 text-sm">
             Триггеров пока нет — добавьте первый справа.

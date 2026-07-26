@@ -6,7 +6,7 @@ import {
   dbUpsertItem,
   radarItemId,
 } from "@/lib/server/radarDb";
-import type { RadarItem, RadarTrigger } from "@/lib/radarTypes";
+import { classifyText, type RadarCategory, type RadarItem, type RadarTrigger } from "@/lib/radarTypes";
 
 const GOOGLE_NEWS_SEARCH = "https://news.google.com/rss/search";
 
@@ -116,17 +116,32 @@ export async function refreshRadar(perFeedLimit = 30): Promise<RadarRefreshResul
   for (const t of triggers) {
     try {
       const xml = await fetchFeed(feedUrl(t));
-      const parsed = parseFeed(xml).slice(0, perFeedLimit);
-      result.fetched += parsed.length;
+      const parsed = parseFeed(xml);
 
-      for (const p of parsed) {
+      // Ключевые слова (Google News) — запрос уже отфильтровал, берём как есть.
+      // Общие RSS-ленты СМИ — фильтруем по нашим темам и категоризируем.
+      const candidates: { p: (typeof parsed)[number]; category: RadarCategory }[] = [];
+      if (t.kind === "rss") {
+        for (const p of parsed) {
+          const cat = classifyText(`${p.title} ${p.snippet}`);
+          if (cat) candidates.push({ p, category: cat });
+          if (candidates.length >= perFeedLimit) break;
+        }
+      } else {
+        for (const p of parsed.slice(0, perFeedLimit)) {
+          candidates.push({ p, category: t.category });
+        }
+      }
+      result.fetched += candidates.length;
+
+      for (const { p, category } of candidates) {
         const item: RadarItem = {
           id: radarItemId(p.link),
           trigger_id: t.id,
-          category: t.category,
+          category,
           title: p.title,
           link: p.link,
-          source_name: p.source,
+          source_name: p.source || t.label,
           snippet: p.snippet,
           published_at: p.published_at,
           status: "new",
