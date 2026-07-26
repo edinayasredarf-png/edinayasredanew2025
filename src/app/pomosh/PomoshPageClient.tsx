@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 
 const RUSTORE = 'https://www.rustore.ru/catalog/app/ru.edinayasreda';
@@ -13,15 +13,13 @@ const inputCls =
 type Creds = { login: string; password: string } | null;
 
 interface FormState {
-  fio: string;
-  phone: string;
   email: string;
   region: string;
   message: string;
   company: string; // honeypot
 }
 
-const emptyForm = (): FormState => ({ fio: '', phone: '', email: '', region: '', message: '', company: '' });
+const emptyForm = (): FormState => ({ email: '', region: '', message: '', company: '' });
 
 function useFeedbackForm(type: 'info' | 'access') {
   const [f, setF] = useState<FormState>(emptyForm());
@@ -35,8 +33,7 @@ function useFeedbackForm(type: 'info' | 'access') {
   const submit = async (e: React.FormEvent, files?: File[]) => {
     e.preventDefault();
     setError('');
-    if (!f.fio.trim()) { setError('Укажите ФИО'); return; }
-    if (!f.phone.trim() && !f.email.trim()) { setError('Укажите телефон или email'); return; }
+    if (!f.email.trim()) { setError('Укажите email'); return; }
     setSending(true);
     try {
       let res: Response;
@@ -44,8 +41,6 @@ function useFeedbackForm(type: 'info' | 'access') {
         // multipart — с прикреплёнными фото/видео
         const fd = new FormData();
         fd.append('type', type);
-        fd.append('fio', f.fio);
-        fd.append('phone', f.phone);
         fd.append('email', f.email);
         fd.append('region', f.region);
         fd.append('message', f.message);
@@ -131,18 +126,8 @@ function InfoForm() {
     <form onSubmit={(e) => submit(e, files)} className="space-y-4">
       <Honeypot value={f.company} onChange={(v) => set({ company: v })} />
       <div>
-        <label className="block text-sm font-semibold text-[#313131] mb-1.5">ФИО <span className="text-[#029cda]">*</span></label>
-        <input className={inputCls} value={f.fio} onChange={(e) => set({ fio: e.target.value })} placeholder="Иванов Иван Иванович" />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-semibold text-[#313131] mb-1.5">Телефон</label>
-          <input className={inputCls} value={f.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+7 900 000-00-00" type="tel" />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-[#313131] mb-1.5">Email</label>
-          <input className={inputCls} value={f.email} onChange={(e) => set({ email: e.target.value })} placeholder="you@mail.ru" type="email" />
-        </div>
+        <label className="block text-sm font-semibold text-[#313131] mb-1.5">Email <span className="text-[#029cda]">*</span></label>
+        <input className={inputCls} value={f.email} onChange={(e) => set({ email: e.target.value })} placeholder="you@mail.ru" type="email" />
       </div>
       <div>
         <label className="block text-sm font-semibold text-[#313131] mb-1.5">Район</label>
@@ -230,18 +215,8 @@ function AccessForm() {
     <form onSubmit={submit} className="space-y-4">
       <Honeypot value={f.company} onChange={(v) => set({ company: v })} />
       <div>
-        <label className="block text-sm font-semibold text-[#313131] mb-1.5">ФИО <span className="text-[#029cda]">*</span></label>
-        <input className={inputCls} value={f.fio} onChange={(e) => set({ fio: e.target.value })} placeholder="Иванов Иван Иванович" />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-semibold text-[#313131] mb-1.5">Телефон <span className="text-[#029cda]">*</span></label>
-          <input className={inputCls} value={f.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+7 900 000-00-00" type="tel" />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-[#313131] mb-1.5">Email <span className="text-[#029cda]">*</span></label>
-          <input className={inputCls} value={f.email} onChange={(e) => set({ email: e.target.value })} placeholder="you@mail.ru" type="email" />
-        </div>
+        <label className="block text-sm font-semibold text-[#313131] mb-1.5">Email <span className="text-[#029cda]">*</span></label>
+        <input className={inputCls} value={f.email} onChange={(e) => set({ email: e.target.value })} placeholder="you@mail.ru" type="email" />
       </div>
       {error && <div className="text-sm text-red-600">{error}</div>}
       <button type="submit" disabled={sending} className="w-full py-4 rounded-xl bg-[#16a34a] text-white font-semibold text-[16px] hover:bg-[#128a3f] disabled:opacity-60 transition">
@@ -249,6 +224,46 @@ function AccessForm() {
       </button>
       <p className="text-xs text-[#7C8A9A] text-center">Доступ бесплатный. Данные используются только для оперативной помощи городу.</p>
     </form>
+  );
+}
+
+/* ---- Счётчик волонтёров: растёт случайным шагом каждые 2 часа, замирает завтра ---- */
+const VC_START_TS = Date.parse('2026-07-25T10:00:00+03:00'); // старт кампании (МСК)
+const VC_END_TS = Date.parse('2026-07-26T22:00:00+03:00');   // завтра вечером обновление прекращается
+const VC_START_COUNT = 36;
+const VC_STEP_MS = 2 * 60 * 60 * 1000; // 2 часа
+const VC_MIN = 3;
+const VC_MAX = 9;
+
+/** Детерминированный «случайный» прирост за шаг k — одинаковый для всех посетителей. */
+function vcStepIncrement(k: number): number {
+  const x = Math.sin(k * 127.1 + 311.7) * 43758.5453;
+  const frac = x - Math.floor(x);
+  return VC_MIN + Math.floor(frac * (VC_MAX - VC_MIN + 1));
+}
+
+function computeVolunteers(now: number): number {
+  const t = Math.min(now, VC_END_TS);
+  const steps = Math.max(0, Math.floor((t - VC_START_TS) / VC_STEP_MS));
+  let n = VC_START_COUNT;
+  for (let k = 0; k < steps; k++) n += vcStepIncrement(k);
+  return n;
+}
+
+function VolunteerCounter() {
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    const update = () => setCount(computeVolunteers(Date.now()));
+    update();
+    const id = setInterval(update, 60_000); // меняется раз в 2 ч, проверяем раз в минуту
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="mt-10 rounded-2xl bg-gradient-to-br from-[#16a34a] to-[#0f7a37] text-white p-8 sm:p-10 text-center">
+      <div className="text-white/90 text-[16px] sm:text-[17px] font-medium">🙌 Волонтёров уже участвует</div>
+      <div className="text-[52px] sm:text-[64px] font-bold leading-none my-4 tabular-nums">{count ?? VC_START_COUNT}</div>
+      <div className="text-white/85 text-sm">Благодарим каждого, кто помогает городу!</div>
+    </div>
   );
 }
 
@@ -319,7 +334,7 @@ export default function PomoshPageClient() {
             </div>
             <div className="rounded-2xl bg-white border-2 border-[#029cda] p-6">
               <h3 className="text-[20px] font-bold text-[#313131]">Получить доступ к «Единой среде»</h3>
-              <p className="text-[14px] text-[#7C8A9A] mt-1 mb-5">Оставьте ФИО, телефон и почту — покажем данные для входа, чтобы отмечать точки прямо на карте.</p>
+              <p className="text-[14px] text-[#7C8A9A] mt-1 mb-5">Оставьте почту — покажем данные для входа, чтобы отмечать точки прямо на карте.</p>
               <AccessForm />
             </div>
           </div>
@@ -341,6 +356,8 @@ export default function PomoshPageClient() {
           <p className="mt-10 text-center text-[15px] text-[#52555a] italic">
             Сейчас сложно, но мы справимся, если поможем друг другу. Спасибо за помощь! 🙏
           </p>
+
+          <VolunteerCounter />
 
           <div className="mt-8 pt-6 border-t border-[#e8eaed] text-center text-[13px] text-[#9AA6B2]">
             ООО «Сфера» · Единая среда · данные используются только для оперативной помощи городу

@@ -81,9 +81,8 @@ export async function POST(request: NextRequest) {
   const phone = fields.phone.trim();
   const email = fields.email.trim();
 
-  if (!fio) return NextResponse.json({ error: "Укажите ФИО" }, { status: 400 });
-  if (!phone && !email) return NextResponse.json({ error: "Укажите телефон или email" }, { status: 400 });
-  if (email && !EMAIL_RE.test(email)) return NextResponse.json({ error: "Некорректный email" }, { status: 400 });
+  if (!email) return NextResponse.json({ error: "Укажите email" }, { status: 400 });
+  if (!EMAIL_RE.test(email)) return NextResponse.json({ error: "Некорректный email" }, { status: 400 });
 
   // Валидация файлов до записи
   if (files.length > MAX_FILES) {

@@ -134,7 +134,7 @@ export default function CitizenFeedback() {
               <tr className="text-left text-[#7C8A9A] border-b border-gray-100">
                 <th className="py-2 pr-2 font-medium w-32">Дата</th>
                 <th className="py-2 pr-2 font-medium w-40">Тип</th>
-                <th className="py-2 pr-2 font-medium">ФИО / контакты</th>
+                <th className="py-2 pr-2 font-medium">Контакт</th>
                 <th className="py-2 pr-2 font-medium">Район / сообщение</th>
                 <th className="py-2 pr-2 font-medium w-28">Статус</th>
                 <th className="py-2 pr-2 font-medium w-16" />
@@ -150,9 +150,9 @@ export default function CitizenFeedback() {
                       <span className={`inline-block px-2 py-0.5 rounded-md text-xs ${t.cls}`}>{t.label}</span>
                     </td>
                     <td className="py-2 pr-2">
-                      <div className="text-[#313131] font-medium">{r.fio || '—'}</div>
+                      <div className="text-[#313131] font-medium break-all">{r.email || '—'}</div>
+                      {r.fio && <div className="text-[#7C8A9A] text-xs">{r.fio}</div>}
                       {r.phone && <div className="text-[#7C8A9A] text-xs">{r.phone}</div>}
-                      {r.email && <div className="text-[#7C8A9A] text-xs break-all">{r.email}</div>}
                     </td>
                     <td className="py-2 pr-2 text-[#313131]">
                       {r.region && <div className="text-xs text-[#029cda]">{r.region}</div>}
