@@ -2,6 +2,12 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 
+interface FileMeta {
+  id: string;
+  filename: string;
+  mime: string;
+  size_bytes: number;
+}
 interface Row {
   id: string;
   type: 'info' | 'access';
@@ -13,6 +19,38 @@ interface Row {
   source: string;
   handled: boolean;
   created_at: string;
+  files: FileMeta[];
+}
+
+function humanSize(b: number): string {
+  if (b >= 1024 * 1024) return `${(b / 1024 / 1024).toFixed(1)} МБ`;
+  return `${Math.max(1, Math.round(b / 1024))} КБ`;
+}
+
+function Attachments({ files }: { files: FileMeta[] }) {
+  if (!files || files.length === 0) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {files.map((f) => {
+        const isImg = (f.mime || '').startsWith('image/');
+        const src = `/api/feedback/file/${f.id}`;
+        return (
+          <div key={f.id} className="flex flex-col items-center gap-1">
+            <a href={src} target="_blank" rel="noopener noreferrer" title={f.filename}>
+              {isImg ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={src} alt={f.filename} className="w-16 h-16 object-cover rounded-lg border border-[#e8eaed]" />
+              ) : (
+                <div className="w-16 h-16 rounded-lg border border-[#e8eaed] bg-[#F6F7F9] flex items-center justify-center text-2xl">🎬</div>
+              )}
+            </a>
+            <a href={`${src}?download=1`} className="text-[10px] text-[#029cda] hover:underline">скачать</a>
+            <span className="text-[10px] text-[#9AA6B2]">{humanSize(f.size_bytes)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 const TYPE_LABEL: Record<string, { label: string; cls: string }> = {
@@ -119,7 +157,8 @@ export default function CitizenFeedback() {
                     <td className="py-2 pr-2 text-[#313131]">
                       {r.region && <div className="text-xs text-[#029cda]">{r.region}</div>}
                       {r.message && <div className="text-xs whitespace-pre-wrap">{r.message}</div>}
-                      {!r.region && !r.message && <span className="text-[#9AA6B2]">—</span>}
+                      {!r.region && !r.message && !r.files?.length && <span className="text-[#9AA6B2]">—</span>}
+                      <Attachments files={r.files} />
                     </td>
                     <td className="py-2 pr-2">
                       <label className="inline-flex items-center gap-2 cursor-pointer text-xs">

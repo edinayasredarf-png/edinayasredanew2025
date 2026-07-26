@@ -3,14 +3,18 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import {
   dbDeleteCitizenFeedback,
   dbInsertCitizenFeedback,
+  dbInsertFeedbackFile,
   dbListCitizenFeedback,
   dbSetCitizenFeedbackHandled,
 } from "@/lib/server/citizenFeedbackDb";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_FILES = 8;
+const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 МБ на файл
 
 // Логин гостевого доступа (публичный e-mail). Пароль — только из ENV, не в git.
 const GUEST_LOGIN = "info-edinayasreda.rf@yandex.ru";
@@ -20,56 +24,100 @@ function guestCredentials(): { login: string; password: string } | null {
   return { login: (process.env.ES_GUEST_LOGIN || GUEST_LOGIN).trim(), password };
 }
 
-// Публичная отправка формы с кампейн-страницы.
+interface Fields {
+  type: string;
+  fio: string;
+  phone: string;
+  email: string;
+  region: string;
+  message: string;
+  source: string;
+  company: string; // honeypot
+}
+
+// Публичная отправка формы с кампейн-страницы (JSON или multipart с файлами).
 export async function POST(request: NextRequest) {
-  let body: {
-    type?: string;
-    fio?: string;
-    phone?: string;
-    email?: string;
-    region?: string;
-    message?: string;
-    source?: string;
-    company?: string; // honeypot
-  };
+  const ct = request.headers.get("content-type") || "";
+  const isMultipart = ct.includes("multipart/form-data");
+
+  const fields: Fields = { type: "", fio: "", phone: "", email: "", region: "", message: "", source: "", company: "" };
+  let files: File[] = [];
+
   try {
-    body = await request.json();
+    if (isMultipart) {
+      const fd = await request.formData();
+      const g = (k: string) => (fd.get(k) ?? "").toString();
+      fields.type = g("type");
+      fields.fio = g("fio");
+      fields.phone = g("phone");
+      fields.email = g("email");
+      fields.region = g("region");
+      fields.message = g("message");
+      fields.source = g("source");
+      fields.company = g("company");
+      files = fd.getAll("files").filter((x): x is File => x instanceof File && x.size > 0);
+    } else {
+      const body = await request.json();
+      Object.assign(fields, {
+        type: body.type ?? "",
+        fio: body.fio ?? "",
+        phone: body.phone ?? "",
+        email: body.email ?? "",
+        region: body.region ?? "",
+        message: body.message ?? "",
+        source: body.source ?? "",
+        company: body.company ?? "",
+      });
+    }
   } catch {
     return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
   }
 
-  // honeypot: скрытое поле должно быть пустым (боты его заполняют)
-  if (body.company) return NextResponse.json({ ok: true });
+  // honeypot: скрытое поле заполняют боты
+  if (fields.company) return NextResponse.json({ ok: true });
 
-  const type = body.type === "access" ? "access" : "info";
-  const fio = (body.fio || "").trim();
-  const phone = (body.phone || "").trim();
-  const email = (body.email || "").trim();
+  const type = fields.type === "access" ? "access" : "info";
+  const fio = fields.fio.trim();
+  const phone = fields.phone.trim();
+  const email = fields.email.trim();
 
   if (!fio) return NextResponse.json({ error: "Укажите ФИО" }, { status: 400 });
-  if (!phone && !email) {
-    return NextResponse.json({ error: "Укажите телефон или email" }, { status: 400 });
+  if (!phone && !email) return NextResponse.json({ error: "Укажите телефон или email" }, { status: 400 });
+  if (email && !EMAIL_RE.test(email)) return NextResponse.json({ error: "Некорректный email" }, { status: 400 });
+
+  // Валидация файлов до записи
+  if (files.length > MAX_FILES) {
+    return NextResponse.json({ error: `Слишком много файлов (макс. ${MAX_FILES})` }, { status: 400 });
   }
-  if (email && !EMAIL_RE.test(email)) {
-    return NextResponse.json({ error: "Некорректный email" }, { status: 400 });
+  for (const file of files) {
+    const okType = file.type.startsWith("image/") || file.type.startsWith("video/");
+    if (!okType) return NextResponse.json({ error: "Разрешены только фото и видео" }, { status: 400 });
+    if (file.size > MAX_FILE_BYTES) {
+      return NextResponse.json({ error: `Файл «${file.name}» больше 50 МБ` }, { status: 413 });
+    }
   }
 
+  let feedbackId: string;
   try {
-    await dbInsertCitizenFeedback({
-      type,
-      fio,
-      phone,
-      email,
-      region: body.region,
-      message: body.message,
-      source: body.source || "pomosh",
+    feedbackId = await dbInsertCitizenFeedback({
+      type, fio, phone, email,
+      region: fields.region,
+      message: fields.message,
+      source: fields.source || "pomosh",
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка сохранения";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 
-  // Для заявки на доступ отдаём гостевые учётные данные (если заданы в ENV).
+  // Сохраняем прикреплённые файлы (ошибка одного не рушит заявку)
+  for (const file of files) {
+    try {
+      const buf = Buffer.from(await file.arrayBuffer());
+      await dbInsertFeedbackFile(feedbackId, file.name, file.type, buf);
+    } catch { /* пропускаем битый файл */ }
+  }
+
   const credentials = type === "access" ? guestCredentials() : null;
   return NextResponse.json({ ok: true, credentials });
 }

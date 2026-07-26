@@ -32,18 +32,34 @@ function useFeedbackForm(type: 'info' | 'access') {
 
   const set = (patch: Partial<FormState>) => setF((prev) => ({ ...prev, ...patch }));
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent, files?: File[]) => {
     e.preventDefault();
     setError('');
     if (!f.fio.trim()) { setError('Укажите ФИО'); return; }
     if (!f.phone.trim() && !f.email.trim()) { setError('Укажите телефон или email'); return; }
     setSending(true);
     try {
-      const res = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, ...f, source: 'pomosh' }),
-      });
+      let res: Response;
+      if (files && files.length) {
+        // multipart — с прикреплёнными фото/видео
+        const fd = new FormData();
+        fd.append('type', type);
+        fd.append('fio', f.fio);
+        fd.append('phone', f.phone);
+        fd.append('email', f.email);
+        fd.append('region', f.region);
+        fd.append('message', f.message);
+        fd.append('company', f.company);
+        fd.append('source', 'pomosh');
+        files.forEach((file) => fd.append('files', file));
+        res = await fetch('/api/feedback', { method: 'POST', body: fd });
+      } else {
+        res = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, ...f, source: 'pomosh' }),
+        });
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Не удалось отправить');
       setCreds(data.credentials || null);
@@ -73,9 +89,34 @@ function Honeypot({ value, onChange }: { value: string; onChange: (v: string) =>
   );
 }
 
+const MAX_FILES = 8;
+const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 МБ
+function humanSize(b: number): string {
+  if (b >= 1024 * 1024) return `${(b / 1024 / 1024).toFixed(1)} МБ`;
+  return `${Math.max(1, Math.round(b / 1024))} КБ`;
+}
+
 /* Форма «оставить информацию» */
 function InfoForm() {
   const { f, set, submit, sending, done, error } = useFeedbackForm('info');
+  const [files, setFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState('');
+
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    setFileError('');
+    const incoming = Array.from(list);
+    const next = [...files];
+    for (const file of incoming) {
+      const okType = file.type.startsWith('image/') || file.type.startsWith('video/');
+      if (!okType) { setFileError('Можно прикреплять только фото и видео'); continue; }
+      if (file.size > MAX_FILE_BYTES) { setFileError(`«${file.name}» больше 50 МБ`); continue; }
+      if (next.length >= MAX_FILES) { setFileError(`Не больше ${MAX_FILES} файлов`); break; }
+      if (!next.some((x) => x.name === file.name && x.size === file.size)) next.push(file);
+    }
+    setFiles(next);
+  };
+  const removeFile = (i: number) => setFiles((prev) => prev.filter((_, idx) => idx !== i));
 
   if (done) {
     return (
@@ -87,7 +128,7 @@ function InfoForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={(e) => submit(e, files)} className="space-y-4">
       <Honeypot value={f.company} onChange={(v) => set({ company: v })} />
       <div>
         <label className="block text-sm font-semibold text-[#313131] mb-1.5">ФИО <span className="text-[#029cda]">*</span></label>
@@ -111,6 +152,31 @@ function InfoForm() {
         <label className="block text-sm font-semibold text-[#313131] mb-1.5">Что произошло</label>
         <textarea className={`${inputCls} resize-y min-h-[100px]`} value={f.message} onChange={(e) => set({ message: e.target.value })} placeholder="Например: во дворе упало дерево, перекрыло проезд; повреждена ЛЭП…" />
       </div>
+
+      {/* Фото/видео */}
+      <div>
+        <label className="block text-sm font-semibold text-[#313131] mb-1.5">Фото и видео</label>
+        <label className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-[#029cda]/40 text-[#029cda] text-sm font-medium cursor-pointer hover:bg-[#029cda]/5 transition">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          Прикрепить фото или видео
+          <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
+        </label>
+        <p className="text-xs text-[#9AA6B2] mt-1">До {MAX_FILES} файлов, каждый до 50 МБ. Фото повреждений очень помогают.</p>
+        {fileError && <div className="text-xs text-red-600 mt-1">{fileError}</div>}
+        {files.length > 0 && (
+          <ul className="mt-2 space-y-1.5">
+            {files.map((file, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm bg-[#F6F7F9] rounded-lg px-3 py-2">
+                <span className="text-[#029cda]">{file.type.startsWith('video/') ? '🎬' : '🖼️'}</span>
+                <span className="text-[#313131] truncate flex-1">{file.name}</span>
+                <span className="text-[#9AA6B2] text-xs whitespace-nowrap">{humanSize(file.size)}</span>
+                <button type="button" onClick={() => removeFile(i)} className="text-gray-400 hover:text-red-500" aria-label="Удалить">✕</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       {error && <div className="text-sm text-red-600">{error}</div>}
       <button type="submit" disabled={sending} className="w-full py-4 rounded-xl bg-[#029cda] text-white font-semibold text-[16px] hover:bg-[#0280b5] disabled:opacity-60 transition">
         {sending ? 'Отправляем…' : 'Отправить информацию'}
