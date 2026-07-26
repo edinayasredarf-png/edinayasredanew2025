@@ -9,6 +9,7 @@ import PressAdmin from './PressAdmin';
 import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
 import LettersAdmin from './LettersAdmin';
 import NewsRadar from './NewsRadar';
+import CitizenFeedback from './CitizenFeedback';
 
 interface AdminStats {
   totalPosts: number;
@@ -31,7 +32,7 @@ export default function AdminPanel() {
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar'
+    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
   >('dashboard');
 
   useEffect(() => {
@@ -141,6 +142,7 @@ export default function AdminPanel() {
                 { id: 'press', label: 'СМИ о нас' },
                 { id: 'utm', label: 'UTM-метки' },
                 { id: 'letters', label: 'Письма' },
+                { id: 'feedback', label: 'Обратная связь' },
               ] },
               { group: 'Мониторинг', items: [
                 { id: 'radar', label: 'Новостной радар' },
@@ -185,6 +187,7 @@ export default function AdminPanel() {
           {activeTab === 'press' && <PressAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
           {activeTab === 'radar' && <NewsRadar />}
+          {activeTab === 'feedback' && <CitizenFeedback />}
           {(activeTab === 'metrika' || activeTab === 'email' || activeTab === 'leads' || activeTab === 'social') && (
             <AnalyticsDashboard only={activeTab} />
           )}
