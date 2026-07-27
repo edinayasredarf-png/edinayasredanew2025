@@ -181,7 +181,7 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
             <div className="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-8 lg:gap-12 items-start">
               {/* Список того, что включает система и её возможностей */}
               <ul className="flex flex-col gap-5 lg:pt-2">
-                {[...data.components.items, ...data.features.items].map((it) => (
+                {data.components.items.map((it) => (
                   <li key={it} className="flex items-start gap-4">
                     <span className="shrink-0 mt-0.5 w-8 h-8 rounded-2xl bg-[#f5f6fe] flex items-center justify-center">
                       <svg
@@ -208,7 +208,7 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
               </ul>
               {/* Изображение картографической платформы */}
               <div className="bg-[#F6F7F9] rounded-[32px] flex items-center justify-center p-8 md:p-12 lg:p-[64px] min-h-[320px] md:min-h-[420px] lg:h-[548px]">
-                <div className="relative w-full max-w-[600px] aspect-[16/10]">
+                <div className="relative w-full max-w-[600px] aspect-[16/10] md:translate-x-6 lg:translate-x-10">
                   <Image
                     src="/img/platform.webp"
                     alt="Картографическая платформа «Единая среда»"
