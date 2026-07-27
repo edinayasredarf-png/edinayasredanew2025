@@ -53,6 +53,11 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // В dev имена чанков стабильны, поэтому immutable-кеш скрывает правки в браузере.
+    // Долгий кеш нужен только в проде, где имена файлов хешированные.
+    if (process.env.NODE_ENV !== 'production') {
+      return [];
+    }
     return [
       {
         source: '/_next/static/:path*',

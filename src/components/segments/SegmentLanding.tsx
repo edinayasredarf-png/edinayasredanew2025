@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Layout from "@/components/Layout";
 import Hero from "@/components/resheniya/Hero";
 import SegmentHero, { type HeroCrumb } from "@/components/segments/SegmentHero";
@@ -34,28 +35,6 @@ export interface SegmentData {
   consultLabel?: string;
 }
 
-function Check() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      className="shrink-0 mt-0.5"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="12" fill="#029cda" fillOpacity="0.12" />
-      <path
-        d="M7 12.5l3.2 3.2L17 9"
-        stroke="#029cda"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function CardGrid({ items, cols = 3 }: { items: SegmentCard[]; cols?: 2 | 3 }) {
   return (
     <div
@@ -74,21 +53,6 @@ function CardGrid({ items, cols = 3 }: { items: SegmentCard[]; cols?: 2 | 3 }) {
         </div>
       ))}
     </div>
-  );
-}
-
-function CheckList({ items }: { items: string[] }) {
-  return (
-    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-      {items.map((it) => (
-        <li key={it} className="flex items-start gap-3">
-          <Check />
-          <span className="text-[#313131] text-base md:text-lg leading-relaxed">
-            {it}
-          </span>
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -133,33 +97,33 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
         </section>
 
         {/* Проблема → результат → решение */}
-        <section className="py-14 md:py-20 bg-[#F5F7FA]">
-          <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#050c26] font-involve font-medium mb-8">
+        <section className="pt-10 pb-16 md:pb-24">
+          <div className="max-w-[1200px] mx-auto px-4 flex flex-col gap-10">
+            <h2 className="text-center text-[#313131] font-bebas text-[38px] md:text-[52px] leading-[1.1] md:leading-[65px]">
               {data.problem.title}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-3xl p-6 md:p-7 border-l-4 border-[#e2574c]">
-                <p className="text-sm font-semibold text-[#e2574c] mb-2 uppercase tracking-wide">
+              <div className="bg-[#f6f7f9] rounded-3xl p-6 overflow-hidden">
+                <h3 className="text-[#313131] text-2xl font-bebas leading-[33px]">
                   Проблема
-                </p>
-                <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+                </h3>
+                <p className="pt-4 text-[#7c8a9a] text-lg font-medium font-raleway leading-[29.25px]">
                   {data.problem.problem}
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6 md:p-7 border-l-4 border-[#c9ccd4]">
-                <p className="text-sm font-semibold text-[#8a8f9c] mb-2 uppercase tracking-wide">
+              <div className="bg-[#f6f7f9] rounded-3xl p-6 overflow-hidden">
+                <h3 className="text-[#313131] text-2xl font-bebas leading-[33px]">
                   Результат
-                </p>
-                <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+                </h3>
+                <p className="pt-4 text-[#7c8a9a] text-lg font-medium font-raleway leading-[29.25px]">
                   {data.problem.result}
                 </p>
               </div>
-              <div className="bg-white rounded-3xl p-6 md:p-7 border-l-4 border-[#029cda]">
-                <p className="text-sm font-semibold text-[#029cda] mb-2 uppercase tracking-wide">
+              <div className="bg-[#f6f7f9] rounded-3xl p-6 overflow-hidden">
+                <h3 className="text-[#313131] text-2xl font-bebas leading-[33px]">
                   Решение «Единой среды»
-                </p>
-                <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+                </h3>
+                <p className="pt-4 text-[#7c8a9a] text-lg font-medium font-raleway leading-[29.25px]">
                   {data.problem.solution}
                 </p>
               </div>
@@ -168,37 +132,93 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
         </section>
 
         {/* Зачем нужна система (выгоды) */}
-        <section className="py-14 md:py-20">
+        <section className="py-16 md:py-24">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#050c26] font-involve font-medium mb-8">
+            <h2 className="text-center text-[#313131] font-bebas text-[32px] md:text-[52px] leading-[1.15] md:leading-[70px]">
               {data.benefits.heading}
             </h2>
-            <CardGrid items={data.benefits.items} />
+            <div className="mt-12 md:mt-16 rounded-[20px] border border-[#e3e8f2] overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-3">
+                {data.benefits.items.map((c) => (
+                  <div
+                    key={c.title}
+                    className="p-8 md:p-10 border-b border-[#e3e8f2] [&:last-child]:border-b-0 md:border-r md:[&:nth-child(3n)]:border-r-0 md:[&:nth-child(n+4)]:border-b-0"
+                  >
+                    <h3 className="text-[#313131] text-2xl font-bebas leading-8">
+                      {c.title}
+                    </h3>
+                    <p className="pt-4 text-[#7c8a9a] text-lg font-medium font-raleway leading-[29.25px]">
+                      {c.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="py-12 flex justify-center">
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(new CustomEvent("openConsultModal"))
+                  }
+                  className="px-8 py-4 bg-[#029cda] rounded-xl text-white text-lg font-medium font-involve leading-7 hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
+                >
+                  Оставить заявку
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Что включает система */}
-        <section className="py-14 md:py-20 bg-[#F5F7FA]">
+        {/* Что включает система + возможности (объединённая секция) */}
+        <section className="py-16 md:py-24">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#050c26] font-involve font-medium mb-4">
+            <h2 className="text-center text-[#050c26] font-bebas text-[32px] md:text-[52px] leading-[1.05] tracking-wide">
               {data.components.heading}
             </h2>
             {data.components.lead && (
-              <p className="text-gray-700 text-base md:text-lg max-w-3xl mb-8">
+              <p className="mt-4 mx-auto max-w-[972px] text-center text-[#646b85] text-base font-raleway leading-6">
                 {data.components.lead}
               </p>
             )}
-            <CheckList items={data.components.items} />
-          </div>
-        </section>
-
-        {/* Возможности */}
-        <section className="py-14 md:py-20">
-          <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#050c26] font-involve font-medium mb-8">
-              {data.features.heading}
-            </h2>
-            <CheckList items={data.features.items} />
+            <div className="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-8 lg:gap-12 items-start">
+              {/* Список того, что включает система и её возможностей */}
+              <ul className="flex flex-col gap-5 lg:pt-2">
+                {[...data.components.items, ...data.features.items].map((it) => (
+                  <li key={it} className="flex items-start gap-4">
+                    <span className="shrink-0 mt-0.5 w-8 h-8 rounded-2xl bg-[#f5f6fe] flex items-center justify-center">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden
+                      >
+                        <path
+                          d="M5 12.5l4 4L19 7"
+                          stroke="#029cda"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <span className="text-[#050c26] text-base font-medium font-raleway leading-6">
+                      {it}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {/* Изображение картографической платформы */}
+              <div className="bg-[#F6F7F9] rounded-[32px] flex items-center justify-center p-8 md:p-12 lg:p-[64px] min-h-[320px] md:min-h-[420px] lg:h-[548px]">
+                <div className="relative w-full max-w-[600px] aspect-[16/10]">
+                  <Image
+                    src="/img/platform.webp"
+                    alt="Картографическая платформа «Единая среда»"
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 1024px) 90vw, 600px"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
