@@ -120,7 +120,7 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
         {/* Интро — карточка с обводкой (по макету Figma) */}
         <section className="pt-8 md:pt-12 pb-6 md:pb-10">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="lg:ml-auto lg:max-w-[900px] rounded-[32px] border-4 border-[#f6f7f9] p-7 sm:p-9 lg:p-12">
+            <div className="mx-auto max-w-[900px] rounded-[32px] border-4 border-[#f6f7f9] p-7 sm:p-9 lg:p-12">
               <div className="text-gray-500 text-base md:text-lg leading-relaxed font-medium font-raleway [&_strong]:font-bold [&_strong]:text-gray-500">
                 {data.intro}
               </div>
