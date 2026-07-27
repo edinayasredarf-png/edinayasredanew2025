@@ -223,21 +223,21 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
         </section>
 
         {/* Что берём на учёт (объекты) */}
-        <section className="py-14 md:py-20 bg-[#F5F7FA]">
+        <section className="py-16 md:py-24">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#050c26] font-involve font-medium mb-4">
+            <h2 className="text-center text-[#050c26] font-bebas text-[32px] md:text-[52px] leading-[1.05] tracking-wide">
               {data.objects.heading}
             </h2>
             {data.objects.lead && (
-              <p className="text-gray-700 text-base md:text-lg max-w-3xl mb-8">
+              <p className="mt-4 mx-auto max-w-[1184px] text-center text-[#364153] text-lg font-medium font-raleway leading-7">
                 {data.objects.lead}
               </p>
             )}
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-3">
               {data.objects.items.map((o) => (
                 <span
                   key={o}
-                  className="rounded-full bg-white text-[#313131] text-sm md:text-base px-4 py-2.5 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]"
+                  className="rounded-full bg-[#f6f6f6] text-[#313131] text-base font-medium font-raleway px-4 py-2.5 shadow-[0_0_0_1px_rgba(15,23,42,0.06)]"
                 >
                   {o}
                 </span>
