@@ -35,27 +35,6 @@ export interface SegmentData {
   consultLabel?: string;
 }
 
-function CardGrid({ items, cols = 3 }: { items: SegmentCard[]; cols?: 2 | 3 }) {
-  return (
-    <div
-      className={`grid grid-cols-1 ${
-        cols === 3 ? "md:grid-cols-3" : "md:grid-cols-2"
-      } gap-6`}
-    >
-      {items.map((c) => (
-        <div key={c.title} className="bg-white rounded-3xl p-6 md:p-7">
-          <h3 className="text-lg md:text-xl font-semibold mb-2 text-[#050c26] font-involve">
-            {c.title}
-          </h3>
-          <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-            {c.text}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function SegmentLanding({ data }: { data: SegmentData }) {
   return (
     <Layout hideBreadcrumbs={!!data.heroImage}>
@@ -247,12 +226,33 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
         </section>
 
         {/* Почему нас выбирают */}
-        <section className="py-14 md:py-20">
+        <section className="py-16 md:py-24">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl text-[#050c26] font-involve font-medium mb-8">
+            <h2 className="text-center text-[#313131] font-bebas text-[32px] md:text-[52px] leading-[1.05] tracking-wide">
               {data.whyUs.heading}
             </h2>
-            <CardGrid items={data.whyUs.items} />
+            <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {data.whyUs.items.map((c) => (
+                <div key={c.title} className="bg-[#f6f7f9] rounded-[32px] p-10">
+                  <h3 className="text-[#313131] text-2xl font-bebas leading-7 tracking-wide">
+                    {c.title}
+                  </h3>
+                  <p className="pt-3 text-[#7c8a9a] text-base font-medium font-raleway leading-6">
+                    {c.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() =>
+                  window.dispatchEvent(new CustomEvent("openAuthModal"))
+                }
+                className="inline-flex items-center justify-center w-full sm:w-[400px] h-[52px] px-5 bg-[#029cda] rounded-2xl text-white text-base font-involve hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
+              >
+                Зарегистрироваться
+              </button>
+            </div>
           </div>
         </section>
 
