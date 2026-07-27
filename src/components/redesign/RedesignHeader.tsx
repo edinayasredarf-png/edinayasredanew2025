@@ -70,7 +70,12 @@ function MobileMenuButton({ open, onClick }: { open: boolean; onClick: () => voi
 	);
 }
 
-export function RedesignHeader() {
+// Многослойная «парящая» тень плашки для тестового варианта шапки.
+const TEST_PLAQUE_SHADOW =
+	'0px 2px 6.8px -4.5px rgba(0,0,0,0.01), 0px 0.241451px 0.820932px -2.25px rgba(0,0,0,0.08), 0px 0px 0px 0.5px rgba(0,0,0,0.05), 0px 6px 6px -3.75px rgba(0,0,0,0.06), 0px 1.37312px 1.37312px -2.5px rgba(0,0,0,0.16), 0px 0.361312px 0.361312px -1.25px rgba(0,0,0,0.18), 2px 4px 8px 0px rgba(0,0,0,0.25), inset 0px 1px 1px 0px rgba(255,255,255,0.90)';
+
+export function RedesignHeader({ variant = 'default' }: { variant?: 'default' | 'test' } = {}) {
+	const isTest = variant === 'test';
 	const pathname = usePathname();
 	const { openRegister } = useModal();
 	const [mobileOpen, setMobileOpen] = useState(false);
@@ -115,7 +120,12 @@ export function RedesignHeader() {
 			<header className={`sticky top-0 bg-transparent ${mobileOpen ? 'z-[100]' : 'z-50'}`}>
 				{/* ── Desktop: единая плашка ── */}
 				<div className="hidden lg:flex items-center w-full max-w-[1200px] mx-auto px-5 pt-3 pb-0 relative">
-					<div className="flex items-center w-full h-[68px] bg-[#F6F7F9] rounded-3xl px-4 relative">
+					<div
+						className={`flex items-center w-full h-[68px] px-4 relative ${
+							isTest ? 'bg-white rounded-xl' : 'bg-[#F6F7F9] rounded-3xl'
+						}`}
+						style={isTest ? { boxShadow: TEST_PLAQUE_SHADOW } : undefined}
+					>
 
 						{/* Логотип — слева */}
 						<Link href="/" onClick={closeMobile} className="shrink-0">
@@ -200,22 +210,41 @@ export function RedesignHeader() {
 						</div>
 
 						{/* Войти + Попробовать — справа */}
-						<div className="ml-auto flex items-center gap-1">
-							<a
-								href="https://edinayasreda.ru/"
-								className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
-							>
-								Войти
-								<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
-							</a>
-							<button
-								type="button"
-								onClick={() => openRegister()}
-								className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
-							>
-								Попробовать
-							</button>
-						</div>
+						{isTest ? (
+							<div className="ml-auto flex items-center gap-2.5" style={{ fontFamily: 'var(--font-geist-sans)' }}>
+								<a
+									href="https://edinayasreda.ru/"
+									className="inline-flex items-center gap-1 pl-4 py-2.5 rounded-xl text-[#212121] text-sm font-medium leading-6 hover:text-[#029cda] transition-colors whitespace-nowrap"
+								>
+									Войти
+									<ThemedIcon src="/icons/icon4.svg" size={24} color="#212121" />
+								</a>
+								<button
+									type="button"
+									onClick={() => openRegister()}
+									className="inline-flex h-10 items-center justify-center px-4 py-2 rounded-[10px] bg-gradient-to-r from-[#19dfd9] via-[#029eda] to-[#0c5fe1] text-white text-sm font-semibold leading-6 hover:brightness-105 transition-[filter] whitespace-nowrap"
+								>
+									Попробовать
+								</button>
+							</div>
+						) : (
+							<div className="ml-auto flex items-center gap-1">
+								<a
+									href="https://edinayasreda.ru/"
+									className="inline-flex items-center gap-1.5 pl-4 pr-2 py-3 text-[15px] font-involve font-medium text-[#313131] hover:text-[#029cda] transition-colors whitespace-nowrap"
+								>
+									Войти
+									<ThemedIcon src="/icons/icon4.svg" size={20} color="#313131" />
+								</a>
+								<button
+									type="button"
+									onClick={() => openRegister()}
+									className="inline-flex items-center justify-center px-5 py-2.5 bg-[#e0f2fd] rounded-2xl text-[#029cda] text-[15px] font-semibold font-involve leading-6 hover:bg-[#c8eaf9] transition-colors whitespace-nowrap"
+								>
+									Попробовать
+								</button>
+							</div>
+						)}
 
 					</div>
 				</div>
