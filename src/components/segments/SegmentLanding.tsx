@@ -3,6 +3,7 @@
 import React from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/resheniya/Hero";
+import SegmentHero, { type HeroCrumb } from "@/components/segments/SegmentHero";
 import AnswerBox from "@/components/resheniya/AnswerBox";
 import FaqBlock from "@/components/resheniya/FaqBlock";
 import CtaBlock from "@/components/resheniya/CtaBlock";
@@ -16,6 +17,10 @@ export interface SegmentCard {
 export interface SegmentData {
   h1: string;
   heroLead: React.ReactNode;
+  /** Если задано — hero отрисовывается карточкой с изображением справа. */
+  heroImage?: string;
+  heroImageAlt?: string;
+  breadcrumb?: HeroCrumb[];
   intro: React.ReactNode;
   problem: { title: string; problem: string; result: string; solution: string };
   benefits: { heading: string; items: SegmentCard[] };
@@ -92,13 +97,26 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
   return (
     <Layout>
       <div className="font-raleway font-medium lining-nums">
-        <Hero
-          h1={data.h1}
-          kpLabel={data.kpLabel || "Получить КП"}
-          consultLabel={data.consultLabel || "Бесплатная консультация"}
-        >
-          {typeof data.heroLead === "string" ? <p>{data.heroLead}</p> : data.heroLead}
-        </Hero>
+        {data.heroImage ? (
+          <SegmentHero
+            h1={data.h1}
+            image={data.heroImage}
+            imageAlt={data.heroImageAlt}
+            breadcrumb={data.breadcrumb}
+            kpLabel={data.kpLabel || "Получить КП"}
+            consultLabel={data.consultLabel || "Получить консультацию"}
+          >
+            {typeof data.heroLead === "string" ? <p>{data.heroLead}</p> : data.heroLead}
+          </SegmentHero>
+        ) : (
+          <Hero
+            h1={data.h1}
+            kpLabel={data.kpLabel || "Получить КП"}
+            consultLabel={data.consultLabel || "Бесплатная консультация"}
+          >
+            {typeof data.heroLead === "string" ? <p>{data.heroLead}</p> : data.heroLead}
+          </Hero>
+        )}
 
         {/* Интро */}
         <section className="py-14 md:py-20">
