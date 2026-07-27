@@ -178,9 +178,9 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
                 {data.components.lead}
               </p>
             )}
-            <div className="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-8 lg:gap-12 items-start">
+            <div className="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-8 lg:gap-12 items-start lg:items-center">
               {/* Список того, что включает система и её возможностей */}
-              <ul className="flex flex-col gap-5 lg:pt-2">
+              <ul className="flex flex-col gap-5">
                 {data.components.items.map((it) => (
                   <li key={it} className="flex items-start gap-4">
                     <span className="shrink-0 mt-0.5 w-8 h-8 rounded-2xl bg-[#f5f6fe] flex items-center justify-center">
