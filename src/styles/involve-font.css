@@ -24,6 +24,29 @@
   font-weight: 500;
 }
 
+/* Bebas Neue Cyrillic — заглавный дисплейный шрифт для заголовков (SIL OFL) */
+@font-face {
+  font-family: 'Bebas Neue Cyrillic';
+  src: url('/fonts/bebas/BebasNeueCyrillic.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-bebas {
+  font-family: 'Bebas Neue Cyrillic', var(--font-involve), system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Заголовки отраслевых лендингов с новым дизайном — шрифтом Bebas Neue */
+.segment-headings-bebas h1,
+.segment-headings-bebas h2 {
+  font-family: 'Bebas Neue Cyrillic', var(--font-involve), system-ui, sans-serif;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+}
+
 /* Контент и шапка: max 1200px (макет Figma) */
 .redesign-site-shell,
 .redesign-header-shell,

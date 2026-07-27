@@ -40,9 +40,10 @@ export default function SegmentHero({
     <section className="pt-6 md:pt-8">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative bg-[#f6f7f9] rounded-[32px] overflow-hidden">
-          <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-10 p-6 sm:p-8 lg:p-10">
+          {/* p-2.5 = 10px — изображение отстоит от краёв блока на ~10px (макет) */}
+          <div className="flex flex-col lg:flex-row items-stretch gap-4 lg:gap-6 p-2.5">
             {/* Левая колонка */}
-            <div className="flex-1 min-w-0 flex flex-col justify-center py-2">
+            <div className="flex-1 min-w-0 flex flex-col justify-center px-4 py-6 sm:px-7 sm:py-8 lg:pl-12 lg:pr-6 lg:py-10">
               {breadcrumb.length > 0 && (
                 <nav aria-label="Хлебные крошки" className="flex items-center flex-wrap mb-5">
                   {breadcrumb.map((c, i) => {
@@ -98,9 +99,9 @@ export default function SegmentHero({
               </div>
             </div>
 
-            {/* Изображение справа */}
-            <div className="lg:w-[380px] shrink-0">
-              <div className="relative w-full h-[260px] sm:h-[360px] lg:h-[494px] rounded-[22px] overflow-hidden">
+            {/* Изображение справа — заполняет высоту блока, ~10 px от краёв */}
+            <div className="lg:w-[380px] shrink-0 lg:self-stretch">
+              <div className="relative w-full h-[260px] sm:h-[360px] lg:h-full lg:min-h-[440px] rounded-[22px] overflow-hidden">
                 <Image
                   src={image}
                   alt={imageAlt || h1}

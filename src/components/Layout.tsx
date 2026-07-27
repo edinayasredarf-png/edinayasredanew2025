@@ -11,6 +11,10 @@ import { RedesignFooter } from '@/components/redesign/RedesignFooter';
 
 interface LayoutProps {
   children: ReactNode;
+  /** Вариант шапки. 'test' — экспериментальный дизайн для страницы /test. */
+  headerVariant?: 'default' | 'test';
+  /** Скрыть хлебные крошки под шапкой (напр. если крошки уже есть в hero). */
+  hideBreadcrumbs?: boolean;
 }
 
 const HashCleaner: React.FC = () => {
@@ -102,7 +106,7 @@ const CookieBanner: React.FC = () => {
   );
 };
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children, headerVariant = 'default', hideBreadcrumbs = false }: LayoutProps) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
@@ -114,9 +118,14 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="redesign min-h-screen w-full flex flex-col bg-white">
       <HashCleaner />
-      <RedesignHeader />
-      <StoriesStrip />
-      <Breadcrumbs />
+      <RedesignHeader variant={headerVariant} />
+      {/* На тестовом лендинге прячем сторис и хлебные крошки, чтобы hero уходил под самый верх */}
+      {headerVariant !== 'test' && (
+        <>
+          <StoriesStrip />
+          {!hideBreadcrumbs && <Breadcrumbs />}
+        </>
+      )}
       <main className="flex-1 w-full">{children}</main>
       <RedesignFooter />
       <MobileBottomNav />
