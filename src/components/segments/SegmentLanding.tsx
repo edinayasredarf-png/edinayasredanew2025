@@ -6,7 +6,7 @@ import Layout from "@/components/Layout";
 import Hero from "@/components/resheniya/Hero";
 import SegmentHero, { type HeroCrumb } from "@/components/segments/SegmentHero";
 import FaqBlock from "@/components/resheniya/FaqBlock";
-import RelatedLinks, { type RelatedLink } from "@/components/resheniya/RelatedLinks";
+import { type RelatedLink } from "@/components/resheniya/RelatedLinks";
 
 export interface SegmentCard {
   title: string;
@@ -287,10 +287,6 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
             </div>
           </div>
         </section>
-
-        {data.related && data.related.length > 0 && (
-          <RelatedLinks links={data.related} />
-        )}
 
         <FaqBlock items={data.faq} />
       </div>
