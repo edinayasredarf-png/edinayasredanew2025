@@ -25,11 +25,11 @@ const methods: Method[] = [
     href: "tel:88005505612",
   },
   {
-    title: "8 928 120 07 72",
+    title: "8 928 102 07 72",
     subtitle: "Прямой мобильный номер",
     icon: "/img/chanel/4.svg",
     actionLabel: "Позвонить",
-    href: "tel:89281200772",
+    href: "tel:89281020772",
   },
   {
     title: "Max",
