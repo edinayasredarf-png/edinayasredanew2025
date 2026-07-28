@@ -6,7 +6,6 @@ import Layout from "@/components/Layout";
 import Hero from "@/components/resheniya/Hero";
 import SegmentHero, { type HeroCrumb } from "@/components/segments/SegmentHero";
 import FaqBlock from "@/components/resheniya/FaqBlock";
-import CtaBlock from "@/components/resheniya/CtaBlock";
 import RelatedLinks, { type RelatedLink } from "@/components/resheniya/RelatedLinks";
 
 export interface SegmentCard {
@@ -250,19 +249,50 @@ export default function SegmentLanding({ data }: { data: SegmentData }) {
                 }
                 className="inline-flex items-center justify-center w-full sm:w-[400px] h-[52px] px-5 bg-[#029cda] rounded-2xl text-white text-base font-involve hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
               >
-                Зарегистрироваться
+                Оставить заявку
               </button>
             </div>
           </div>
         </section>
 
-        <FaqBlock items={data.faq} />
+        {/* CTA — подготовим решение (карточка по макету Figma) */}
+        <section className="py-16 md:py-24">
+          <div className="max-w-[1200px] mx-auto px-4">
+            <div className="bg-[#f6f7f9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12">
+              <div className="lg:w-1/2 flex flex-col justify-center p-6 lg:p-8">
+                <h2 className="text-[#313131] font-bebas text-[36px] md:text-[52px] leading-[1.05] md:leading-[62px]">
+                  {data.cta.title}
+                </h2>
+                <p className="mt-6 text-[#7c8a9a] text-lg font-medium font-raleway leading-[29.25px]">
+                  {data.cta.text}
+                </p>
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(new CustomEvent("openKPModal"))
+                  }
+                  className="mt-8 w-full inline-flex items-center justify-center px-8 py-4 bg-[#029cda] rounded-xl text-white text-lg font-medium font-involve leading-7 hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
+                >
+                  Оставить заявку
+                </button>
+              </div>
+              <div className="lg:w-1/2 bg-white rounded-2xl flex items-center justify-center p-6">
+                <Image
+                  src="/img/imz_cta.png"
+                  alt="Консультация и расчёт стоимости системы для ЖК"
+                  width={320}
+                  height={320}
+                  className="h-auto w-auto max-w-full"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
 
         {data.related && data.related.length > 0 && (
           <RelatedLinks links={data.related} />
         )}
 
-        <CtaBlock title={data.cta.title} text={data.cta.text} />
+        <FaqBlock items={data.faq} />
       </div>
     </Layout>
   );
