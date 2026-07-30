@@ -127,7 +127,7 @@ const Layout = ({ children, headerVariant = 'default', hideBreadcrumbs = false }
         </>
       )}
       <main className="flex-1 w-full">{children}</main>
-      <RedesignFooter />
+      <RedesignFooter variant={headerVariant} />
       <MobileBottomNav />
       <CookieBanner />
       <AuthModal

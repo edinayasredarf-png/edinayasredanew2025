@@ -11,14 +11,21 @@ const SOCIALS = [
 	{ href: 'https://dzen.ru/edinayasreda', src: '/icons/dzen.svg', alt: 'Дзен' },
 ];
 
-export function RedesignFooter() {
+export function RedesignFooter({ variant = 'default' }: { variant?: 'default' | 'test' } = {}) {
+	const isTest = variant === 'test';
 	return (
 		<footer className="bg-white font-[Raleway]">
 			<div className="mx-auto max-w-[1200px] px-5">
 
 				{/* ── Верхняя полоса: соцсети + рассылка ── */}
 				<div className="py-5">
-					<div className="bg-[#F6F7F9] rounded-2xl px-5 py-3 flex flex-wrap items-center gap-3">
+					<div
+						className={`rounded-2xl px-5 py-3 flex flex-wrap items-center gap-3 ${
+							isTest
+								? 'bg-gradient-to-r from-[#19dfd9] via-[#029eda] to-[#0c5fe1] shadow-[inset_0px_1px_1px_0px_rgba(255,255,255,0.9)]'
+								: 'bg-[#F6F7F9]'
+						}`}
+					>
 						<div className="flex items-center gap-2 flex-wrap">
 							{SOCIALS.map((s) => (
 								<a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer"
@@ -27,14 +34,18 @@ export function RedesignFooter() {
 								</a>
 							))}
 						</div>
-						<span className="text-[#646b85] text-sm hidden sm:block ml-1">Мы в социальных сетях</span>
+						<span className={`text-sm hidden sm:block ml-1 ${isTest ? 'text-white' : 'text-[#646b85]'}`}>Мы в социальных сетях</span>
 						<a href="mailto:info@edinayasreda.ru"
-							className="ml-auto flex items-center gap-3 h-11 px-5 bg-[#029cda] rounded-xl text-white text-sm font-semibold hover:bg-[#0280b5] transition-colors shrink-0 whitespace-nowrap">
+							className={`ml-auto flex items-center gap-3 h-11 px-5 rounded-xl text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
+								isTest
+									? 'bg-white text-[#0b63e0] hover:bg-white/90'
+									: 'bg-[#029cda] text-white hover:bg-[#0280b5]'
+							}`}>
 							<svg width="20" height="16" viewBox="0 0 20 16" fill="none">
-								<rect x="0" y="0" width="20" height="16" rx="3" fill="white" fillOpacity="0.3"/>
-								<path d="M1 1L10 9L19 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+								<rect x="0" y="0" width="20" height="16" rx="3" fill={isTest ? '#0b63e0' : 'white'} fillOpacity={isTest ? '0.2' : '0.3'}/>
+								<path d="M1 1L10 9L19 1" stroke={isTest ? '#0b63e0' : 'white'} strokeWidth="1.5" strokeLinecap="round"/>
 							</svg>
-							<div className="w-px h-4 bg-[#F6F7F9]/40" />
+							<div className={`w-px h-4 ${isTest ? 'bg-[#0b63e0]/30' : 'bg-[#F6F7F9]/40'}`} />
 							Подписаться на рассылку
 						</a>
 					</div>
