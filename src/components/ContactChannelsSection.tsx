@@ -48,19 +48,19 @@ export default function ContactChannelsSection() {
             <img src="/img/chanel/1.svg" alt="Личная переписка в мессенджере" className="shrink-0 w-[68px] h-[68px] object-contain" />
           </div>
 
-          {/* В чате */}
+          {/* Почта Отдела продаж */}
           <div className="bg-[#F6F7F9] rounded-[32px] p-8 lg:p-10 flex items-start justify-between gap-6 min-h-[220px]">
             <div className="flex flex-col h-full">
-              <h3 className="font-involve text-[#050c26] text-2xl font-medium leading-7 tracking-wide">В чате</h3>
+              <h3 className="font-involve text-[#050c26] text-2xl font-medium leading-7 tracking-wide">Почта Отдела продаж</h3>
               <p className="mt-3 flex-1 font-[Raleway] text-base leading-6 tracking-tight text-[#646b85]">
-                Ответим в течение нескольких минут. Не закрывайте сайт, пока не получите ответ.
+                Напишите нам на почту edinayasreda.rf@yandex.ru
               </p>
-              <button type="button" onClick={consult} className="mt-5 inline-flex items-center gap-2 text-[#029cda] text-base font-medium font-involve hover:opacity-80 transition-opacity">
-                Задать вопрос <ArrowUpRight />
-              </button>
+              <a href="mailto:edinayasreda.rf@yandex.ru?subject=Вопрос в Отдел продаж «Единая среда»" className="mt-5 inline-flex items-center gap-2 text-[#029cda] text-base font-medium font-involve hover:opacity-80 transition-opacity">
+                Написать на почту <ArrowUpRight />
+              </a>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/chanel/2.svg" alt="Чат с командой поддержки" className="shrink-0 w-[68px] h-[68px] object-contain" />
+            <img src="/img/chanel/3.svg" alt="Написать в отдел продаж на почту" className="shrink-0 w-[68px] h-[68px] object-contain" />
           </div>
 
           {/* На почту */}
