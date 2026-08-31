@@ -7,10 +7,6 @@
     {
       "path": "/api/data/radar/refresh",
       "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/ai-sales/jobs/drain",
-      "schedule": "* * * * *"
     }
   ]
 }

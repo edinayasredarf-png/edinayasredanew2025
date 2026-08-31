@@ -52,10 +52,14 @@ AI recommendations → подтверждение человеком → write-b
 позволяет позже вынести дренаж в отдельный **Timeweb-воркер** (тот же `claimBatch`)
 без переписывания продюсеров.
 
-> ⚠️ **Деплой:** дренаж настроен на `* * * * *` (раз в минуту). Ежеминутный cron и
-> 3-я cron-задача требуют тарифа Vercel **Pro** (на Hobby — максимум суточные
-> крон-задачи). Альтернатива на Hobby — внешний планировщик, дергающий
-> `/api/ai-sales/jobs/drain` с `Authorization: Bearer $CRON_SECRET`.
+> ⚠️ **Деплой (Vercel Hobby):** cron дренажа в `vercel.json` НЕ добавляем — на
+> Hobby лимит 2 крон-задачи и не чаще раза в сутки (2 уже заняты: bounces, radar).
+> Дренаж очереди на Hobby делается:
+>   • кнопкой «Обработать очередь» в дашборде (ручной POST на `/api/ai-sales/jobs/drain`);
+>   • внешним планировщиком (cron-job.org / Timeweb cron) — GET/POST на
+>     `/api/ai-sales/jobs/drain` каждую 1-2 минуты с заголовком
+>     `Authorization: Bearer $CRON_SECRET`.
+> На тарифе **Pro** можно вернуть в `vercel.json` cron `*/1 * * * *` на дренаж.
 
 ## Роли (RBAC)
 
