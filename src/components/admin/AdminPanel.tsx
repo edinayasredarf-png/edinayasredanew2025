@@ -10,6 +10,7 @@ import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
 import LettersAdmin from './LettersAdmin';
 import NewsRadar from './NewsRadar';
 import CitizenFeedback from './CitizenFeedback';
+import AiSalesSection from './ai-sales/AiSalesSection';
 
 interface AdminStats {
   totalPosts: number;
@@ -33,6 +34,7 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
+    | 'ai-dashboard' | 'ai-calls'
   >('dashboard');
 
   useEffect(() => {
@@ -144,6 +146,10 @@ export default function AdminPanel() {
                 { id: 'letters', label: 'Письма' },
                 { id: 'feedback', label: 'Обратная связь' },
               ] },
+              { group: 'AI Продажи', items: [
+                { id: 'ai-dashboard', label: 'Дашборд AI' },
+                { id: 'ai-calls', label: 'Звонки' },
+              ] },
               { group: 'Мониторинг', items: [
                 { id: 'radar', label: 'Новостной радар' },
               ] },
@@ -183,6 +189,8 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {activeTab === 'ai-dashboard' && <AiSalesSection view="dashboard" />}
+          {activeTab === 'ai-calls' && <AiSalesSection view="calls" />}
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
