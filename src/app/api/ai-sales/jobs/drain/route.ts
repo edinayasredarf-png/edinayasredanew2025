@@ -36,9 +36,9 @@ async function handle(request: NextRequest) {
   }
 
   try {
-    // ~45с бюджета (Hobby maxDuration до 60с) — за один вызов прожёвываем
-    // много страниц синхронизации.
-    const report = await drainQueue(45_000);
+    // ~25с бюджета — укладываемся в тайм-аут внешних планировщиков (cron-job.org
+    // = 30с) и в Hobby maxDuration. За вызов прожёвываем десятки страниц.
+    const report = await drainQueue(25_000);
     const stats = await queueStats();
     return NextResponse.json({ ok: true, report, stats });
   } catch (e) {
