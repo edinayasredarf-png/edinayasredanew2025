@@ -2,202 +2,212 @@
 import * as z from "zod/v4";
 
 /**
- * Схема AI-анализа звонка (§47 ТЗ). Расширяемая, но строго валидируемая.
+ * Схема AI-анализа звонка (§47 ТЗ). ТОЛЕРАНТНАЯ: недостающие/невалидные поля не
+ * роняют разбор, а получают безопасные значения по умолчанию (§72 — при нехватке
+ * данных не выдаём догадки, ставим null/пусто/низкий confidence). Это позволяет
+ * работать и с моделями послабее (YandexGPT), и с Claude — валидация всегда
+ * проходит через Zod (§46), без «сырого» JSON.parse.
  *
- * Принцип: если информации в разговоре НЕ было — поле null / пустой массив.
- * AI не выдумывает факты. Низкая уверенность → confidence.* низкий.
- *
- * Все AI-ответы проходят через эту схему (client.messages.parse + zodOutputFormat).
- * Никаких JSON.parse(rawString) без валидации.
+ * `.catch(fallback)` срабатывает и на невалидное значение, и на отсутствующее
+ * поле (undefined), поэтому явные `.default()` не нужны. Инференс типа стабилен.
  */
 
 export const ANALYSIS_VERSION = "call-analysis-v1";
 
-const Confidence = z.number().min(0).max(1);
+// ── Толерантные примитивы ──
+const nstr = z.string().nullable().catch(null); // string | null
+const str = z.string().catch("");
+const strArr = z.array(z.string()).catch([]);
+const conf = z.number().catch(0); // 0..1 «в идеале», но не роняем на выходе за диапазон
 
-const Participant = z.object({
-  role: z.enum(["MANAGER", "CLIENT", "UNKNOWN"]),
-  name: z.string().nullable(),
-  position: z.string().nullable(),
-  decisionInfluence: z
-    .enum(["decision_maker", "influencer", "initiator", "technical", "unknown"])
-    .nullable(),
-});
+const Participant = z
+  .object({
+    role: z.enum(["MANAGER", "CLIENT", "UNKNOWN"]).catch("UNKNOWN"),
+    name: nstr,
+    position: nstr,
+    decisionInfluence: z
+      .enum(["decision_maker", "influencer", "initiator", "technical", "unknown"])
+      .nullable()
+      .catch(null),
+  })
+  .catch({ role: "UNKNOWN", name: null, position: null, decisionInfluence: null });
 
-const Product = z.object({
-  slug: z.string(), // greenery | cemetery | forestry | housing | digital_twin | ...
-  name: z.string(),
-  confidence: Confidence,
-});
+const Product = z
+  .object({ slug: str, name: str, confidence: conf })
+  .catch({ slug: "", name: "", confidence: 0 });
 
-const DecisionMaker = z.object({
-  found: z.boolean(),
-  name: z.string().nullable(),
-  position: z.string().nullable(),
-  influence: z.enum(["high", "medium", "low", "unknown"]).nullable(),
-  participatesInDecision: z.boolean().nullable(),
-});
+const DecisionMaker = z
+  .object({
+    found: z.boolean().catch(false),
+    name: nstr,
+    position: nstr,
+    influence: z.enum(["high", "medium", "low", "unknown"]).nullable().catch(null),
+    participatesInDecision: z.boolean().nullable().catch(null),
+  })
+  .catch({ found: false, name: null, position: null, influence: null, participatesInDecision: null });
 
-const Budget = z.object({
-  discussed: z.boolean(),
-  amount: z.number().nullable(),
-  range: z.string().nullable(),
-  source: z.string().nullable(), // источник финансирования
-  hasFunding: z.boolean().nullable(),
-});
+const Budget = z
+  .object({
+    discussed: z.boolean().catch(false),
+    amount: z.number().nullable().catch(null),
+    range: nstr,
+    source: nstr,
+    hasFunding: z.boolean().nullable().catch(null),
+  })
+  .catch({ discussed: false, amount: null, range: null, source: null, hasFunding: null });
 
-const Timeline = z.object({
-  discussed: z.boolean(),
-  projectDeadline: z.string().nullable(),
-  plannedYear: z.number().int().nullable(),
-  quarter: z.string().nullable(),
-  urgency: z.enum(["high", "medium", "low"]).nullable(),
-});
+const Timeline = z
+  .object({
+    discussed: z.boolean().catch(false),
+    projectDeadline: nstr,
+    plannedYear: z.number().int().nullable().catch(null),
+    quarter: nstr,
+    urgency: z.enum(["high", "medium", "low"]).nullable().catch(null),
+  })
+  .catch({ discussed: false, projectDeadline: null, plannedYear: null, quarter: null, urgency: null });
 
-const Procurement = z.object({
-  mentioned: z.boolean(),
-  // 44-ФЗ / 223-ФЗ / тендер / конкурс / аукцион / план закупок / контракт ...
-  signals: z.array(z.string()),
-  law: z.enum(["44-FZ", "223-FZ", "other", "none"]).nullable(),
-  note: z.string().nullable(),
-});
+const Procurement = z
+  .object({
+    mentioned: z.boolean().catch(false),
+    signals: strArr,
+    law: z.enum(["44-FZ", "223-FZ", "other", "none"]).nullable().catch(null),
+    note: nstr,
+  })
+  .catch({ mentioned: false, signals: [], law: null, note: null });
 
-const Objection = z.object({
-  text: z.string(),
-  raisedBy: z.enum(["CLIENT", "MANAGER", "UNKNOWN"]),
-  handled: z.boolean(),
-  managerResponse: z.string().nullable(),
-  responseQuality: z.enum(["good", "average", "poor"]).nullable(),
-  recommendation: z.string().nullable(),
-});
+const Objection = z
+  .object({
+    text: str,
+    raisedBy: z.enum(["CLIENT", "MANAGER", "UNKNOWN"]).catch("UNKNOWN"),
+    handled: z.boolean().catch(false),
+    managerResponse: nstr,
+    responseQuality: z.enum(["good", "average", "poor"]).nullable().catch(null),
+    recommendation: nstr,
+  })
+  .catch({ text: "", raisedBy: "UNKNOWN", handled: false, managerResponse: null, responseQuality: null, recommendation: null });
 
-const Competitor = z.object({
-  name: z.string(),
-  context: z.string().nullable(),
-  whyCompared: z.string().nullable(),
-  theirStrengths: z.array(z.string()),
-  theirWeaknesses: z.array(z.string()),
-});
+const Competitor = z
+  .object({
+    name: str,
+    context: nstr,
+    whyCompared: nstr,
+    theirStrengths: strArr,
+    theirWeaknesses: strArr,
+  })
+  .catch({ name: "", context: null, whyCompared: null, theirStrengths: [], theirWeaknesses: [] });
 
-const Commitment = z.object({
-  action: z.string(),
-  by: z.enum(["MANAGER", "CLIENT"]),
-  deadline: z.string().nullable(), // ISO или описание («завтра»)
-});
+const Commitment = z
+  .object({
+    action: str,
+    by: z.enum(["MANAGER", "CLIENT"]).catch("MANAGER"),
+    deadline: nstr,
+  })
+  .catch({ action: "", by: "MANAGER", deadline: null });
 
-const NextStep = z.object({
-  exists: z.boolean(),
-  action: z.string().nullable(),
-  owner: z.enum(["MANAGER", "CLIENT", "UNKNOWN"]).nullable(),
-  deadline: z.string().nullable(),
-});
+const NextStep = z
+  .object({
+    exists: z.boolean().catch(false),
+    action: nstr,
+    owner: z.enum(["MANAGER", "CLIENT", "UNKNOWN"]).nullable().catch(null),
+    deadline: nstr,
+  })
+  .catch({ exists: false, action: null, owner: null, deadline: null });
 
-const Risk = z.object({
-  type: z.string(), // no_budget | no_next_step | competitor | price_objection | stalled | ...
-  detail: z.string(),
-});
+const Risk = z.object({ type: str, detail: str }).catch({ type: "", detail: "" });
 
-const Tag = z.object({
-  slug: z.string(), // category:value, напр. sales:hot_lead
-  confidence: Confidence,
-});
+const Tag = z.object({ slug: str, confidence: conf }).catch({ slug: "", confidence: 0 });
 
-const DealScoreFactor = z.object({
-  factor: z.string(), // need | decision_maker | budget | timeline | procurement | ...
-  points: z.number(), // может быть отрицательным
-  reason: z.string(),
-});
+const DealScoreFactor = z
+  .object({ factor: str, points: z.number().catch(0), reason: str })
+  .catch({ factor: "", points: 0, reason: "" });
 
-const DealScore = z.object({
-  score: z.number().int().min(0).max(100),
-  temperature: z.enum(["HOT", "WARM", "COLD"]),
-  factors: z.array(DealScoreFactor), // объяснимость: почему такой балл
-});
+const DealScore = z
+  .object({
+    score: z.number().int().catch(0),
+    temperature: z.enum(["HOT", "WARM", "COLD"]).catch("COLD"),
+    factors: z.array(DealScoreFactor).catch([]),
+  })
+  .catch({ score: 0, temperature: "COLD", factors: [] });
 
-// Оценка менеджера по 13 критериям (§23 ТЗ), каждый 0..10.
-const ManagerCriterion = z.object({
-  key: z.enum([
-    "opening",
-    "discovery",
-    "questions",
-    "pain_identification",
-    "current_situation",
-    "decision_maker",
-    "budget",
-    "timeline",
-    "procurement",
-    "objections",
-    "product_presentation",
-    "next_step",
-    "follow_up",
-  ]),
-  score: z.number().min(0).max(10),
-  comment: z.string().nullable(),
-});
+const ManagerCriterion = z
+  .object({
+    key: z
+      .enum([
+        "opening", "discovery", "questions", "pain_identification", "current_situation",
+        "decision_maker", "budget", "timeline", "procurement", "objections",
+        "product_presentation", "next_step", "follow_up",
+      ])
+      .catch("opening"),
+    score: z.number().catch(0),
+    comment: nstr,
+  })
+  .catch({ key: "opening", score: 0, comment: null });
 
-const ManagerPerformance = z.object({
-  overall: z.number().min(0).max(10),
-  criteria: z.array(ManagerCriterion),
-  didWell: z.array(z.string()),
-  mistakes: z.array(z.string()),
-  improveNextTime: z.array(z.string()),
-  exampleBetterResponse: z.string().nullable(),
-});
+const ManagerPerformance = z
+  .object({
+    overall: z.number().catch(0),
+    criteria: z.array(ManagerCriterion).catch([]),
+    didWell: strArr,
+    mistakes: strArr,
+    improveNextTime: strArr,
+    exampleBetterResponse: nstr,
+  })
+  .catch({ overall: 0, criteria: [], didWell: [], mistakes: [], improveNextTime: [], exampleBetterResponse: null });
 
 export const CallAnalysisSchema = z.object({
-  summary: z.string(),
+  summary: str,
 
-  result: z.object({
-    type: z.enum([
-      "agreed",
-      "not_agreed",
-      "callback",
-      "meeting_set",
-      "send_quote",
-      "not_interested",
-      "other",
-    ]),
-    confidence: Confidence,
-  }),
+  result: z
+    .object({
+      type: z
+        .enum(["agreed", "not_agreed", "callback", "meeting_set", "send_quote", "not_interested", "other"])
+        .catch("other"),
+      confidence: conf,
+    })
+    .catch({ type: "other", confidence: 0 }),
 
-  client: z.object({
-    organizationType: z.string().nullable(),
-    organizationName: z.string().nullable(),
-    region: z.string().nullable(),
-    industry: z.string().nullable(),
-    currentProcess: z.string().nullable(),
-    usedSystems: z.array(z.string()),
-  }),
+  client: z
+    .object({
+      organizationType: nstr,
+      organizationName: nstr,
+      region: nstr,
+      industry: nstr,
+      currentProcess: nstr,
+      usedSystems: strArr,
+    })
+    .catch({ organizationType: null, organizationName: null, region: null, industry: null, currentProcess: null, usedSystems: [] }),
 
-  participants: z.array(Participant),
+  participants: z.array(Participant).catch([]),
 
-  needs: z.array(z.string()),
-  painPoints: z.array(z.string()), // реальные, из разговора; иначе []
-  products: z.array(Product),
-  currentSolution: z.array(z.string()),
+  needs: strArr,
+  painPoints: strArr,
+  products: z.array(Product).catch([]),
+  currentSolution: strArr,
 
   decisionMaker: DecisionMaker,
   budget: Budget,
   timeline: Timeline,
   procurement: Procurement,
 
-  competitors: z.array(Competitor),
-  objections: z.array(Objection),
-  commitments: z.array(Commitment),
+  competitors: z.array(Competitor).catch([]),
+  objections: z.array(Objection).catch([]),
+  commitments: z.array(Commitment).catch([]),
 
   nextStep: NextStep,
-  risks: z.array(Risk),
-  tags: z.array(Tag),
+  risks: z.array(Risk).catch([]),
+  tags: z.array(Tag).catch([]),
 
   dealScore: DealScore,
   managerPerformance: ManagerPerformance,
 
-  confidence: z.object({
-    overall: Confidence,
-    dealScore: Confidence,
-    product: Confidence,
-    decisionMaker: Confidence,
-  }),
+  confidence: z
+    .object({
+      overall: conf,
+      dealScore: conf,
+      product: conf,
+      decisionMaker: conf,
+    })
+    .catch({ overall: 0, dealScore: 0, product: 0, decisionMaker: 0 }),
 });
 
 export type CallAnalysis = z.infer<typeof CallAnalysisSchema>;
