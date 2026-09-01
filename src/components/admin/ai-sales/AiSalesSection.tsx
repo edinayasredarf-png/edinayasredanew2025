@@ -20,6 +20,13 @@ const TEMP_BADGE: Record<string, string> = {
   COLD: 'bg-sky-100 text-sky-700',
 };
 
+const CALL_TYPE_LABEL: Record<string, string> = {
+  first_contact: 'Первичный контакт', discovery: 'Выявление потребности',
+  presentation: 'Презентация', demo: 'Демонстрация', negotiation: 'Переговоры',
+  follow_up: 'Перезвон/дожим', clarification: 'Уточнение', closing: 'Закрытие',
+  support: 'Поддержка', other: 'Другое',
+};
+
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'В очереди', DOWNLOADING: 'Скачивание', TRANSCRIBING: 'Транскрибация',
   TRANSCRIBED: 'Расшифрован', ANALYZING: 'Анализ', COMPLETED: 'Готово',
@@ -288,6 +295,8 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
     summary?: string;
     connected?: boolean;
     noContactReason?: string | null;
+    callType?: string;
+    managerScoreApplicable?: boolean;
     dealScore?: { score?: number; temperature?: string; factors?: Array<{ factor: string; points: number; reason: string }> };
     nextStep?: { action?: string | null };
     risks?: Array<{ type: string; detail: string }>;
@@ -354,11 +363,18 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
             </div>
           ) : (
             <div className="space-y-4 text-sm">
+              {a.callType && a.callType !== 'other' && (
+                <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{CALL_TYPE_LABEL[a.callType] || a.callType}</span>
+              )}
               {a.dealScore && (
                 <div className="flex items-center gap-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[a.dealScore.temperature || ''] || ''}`}>{a.dealScore.temperature}</span>
                   <span className="text-2xl font-bold text-gray-900">{a.dealScore.score}<span className="text-sm text-gray-400">/100</span></span>
-                  {a.managerPerformance?.overall != null && <span className="text-gray-600">Менеджер: <b>{a.managerPerformance.overall}/10</b></span>}
+                  {a.managerPerformance?.overall != null
+                    ? <span className="text-gray-600">Менеджер: <b>{a.managerPerformance.overall}/10</b></span>
+                    : a.managerScoreApplicable === false
+                      ? <span className="text-gray-400 text-xs">менеджер не оценивается — краткий/уточняющий звонок</span>
+                      : null}
                 </div>
               )}
               {a.summary && <p className="text-gray-700">{a.summary}</p>}

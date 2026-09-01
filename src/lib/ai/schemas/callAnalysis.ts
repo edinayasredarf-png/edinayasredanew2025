@@ -163,6 +163,18 @@ export const CallAnalysisSchema = z.object({
   connected: z.boolean().catch(true),
   noContactReason: nstr, // 'автоответчик' | 'голосовой помощник' | 'не ответили' | 'сброс' | ...
 
+  // Тип звонка — для группировки и справедливой оценки.
+  callType: z
+    .enum([
+      "first_contact", "discovery", "presentation", "demo", "negotiation",
+      "follow_up", "clarification", "closing", "support", "other",
+    ])
+    .catch("other"),
+  // Показателен ли звонок для оценки НАВЫКОВ менеджера. false — краткий/уточняющий/
+  // технический звонок (быстро сверили, продублировали, уточнили деталь): по нему
+  // менеджера НЕ оцениваем по полной рубрике (несправедливо).
+  managerScoreApplicable: z.boolean().catch(true),
+
   result: z
     .object({
       type: z
