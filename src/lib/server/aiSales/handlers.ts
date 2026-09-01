@@ -67,12 +67,9 @@ export function registerAllHandlers(): void {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("call.roles: пустой callId");
     const result = await runRoleSplit(callId);
-    await enqueueJob({
-      type: "call.analyze",
-      payload: { callId },
-      idempotencyKey: `analyze:${callId}`,
-      priority: 60,
-    });
+    // Без ключа идемпотентности: защита от повторной работы — кэш анализа по
+    // input_hash (меняется вместе с ролями), поэтому бэкфилл ролей перезапустит анализ.
+    await enqueueJob({ type: "call.analyze", payload: { callId }, priority: 60 });
     return result;
   });
 
