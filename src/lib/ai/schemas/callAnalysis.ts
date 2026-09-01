@@ -145,17 +145,23 @@ const ManagerCriterion = z
 
 const ManagerPerformance = z
   .object({
-    overall: z.number().catch(0),
+    // null — когда оценивать нечего (разговор не состоялся: автоответчик/бот/недозвон).
+    overall: z.number().nullable().catch(null),
     criteria: z.array(ManagerCriterion).catch([]),
     didWell: strArr,
     mistakes: strArr,
     improveNextTime: strArr,
     exampleBetterResponse: nstr,
   })
-  .catch({ overall: 0, criteria: [], didWell: [], mistakes: [], improveNextTime: [], exampleBetterResponse: null });
+  .catch({ overall: null, criteria: [], didWell: [], mistakes: [], improveNextTime: [], exampleBetterResponse: null });
 
 export const CallAnalysisSchema = z.object({
   summary: str,
+
+  // Состоялся ли разговор с реальным человеком. false — автоответчик, голосовой
+  // помощник/робот, IVR, гудки/не ответили, сброс, ошибка номера, тишина.
+  connected: z.boolean().catch(true),
+  noContactReason: nstr, // 'автоответчик' | 'голосовой помощник' | 'не ответили' | 'сброс' | ...
 
   result: z
     .object({

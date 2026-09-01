@@ -194,6 +194,12 @@ export async function saveAnalysis(input: {
 }): Promise<string> {
   const pool = getTimewebPool();
   const d = input.data;
+  // Несостоявшийся разговор (автоответчик/бот/недозвон): не пишем оценки/температуру
+  // в колонки — чтобы они не портили средние и распределения на дашборде.
+  const connected = d.connected !== false;
+  const dealScore = connected ? d.dealScore.score : null;
+  const temperature = connected ? d.dealScore.temperature : null;
+  const managerScore = connected ? d.managerPerformance.overall : null;
   const { rows } = await pool.query<{ id: string }>(
     `insert into ai_call_analysis (
        call_id, provider, model, prompt_version, analysis_version, input_hash,
@@ -211,8 +217,8 @@ export async function saveAnalysis(input: {
      returning id`,
     [
       input.callId, input.provider, input.model, input.promptVersion, input.analysisVersion, input.inputHash,
-      d.summary, d.result.type, d.dealScore.score, d.dealScore.temperature,
-      d.managerPerformance.overall, d.nextStep.action ?? null,
+      d.summary, connected ? d.result.type : "no_contact", dealScore, temperature,
+      managerScore, connected ? (d.nextStep.action ?? null) : null,
       JSON.stringify(d), JSON.stringify(d.confidence),
     ]
   );

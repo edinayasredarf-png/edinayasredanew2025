@@ -286,10 +286,12 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
 
   const a = data.analysis as null | {
     summary?: string;
+    connected?: boolean;
+    noContactReason?: string | null;
     dealScore?: { score?: number; temperature?: string; factors?: Array<{ factor: string; points: number; reason: string }> };
     nextStep?: { action?: string | null };
     risks?: Array<{ type: string; detail: string }>;
-    managerPerformance?: { overall?: number; didWell?: string[]; mistakes?: string[]; improveNextTime?: string[] };
+    managerPerformance?: { overall?: number | null; didWell?: string[]; mistakes?: string[]; improveNextTime?: string[] };
     products?: Array<{ name: string; confidence: number }>;
   };
 
@@ -342,7 +344,15 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
         {/* AI-анализ */}
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="font-semibold text-gray-800 mb-3">AI-анализ</p>
-          {!a ? <p className="text-gray-400 text-sm">Анализ ещё не выполнен.</p> : (
+          {!a ? <p className="text-gray-400 text-sm">Анализ ещё не выполнен.</p> : a.connected === false ? (
+            <div className="text-sm">
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-gray-600 mb-3">
+                📵 Разговор не состоялся{a.noContactReason ? `: ${a.noContactReason}` : ''}
+              </div>
+              <p className="text-gray-500">Менеджер не оценивается — звонок не дошёл до собеседника (автоответчик / голосовой помощник / недозвон).</p>
+              {a.summary && <p className="text-gray-700 mt-2">{a.summary}</p>}
+            </div>
+          ) : (
             <div className="space-y-4 text-sm">
               {a.dealScore && (
                 <div className="flex items-center gap-3">
