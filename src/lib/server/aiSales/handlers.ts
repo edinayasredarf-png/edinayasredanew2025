@@ -5,6 +5,7 @@ import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncSe
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ingestCallActivity } from "@/lib/server/aiSales/callIngestService";
 import { runTranscription } from "@/lib/server/aiSales/transcriptionService";
+import { runRoleSplit } from "@/lib/server/aiSales/roleSplitService";
 import { runAnalysis } from "@/lib/server/aiSales/analysisService";
 import type { SyncEntity } from "@/lib/server/aiSales/syncDb";
 
@@ -61,7 +62,21 @@ export function registerAllHandlers(): void {
     });
   });
 
-  // AI-анализ звонка через Claude.
+  // Разметка ролей Менеджер/Клиент, затем постановка анализа.
+  registerJobHandler("call.roles", async (job) => {
+    const callId = String(job.payload.callId || "");
+    if (!callId) throw new Error("call.roles: пустой callId");
+    const result = await runRoleSplit(callId);
+    await enqueueJob({
+      type: "call.analyze",
+      payload: { callId },
+      idempotencyKey: `analyze:${callId}`,
+      priority: 60,
+    });
+    return result;
+  });
+
+  // AI-анализ звонка (Claude/YandexGPT — по AI_PROVIDER).
   registerJobHandler("call.analyze", async (job) => {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("call.analyze: пустой callId");

@@ -45,11 +45,12 @@ function fileIdFromRaw(raw: unknown): string | null {
 
 async function afterTranscribed(callId: string): Promise<void> {
   await setCallStatus(callId, "TRANSCRIBED");
+  // Сначала разметка ролей (Менеджер/Клиент), затем анализ (в обработчике call.roles).
   await enqueueJob({
-    type: "call.analyze",
+    type: "call.roles",
     payload: { callId },
-    idempotencyKey: `analyze:${callId}`,
-    priority: 60,
+    idempotencyKey: `roles:${callId}`,
+    priority: 55,
   });
 }
 
