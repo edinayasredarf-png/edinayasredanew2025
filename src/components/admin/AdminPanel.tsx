@@ -34,7 +34,7 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
-    | 'ai-dashboard' | 'ai-calls' | 'ai-deals'
+    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco'
   >('dashboard');
 
   useEffect(() => {
@@ -147,6 +147,7 @@ export default function AdminPanel() {
                 { id: 'feedback', label: 'Обратная связь' },
               ] },
               { group: 'AI Продажи', items: [
+                { id: 'ai-reco', label: 'AI рекомендует' },
                 { id: 'ai-dashboard', label: 'Дашборд AI' },
                 { id: 'ai-deals', label: 'Сделки' },
                 { id: 'ai-calls', label: 'Звонки' },
@@ -190,6 +191,7 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {activeTab === 'ai-reco' && <AiSalesSection view="reco" />}
           {activeTab === 'ai-dashboard' && <AiSalesSection view="dashboard" />}
           {activeTab === 'ai-deals' && <AiSalesSection view="deals" />}
           {activeTab === 'ai-calls' && <AiSalesSection view="calls" />}

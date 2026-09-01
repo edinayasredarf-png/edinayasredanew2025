@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco';
 
 const fmtDur = (sec: number | null) => {
   if (sec == null) return '—';
@@ -613,12 +613,96 @@ function DealDetail({ id, onBack }: { id: string; onBack: () => void }) {
   );
 }
 
+/* ─────────── AI рекомендует — кому звонить сегодня ─────────── */
+interface RecoItem {
+  bitrixDealId: string; title: string | null; company: string | null; manager: string | null;
+  dealUrl: string | null; severity: string; reason: string; action: string | null;
+  temperature: string | null; dealScore: number | null; daysSinceCall: number | null;
+}
+interface RecoData { critical: RecoItem[]; risk: RecoItem[]; opportunity: RecoItem[]; counts: { critical: number; risk: number; opportunity: number } }
+
+const RECO_COL = {
+  critical: { title: '🔴 Критично', hint: 'Требуют вмешательства', ring: 'border-red-200', head: 'text-red-700' },
+  risk: { title: '🟠 Риск', hint: 'Высокая вероятность потери', ring: 'border-amber-200', head: 'text-amber-700' },
+  opportunity: { title: '🟢 Возможность', hint: 'Сигналы к покупке', ring: 'border-emerald-200', head: 'text-emerald-700' },
+} as const;
+
+function RecoCard({ it, onOpen }: { it: RecoItem; onOpen: (id: string) => void }) {
+  return (
+    <button onClick={() => onOpen(it.bitrixDealId)} className="w-full text-left bg-white rounded-xl border border-gray-100 p-3 hover:border-[#029cda]/40 hover:shadow-sm transition">
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-medium text-gray-900 text-sm leading-snug">{it.company || it.title || `Сделка #${it.bitrixDealId}`}</span>
+        {it.temperature && <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[it.temperature] || ''}`}>{it.temperature}</span>}
+      </div>
+      <p className="text-sm text-gray-700 mt-1">{it.reason}</p>
+      {it.action && <p className="text-xs text-[#029cda] mt-1">→ {it.action}</p>}
+      <div className="flex gap-3 text-xs text-gray-400 mt-2">
+        {it.manager && <span>{it.manager}</span>}
+        {it.dealScore != null && <span>{it.dealScore}/100</span>}
+        {it.daysSinceCall != null && <span>{it.daysSinceCall} дн. назад</span>}
+      </div>
+    </button>
+  );
+}
+
+function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
+  const [data, setData] = useState<RecoData | null>(null);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/recommendations');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-xl font-bold text-gray-900">AI рекомендует — кому звонить сегодня</h2>
+        <button onClick={load} className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Обновить</button>
+      </div>
+      <p className="text-sm text-gray-500 mb-5">Приоритетные сделки по данным разборов звонков. Клик — открыть карточку сделки.</p>
+      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {(['critical', 'risk', 'opportunity'] as const).map((key) => (
+            <div key={key} className={`rounded-2xl border ${RECO_COL[key].ring} bg-[#F6F7F9]/60 p-3`}>
+              <div className="flex items-baseline justify-between px-1 mb-3">
+                <span className={`font-bold ${RECO_COL[key].head}`}>{RECO_COL[key].title}</span>
+                <span className="text-sm text-gray-400">{data.counts[key]}</span>
+              </div>
+              <p className="text-xs text-gray-400 px-1 mb-3">{RECO_COL[key].hint}</p>
+              <div className="space-y-2">
+                {data[key].map((it) => <RecoCard key={it.bitrixDealId} it={it} onOpen={onOpen} />)}
+                {data[key].length === 0 && <p className="text-sm text-gray-400 px-1 py-4">Пусто — здесь чисто 👌</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────── Обёртка раздела ─────────── */
 export default function AiSalesSection({ view }: { view: View }) {
   const [openCall, setOpenCall] = useState<string | null>(null);
   const [openDeal, setOpenDeal] = useState<string | null>(null);
 
   if (view === 'dashboard') return <Dashboard />;
+  if (view === 'reco') {
+    return openDeal
+      ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
+      : <Recommendations onOpen={setOpenDeal} />;
+  }
   if (view === 'deals') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
