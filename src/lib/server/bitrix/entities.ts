@@ -25,18 +25,22 @@ export interface BxUser {
   raw: Record<string, unknown>;
 }
 
-export async function fetchUsers(): Promise<BxUser[]> {
-  // user.get возвращает всех; фильтруем только активных сотрудников.
-  const rows = await bitrixListAll<Record<string, unknown>>("user.get", {
-    filter: { ACTIVE: true } as Record<string, unknown>,
-  } as ListParams);
-  return rows.map((r) => ({
+export function mapUser(r: Record<string, unknown>): BxUser {
+  return {
     bitrixUserId: bxStr(r.ID),
     fullName: [r.NAME, r.LAST_NAME].map((x) => bxStr(x).trim()).filter(Boolean).join(" ") || bxStr(r.EMAIL),
     email: bxStr(r.EMAIL) || null,
     active: bxStr(r.ACTIVE) !== "false" && r.ACTIVE !== false,
     raw: r,
-  }));
+  };
+}
+
+export async function fetchUsers(): Promise<BxUser[]> {
+  // user.get возвращает всех; фильтруем только активных сотрудников.
+  const rows = await bitrixListAll<Record<string, unknown>>("user.get", {
+    filter: { ACTIVE: true } as Record<string, unknown>,
+  } as ListParams);
+  return rows.map(mapUser);
 }
 
 export interface BxCompany {
@@ -47,6 +51,16 @@ export interface BxCompany {
   raw: Record<string, unknown>;
 }
 
+export function mapCompany(r: Record<string, unknown>): BxCompany {
+  return {
+    bitrixCompanyId: bxStr(r.ID),
+    title: bxStr(r.TITLE) || null,
+    organizationType: bxStr(r.COMPANY_TYPE) || null,
+    industry: bxStr(r.INDUSTRY) || null,
+    raw: r,
+  };
+}
+
 export async function fetchCompanies(sinceModify?: Date): Promise<BxCompany[]> {
   const filter: Record<string, unknown> = {};
   if (sinceModify) filter[">DATE_MODIFY"] = sinceModify.toISOString();
@@ -55,13 +69,7 @@ export async function fetchCompanies(sinceModify?: Date): Promise<BxCompany[]> {
     select: ["ID", "TITLE", "COMPANY_TYPE", "INDUSTRY", "DATE_MODIFY"],
     order: { DATE_MODIFY: "ASC" },
   });
-  return rows.map((r) => ({
-    bitrixCompanyId: bxStr(r.ID),
-    title: bxStr(r.TITLE) || null,
-    organizationType: bxStr(r.COMPANY_TYPE) || null,
-    industry: bxStr(r.INDUSTRY) || null,
-    raw: r,
-  }));
+  return rows.map(mapCompany);
 }
 
 export interface BxContact {
@@ -81,20 +89,22 @@ export async function fetchContacts(sinceModify?: Date): Promise<BxContact[]> {
     select: ["ID", "NAME", "LAST_NAME", "SECOND_NAME", "POST", "COMPANY_ID", "PHONE", "DATE_MODIFY"],
     order: { DATE_MODIFY: "ASC" },
   });
-  return rows.map((r) => {
-    const phones = Array.isArray(r.PHONE)
-      ? (r.PHONE as Array<{ VALUE?: unknown }>).map((p) => bxStr(p?.VALUE)).filter(Boolean)
-      : [];
-    return {
-      bitrixContactId: bxStr(r.ID),
-      bitrixCompanyId: bxStr(r.COMPANY_ID) || null,
-      fullName:
-        [r.LAST_NAME, r.NAME, r.SECOND_NAME].map((x) => bxStr(x).trim()).filter(Boolean).join(" ") || null,
-      position: bxStr(r.POST) || null,
-      phones,
-      raw: r,
-    };
-  });
+  return rows.map(mapContact);
+}
+
+export function mapContact(r: Record<string, unknown>): BxContact {
+  const phones = Array.isArray(r.PHONE)
+    ? (r.PHONE as Array<{ VALUE?: unknown }>).map((p) => bxStr(p?.VALUE)).filter(Boolean)
+    : [];
+  return {
+    bitrixContactId: bxStr(r.ID),
+    bitrixCompanyId: bxStr(r.COMPANY_ID) || null,
+    fullName:
+      [r.LAST_NAME, r.NAME, r.SECOND_NAME].map((x) => bxStr(x).trim()).filter(Boolean).join(" ") || null,
+    position: bxStr(r.POST) || null,
+    phones,
+    raw: r,
+  };
 }
 
 export interface BxDeal {
@@ -123,7 +133,11 @@ export async function fetchDeals(sinceModify?: Date): Promise<BxDeal[]> {
     ],
     order: { DATE_MODIFY: "ASC" },
   });
-  return rows.map((r) => ({
+  return rows.map(mapDeal);
+}
+
+export function mapDeal(r: Record<string, unknown>): BxDeal {
+  return {
     bitrixDealId: bxStr(r.ID),
     title: bxStr(r.TITLE) || null,
     bitrixCompanyId: bxStr(r.COMPANY_ID) || null,
@@ -136,7 +150,7 @@ export async function fetchDeals(sinceModify?: Date): Promise<BxDeal[]> {
     bitrixCreatedAt: bxDate(r.DATE_CREATE),
     bitrixUpdatedAt: bxDate(r.DATE_MODIFY),
     raw: r,
-  }));
+  };
 }
 
 /**

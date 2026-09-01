@@ -78,7 +78,10 @@ function Dashboard() {
     try {
       const r = await fetch('/api/ai-sales/jobs/drain', { method: 'POST' });
       const j = await r.json();
-      setMsg(r.ok ? `Обработано: +${j.report?.completed ?? 0}, ошибок ${j.report?.failed ?? 0}` : (j.error || 'Ошибка'));
+      const rep = j.report || {};
+      setMsg(r.ok
+        ? `Взято ${rep.claimed ?? 0}, выполнено ${rep.completed ?? 0}, ошибок ${rep.failed ?? 0}${rep.reaped ? `, восстановлено ${rep.reaped}` : ''}`
+        : (j.error || 'Ошибка'));
       load();
     } finally { setBusy(false); }
   };

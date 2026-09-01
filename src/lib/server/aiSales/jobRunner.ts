@@ -4,6 +4,7 @@ import {
   claimBatch,
   completeJob,
   failJob,
+  reapStuckJobs,
   type AiJobRow,
   type AiJobType,
 } from "@/lib/server/aiSales/jobsDb";
@@ -23,6 +24,7 @@ export function registerJobHandler(type: AiJobType, handler: JobHandler): void {
 }
 
 export interface DrainReport {
+  reaped: number;
   claimed: number;
   completed: number;
   failed: number;
@@ -30,9 +32,12 @@ export interface DrainReport {
 }
 
 /** Забрать и исполнить пачку задач. Ошибка одной задачи не валит остальные. */
-export async function drainQueue(limit = 5): Promise<DrainReport> {
+export async function drainQueue(limit = 3): Promise<DrainReport> {
+  // Сначала вернуть в очередь задачи, убитые таймаутом serverless.
+  const reaped = await reapStuckJobs(3);
   const jobs = await claimBatch(limit);
   const report: DrainReport = {
+    reaped,
     claimed: jobs.length,
     completed: 0,
     failed: 0,

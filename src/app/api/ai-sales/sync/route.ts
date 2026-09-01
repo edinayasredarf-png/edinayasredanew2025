@@ -43,10 +43,11 @@ export async function POST(request: NextRequest) {
   }
 
   const entity = (request.nextUrl.searchParams.get("entity") as SyncEntity) || "all";
+  // Без idempotencyKey — чтобы повторный запуск синхронизации всегда срабатывал
+  // (апсерты идемпотентны, дубликатов данных не будет).
   const jobId = await enqueueJob({
     type: "bitrix.sync",
     payload: { entity },
-    idempotencyKey: `sync:${entity}:manual`,
     priority: 60,
   });
 

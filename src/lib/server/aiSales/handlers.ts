@@ -1,7 +1,8 @@
 import "server-only";
 
 import { registerJobHandler } from "@/lib/server/aiSales/jobRunner";
-import { syncEntity } from "@/lib/server/aiSales/bitrixSyncService";
+import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncService";
+import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ingestCallActivity } from "@/lib/server/aiSales/callIngestService";
 import { runTranscription } from "@/lib/server/aiSales/transcriptionService";
 import { runAnalysis } from "@/lib/server/aiSales/analysisService";
@@ -21,10 +22,25 @@ export function registerAllHandlers(): void {
   if (registered) return;
   registered = true;
 
-  // Синхронизация CRM Bitrix → зеркала.
+  // Синхронизация CRM Bitrix → зеркала. Чанками по страницам (Hobby-таймаут).
   registerJobHandler("bitrix.sync", async (job) => {
-    const entity = (job.payload.entity as SyncEntity) || "all";
-    return syncEntity(entity);
+    const entity = (job.payload.entity as SyncEntity | "all") || "all";
+
+    // «all» — разложить на отдельные задачи по сущностям (каждая пойдёт по страницам).
+    if (entity === "all") {
+      for (const e of SYNC_ENTITIES) {
+        await enqueueJob({ type: "bitrix.sync", payload: { entity: e, start: 0 }, priority: 70 });
+      }
+      return { fannedOut: SYNC_ENTITIES };
+    }
+
+    const start = typeof job.payload.start === "number" ? job.payload.start : 0;
+    const res = await syncEntityPage(entity, start);
+    // Есть следующая страница — доложить в очередь.
+    if (res.next !== null) {
+      await enqueueJob({ type: "bitrix.sync", payload: { entity, start: res.next }, priority: 70 });
+    }
+    return res;
   });
 
   // Ingestion звонка из активности Bitrix.

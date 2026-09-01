@@ -74,6 +74,26 @@ export async function enqueueJob(input: EnqueueInput): Promise<string> {
 }
 
 /**
+ * Вернуть в очередь задачи, застрявшие в RUNNING дольше maxMinutes (функция была
+ * убита по таймауту serverless до completeJob/failJob). Без этого одна убитая
+ * функция навсегда блокирует задачу. Вызывается перед claimBatch в дренаже.
+ */
+export async function reapStuckJobs(maxMinutes = 3): Promise<number> {
+  const pool = getTimewebPool();
+  const { rowCount } = await pool.query(
+    `update ai_jobs
+        set status = case when attempts < max_attempts then 'RETRY_PENDING' else 'FAILED' end,
+            last_error = coalesce(last_error, 'reaped: stuck in RUNNING (timeout)'),
+            run_after = now(),
+            updated_at = now()
+      where status = 'RUNNING'
+        and locked_at < now() - ($1 || ' minutes')::interval`,
+    [String(maxMinutes)]
+  );
+  return rowCount ?? 0;
+}
+
+/**
  * Атомарно забрать пачку готовых задач и пометить RUNNING.
  * SKIP LOCKED гарантирует, что параллельные воркеры/дренажи не пересекутся.
  */

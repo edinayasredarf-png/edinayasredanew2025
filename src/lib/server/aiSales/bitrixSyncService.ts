@@ -1,111 +1,109 @@
 import "server-only";
 
+import { bitrixListPage } from "@/lib/server/bitrix/client";
 import {
-  fetchUsers,
-  fetchCompanies,
-  fetchContacts,
-  fetchDeals,
+  mapUser,
+  mapCompany,
+  mapContact,
+  mapDeal,
 } from "@/lib/server/bitrix/entities";
 import {
   upsertManagers,
   upsertCompanies,
   upsertContacts,
   upsertDeals,
-  getSyncState,
   setSyncState,
   type SyncEntity,
 } from "@/lib/server/aiSales/syncDb";
 
 /**
- * Сервис синхронизации Bitrix → зеркала AI Sales (§61 ТЗ).
- *   • initial sync — полная выгрузка (при первом запуске);
- *   • incremental — по курсору >DATE_MODIFY (webhook/периодический реконсайл).
- * Тяжёлые выгрузки запускаются через очередь (job bitrix.sync), не в HTTP-запросе.
+ * Синхронизация Bitrix → зеркала AI Sales, ЧАНКАМИ ПО СТРАНИЦАМ (§61 ТЗ,
+ * адаптировано под лимит времени функции Vercel Hobby ~10-60с).
+ *
+ * Одна задача bitrix.sync = ОДНА страница Bitrix (≈50 записей). Если есть
+ * следующая страница — обработчик докладывает задачу со start=next в очередь.
+ * Так полная выгрузка растягивается на много коротких вызовов и не упирается
+ * в таймаут serverless. Пагинация по ID ASC — стабильна.
+ *
+ * Апсерты идемпотентны (bitrix_*_id UNIQUE), поэтому повторный прогон безопасен.
  */
 
-export interface SyncResult {
+export interface PageResult {
   entity: SyncEntity;
-  fetched: number;
+  start: number;
   upserted: number;
+  next: number | null;
+  total: number | null;
 }
 
-/** Максимальная DATE_MODIFY из набора — новый курсор. */
-function maxModified(dates: Array<Date | null>): Date | null {
-  let max: Date | null = null;
-  for (const d of dates) {
-    if (d && (!max || d.getTime() > max.getTime())) max = d;
-  }
-  return max;
-}
+type Row = Record<string, unknown>;
 
-export async function syncUsers(): Promise<SyncResult> {
-  const users = await fetchUsers();
-  const upserted = await upsertManagers(users);
-  await setSyncState("users", { fullSyncDone: true, stats: { count: users.length } });
-  return { entity: "users", fetched: users.length, upserted };
-}
+/** Обработать одну страницу указанной сущности. */
+export async function syncEntityPage(
+  entity: SyncEntity,
+  start = 0
+): Promise<PageResult> {
+  let upserted = 0;
+  let next: number | null = null;
+  let total: number | null = null;
 
-export async function syncCompanies(): Promise<SyncResult> {
-  const state = await getSyncState("companies");
-  const since = state.fullSyncDone ? state.lastBitrixModified ?? undefined : undefined;
-  const companies = await fetchCompanies(since);
-  const upserted = await upsertCompanies(companies);
-  await setSyncState("companies", {
-    fullSyncDone: true,
-    lastBitrixModified: maxModified(companies.map((c) => (c.raw.DATE_MODIFY ? new Date(String(c.raw.DATE_MODIFY)) : null))),
-    stats: { count: companies.length },
-  });
-  return { entity: "companies", fetched: companies.length, upserted };
-}
-
-export async function syncContacts(): Promise<SyncResult> {
-  const state = await getSyncState("contacts");
-  const since = state.fullSyncDone ? state.lastBitrixModified ?? undefined : undefined;
-  const contacts = await fetchContacts(since);
-  const upserted = await upsertContacts(contacts);
-  await setSyncState("contacts", {
-    fullSyncDone: true,
-    lastBitrixModified: maxModified(contacts.map((c) => (c.raw.DATE_MODIFY ? new Date(String(c.raw.DATE_MODIFY)) : null))),
-    stats: { count: contacts.length },
-  });
-  return { entity: "contacts", fetched: contacts.length, upserted };
-}
-
-export async function syncDeals(): Promise<SyncResult> {
-  const state = await getSyncState("deals");
-  const since = state.fullSyncDone ? state.lastBitrixModified ?? undefined : undefined;
-  const deals = await fetchDeals(since);
-  const upserted = await upsertDeals(deals);
-  await setSyncState("deals", {
-    fullSyncDone: true,
-    lastBitrixModified: maxModified(deals.map((d) => d.bitrixUpdatedAt)),
-    stats: { count: deals.length },
-  });
-  return { entity: "deals", fetched: deals.length, upserted };
-}
-
-/** Полная синхронизация всех сущностей (порядок: users → companies → contacts → deals). */
-export async function syncAll(): Promise<SyncResult[]> {
-  const results: SyncResult[] = [];
-  results.push(await syncUsers());
-  results.push(await syncCompanies());
-  results.push(await syncContacts());
-  results.push(await syncDeals());
-  return results;
-}
-
-/** Синхронизация одной сущности по имени (для job payload). */
-export async function syncEntity(entity: SyncEntity): Promise<SyncResult | SyncResult[]> {
   switch (entity) {
-    case "users":
-      return syncUsers();
-    case "companies":
-      return syncCompanies();
-    case "contacts":
-      return syncContacts();
-    case "deals":
-      return syncDeals();
+    case "users": {
+      const p = await bitrixListPage<Row>("user.get", {
+        filter: { ACTIVE: true },
+        order: { ID: "ASC" },
+        start,
+      });
+      upserted = await upsertManagers(p.rows.map(mapUser));
+      next = p.next;
+      total = p.total;
+      break;
+    }
+    case "companies": {
+      const p = await bitrixListPage<Row>("crm.company.list", {
+        select: ["ID", "TITLE", "COMPANY_TYPE", "INDUSTRY"],
+        order: { ID: "ASC" },
+        start,
+      });
+      upserted = await upsertCompanies(p.rows.map(mapCompany));
+      next = p.next;
+      total = p.total;
+      break;
+    }
+    case "contacts": {
+      const p = await bitrixListPage<Row>("crm.contact.list", {
+        select: ["ID", "NAME", "LAST_NAME", "SECOND_NAME", "POST", "COMPANY_ID", "PHONE"],
+        order: { ID: "ASC" },
+        start,
+      });
+      upserted = await upsertContacts(p.rows.map(mapContact));
+      next = p.next;
+      total = p.total;
+      break;
+    }
+    case "deals": {
+      const p = await bitrixListPage<Row>("crm.deal.list", {
+        select: [
+          "ID", "TITLE", "COMPANY_ID", "CONTACT_ID", "ASSIGNED_BY_ID", "STAGE_ID",
+          "OPPORTUNITY", "CURRENCY_ID", "CLOSED", "DATE_CREATE", "DATE_MODIFY",
+        ],
+        order: { ID: "ASC" },
+        start,
+      });
+      upserted = await upsertDeals(p.rows.map(mapDeal));
+      next = p.next;
+      total = p.total;
+      break;
+    }
     default:
-      return syncAll();
+      throw new Error(`Неизвестная сущность синхронизации: ${entity}`);
   }
+
+  // Последняя страница — отметить полную синхронизацию завершённой.
+  if (next === null) {
+    await setSyncState(entity, { fullSyncDone: true, stats: { total } });
+  }
+  return { entity, start, upserted, next, total };
 }
+
+export const SYNC_ENTITIES: SyncEntity[] = ["users", "companies", "contacts", "deals"];

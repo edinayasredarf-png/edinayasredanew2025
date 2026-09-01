@@ -76,8 +76,7 @@ export async function POST(request: NextRequest) {
   } else if (ev.includes("ONCRMDEAL")) {
     await enqueueJob({
       type: "bitrix.sync",
-      payload: { entity: "deals" },
-      idempotencyKey: `sync:deals:webhook`,
+      payload: { entity: "deals", start: 0 },
       priority: 80,
     });
   }
