@@ -381,11 +381,11 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
               {a.nextStep?.action && (
                 <div><p className="text-xs uppercase tracking-wide text-gray-400">Следующий шаг</p><p className="text-gray-800">{a.nextStep.action}</p></div>
               )}
-              {a.dealScore?.factors && a.dealScore.factors.length > 0 && (
+              {a.dealScore?.factors && a.dealScore.factors.filter((f) => f.reason?.trim()).length > 0 && (
                 <div>
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Почему такой балл</p>
                   <ul className="space-y-0.5">
-                    {a.dealScore.factors.map((f, i) => (
+                    {a.dealScore.factors.filter((f) => f.reason?.trim()).map((f, i) => (
                       <li key={i} className={f.points >= 0 ? 'text-emerald-700' : 'text-red-600'}>
                         {f.points >= 0 ? '+' : ''}{f.points} {f.reason}
                       </li>
@@ -393,10 +393,10 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
                   </ul>
                 </div>
               )}
-              {a.risks && a.risks.length > 0 && (
+              {a.risks && a.risks.filter((r) => r.detail?.trim()).length > 0 && (
                 <div>
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Риски</p>
-                  <ul className="list-disc pl-5 text-red-600">{a.risks.map((r, i) => <li key={i}>{r.detail}</li>)}</ul>
+                  <ul className="list-disc pl-5 text-red-600">{a.risks.filter((r) => r.detail?.trim()).map((r, i) => <li key={i}>{r.detail}</li>)}</ul>
                 </div>
               )}
               {a.managerPerformance && (
@@ -565,9 +565,9 @@ function DealDetail({ id, onBack }: { id: string; onBack: () => void }) {
               {ins.summary && <p className="text-gray-700">{ins.summary}</p>}
               {ins.nextBestAction && (<div><p className="text-xs uppercase tracking-wide text-gray-400">Следующее действие</p><p className="text-gray-800">{ins.nextBestAction}</p></div>)}
               {ins.stageRecommendation && (<div><p className="text-xs uppercase tracking-wide text-gray-400">Рекомендация по стадии</p><p className="text-gray-800">{ins.stageRecommendation}</p></div>)}
-              {ins.risks && ins.risks.length > 0 && (
+              {ins.risks && ins.risks.filter((r) => r.detail?.trim()).length > 0 && (
                 <div><p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Риски</p>
-                  <ul className="list-disc pl-5 text-red-600">{ins.risks.map((r, i) => <li key={i}>{r.detail}</li>)}</ul></div>
+                  <ul className="list-disc pl-5 text-red-600">{ins.risks.filter((r) => r.detail?.trim()).map((r, i) => <li key={i}>{r.detail}</li>)}</ul></div>
               )}
               {ins.keyFacts && (
                 <div className="grid grid-cols-2 gap-2 text-gray-700">
