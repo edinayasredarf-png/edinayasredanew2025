@@ -36,7 +36,9 @@ async function handle(request: NextRequest) {
   }
 
   try {
-    const report = await drainQueue(5);
+    // ~45с бюджета (Hobby maxDuration до 60с) — за один вызов прожёвываем
+    // много страниц синхронизации.
+    const report = await drainQueue(45_000);
     const stats = await queueStats();
     return NextResponse.json({ ok: true, report, stats });
   } catch (e) {

@@ -31,23 +31,31 @@ export interface DrainReport {
   skipped: number; // нет обработчика
 }
 
-/** Забрать и исполнить пачку задач. Ошибка одной задачи не валит остальные. */
-export async function drainQueue(limit = 3): Promise<DrainReport> {
-  // Сначала вернуть в очередь задачи, убитые таймаутом serverless.
+/**
+ * Дренаж очереди с бюджетом времени. Забирает и исполняет задачи ПО ОДНОЙ в цикле,
+ * пока не истечёт timeBudgetMs или очередь не опустеет. Так один вызов функции
+ * прожёвывает много мелких задач (страниц синхронизации), укладываясь в лимит
+ * времени serverless (Vercel Hobby ~60с). claim(1) + SKIP LOCKED → параллельные
+ * дренажи не берут одну задачу дважды, зависших RUNNING не остаётся.
+ */
+export async function drainQueue(timeBudgetMs = 40_000): Promise<DrainReport> {
   const reaped = await reapStuckJobs(3);
-  const jobs = await claimBatch(limit);
   const report: DrainReport = {
     reaped,
-    claimed: jobs.length,
+    claimed: 0,
     completed: 0,
     failed: 0,
     skipped: 0,
   };
 
-  for (const job of jobs) {
+  const deadline = Date.now() + timeBudgetMs;
+  while (Date.now() < deadline) {
+    const [job] = await claimBatch(1);
+    if (!job) break; // очередь пуста
+    report.claimed += 1;
+
     const handler = handlers.get(job.type);
     if (!handler) {
-      // Нет обработчика — не считаем провалом, возвращаем в очередь как retry.
       await failJob(job, `Нет обработчика для типа задачи: ${job.type}`);
       report.skipped += 1;
       continue;
