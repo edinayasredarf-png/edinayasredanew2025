@@ -45,12 +45,11 @@ export async function getDashboard(managerBitrixId: string | null): Promise<Dash
   );
 
   const analysisAgg = await pool.query<{
-    avg_deal: string | null; avg_mgr: string | null;
+    avg_deal: string | null;
     hot: string; warm: string; cold: string; no_next: string;
   }>(
     `select
         avg(a.deal_score)::text as avg_deal,
-        avg(a.manager_score)::text as avg_mgr,
         count(*) filter (where a.deal_temperature = 'HOT')::text as hot,
         count(*) filter (where a.deal_temperature = 'WARM')::text as warm,
         count(*) filter (where a.deal_temperature = 'COLD')::text as cold,
@@ -59,6 +58,15 @@ export async function getDashboard(managerBitrixId: string | null): Promise<Dash
        join ai_calls c on c.id = a.call_id
       where true${m.sql}`,
     m.params
+  );
+
+  // Средняя оценка менеджера — по СДЕЛКАМ (справедливо: короткие звонки не тянут вниз).
+  const mgrClauseDeal = managerBitrixId ? " where d.bitrix_user_id = $1" : "";
+  const mgrAgg = await pool.query<{ avg_mgr: string | null }>(
+    `select avg(di.manager_score)::text as avg_mgr
+       from ai_deal_insights di
+       join ai_deals d on d.bitrix_deal_id = di.bitrix_deal_id${mgrClauseDeal}`,
+    managerBitrixId ? [managerBitrixId] : []
   );
 
   const failedAgg = await pool.query<{ failed: string }>(
@@ -87,7 +95,7 @@ export async function getDashboard(managerBitrixId: string | null): Promise<Dash
       analyzed: Number(ca?.analyzed ?? 0),
       avgDurationSec: round(ca?.avg_dur ?? null, 0),
       avgDealScore: round(aa?.avg_deal ?? null, 0),
-      avgManagerScore: round(aa?.avg_mgr ?? null, 1),
+      avgManagerScore: round(mgrAgg.rows[0]?.avg_mgr ?? null, 1),
     },
     temperature: {
       hot: Number(aa?.hot ?? 0),

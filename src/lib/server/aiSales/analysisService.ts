@@ -18,6 +18,7 @@ import {
   type TranscriptWithSegments,
 } from "@/lib/server/aiSales/callsDb";
 import { getTimewebPool } from "@/lib/timewebPg";
+import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 
 /**
  * Анализ звонка через Claude (§45 ТЗ). Классификация/скоринг — LLM; агрегация и
@@ -132,6 +133,12 @@ export async function runAnalysis(
   await setCallProduct(callId, topProduct?.name ?? null);
 
   await setCallStatus(callId, "COMPLETED");
+
+  // Пересчёт агрегата по сделке (кэш по дайджесту не даст лишней работы LLM).
+  if (call.bitrix_deal_id) {
+    await enqueueJob({ type: "deal.analyze", payload: { dealId: call.bitrix_deal_id }, priority: 70 });
+  }
+
   return {
     analyzed: true,
     dealScore: data.dealScore.score,

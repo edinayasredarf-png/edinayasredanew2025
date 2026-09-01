@@ -7,6 +7,7 @@ import { ingestCallActivity } from "@/lib/server/aiSales/callIngestService";
 import { runTranscription } from "@/lib/server/aiSales/transcriptionService";
 import { runRoleSplit } from "@/lib/server/aiSales/roleSplitService";
 import { runAnalysis } from "@/lib/server/aiSales/analysisService";
+import { runDealInsight } from "@/lib/server/aiSales/dealInsightService";
 import type { SyncEntity } from "@/lib/server/aiSales/syncDb";
 
 /**
@@ -78,5 +79,12 @@ export function registerAllHandlers(): void {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("call.analyze: пустой callId");
     return runAnalysis(callId, { force: Boolean(job.payload.force) });
+  });
+
+  // Агрегированный разбор сделки по всем звонкам (оценка менеджера по сделке целиком).
+  registerJobHandler("deal.analyze", async (job) => {
+    const dealId = String(job.payload.dealId || "");
+    if (!dealId) throw new Error("deal.analyze: пустой dealId");
+    return runDealInsight(dealId, { force: Boolean(job.payload.force) });
   });
 }
