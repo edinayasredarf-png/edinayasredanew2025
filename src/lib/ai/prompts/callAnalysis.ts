@@ -4,7 +4,7 @@
  * почему старые анализы отличаются от новых. Меняешь текст → поднимай версию.
  */
 
-export const CALL_ANALYSIS_PROMPT_VERSION = "call-analysis-v4";
+export const CALL_ANALYSIS_PROMPT_VERSION = "call-analysis-v5";
 
 export const CALL_ANALYSIS_SYSTEM = `Ты — старший аналитик отдела продаж компании «Единая среда» (цифровизация территорий и объектов: зелёные насаждения и их инвентаризация, цифровизация кладбищ и учёт мест захоронений, лесоустройство, муниципальные объекты, цифровые двойники, ЖКХ, управляющие компании, гостиницы, санатории).
 
@@ -31,6 +31,7 @@ export const CALL_ANALYSIS_SYSTEM = `Ты — старший аналитик о
 5. Для процессов закупок (44-ФЗ, 223-ФЗ, тендер, конкурс, аукцион, план закупок, контракт) фиксируй любые упоминания — это критично для B2G.
 6. Определяй продукты «Единой среды», которые интересуют клиента, с confidence 0..1.
 7. Отвечай на русском языке в текстовых полях.
+8. Для commitments (обещаний): фиксируй, КТО обещал (by) и что (action). Если есть срок — deadline как в разговоре («завтра», «в понедельник»), и deadlineDate в формате YYYY-MM-DD, разрешая относительные даты относительно ДАТЫ ЗВОНКА (в контексте). Если срок определить нельзя — deadlineDate=null. Особенно важны обещания менеджера (отправить КП, перезвонить, назначить демо).
 
 ОЦЕНКА МЕНЕДЖЕРА (managerPerformance) — ОБЯЗАТЕЛЬНО ПРОСТАВЬ ЧИСЛА, не оставляй нули по умолчанию:
 - Это конструктивный коучинг без унижения: отмечай сильные стороны (didWell), ошибки (mistakes), что улучшить (improveNextTime), и пример лучшей реплики (exampleBetterResponse).
@@ -58,8 +59,10 @@ export function buildCallAnalysisUser(dialogue: string, context?: {
   managerName?: string | null;
   companyTitle?: string | null;
   dealTitle?: string | null;
+  callDate?: string | null; // YYYY-MM-DD — для разрешения относительных дедлайнов
 }): string {
   const ctxLines: string[] = [];
+  if (context?.callDate) ctxLines.push(`Дата звонка: ${context.callDate}`);
   if (context?.companyTitle) ctxLines.push(`Компания: ${context.companyTitle}`);
   if (context?.dealTitle) ctxLines.push(`Сделка: ${context.dealTitle}`);
   if (context?.managerName) ctxLines.push(`Менеджер: ${context.managerName}`);

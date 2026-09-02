@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -862,6 +862,80 @@ function Insights() {
   );
 }
 
+/* ─────────── Follow-up (обещания менеджеров) ─────────── */
+interface FollowUpItem {
+  id: string; action: string; deadline: string | null; status: string; overdue: boolean;
+  bitrixDealId: string | null; dealUrl: string | null; company: string | null; manager: string | null; createdAt: string | null;
+}
+
+function FollowUps() {
+  const [items, setItems] = useState<FollowUpItem[]>([]);
+  const [openCount, setOpenCount] = useState(0);
+  const [overdueCount, setOverdueCount] = useState(0);
+  const [status, setStatus] = useState('active');
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const qs = new URLSearchParams();
+      if (status === 'overdue') qs.set('status', 'overdue');
+      else if (status === 'done') qs.set('status', 'done');
+      const r = await fetch(`/api/ai-sales/followups?${qs}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setItems(j.items); setOpenCount(j.openCount); setOverdueCount(j.overdueCount);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [status]);
+  useEffect(() => { load(); }, [load]);
+
+  const complete = async (id: string) => {
+    await fetch(`/api/ai-sales/followups/${id}/complete`, { method: 'POST' });
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-900">
+          Follow-up <span className="text-gray-400 text-base font-normal">· активных {openCount}{overdueCount ? <span className="text-red-500">, просрочено {overdueCount}</span> : null}</span>
+        </h2>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
+          <option value="active">Активные</option>
+          <option value="overdue">Просроченные</option>
+          <option value="done">Выполненные</option>
+        </select>
+      </div>
+      <p className="text-sm text-gray-500 mb-4">Обещания менеджеров из звонков («отправить КП», «перезвонить»). Отметьте выполненные.</p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {loading ? <div className="text-gray-500">Загрузка…</div> : (
+        <div className="space-y-2">
+          {items.map((it) => (
+            <div key={it.id} className={`flex items-center justify-between gap-3 bg-white rounded-xl border p-3 ${it.overdue ? 'border-red-200' : 'border-gray-100'}`}>
+              <div className="min-w-0">
+                <p className="text-sm text-gray-900">{it.action}</p>
+                <div className="flex gap-3 text-xs text-gray-400 mt-1 flex-wrap">
+                  <span>{it.company || (it.bitrixDealId ? `Сделка #${it.bitrixDealId}` : '—')}</span>
+                  {it.manager && <span>{it.manager}</span>}
+                  {it.deadline && <span className={it.overdue ? 'text-red-500' : ''}>срок: {new Date(it.deadline).toLocaleDateString('ru-RU')}</span>}
+                  {it.overdue && <span className="text-red-500 font-medium">просрочено</span>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {it.dealUrl && <a href={it.dealUrl} target="_blank" rel="noreferrer" className="text-xs text-gray-500 underline">Bitrix</a>}
+                {it.status !== 'DONE' && <button onClick={() => complete(it.id)} className="px-3 py-1.5 rounded-lg text-sm bg-[#029cda] text-white">Выполнено</button>}
+              </div>
+            </div>
+          ))}
+          {items.length === 0 && <p className="text-gray-400 py-8 text-center">Обещаний нет.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────── Обёртка раздела ─────────── */
 export default function AiSalesSection({ view, onNavigate, initialTemperature }: {
   view: View;
@@ -873,6 +947,7 @@ export default function AiSalesSection({ view, onNavigate, initialTemperature }:
 
   if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
   if (view === 'insights') return <Insights />;
+  if (view === 'followups') return <FollowUps />;
   if (view === 'reco') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />

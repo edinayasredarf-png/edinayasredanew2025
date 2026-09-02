@@ -19,6 +19,7 @@ import {
 } from "@/lib/server/aiSales/callsDb";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
+import { createFollowUpsFromAnalysis } from "@/lib/server/aiSales/followupsDb";
 
 /**
  * Анализ звонка через Claude (§45 ТЗ). Классификация/скоринг — LLM; агрегация и
@@ -108,7 +109,8 @@ export async function runAnalysis(
   await setCallStatus(callId, "ANALYZING");
 
   const ctx = await loadContext(call);
-  const user = buildCallAnalysisUser(dialogue, ctx);
+  const callDate = call.started_at ? new Date(call.started_at).toISOString().slice(0, 10) : null;
+  const user = buildCallAnalysisUser(dialogue, { ...ctx, callDate });
 
   const { data } = await provider.generateStructured({
     schema: CallAnalysisSchema,
@@ -131,6 +133,9 @@ export async function runAnalysis(
   // Топовый продукт → в карточку звонка (простая производная, не LLM).
   const topProduct = [...data.products].sort((a, b) => b.confidence - a.confidence)[0];
   await setCallProduct(callId, topProduct?.name ?? null);
+
+  // Follow-ups из обещаний менеджера (§35).
+  await createFollowUpsFromAnalysis(callId, data, call);
 
   await setCallStatus(callId, "COMPLETED");
 

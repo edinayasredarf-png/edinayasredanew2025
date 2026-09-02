@@ -2,6 +2,7 @@ import "server-only";
 
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
+import { getOverdueFollowUps } from "@/lib/server/aiSales/followupsDb";
 
 /**
  * «AI рекомендует» — кому звонить сегодня (§10 ТЗ). Правило-ориентированный движок
@@ -139,6 +140,27 @@ export async function getDailyRecommendations(
 
     if (!severity) continue;
     out[severity].push({ ...base, severity, reason });
+  }
+
+  // Просроченные обещания менеджеров → критично (§35).
+  const overdue = await getOverdueFollowUps(managerBitrixId);
+  const dealCompany = new Map(rows.map((r) => [r.bitrix_deal_id, r.company]));
+  for (const o of overdue) {
+    const days = o.deadline ? Math.floor((now - new Date(o.deadline).getTime()) / 86400000) : null;
+    out.critical.push({
+      bitrixDealId: o.bitrixDealId || "",
+      title: null,
+      company: (o.bitrixDealId && dealCompany.get(o.bitrixDealId)) || null,
+      manager: o.manager,
+      dealUrl: o.bitrixDealId && origin ? `${origin}/crm/deal/details/${o.bitrixDealId}/` : null,
+      severity: "critical",
+      reason: `Просрочено обещание${days != null ? ` (${days} дн.)` : ""}: ${o.action}`,
+      action: o.action,
+      temperature: null,
+      dealScore: null,
+      daysSinceCall: null,
+      lastCallAt: null,
+    });
   }
 
   // Сортировка внутри корзин: горячее и с большим score — выше.

@@ -100,9 +100,10 @@ const Commitment = z
   .object({
     action: str,
     by: z.enum(["MANAGER", "CLIENT"]).catch("MANAGER"),
-    deadline: nstr,
+    deadline: nstr,     // как в разговоре («завтра», «в понедельник»)
+    deadlineDate: nstr, // разрешённая дата YYYY-MM-DD (или null)
   })
-  .catch({ action: "", by: "MANAGER", deadline: null });
+  .catch({ action: "", by: "MANAGER", deadline: null, deadlineDate: null });
 
 const NextStep = z
   .object({
