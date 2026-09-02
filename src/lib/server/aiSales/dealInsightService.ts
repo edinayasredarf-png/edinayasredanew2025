@@ -43,7 +43,7 @@ export async function runDealInsight(
   const digest = await getDealCallDigest(bitrixDealId);
   if (!digest.items.length) return { skipped: "no analyzed calls" };
 
-  const provider = getAiProvider();
+  const provider = await getAiProvider();
   const model = provider.defaultModel;
 
   // Хэш дайджеста → кэш. Меняются звонки/оценки → меняется хэш → пересчёт.

@@ -17,7 +17,7 @@ export async function runRoleSplit(callId: string): Promise<unknown> {
   const t = await getTranscript(callId);
   if (!t || !t.segments.length) return { skipped: "no transcript" };
 
-  const provider = getAiProvider();
+  const provider = await getAiProvider();
   const { data } = await provider.generateStructured({
     schema: RoleSplitSchema,
     system: ROLE_SPLIT_SYSTEM,

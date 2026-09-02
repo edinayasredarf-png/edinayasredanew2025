@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -946,6 +946,97 @@ function FollowUps() {
   );
 }
 
+/* ─────────── Настройки AI ─────────── */
+function Settings() {
+  const [s, setS] = useState<Record<string, unknown> | null>(null);
+  const [err, setErr] = useState('');
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/ai-sales/settings');
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        setS(j.settings);
+      } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    })();
+  }, []);
+
+  const set = (k: string, v: unknown) => setS((prev) => ({ ...(prev || {}), [k]: v }));
+  const save = async () => {
+    if (!s) return;
+    setBusy(true); setMsg('');
+    try {
+      const updates = {
+        'ai.provider': s['ai.provider'],
+        'ai.model.analysis': s['ai.model.analysis'],
+        'ai.analysis_enabled': s['ai.analysis_enabled'],
+        'ai.confidence_threshold': Number(s['ai.confidence_threshold']),
+        'bitrix.auto_write': s['bitrix.auto_write'],
+        'bitrix.auto_create_tasks': s['bitrix.auto_create_tasks'],
+        'retention.transcript_days': Number(s['retention.transcript_days']),
+      };
+      const r = await fetch('/api/ai-sales/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ updates }) });
+      const j = await r.json();
+      setMsg(r.ok ? 'Сохранено' : (j.error || 'Ошибка'));
+    } finally { setBusy(false); }
+  };
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (!s) return <div className="text-gray-500">Загрузка…</div>;
+  const str = (k: string, d = '') => (s[k] == null ? d : String(s[k]));
+  const bool = (k: string) => s[k] === true;
+
+  const Field = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
+    <div className="py-3 border-b border-gray-100">
+      <label className="block text-sm font-medium text-gray-800 mb-1">{label}</label>
+      {hint && <p className="text-xs text-gray-400 mb-2">{hint}</p>}
+      {children}
+    </div>
+  );
+
+  return (
+    <div className="max-w-2xl">
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Настройки AI</h2>
+      <p className="text-sm text-gray-500 mb-4">Влияют на следующий анализ. Ключи Yandex/Anthropic/STT задаются в переменных окружения (Vercel).</p>
+
+      <div className="bg-white rounded-xl border border-gray-100 px-5">
+        <Field label="AI-провайдер анализа" hint="anthropic (Claude) или yandex (YandexGPT)">
+          <select value={str('ai.provider', 'yandex')} onChange={(e) => set('ai.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
+            <option value="yandex">YandexGPT</option>
+            <option value="anthropic">Anthropic Claude</option>
+          </select>
+        </Field>
+        <Field label="Модель анализа (для Claude)" hint="напр. claude-opus-5. Для YandexGPT задаётся в env YANDEX_GPT_MODEL.">
+          <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full" />
+        </Field>
+        <Field label="Анализ включён">
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>
+        </Field>
+        <Field label="Порог уверенности" hint="0..1 — ниже AI помечает «недостаточно данных»">
+          <input type="number" step="0.05" min="0" max="1" value={str('ai.confidence_threshold', '0.5')} onChange={(e) => set('ai.confidence_threshold', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-32" />
+        </Field>
+        <Field label="Автозапись в Bitrix" hint="Пока не активно — запись в CRM (задачи/комментарии) будет с подтверждением человеком.">
+          <div className="flex flex-col gap-1 text-sm text-gray-700">
+            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={bool('bitrix.auto_write')} onChange={(e) => set('bitrix.auto_write', e.target.checked)} /> авто-запись результатов</label>
+            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={bool('bitrix.auto_create_tasks')} onChange={(e) => set('bitrix.auto_create_tasks', e.target.checked)} /> авто-создание задач</label>
+          </div>
+        </Field>
+        <Field label="Хранение транскриптов, дней" hint="Retention (§56). Очистка — отдельным заданием (позже).">
+          <input type="number" min="0" value={str('retention.transcript_days', '365')} onChange={(e) => set('retention.transcript_days', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-32" />
+        </Field>
+      </div>
+
+      <div className="flex items-center gap-3 mt-4">
+        <button onClick={save} disabled={busy} className="px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Сохранить</button>
+        {msg && <span className="text-sm text-gray-600">{msg}</span>}
+      </div>
+    </div>
+  );
+}
+
 /* ─────────── AI-теги ─────────── */
 interface TagStat { slug: string; category: string; categoryLabel: string; label: string; count: number }
 interface TagsData { groups: Array<{ category: string; categoryLabel: string; tags: TagStat[] }>; total: number }
@@ -1220,6 +1311,7 @@ export default function AiSalesSection({ view, onNavigate, initialTemperature, i
 
   if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
   if (view === 'tags') return <Tags onNavigate={onNavigate} />;
+  if (view === 'settings') return <Settings />;
   if (view === 'rop') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />

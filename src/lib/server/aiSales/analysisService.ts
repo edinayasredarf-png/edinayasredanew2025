@@ -21,6 +21,7 @@ import { getTimewebPool } from "@/lib/timewebPg";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { createFollowUpsFromAnalysis } from "@/lib/server/aiSales/followupsDb";
 import { saveCallTags } from "@/lib/server/aiSales/tagsDb";
+import { getAiConfig } from "@/lib/server/aiSales/settingsDb";
 
 /**
  * Анализ звонка через Claude (§45 ТЗ). Классификация/скоринг — LLM; агрегация и
@@ -90,13 +91,17 @@ export async function runAnalysis(
   const call = await getCallById(callId);
   if (!call) throw new Error(`Звонок не найден: ${callId}`);
 
+  // Анализ можно отключить из настроек (§84).
+  const aiCfg = await getAiConfig();
+  if (!aiCfg.analysisEnabled) return { skipped: "analysis disabled in settings" };
+
   const transcript = await getTranscript(callId);
   if (!transcript || !(transcript.fullText || transcript.segments.length)) {
     throw new Error("Нет транскрипта для анализа");
   }
 
   const dialogue = buildDialogue(transcript);
-  const provider = getAiProvider();
+  const provider = await getAiProvider();
   const model = provider.defaultModel;
 
   const inputHash = createHash("sha256")

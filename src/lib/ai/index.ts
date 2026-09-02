@@ -2,31 +2,25 @@ import "server-only";
 
 import { AnthropicProvider } from "@/lib/ai/providers/anthropic";
 import { YandexGptProvider } from "@/lib/ai/providers/yandexgpt";
+import { getAiConfig } from "@/lib/server/aiSales/settingsDb";
 import type { AiProvider } from "@/lib/ai/interfaces";
 
 export * from "@/lib/ai/interfaces";
 
 /**
- * Фабрика AI-провайдера (§44 ТЗ: dependency inversion).
- *   AI_PROVIDER = anthropic (Claude) | yandex (YandexGPT)
- * По умолчанию — anthropic. Для YandexGPT: AI_PROVIDER=yandex (переиспользует
- * ключи SpeechKit). Провайдер меняется одной переменной без переписывания системы.
+ * Фабрика AI-провайдера (§44 ТЗ: dependency inversion). Провайдер и модель
+ * читаются из ai_settings (UI «Настройки AI»), с фолбэком на env. Меняются без
+ * перезапуска — на следующем анализе.
+ *   ai.provider = anthropic (Claude) | yandex (YandexGPT)
  */
-let cached: AiProvider | null = null;
-
-export function getAiProvider(): AiProvider {
-  if (cached) return cached;
-  const provider = (process.env.AI_PROVIDER || "anthropic").trim();
-  switch (provider) {
+export async function getAiProvider(): Promise<AiProvider> {
+  const cfg = await getAiConfig();
+  switch (cfg.provider) {
     case "yandex":
     case "yandexgpt":
-      cached = new YandexGptProvider();
-      return cached;
+      return new YandexGptProvider();
     case "anthropic":
     default:
-      cached = new AnthropicProvider({
-        defaultModel: process.env.AI_MODEL_ANALYSIS?.trim() || undefined,
-      });
-      return cached;
+      return new AnthropicProvider({ defaultModel: cfg.analysisModel || undefined });
   }
 }
