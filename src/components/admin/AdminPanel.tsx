@@ -34,10 +34,8 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
-    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers' | 'ai-rop' | 'ai-tags' | 'ai-settings' | 'ai-lost'
+    | 'ai-analytics'
   >('dashboard');
-  const [salesTemp, setSalesTemp] = useState<string | undefined>(undefined);
-  const [salesTag, setSalesTag] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -148,18 +146,8 @@ export default function AdminPanel() {
                 { id: 'letters', label: 'Письма' },
                 { id: 'feedback', label: 'Обратная связь' },
               ] },
-              { group: 'AI Продажи', items: [
-                { id: 'ai-dashboard', label: 'Дашборд AI' },
-                { id: 'ai-rop', label: 'AI РОП' },
-                { id: 'ai-reco', label: 'AI рекомендует' },
-                { id: 'ai-followups', label: 'Follow-up' },
-                { id: 'ai-deals', label: 'Сделки' },
-                { id: 'ai-managers', label: 'Менеджеры' },
-                { id: 'ai-lost', label: 'Проигрыши' },
-                { id: 'ai-calls', label: 'Звонки' },
-                { id: 'ai-tags', label: 'Теги' },
-                { id: 'ai-insights', label: 'AI Insights' },
-                { id: 'ai-settings', label: 'Настройки AI' },
+              { group: 'AI', items: [
+                { id: 'ai-analytics', label: 'Речевая аналитика' },
               ] },
               { group: 'Мониторинг', items: [
                 { id: 'radar', label: 'Новостной радар' },
@@ -179,7 +167,7 @@ export default function AdminPanel() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => { setActiveTab(item.id); setSalesTemp(undefined); setSalesTag(undefined); }}
+                    onClick={() => setActiveTab(item.id)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                       activeTab === item.id ? 'bg-[#029cda]/10 text-[#029cda] font-medium' : 'text-gray-600 hover:bg-gray-50'
                     }`}
@@ -200,21 +188,7 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {activeTab === 'ai-reco' && <AiSalesSection view="reco" />}
-          {activeTab === 'ai-insights' && <AiSalesSection view="insights" />}
-          {activeTab === 'ai-followups' && <AiSalesSection view="followups" />}
-          {activeTab === 'ai-managers' && <AiSalesSection view="managers" />}
-          {activeTab === 'ai-rop' && <AiSalesSection view="rop" />}
-          {activeTab === 'ai-settings' && <AiSalesSection view="settings" />}
-          {activeTab === 'ai-lost' && <AiSalesSection view="lost" />}
-          {activeTab === 'ai-dashboard' && (
-            <AiSalesSection view="dashboard" onNavigate={(t) => { setSalesTemp(t.temperature); setSalesTag(t.tag); setActiveTab(t.tab); }} />
-          )}
-          {activeTab === 'ai-deals' && <AiSalesSection view="deals" initialTemperature={salesTemp} />}
-          {activeTab === 'ai-calls' && <AiSalesSection view="calls" initialTemperature={salesTemp} initialTag={salesTag} />}
-          {activeTab === 'ai-tags' && (
-            <AiSalesSection view="tags" onNavigate={(t) => { setSalesTemp(t.temperature); setSalesTag(t.tag); setActiveTab(t.tab); }} />
-          )}
+          {activeTab === 'ai-analytics' && <AiSalesSection />}
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}

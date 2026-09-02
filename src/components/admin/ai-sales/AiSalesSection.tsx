@@ -1409,47 +1409,64 @@ function ManagerDetail({ id, onBack }: { id: string; onBack: () => void }) {
   );
 }
 
-/* ─────────── Обёртка раздела ─────────── */
-export default function AiSalesSection({ view, onNavigate, initialTemperature, initialTag }: {
-  view: View;
-  onNavigate?: (t: NavTarget) => void;
-  initialTemperature?: string;
-  initialTag?: string;
-}) {
+/* ─────────── Раздел «Речевая аналитика» (единый, со своим навбаром) ─────────── */
+const SECTIONS: Array<{ view: View; label: string }> = [
+  { view: 'dashboard', label: 'Обзор' },
+  { view: 'rop', label: 'AI РОП' },
+  { view: 'reco', label: 'Рекомендации' },
+  { view: 'followups', label: 'Follow-up' },
+  { view: 'calls', label: 'Коммуникации' },
+  { view: 'deals', label: 'Сделки' },
+  { view: 'managers', label: 'Менеджеры' },
+  { view: 'lost', label: 'Проигрыши' },
+  { view: 'insights', label: 'Отчёты' },
+  { view: 'tags', label: 'Разметка' },
+  { view: 'settings', label: 'Настройки' },
+];
+
+export default function AiSalesSection() {
+  const [view, setView] = useState<View>('dashboard');
   const [openCall, setOpenCall] = useState<string | null>(null);
   const [openDeal, setOpenDeal] = useState<string | null>(null);
+  const [initTemp, setInitTemp] = useState<string | undefined>(undefined);
+  const [initTag, setInitTag] = useState<string | undefined>(undefined);
 
-  if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
-  if (view === 'tags') return <Tags onNavigate={onNavigate} />;
-  if (view === 'settings') return <Settings />;
-  if (view === 'lost') {
-    return openDeal
-      ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
-      : <LostDeals onOpen={setOpenDeal} />;
-  }
-  if (view === 'rop') {
-    return openDeal
-      ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
-      : <Rop onOpen={setOpenDeal} />;
-  }
-  if (view === 'insights') return <Insights />;
-  if (view === 'followups') return <FollowUps />;
-  if (view === 'managers') {
-    return openDeal
-      ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} />
-      : <Managers onOpen={setOpenDeal} />;
-  }
-  if (view === 'reco') {
-    return openDeal
-      ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
-      : <Recommendations onOpen={setOpenDeal} />;
-  }
-  if (view === 'deals') {
-    return openDeal
-      ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
-      : <Deals onOpen={setOpenDeal} initialTemperature={initialTemperature} />;
-  }
-  return openCall
-    ? <CallDetail id={openCall} onBack={() => setOpenCall(null)} />
-    : <Calls onOpen={setOpenCall} initialTemperature={initialTemperature} initialTag={initialTag} />;
+  const go = (v: View) => { setView(v); setOpenCall(null); setOpenDeal(null); setInitTemp(undefined); setInitTag(undefined); };
+  const nav = (t: NavTarget) => {
+    const map: Record<string, View> = { 'ai-deals': 'deals', 'ai-calls': 'calls', 'ai-reco': 'reco' };
+    setInitTemp(t.temperature); setInitTag(t.tag);
+    setOpenCall(null); setOpenDeal(null);
+    setView(map[t.tab] ?? 'dashboard');
+  };
+
+  const body = (() => {
+    if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
+    if (view === 'tags') return <Tags onNavigate={nav} />;
+    if (view === 'settings') return <Settings />;
+    if (view === 'insights') return <Insights />;
+    if (view === 'followups') return <FollowUps />;
+    if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <LostDeals onOpen={setOpenDeal} />;
+    if (view === 'rop') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Rop onOpen={setOpenDeal} />;
+    if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Managers onOpen={setOpenDeal} />;
+    if (view === 'reco') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Recommendations onOpen={setOpenDeal} />;
+    if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
+    return openCall ? <CallDetail id={openCall} onBack={() => setOpenCall(null)} /> : <Calls onOpen={setOpenCall} initialTemperature={initTemp} initialTag={initTag} />;
+  })();
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">Речевая аналитика</h1>
+      <div className="mb-5 border-b border-gray-200 overflow-x-auto">
+        <div className="flex gap-1 min-w-max">
+          {SECTIONS.map((s) => (
+            <button key={s.view} type="button" onClick={() => go(s.view)}
+              className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {body}
+    </div>
+  );
 }
