@@ -2,6 +2,7 @@ import "server-only";
 
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
+import { computeConversationMetrics, type ConversationMetrics } from "@/lib/server/aiSales/conversationMetrics";
 
 /**
  * Аналитические выборки для UI AI Sales. Агрегация — обычным SQL (не LLM, §45 ТЗ).
@@ -251,6 +252,7 @@ export interface CallDetailData {
     segments: Array<{ idx: number; role: string | null; speakerLabel: string | null; startMs: number | null; text: string }>;
   } | null;
   analysis: Record<string, unknown> | null;
+  metrics: ConversationMetrics | null;
 }
 
 export async function getCallDetail(callId: string): Promise<CallDetailData | null> {
@@ -278,11 +280,12 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
     [callId]
   );
   let transcript: CallDetailData["transcript"] = null;
+  let metrics: ConversationMetrics | null = null;
   if (tr.rows[0]) {
     const seg = await pool.query<{
-      idx: number; role: string | null; speaker_label: string | null; start_ms: number | null; text: string;
+      idx: number; role: string | null; speaker_label: string | null; start_ms: number | null; end_ms: number | null; text: string;
     }>(
-      `select idx, role, speaker_label, start_ms, text from ai_transcript_segments where transcript_id = $1 order by idx asc`,
+      `select idx, role, speaker_label, start_ms, end_ms, text from ai_transcript_segments where transcript_id = $1 order by idx asc`,
       [tr.rows[0].id]
     );
     transcript = {
@@ -292,6 +295,9 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
         idx: s.idx, role: s.role, speakerLabel: s.speaker_label, startMs: s.start_ms, text: s.text,
       })),
     };
+    metrics = computeConversationMetrics(
+      seg.rows.map((s) => ({ role: s.role, text: s.text, startMs: s.start_ms, endMs: s.end_ms }))
+    );
   }
 
   const an = await pool.query<{ data: Record<string, unknown> }>(
@@ -315,5 +321,6 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
     },
     transcript,
     analysis: an.rows[0]?.data ?? null,
+    metrics,
   };
 }

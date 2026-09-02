@@ -313,6 +313,14 @@ interface DetailData {
   };
   transcript: { provider: string; language: string | null; segments: Array<{ idx: number; role: string | null; speakerLabel: string | null; startMs: number | null; text: string }> } | null;
   analysis: Record<string, unknown> | null;
+  metrics: null | {
+    managerWords: number; clientWords: number; talkRatioManager: number | null;
+    managerUtterances: number; clientUtterances: number;
+    avgManagerUtteranceWords: number | null; avgClientUtteranceWords: number | null;
+    longestMonologueWords: number; durationSec: number | null;
+    talkRatioManagerTime: number | null; wpmManager: number | null; wpmClient: number | null;
+    longestPauseSec: number | null; pausesOver3s: number | null; hasTimestamps: boolean;
+  };
 }
 
 const roleLabel = (role: string | null, speaker: string | null) =>
@@ -397,6 +405,36 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
           <audio ref={audioRef} controls preload="none" src={`/api/ai-sales/calls/${id}/audio`} className="w-full mt-4" />
         )}
       </div>
+
+      {data.metrics && (data.metrics.managerWords + data.metrics.clientWords > 0) && (() => {
+        const m = data.metrics!;
+        const ratio = m.talkRatioManagerTime ?? m.talkRatioManager;
+        const mgrPct = ratio != null ? Math.round(ratio * 100) : null;
+        const fmtSec = (s: number | null) => (s == null ? '—' : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`);
+        return (
+          <div className="bg-[#F6F7F9] rounded-xl p-5 mb-4">
+            <p className="text-sm font-semibold text-gray-700 mb-3">Метрики разговора {!m.hasTimestamps && <span className="text-xs text-gray-400 font-normal">(по словам — таймкодов нет)</span>}</p>
+            {mgrPct != null && (
+              <div className="mb-3">
+                <div className="flex justify-between text-xs text-gray-500 mb-1"><span>Менеджер {mgrPct}%</span><span>Клиент {100 - mgrPct}%</span></div>
+                <div className="h-2 rounded-full overflow-hidden bg-emerald-100 flex">
+                  <div className="h-full bg-[#029cda]" style={{ width: `${mgrPct}%` }} />
+                  <div className="h-full bg-emerald-400" style={{ width: `${100 - mgrPct}%` }} />
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-sm text-gray-700">
+              <span>Длительность: <b>{fmtSec(m.durationSec)}</b></span>
+              <span>Реплик: <b>{m.managerUtterances}</b> / {m.clientUtterances}</span>
+              <span>Ср. реплика мен.: <b>{m.avgManagerUtteranceWords ?? '—'}</b> сл.</span>
+              <span>Длинный монолог: <b>{m.longestMonologueWords}</b> сл.</span>
+              {m.hasTimestamps && <span>Темп мен.: <b>{m.wpmManager ?? '—'}</b> сл/мин</span>}
+              {m.hasTimestamps && <span>Пауз &gt;3с: <b>{m.pausesOver3s ?? '—'}</b></span>}
+              {m.hasTimestamps && <span>Макс. пауза: <b>{fmtSec(m.longestPauseSec)}</b></span>}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Транскрипт */}
