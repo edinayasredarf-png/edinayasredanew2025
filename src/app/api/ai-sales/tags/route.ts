@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSalesAccess } from "@/lib/server/authFromBearer";
-import { listCalls } from "@/lib/server/aiSales/readDb";
+import { listTags } from "@/lib/server/aiSales/tagsDb";
 import { managerFilterFor } from "@/lib/server/aiSales/rbacFilter";
 
 export const runtime = "nodejs";
@@ -14,23 +14,12 @@ export async function GET(request: NextRequest) {
     const status = (e as { status?: number }).status ?? 401;
     return NextResponse.json({ error: "Нет доступа" }, { status });
   }
-
   const sp = request.nextUrl.searchParams;
   try {
-    const data = await listCalls({
-      managerBitrixId: managerFilterFor(user),
-      temperature: sp.get("temperature"),
-      status: sp.get("status"),
-      tag: sp.get("tag"),
-      from: sp.get("from"),
-      to: sp.get("to"),
-      sort: sp.get("sort") === "asc" ? "asc" : "desc",
-      limit: sp.get("limit") ? Number(sp.get("limit")) : undefined,
-      offset: sp.get("offset") ? Number(sp.get("offset")) : undefined,
-    });
+    const data = await listTags({ managerBitrixId: managerFilterFor(user), from: sp.get("from"), to: sp.get("to") });
     return NextResponse.json(data);
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Ошибка списка звонков";
+    const message = e instanceof Error ? e.message : "Ошибка тегов";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

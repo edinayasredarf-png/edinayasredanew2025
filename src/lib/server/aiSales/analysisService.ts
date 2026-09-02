@@ -20,6 +20,7 @@ import {
 import { getTimewebPool } from "@/lib/timewebPg";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { createFollowUpsFromAnalysis } from "@/lib/server/aiSales/followupsDb";
+import { saveCallTags } from "@/lib/server/aiSales/tagsDb";
 
 /**
  * Анализ звонка через Claude (§45 ТЗ). Классификация/скоринг — LLM; агрегация и
@@ -134,8 +135,9 @@ export async function runAnalysis(
   const topProduct = [...data.products].sort((a, b) => b.confidence - a.confidence)[0];
   await setCallProduct(callId, topProduct?.name ?? null);
 
-  // Follow-ups из обещаний менеджера (§35).
+  // Follow-ups из обещаний менеджера (§35) + AI-теги (§25).
   await createFollowUpsFromAnalysis(callId, data, call);
+  await saveCallTags(callId, data);
 
   await setCallStatus(callId, "COMPLETED");
 

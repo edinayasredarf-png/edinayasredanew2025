@@ -5,8 +5,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop';
-export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string };
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags';
+export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
   if (sec == null) return '—';
@@ -199,11 +199,12 @@ interface CallItem {
   resultType: string | null; nextStep: string | null; status: string;
 }
 
-function Calls({ onOpen, initialTemperature }: { onOpen: (id: string) => void; initialTemperature?: string }) {
+function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string) => void; initialTemperature?: string; initialTag?: string }) {
   const [items, setItems] = useState<CallItem[]>([]);
   const [total, setTotal] = useState(0);
   const [temp, setTemp] = useState(initialTemperature || '');
   const [status, setStatus] = useState('');
+  const [tag, setTag] = useState(initialTag || '');
   const [period, setPeriod] = useState<Period>(NO_PERIOD);
   const [sort, setSort] = useState<'asc' | 'desc'>('desc');
   const [err, setErr] = useState('');
@@ -215,6 +216,7 @@ function Calls({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
       const qs = periodQS(period);
       if (temp) qs.set('temperature', temp);
       if (status) qs.set('status', status);
+      if (tag) qs.set('tag', tag);
       qs.set('sort', sort);
       qs.set('limit', '200');
       const r = await fetch(`/api/ai-sales/calls?${qs}`);
@@ -224,7 +226,7 @@ function Calls({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Ошибка');
     } finally { setLoading(false); }
-  }, [temp, status, period, sort]);
+  }, [temp, status, tag, period, sort]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -251,6 +253,14 @@ function Calls({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
         </div>
       </div>
 
+      {tag && (
+        <div className="mb-3">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#029cda]/10 text-[#029cda]">
+            тег: {tag}
+            <button onClick={() => setTag('')} className="text-[#029cda] hover:text-red-500">✕</button>
+          </span>
+        </div>
+      )}
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
       {loading ? <div className="text-gray-500">Загрузка…</div> : (
@@ -936,6 +946,65 @@ function FollowUps() {
   );
 }
 
+/* ─────────── AI-теги ─────────── */
+interface TagStat { slug: string; category: string; categoryLabel: string; label: string; count: number }
+interface TagsData { groups: Array<{ category: string; categoryLabel: string; tags: TagStat[] }>; total: number }
+const TAG_CAT_COLOR: Record<string, string> = {
+  sales: 'bg-emerald-100 text-emerald-700', product: 'bg-sky-100 text-sky-700',
+  risk: 'bg-red-100 text-red-700', client: 'bg-violet-100 text-violet-700', custom: 'bg-gray-100 text-gray-700',
+};
+
+function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
+  const [data, setData] = useState<TagsData | null>(null);
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/tags?${periodQS(period)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period]);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+
+  const maxCount = data ? data.groups.reduce((m, g) => Math.max(m, ...g.tags.map((t) => t.count)), 1) : 1;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">AI-теги</h2>
+      <p className="text-sm text-gray-500 mb-4">Автотеги из разборов звонков. Клик по тегу — звонки с этим тегом.</p>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : data.groups.length === 0 ? (
+        <p className="text-gray-400 py-8">Тегов пока нет — появятся после анализа звонков.</p>
+      ) : (
+        <div className="space-y-5">
+          {data.groups.map((g) => (
+            <div key={g.category}>
+              <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">{g.categoryLabel}</p>
+              <div className="flex flex-wrap gap-2">
+                {g.tags.map((t) => (
+                  <button key={t.slug} onClick={() => onNavigate?.({ tab: 'ai-calls', tag: t.slug })}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${TAG_CAT_COLOR[t.category] || 'bg-gray-100 text-gray-700'} hover:ring-2 hover:ring-[#029cda]/30`}
+                    style={{ fontSize: `${0.8 + Math.min(0.5, (t.count / maxCount) * 0.5)}rem` }}>
+                    {t.label}<span className="opacity-60">{t.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────── AI РОП (сводный отчёт) ─────────── */
 interface RopData {
   dept: { calls: number; analyzed: number; avgDealScore: number | null; avgManagerScore: number | null; hot: number; warm: number; cold: number; withoutNextStep: number };
@@ -1140,15 +1209,17 @@ function ManagerDetail({ id, onBack }: { id: string; onBack: () => void }) {
 }
 
 /* ─────────── Обёртка раздела ─────────── */
-export default function AiSalesSection({ view, onNavigate, initialTemperature }: {
+export default function AiSalesSection({ view, onNavigate, initialTemperature, initialTag }: {
   view: View;
   onNavigate?: (t: NavTarget) => void;
   initialTemperature?: string;
+  initialTag?: string;
 }) {
   const [openCall, setOpenCall] = useState<string | null>(null);
   const [openDeal, setOpenDeal] = useState<string | null>(null);
 
   if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
+  if (view === 'tags') return <Tags onNavigate={onNavigate} />;
   if (view === 'rop') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
@@ -1173,5 +1244,5 @@ export default function AiSalesSection({ view, onNavigate, initialTemperature }:
   }
   return openCall
     ? <CallDetail id={openCall} onBack={() => setOpenCall(null)} />
-    : <Calls onOpen={setOpenCall} initialTemperature={initialTemperature} />;
+    : <Calls onOpen={setOpenCall} initialTemperature={initialTemperature} initialTag={initialTag} />;
 }

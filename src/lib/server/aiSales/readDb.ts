@@ -153,6 +153,7 @@ export interface CallListFilters {
   managerBitrixId?: string | null; // RBAC
   temperature?: string | null;
   status?: string | null;
+  tag?: string | null; // slug тега
   from?: string | null;
   to?: string | null;
   sort?: "asc" | "desc"; // по дате звонка
@@ -172,6 +173,10 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
   if (f.status) { where.push(`c.status = $${i++}`); params.push(f.status); }
   if (f.from) { where.push(`c.started_at >= $${i++}::date`); params.push(f.from); }
   if (f.to) { where.push(`c.started_at < ($${i++}::date + interval '1 day')`); params.push(f.to); }
+  if (f.tag) {
+    where.push(`exists (select 1 from ai_call_tags ct join ai_tags t on t.id = ct.tag_id where ct.call_id = c.id and t.slug = $${i++})`);
+    params.push(f.tag);
+  }
 
   const whereSql = where.join(" and ");
   const sort = f.sort === "asc" ? "asc" : "desc";

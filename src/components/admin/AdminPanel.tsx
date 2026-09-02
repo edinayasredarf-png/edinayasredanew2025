@@ -34,9 +34,10 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
-    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers' | 'ai-rop'
+    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers' | 'ai-rop' | 'ai-tags'
   >('dashboard');
   const [salesTemp, setSalesTemp] = useState<string | undefined>(undefined);
+  const [salesTag, setSalesTag] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -155,6 +156,7 @@ export default function AdminPanel() {
                 { id: 'ai-deals', label: 'Сделки' },
                 { id: 'ai-managers', label: 'Менеджеры' },
                 { id: 'ai-calls', label: 'Звонки' },
+                { id: 'ai-tags', label: 'Теги' },
                 { id: 'ai-insights', label: 'AI Insights' },
               ] },
               { group: 'Мониторинг', items: [
@@ -175,7 +177,7 @@ export default function AdminPanel() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => { setActiveTab(item.id); setSalesTemp(undefined); }}
+                    onClick={() => { setActiveTab(item.id); setSalesTemp(undefined); setSalesTag(undefined); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                       activeTab === item.id ? 'bg-[#029cda]/10 text-[#029cda] font-medium' : 'text-gray-600 hover:bg-gray-50'
                     }`}
@@ -202,10 +204,13 @@ export default function AdminPanel() {
           {activeTab === 'ai-managers' && <AiSalesSection view="managers" />}
           {activeTab === 'ai-rop' && <AiSalesSection view="rop" />}
           {activeTab === 'ai-dashboard' && (
-            <AiSalesSection view="dashboard" onNavigate={(t) => { setSalesTemp(t.temperature); setActiveTab(t.tab); }} />
+            <AiSalesSection view="dashboard" onNavigate={(t) => { setSalesTemp(t.temperature); setSalesTag(t.tag); setActiveTab(t.tab); }} />
           )}
           {activeTab === 'ai-deals' && <AiSalesSection view="deals" initialTemperature={salesTemp} />}
-          {activeTab === 'ai-calls' && <AiSalesSection view="calls" initialTemperature={salesTemp} />}
+          {activeTab === 'ai-calls' && <AiSalesSection view="calls" initialTemperature={salesTemp} initialTag={salesTag} />}
+          {activeTab === 'ai-tags' && (
+            <AiSalesSection view="tags" onNavigate={(t) => { setSalesTemp(t.temperature); setSalesTag(t.tag); setActiveTab(t.tab); }} />
+          )}
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
