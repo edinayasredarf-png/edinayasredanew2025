@@ -24,14 +24,31 @@ export interface DashboardData {
   queue: { pending: number; running: number; failed: number; retry: number };
 }
 
-function mgrClause(managerBitrixId: string | null, alias = "c"): { sql: string; params: string[] } {
-  if (!managerBitrixId) return { sql: "", params: [] };
-  return { sql: ` and ${alias}.bitrix_user_id = $1`, params: [managerBitrixId] };
+export interface DateRange {
+  from?: string | null; // YYYY-MM-DD включительно
+  to?: string | null;   // YYYY-MM-DD включительно
 }
 
-export async function getDashboard(managerBitrixId: string | null): Promise<DashboardData> {
+/** Фильтр по менеджеру + диапазону дат для звонков (по c.started_at). */
+function callFilter(
+  managerBitrixId: string | null,
+  range?: DateRange,
+  alias = "c"
+): { sql: string; params: unknown[] } {
+  const parts: string[] = [];
+  const params: unknown[] = [];
+  if (managerBitrixId) { params.push(managerBitrixId); parts.push(`${alias}.bitrix_user_id = $${params.length}`); }
+  if (range?.from) { params.push(range.from); parts.push(`${alias}.started_at >= $${params.length}::date`); }
+  if (range?.to) { params.push(range.to); parts.push(`${alias}.started_at < ($${params.length}::date + interval '1 day')`); }
+  return { sql: parts.length ? ` and ${parts.join(" and ")}` : "", params };
+}
+
+export async function getDashboard(
+  managerBitrixId: string | null,
+  range?: DateRange
+): Promise<DashboardData> {
   const pool = getTimewebPool();
-  const m = mgrClause(managerBitrixId);
+  const m = callFilter(managerBitrixId, range);
 
   const callsAgg = await pool.query<{
     total: string; analyzed: string; avg_dur: string | null;
@@ -61,12 +78,17 @@ export async function getDashboard(managerBitrixId: string | null): Promise<Dash
   );
 
   // Средняя оценка менеджера — по СДЕЛКАМ (справедливо: короткие звонки не тянут вниз).
-  const mgrClauseDeal = managerBitrixId ? " where d.bitrix_user_id = $1" : "";
+  const dealParts: string[] = [];
+  const dealParams: unknown[] = [];
+  if (managerBitrixId) { dealParams.push(managerBitrixId); dealParts.push(`d.bitrix_user_id = $${dealParams.length}`); }
+  if (range?.from) { dealParams.push(range.from); dealParts.push(`di.last_call_at >= $${dealParams.length}::date`); }
+  if (range?.to) { dealParams.push(range.to); dealParts.push(`di.last_call_at < ($${dealParams.length}::date + interval '1 day')`); }
+  const dealWhere = dealParts.length ? ` where ${dealParts.join(" and ")}` : "";
   const mgrAgg = await pool.query<{ avg_mgr: string | null }>(
     `select avg(di.manager_score)::text as avg_mgr
        from ai_deal_insights di
-       join ai_deals d on d.bitrix_deal_id = di.bitrix_deal_id${mgrClauseDeal}`,
-    managerBitrixId ? [managerBitrixId] : []
+       join ai_deals d on d.bitrix_deal_id = di.bitrix_deal_id${dealWhere}`,
+    dealParams
   );
 
   const failedAgg = await pool.query<{ failed: string }>(
@@ -131,6 +153,9 @@ export interface CallListFilters {
   managerBitrixId?: string | null; // RBAC
   temperature?: string | null;
   status?: string | null;
+  from?: string | null;
+  to?: string | null;
+  sort?: "asc" | "desc"; // по дате звонка
   limit?: number;
   offset?: number;
 }
@@ -145,8 +170,11 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
   if (f.managerBitrixId) { where.push(`c.bitrix_user_id = $${i++}`); params.push(f.managerBitrixId); }
   if (f.temperature) { where.push(`a.deal_temperature = $${i++}`); params.push(f.temperature); }
   if (f.status) { where.push(`c.status = $${i++}`); params.push(f.status); }
+  if (f.from) { where.push(`c.started_at >= $${i++}::date`); params.push(f.from); }
+  if (f.to) { where.push(`c.started_at < ($${i++}::date + interval '1 day')`); params.push(f.to); }
 
   const whereSql = where.join(" and ");
+  const sort = f.sort === "asc" ? "asc" : "desc";
   const limit = Math.min(f.limit ?? 50, 200);
   const offset = f.offset ?? 0;
 
@@ -172,7 +200,7 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
        left join ai_managers m on m.bitrix_user_id = c.bitrix_user_id
        left join ai_companies co on co.bitrix_company_id = c.bitrix_company_id
       where ${whereSql}
-      order by c.started_at desc nulls last
+      order by c.started_at ${sort} nulls last
       limit ${limit} offset ${offset}`,
     params
   );

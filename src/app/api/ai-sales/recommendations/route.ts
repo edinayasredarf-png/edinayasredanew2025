@@ -14,8 +14,9 @@ export async function GET(request: NextRequest) {
     const status = (e as { status?: number }).status ?? 401;
     return NextResponse.json({ error: "Нет доступа" }, { status });
   }
+  const sp = request.nextUrl.searchParams;
   try {
-    const data = await getDailyRecommendations(managerFilterFor(user));
+    const data = await getDailyRecommendations(managerFilterFor(user), { from: sp.get("from"), to: sp.get("to") });
     return NextResponse.json(data);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Ошибка рекомендаций";

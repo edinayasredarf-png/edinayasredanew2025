@@ -143,6 +143,8 @@ export interface DealListItem {
 export async function listDeals(f: {
   managerBitrixId?: string | null;
   temperature?: string | null;
+  from?: string | null;
+  to?: string | null;
   limit?: number;
   offset?: number;
 }): Promise<{ items: DealListItem[]; total: number }> {
@@ -153,6 +155,8 @@ export async function listDeals(f: {
   let i = 1;
   if (f.managerBitrixId) { where.push(`d.bitrix_user_id = $${i++}`); params.push(f.managerBitrixId); }
   if (f.temperature) { where.push(`di.deal_temperature = $${i++}`); params.push(f.temperature); }
+  if (f.from) { where.push(`di.last_call_at >= $${i++}::date`); params.push(f.from); }
+  if (f.to) { where.push(`di.last_call_at < ($${i++}::date + interval '1 day')`); params.push(f.to); }
   const whereSql = where.join(" and ");
   const limit = Math.min(f.limit ?? 50, 200);
   const offset = f.offset ?? 0;

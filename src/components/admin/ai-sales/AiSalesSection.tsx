@@ -43,6 +43,51 @@ function Kpi({ label, value, sub }: { label: string; value: React.ReactNode; sub
   );
 }
 
+/* ─────────── Фильтр периода (общий для всех вкладок) ─────────── */
+interface Period { from: string | null; to: string | null }
+const NO_PERIOD: Period = { from: null, to: null };
+
+function dayStr(offset = 0): string {
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0, 10);
+}
+function presetRange(key: string): Period {
+  if (key === 'today') return { from: dayStr(0), to: dayStr(0) };
+  if (key === 'week') return { from: dayStr(-6), to: dayStr(0) };
+  if (key === 'month') return { from: dayStr(-29), to: dayStr(0) };
+  return NO_PERIOD;
+}
+const periodQS = (p: Period) => {
+  const qs = new URLSearchParams();
+  if (p.from) qs.set('from', p.from);
+  if (p.to) qs.set('to', p.to);
+  return qs;
+};
+
+function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
+  const [active, setActive] = useState('all');
+  const pick = (key: string) => { setActive(key); onChange(presetRange(key)); };
+  const presets = [['all', 'Всё'], ['today', 'Сегодня'], ['week', 'Неделя'], ['month', 'Месяц']];
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-4">
+      {presets.map(([key, label]) => (
+        <button key={key} onClick={() => pick(key)}
+          className={`px-3 py-1.5 rounded-lg text-sm transition ${active === key ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+          {label}
+        </button>
+      ))}
+      <span className="text-gray-300 mx-1">|</span>
+      <input type="date" value={value.from || ''} max={value.to || undefined}
+        onChange={(e) => { setActive('custom'); onChange({ from: e.target.value || null, to: value.to }); }}
+        className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-700" />
+      <span className="text-gray-400 text-sm">—</span>
+      <input type="date" value={value.to || ''} min={value.from || undefined}
+        onChange={(e) => { setActive('custom'); onChange({ from: value.from, to: e.target.value || null }); }}
+        className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-700" />
+    </div>
+  );
+}
+
 /* ─────────── Дашборд ─────────── */
 interface Dash {
   calls: { total: number; analyzed: number; avgDurationSec: number | null; avgDealScore: number | null; avgManagerScore: number | null };
@@ -56,18 +101,19 @@ function Dashboard() {
   const [err, setErr] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
 
   const load = useCallback(async () => {
     setErr('');
     try {
-      const r = await fetch('/api/ai-sales/dashboard');
+      const r = await fetch(`/api/ai-sales/dashboard?${periodQS(period)}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
       setData(j);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Ошибка');
     }
-  }, []);
+  }, [period]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -113,6 +159,8 @@ function Dashboard() {
       </div>
       {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm">{msg}</div>}
 
+      <PeriodBar value={period} onChange={setPeriod} />
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
         <Kpi label="Звонки" value={data.calls.total} sub={`Проанализировано: ${data.calls.analyzed}`} />
         <Kpi label="Средняя длит." value={fmtDur(data.calls.avgDurationSec)} />
@@ -153,15 +201,19 @@ function Calls({ onOpen }: { onOpen: (id: string) => void }) {
   const [total, setTotal] = useState(0);
   const [temp, setTemp] = useState('');
   const [status, setStatus] = useState('');
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [sort, setSort] = useState<'asc' | 'desc'>('desc');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const qs = new URLSearchParams();
+      const qs = periodQS(period);
       if (temp) qs.set('temperature', temp);
       if (status) qs.set('status', status);
+      qs.set('sort', sort);
+      qs.set('limit', '200');
       const r = await fetch(`/api/ai-sales/calls?${qs}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
@@ -169,7 +221,7 @@ function Calls({ onOpen }: { onOpen: (id: string) => void }) {
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Ошибка');
     } finally { setLoading(false); }
-  }, [temp, status]);
+  }, [temp, status, period, sort]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -196,13 +248,18 @@ function Calls({ onOpen }: { onOpen: (id: string) => void }) {
         </div>
       </div>
 
+      <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
       {loading ? <div className="text-gray-500">Загрузка…</div> : (
         <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>
-                {['Дата', 'Менеджер', 'Клиент', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
+                <th className="text-left font-medium px-3 py-2 whitespace-nowrap cursor-pointer select-none hover:text-[#029cda]"
+                    onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}>
+                  Дата {sort === 'desc' ? '↓' : '↑'}
+                </th>
+                {['Менеджер', 'Клиент', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
                   <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -425,13 +482,14 @@ function Deals({ onOpen }: { onOpen: (id: string) => void }) {
   const [items, setItems] = useState<DealItem[]>([]);
   const [total, setTotal] = useState(0);
   const [temp, setTemp] = useState('');
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const qs = new URLSearchParams();
+      const qs = periodQS(period);
       if (temp) qs.set('temperature', temp);
       const r = await fetch(`/api/ai-sales/deals?${qs}`);
       const j = await r.json();
@@ -439,7 +497,7 @@ function Deals({ onOpen }: { onOpen: (id: string) => void }) {
       setItems(j.items); setTotal(j.total);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
-  }, [temp]);
+  }, [temp, period]);
   useEffect(() => { load(); }, [load]);
 
   return (
@@ -453,6 +511,7 @@ function Deals({ onOpen }: { onOpen: (id: string) => void }) {
           <option value="COLD">Холодные</option>
         </select>
       </div>
+      <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
       {loading ? <div className="text-gray-500">Загрузка…</div> : (
         <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
@@ -647,19 +706,20 @@ function RecoCard({ it, onOpen }: { it: RecoItem; onOpen: (id: string) => void }
 
 function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<RecoData | null>(null);
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const r = await fetch('/api/ai-sales/recommendations');
+      const r = await fetch(`/api/ai-sales/recommendations?${periodQS(period)}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
       setData(j);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
-  }, []);
+  }, [period]);
   useEffect(() => { load(); }, [load]);
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
@@ -670,7 +730,8 @@ function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
         <h2 className="text-xl font-bold text-gray-900">AI рекомендует — кому звонить сегодня</h2>
         <button onClick={load} className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Обновить</button>
       </div>
-      <p className="text-sm text-gray-500 mb-5">Приоритетные сделки по данным разборов звонков. Клик — открыть карточку сделки.</p>
+      <p className="text-sm text-gray-500 mb-4">Приоритетные сделки по данным разборов звонков. Клик — открыть карточку сделки.</p>
+      <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {(['critical', 'risk', 'opportunity'] as const).map((key) => (

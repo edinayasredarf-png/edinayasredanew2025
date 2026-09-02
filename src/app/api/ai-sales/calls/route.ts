@@ -21,6 +21,9 @@ export async function GET(request: NextRequest) {
       managerBitrixId: managerFilterFor(user),
       temperature: sp.get("temperature"),
       status: sp.get("status"),
+      from: sp.get("from"),
+      to: sp.get("to"),
+      sort: sp.get("sort") === "asc" ? "asc" : "desc",
       limit: sp.get("limit") ? Number(sp.get("limit")) : undefined,
       offset: sp.get("offset") ? Number(sp.get("offset")) : undefined,
     });
