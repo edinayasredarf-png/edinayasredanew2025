@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -756,6 +756,112 @@ function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
   );
 }
 
+/* ─────────── AI Insights ─────────── */
+interface InsightsData {
+  totalAnalyzed: number;
+  topProducts: Array<{ name: string; count: number }>;
+  topPainPoints: Array<{ name: string; count: number }>;
+  topObjections: Array<{ text: string; count: number; unhandled: number }>;
+  topCompetitors: Array<{ name: string; count: number }>;
+  budgetNotDiscussedRate: number | null;
+  procurementMentions: number;
+  resultDistribution: Array<{ type: string; count: number }>;
+  managerWeakCriteria: Array<{ key: string; avg: number }>;
+  headlines: string[];
+}
+const CRIT_LABEL: Record<string, string> = {
+  opening: 'приветствие', discovery: 'выявление потребности', questions: 'вопросы',
+  pain_identification: 'выявление проблем', current_situation: 'текущая ситуация',
+  decision_maker: 'выявление ЛПР', budget: 'обсуждение бюджета', timeline: 'сроки',
+  procurement: 'закупки', objections: 'работа с возражениями',
+  product_presentation: 'презентация продукта', next_step: 'следующий шаг', follow_up: 'follow-up',
+};
+const RESULT_LABEL: Record<string, string> = {
+  agreed: 'договорились', not_agreed: 'не договорились', callback: 'перезвонить',
+  meeting_set: 'встреча назначена', send_quote: 'отправить КП', not_interested: 'неинтересно',
+  no_contact: 'не дозвонились', other: 'другое',
+};
+
+function TopList({ title, rows, max }: { title: string; rows: Array<{ label: string; count: number; extra?: string }>; max: number }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4">
+      <p className="font-semibold text-gray-800 mb-3">{title}</p>
+      {rows.length === 0 ? <p className="text-gray-400 text-sm">Нет данных.</p> : (
+        <div className="space-y-2">
+          {rows.map((r, i) => (
+            <div key={i} className="text-sm">
+              <div className="flex justify-between gap-2">
+                <span className="text-gray-700 truncate">{r.label}{r.extra ? <span className="text-red-500 text-xs ml-1">{r.extra}</span> : null}</span>
+                <span className="text-gray-500 shrink-0">{r.count}</span>
+              </div>
+              <div className="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                <div className="h-full bg-[#029cda]" style={{ width: `${max ? Math.round((r.count / max) * 100) : 0}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Insights() {
+  const [data, setData] = useState<InsightsData | null>(null);
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/insights?${periodQS(period)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period]);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+
+  const maxOf = (arr: Array<{ count: number }>) => arr.reduce((m, x) => Math.max(m, x.count), 0);
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">AI Insights</h2>
+      <p className="text-sm text-gray-500 mb-4">Агрегаты по разборам звонков за период.</p>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : (
+        <div className="space-y-4">
+          {data.headlines.length > 0 && (
+            <div className="bg-[#029cda]/5 border border-[#029cda]/20 rounded-xl p-4">
+              <p className="font-semibold text-gray-800 mb-2">Главное ({data.totalAnalyzed} звонков)</p>
+              <ul className="space-y-1 text-sm text-gray-700">{data.headlines.map((h, i) => <li key={i}>• {h}</li>)}</ul>
+            </div>
+          )}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Kpi label="Проанализировано" value={data.totalAnalyzed} />
+            <Kpi label="Без обсуждения бюджета" value={data.budgetNotDiscussedRate != null ? `${data.budgetNotDiscussedRate}%` : '—'} sub="в состоявшихся звонках" />
+            <Kpi label="Упоминаний закупок" value={data.procurementMentions} sub="44-ФЗ/223-ФЗ/тендер" />
+            <Kpi label="Возражений (типов)" value={data.topObjections.length} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <TopList title="Востребованные продукты" max={maxOf(data.topProducts)} rows={data.topProducts.map((p) => ({ label: p.name, count: p.count }))} />
+            <TopList title="Боли клиентов" max={maxOf(data.topPainPoints)} rows={data.topPainPoints.map((p) => ({ label: p.name, count: p.count }))} />
+            <TopList title="Частые возражения" max={maxOf(data.topObjections)} rows={data.topObjections.map((o) => ({ label: o.text, count: o.count, extra: o.unhandled ? `${o.unhandled} не отработано` : undefined }))} />
+            <TopList title="Конкуренты" max={maxOf(data.topCompetitors)} rows={data.topCompetitors.map((c) => ({ label: c.name, count: c.count }))} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <TopList title="Слабые места менеджеров (ниже балл)" max={10} rows={data.managerWeakCriteria.map((c) => ({ label: CRIT_LABEL[c.key] || c.key, count: c.avg }))} />
+            <TopList title="Результаты звонков" max={maxOf(data.resultDistribution)} rows={data.resultDistribution.map((r) => ({ label: RESULT_LABEL[r.type] || r.type, count: r.count }))} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────── Обёртка раздела ─────────── */
 export default function AiSalesSection({ view, onNavigate, initialTemperature }: {
   view: View;
@@ -766,6 +872,7 @@ export default function AiSalesSection({ view, onNavigate, initialTemperature }:
   const [openDeal, setOpenDeal] = useState<string | null>(null);
 
   if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
+  if (view === 'insights') return <Insights />;
   if (view === 'reco') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
