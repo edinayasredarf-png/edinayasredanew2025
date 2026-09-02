@@ -34,7 +34,7 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
-    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups'
+    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers'
   >('dashboard');
   const [salesTemp, setSalesTemp] = useState<string | undefined>(undefined);
 
@@ -153,6 +153,7 @@ export default function AdminPanel() {
                 { id: 'ai-insights', label: 'AI Insights' },
                 { id: 'ai-dashboard', label: 'Дашборд AI' },
                 { id: 'ai-deals', label: 'Сделки' },
+                { id: 'ai-managers', label: 'Менеджеры' },
                 { id: 'ai-calls', label: 'Звонки' },
               ] },
               { group: 'Мониторинг', items: [
@@ -197,6 +198,7 @@ export default function AdminPanel() {
           {activeTab === 'ai-reco' && <AiSalesSection view="reco" />}
           {activeTab === 'ai-insights' && <AiSalesSection view="insights" />}
           {activeTab === 'ai-followups' && <AiSalesSection view="followups" />}
+          {activeTab === 'ai-managers' && <AiSalesSection view="managers" />}
           {activeTab === 'ai-dashboard' && (
             <AiSalesSection view="dashboard" onNavigate={(t) => { setSalesTemp(t.temperature); setActiveTab(t.tab); }} />
           )}

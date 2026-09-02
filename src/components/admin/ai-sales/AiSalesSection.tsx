@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -936,6 +936,128 @@ function FollowUps() {
   );
 }
 
+/* ─────────── Менеджеры ─────────── */
+interface ManagerRow {
+  bitrixUserId: string; name: string | null; calls: number; analyzed: number;
+  deals: number; hotDeals: number; avgManagerScore: number | null; avgDealScore: number | null;
+}
+
+function Managers({ onOpen }: { onOpen: (id: string) => void }) {
+  const [items, setItems] = useState<ManagerRow[]>([]);
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/managers?${periodQS(period)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setItems(j.items);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period]);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Менеджеры</h2>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {loading ? <div className="text-gray-500">Загрузка…</div> : (
+        <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+          <table className="min-w-full text-sm">
+            <thead className="bg-[#F6F7F9] text-gray-600">
+              <tr>{['Менеджер', 'Звонков', 'Сделок', '🔥 Горячих', 'Оценка', 'Deal Score'].map((h) => (
+                <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {items.map((m) => (
+                <tr key={m.bitrixUserId} onClick={() => onOpen(m.bitrixUserId)} className="hover:bg-sky-50/60 cursor-pointer">
+                  <td className="px-3 py-2 font-medium text-gray-900">{m.name || `#${m.bitrixUserId}`}</td>
+                  <td className="px-3 py-2">{m.calls}<span className="text-gray-400"> ({m.analyzed})</span></td>
+                  <td className="px-3 py-2">{m.deals}</td>
+                  <td className="px-3 py-2">{m.hotDeals}</td>
+                  <td className="px-3 py-2 font-medium">{m.avgManagerScore != null ? `${m.avgManagerScore}/10` : '—'}</td>
+                  <td className="px-3 py-2">{m.avgDealScore ?? '—'}</td>
+                </tr>
+              ))}
+              {items.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-gray-400">Нет данных.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ManagerDetailData {
+  bitrixUserId: string; name: string | null; metrics: ManagerRow;
+  criteria: Array<{ key: string; label: string; avg: number }>;
+  strengths: string[]; weaknesses: string[];
+  recentCalls: Array<{ id: string; startedAt: string | null; callType: string | null; managerScore: number | null; temperature: string | null }>;
+}
+
+function ManagerDetail({ id, onBack }: { id: string; onBack: () => void }) {
+  const [data, setData] = useState<ManagerDetailData | null>(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`/api/ai-sales/managers/${id}`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        setData(j);
+      } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    })();
+  }, [id]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
+  if (!data) return <div className="text-gray-500">Загрузка…</div>;
+  const m = data.metrics;
+
+  return (
+    <div>
+      <button onClick={onBack} className="text-sm text-[#029cda] mb-4">← К менеджерам</button>
+      <h2 className="text-xl font-bold text-gray-900 mb-4">{data.name || `#${data.bitrixUserId}`}</h2>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
+        <Kpi label="Оценка (по сделкам)" value={m.avgManagerScore != null ? `${m.avgManagerScore}/10` : '—'} />
+        <Kpi label="Звонков" value={m.calls} sub={`Проанализировано: ${m.analyzed}`} />
+        <Kpi label="Сделок" value={m.deals} />
+        <Kpi label="🔥 Горячих" value={m.hotDeals} />
+        <Kpi label="Ср. Deal Score" value={m.avgDealScore ?? '—'} />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <TopList title="Навыки по критериям (0–10)" max={10} rows={data.criteria.map((c) => ({ label: c.label, count: c.avg }))} />
+        <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+          {data.strengths.length > 0 && (<div><p className="text-xs uppercase tracking-wide text-emerald-600 mb-1">Сильные стороны</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}
+          {data.weaknesses.length > 0 && (<div><p className="text-xs uppercase tracking-wide text-amber-600 mb-1">Зоны роста</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.weaknesses.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}
+          {data.strengths.length === 0 && data.weaknesses.length === 0 && <p className="text-gray-400 text-sm">Недостаточно данных по сильным/слабым сторонам.</p>}
+        </div>
+      </div>
+      <div className="bg-white rounded-xl border border-gray-100 p-4 mt-4">
+        <p className="font-semibold text-gray-800 mb-3">Последние звонки</p>
+        <div className="space-y-2">
+          {data.recentCalls.map((c) => (
+            <div key={c.id} className="flex items-center justify-between text-sm border-b border-gray-50 pb-2">
+              <span className="text-gray-700">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}
+                {c.callType && <span className="ml-2 text-xs text-gray-400">{CALL_TYPE_LABEL[c.callType] || c.callType}</span>}</span>
+              <div className="flex items-center gap-2">
+                {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{c.temperature}</span>}
+                <span className="text-gray-400">{c.managerScore != null ? `${c.managerScore}/10` : '—'}</span>
+              </div>
+            </div>
+          ))}
+          {data.recentCalls.length === 0 && <p className="text-gray-400 text-sm">Звонков нет.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─────────── Обёртка раздела ─────────── */
 export default function AiSalesSection({ view, onNavigate, initialTemperature }: {
   view: View;
@@ -948,6 +1070,11 @@ export default function AiSalesSection({ view, onNavigate, initialTemperature }:
   if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
   if (view === 'insights') return <Insights />;
   if (view === 'followups') return <FollowUps />;
+  if (view === 'managers') {
+    return openDeal
+      ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} />
+      : <Managers onOpen={setOpenDeal} />;
+  }
   if (view === 'reco') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
