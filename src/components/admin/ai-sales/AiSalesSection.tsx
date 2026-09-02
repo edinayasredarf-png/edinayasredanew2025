@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -936,6 +936,87 @@ function FollowUps() {
   );
 }
 
+/* ─────────── AI РОП (сводный отчёт) ─────────── */
+interface RopData {
+  dept: { calls: number; analyzed: number; avgDealScore: number | null; avgManagerScore: number | null; hot: number; warm: number; cold: number; withoutNextStep: number };
+  headlines: string[];
+  bestManager: { name: string | null; score: number } | null;
+  needsCoaching: { name: string | null; score: number } | null;
+  weakestArea: string | null;
+  attention: { criticalCount: number; riskCount: number; opportunityCount: number; items: RecoItem[] };
+  overdueFollowups: number;
+}
+
+function Rop({ onOpen }: { onOpen: (id: string) => void }) {
+  const [data, setData] = useState<RopData | null>(null);
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/rop?${periodQS(period)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period]);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">AI РОП — сводка по отделу</h2>
+      <p className="text-sm text-gray-500 mb-4">Ключевые цифры, кто в топе, где проблемы и что требует внимания.</p>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Kpi label="Звонки" value={data.dept.calls} sub={`Проанализировано: ${data.dept.analyzed}`} />
+            <Kpi label="Ср. Deal Score" value={data.dept.avgDealScore ?? '—'} />
+            <Kpi label="Ср. оценка менеджера" value={data.dept.avgManagerScore != null ? `${data.dept.avgManagerScore}/10` : '—'} />
+            <Kpi label="Просрочено follow-up" value={data.overdueFollowups} />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Kpi label="🔥 Горячие" value={data.dept.hot} />
+            <Kpi label="Тёплые" value={data.dept.warm} />
+            <Kpi label="🔴 Критично" value={data.attention.criticalCount} />
+            <Kpi label="🟠 Риск" value={data.attention.riskCount} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-[#029cda]/5 border border-[#029cda]/20 rounded-xl p-4">
+              <p className="font-semibold text-gray-800 mb-2">Главное</p>
+              {data.headlines.length ? <ul className="space-y-1 text-sm text-gray-700">{data.headlines.map((h, i) => <li key={i}>• {h}</li>)}</ul> : <p className="text-gray-400 text-sm">Недостаточно данных.</p>}
+              <div className="mt-3 text-sm text-gray-700 space-y-1">
+                {data.bestManager && <p>🏆 Лучший менеджер: <b>{data.bestManager.name || '—'}</b> ({data.bestManager.score}/10)</p>}
+                {data.needsCoaching && <p>📉 Нужен коучинг: <b>{data.needsCoaching.name || '—'}</b> ({data.needsCoaching.score}/10)</p>}
+                {data.weakestArea && <p>⚠️ Слабый участок: <b>{data.weakestArea}</b></p>}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-100 p-4">
+              <p className="font-semibold text-gray-800 mb-3">Требует внимания сегодня</p>
+              <div className="space-y-2">
+                {data.attention.items.map((it) => (
+                  <button key={it.bitrixDealId} onClick={() => it.bitrixDealId && onOpen(it.bitrixDealId)} className="w-full text-left border-b border-gray-50 pb-2 hover:text-[#029cda]">
+                    <p className="text-sm text-gray-900">{it.company || `Сделка #${it.bitrixDealId}`}</p>
+                    <p className="text-xs text-gray-500">{it.reason}</p>
+                  </button>
+                ))}
+                {data.attention.items.length === 0 && <p className="text-gray-400 text-sm">Критичных сделок нет 👌</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────── Менеджеры ─────────── */
 interface ManagerRow {
   bitrixUserId: string; name: string | null; calls: number; analyzed: number;
@@ -1068,6 +1149,11 @@ export default function AiSalesSection({ view, onNavigate, initialTemperature }:
   const [openDeal, setOpenDeal] = useState<string | null>(null);
 
   if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
+  if (view === 'rop') {
+    return openDeal
+      ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
+      : <Rop onOpen={setOpenDeal} />;
+  }
   if (view === 'insights') return <Insights />;
   if (view === 'followups') return <FollowUps />;
   if (view === 'managers') {

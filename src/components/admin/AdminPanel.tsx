@@ -34,7 +34,7 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
-    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers'
+    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers' | 'ai-rop'
   >('dashboard');
   const [salesTemp, setSalesTemp] = useState<string | undefined>(undefined);
 
@@ -148,13 +148,14 @@ export default function AdminPanel() {
                 { id: 'feedback', label: 'Обратная связь' },
               ] },
               { group: 'AI Продажи', items: [
+                { id: 'ai-dashboard', label: 'Дашборд AI' },
+                { id: 'ai-rop', label: 'AI РОП' },
                 { id: 'ai-reco', label: 'AI рекомендует' },
                 { id: 'ai-followups', label: 'Follow-up' },
-                { id: 'ai-insights', label: 'AI Insights' },
-                { id: 'ai-dashboard', label: 'Дашборд AI' },
                 { id: 'ai-deals', label: 'Сделки' },
                 { id: 'ai-managers', label: 'Менеджеры' },
                 { id: 'ai-calls', label: 'Звонки' },
+                { id: 'ai-insights', label: 'AI Insights' },
               ] },
               { group: 'Мониторинг', items: [
                 { id: 'radar', label: 'Новостной радар' },
@@ -199,6 +200,7 @@ export default function AdminPanel() {
           {activeTab === 'ai-insights' && <AiSalesSection view="insights" />}
           {activeTab === 'ai-followups' && <AiSalesSection view="followups" />}
           {activeTab === 'ai-managers' && <AiSalesSection view="managers" />}
+          {activeTab === 'ai-rop' && <AiSalesSection view="rop" />}
           {activeTab === 'ai-dashboard' && (
             <AiSalesSection view="dashboard" onNavigate={(t) => { setSalesTemp(t.temperature); setActiveTab(t.tab); }} />
           )}
