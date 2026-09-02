@@ -4,4 +4,5 @@ out/
 **/*.map
 external_media/
 optimized_media/
+speech-service/
 

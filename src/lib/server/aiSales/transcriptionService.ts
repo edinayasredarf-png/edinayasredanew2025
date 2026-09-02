@@ -28,14 +28,6 @@ interface TranscribePayload {
   polls?: number;
 }
 
-async function downloadRecording(fileId: string): Promise<Buffer> {
-  const url = await resolveDiskDownloadUrl(fileId);
-  if (!url) throw new Error("Не удалось получить DOWNLOAD_URL записи");
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Скачивание записи ${res.status}`);
-  return Buffer.from(await res.arrayBuffer());
-}
-
 /** Извлечь fileId из raw активности звонка. */
 function fileIdFromRaw(raw: unknown): string | null {
   const r = raw as { FILES?: Array<{ id?: unknown }> } | null;
@@ -95,30 +87,45 @@ export async function runTranscription(payload: TranscribePayload): Promise<unkn
   if (!resolvedFileId) throw new Error("Не удалось определить fileId записи");
 
   await setCallStatus(call.id, "DOWNLOADING");
-  const audio = await downloadRecording(resolvedFileId);
-  const hash = createHash("sha256").update(audio).digest("hex");
-  await setCallRecordingHash(call.id, hash);
+  // Прямая ссылка на запись (self-hosted сервис скачает сам; иначе — качаем байты).
+  const downloadUrl = await resolveDiskDownloadUrl(resolvedFileId);
+  if (!downloadUrl) throw new Error("Не удалось получить DOWNLOAD_URL записи");
+
+  // sync ИЛИ async с Object Storage — нужны байты (для распознавания/загрузки + хэш).
+  const needBytes = provider.mode === "sync" || provider.needsObjectStorage !== false;
+  let audio: Buffer | null = null;
+  if (needBytes) {
+    const res = await fetch(downloadUrl);
+    if (!res.ok) throw new Error(`Скачивание записи ${res.status}`);
+    audio = Buffer.from(await res.arrayBuffer());
+    await setCallRecordingHash(call.id, createHash("sha256").update(audio).digest("hex"));
+  }
   await setCallStatus(call.id, "TRANSCRIBING");
 
   if (provider.mode === "sync") {
     if (!provider.transcribe) throw new Error("Провайдер не поддерживает transcribe");
-    const result = await provider.transcribe({ audioBuffer: audio, languageHint: "ru" });
+    const result = await provider.transcribe({ audioBuffer: audio!, languageHint: "ru" });
     await saveTranscript(call.id, result);
     await afterTranscribed(call.id);
     return { transcribed: true, segments: result.segments.length };
   }
 
-  // async: загрузить в Object Storage → startAsync → перепланировать poll.
-  if (!objectStorageConfigured()) {
-    throw new Error(
-      "Для Yandex SpeechKit нужен Object Storage (YANDEX_S3_*). Настройте хранилище или используйте TRANSCRIPTION_PROVIDER=whisper."
-    );
-  }
   if (!provider.startAsync) throw new Error("Провайдер не поддерживает startAsync");
 
-  const key = `calls/${call.id}.mp3`;
-  const put = await putObject(key, audio, "audio/mpeg");
-  const started = await provider.startAsync(put.uri, "ru-RU");
+  // audioUri: для Yandex — Object Storage; для self-hosted — прямой URL записи.
+  let audioUri: string;
+  if (provider.needsObjectStorage !== false) {
+    if (!objectStorageConfigured()) {
+      throw new Error(
+        "Для этого провайдера нужен Object Storage (YANDEX_S3_*). Настройте хранилище или используйте TRANSCRIPTION_PROVIDER=selfhosted/whisper."
+      );
+    }
+    const put = await putObject(`calls/${call.id}.mp3`, audio!, "audio/mpeg");
+    audioUri = put.uri;
+  } else {
+    audioUri = downloadUrl;
+  }
+  const started = await provider.startAsync(audioUri, "ru-RU");
   await enqueueJob({
     type: "call.transcribe",
     payload: { callId: call.id, operationId: started.operationId, polls: 0 },

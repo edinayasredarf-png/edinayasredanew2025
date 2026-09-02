@@ -50,6 +50,7 @@ function ytimeMs(v: string | undefined): number | null {
 export class YandexSpeechKitProvider implements TranscriptionProvider {
   readonly name = "yandex_speechkit";
   readonly mode = "async" as const;
+  readonly needsObjectStorage = true;
 
   private cfg() {
     const key = process.env.YANDEX_STT_API_KEY?.trim();

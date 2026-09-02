@@ -49,6 +49,11 @@ export interface AsyncPollResult {
 export interface TranscriptionProvider {
   readonly name: string;
   readonly mode: "sync" | "async";
+  /**
+   * Нужен ли Object Storage для audioUri (Yandex — да). Self-hosted сервис умеет
+   * скачивать запись сам по URL, поэтому false — обходимся без хранилища.
+   */
+  readonly needsObjectStorage?: boolean;
   /** sync-режим: получить результат сразу. */
   transcribe?(input: TranscribeInput): Promise<TranscriptionResult>;
   /** async-режим: запустить распознавание аудио, уже загруженного в Object Storage. */
