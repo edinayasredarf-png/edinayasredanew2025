@@ -92,8 +92,8 @@ export async function upsertDeals(deals: BxDeal[]): Promise<number> {
     await pool.query(
       `insert into ai_deals (
          bitrix_deal_id, title, bitrix_company_id, bitrix_contact_id, bitrix_user_id,
-         stage_id, opportunity, currency, is_closed, bitrix_created_at, bitrix_updated_at, raw, updated_at
-       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb, now())
+         stage_id, opportunity, currency, is_closed, is_won, bitrix_created_at, bitrix_updated_at, raw, updated_at
+       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb, now())
        on conflict (bitrix_deal_id) do update set
          title = excluded.title,
          bitrix_company_id = excluded.bitrix_company_id,
@@ -103,12 +103,13 @@ export async function upsertDeals(deals: BxDeal[]): Promise<number> {
          opportunity = excluded.opportunity,
          currency = excluded.currency,
          is_closed = excluded.is_closed,
+         is_won = excluded.is_won,
          bitrix_updated_at = excluded.bitrix_updated_at,
          raw = excluded.raw,
          updated_at = now()`,
       [
         d.bitrixDealId, d.title, d.bitrixCompanyId, d.bitrixContactId, d.bitrixUserId,
-        d.stageId, d.opportunity, d.currency, d.isClosed,
+        d.stageId, d.opportunity, d.currency, d.isClosed, d.isWon,
         d.bitrixCreatedAt, d.bitrixUpdatedAt, JSON.stringify(d.raw),
       ]
     );

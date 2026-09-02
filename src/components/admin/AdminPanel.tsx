@@ -34,7 +34,7 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
-    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers' | 'ai-rop' | 'ai-tags' | 'ai-settings'
+    | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco' | 'ai-insights' | 'ai-followups' | 'ai-managers' | 'ai-rop' | 'ai-tags' | 'ai-settings' | 'ai-lost'
   >('dashboard');
   const [salesTemp, setSalesTemp] = useState<string | undefined>(undefined);
   const [salesTag, setSalesTag] = useState<string | undefined>(undefined);
@@ -155,6 +155,7 @@ export default function AdminPanel() {
                 { id: 'ai-followups', label: 'Follow-up' },
                 { id: 'ai-deals', label: 'Сделки' },
                 { id: 'ai-managers', label: 'Менеджеры' },
+                { id: 'ai-lost', label: 'Проигрыши' },
                 { id: 'ai-calls', label: 'Звонки' },
                 { id: 'ai-tags', label: 'Теги' },
                 { id: 'ai-insights', label: 'AI Insights' },
@@ -205,6 +206,7 @@ export default function AdminPanel() {
           {activeTab === 'ai-managers' && <AiSalesSection view="managers" />}
           {activeTab === 'ai-rop' && <AiSalesSection view="rop" />}
           {activeTab === 'ai-settings' && <AiSalesSection view="settings" />}
+          {activeTab === 'ai-lost' && <AiSalesSection view="lost" />}
           {activeTab === 'ai-dashboard' && (
             <AiSalesSection view="dashboard" onNavigate={(t) => { setSalesTemp(t.temperature); setSalesTag(t.tag); setActiveTab(t.tab); }} />
           )}

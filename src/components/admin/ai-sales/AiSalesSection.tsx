@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -946,6 +946,78 @@ function FollowUps() {
   );
 }
 
+/* ─────────── Lost-deal analytics ─────────── */
+interface LostData {
+  total: number;
+  reasons: Array<{ reason: string; label: string; count: number }>;
+  deals: Array<{ bitrixDealId: string; company: string | null; manager: string | null; dealUrl: string | null; reason: string; reasonLabel: string; summary: string | null; closedAt: string | null }>;
+}
+
+function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
+  const [data, setData] = useState<LostData | null>(null);
+  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [reasonFilter, setReasonFilter] = useState('');
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/lost?${periodQS(period)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period]);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  const maxR = data ? data.reasons.reduce((m, r) => Math.max(m, r.count), 1) : 1;
+  const deals = data ? (reasonFilter ? data.deals.filter((d) => d.reason === reasonFilter) : data.deals) : [];
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Проигранные сделки</h2>
+      <p className="text-sm text-gray-500 mb-4">Причины проигрыша по AI-разбору звонков (не только по полю Bitrix).</p>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : data.total === 0 ? (
+        <p className="text-gray-400 py-8">Проигранных сделок с разбором за период нет. (Убедитесь, что синхронизация обновила статусы сделок.)</p>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <p className="font-semibold text-gray-800 mb-3">Причины ({data.total})</p>
+            <div className="space-y-2">
+              {data.reasons.map((r) => (
+                <button key={r.reason} onClick={() => setReasonFilter(reasonFilter === r.reason ? '' : r.reason)}
+                  className={`w-full text-left text-sm ${reasonFilter === r.reason ? 'text-[#029cda] font-medium' : 'text-gray-700'}`}>
+                  <div className="flex justify-between"><span>{r.label}</span><span className="text-gray-500">{r.count}</span></div>
+                  <div className="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden"><div className="h-full bg-red-400" style={{ width: `${Math.round((r.count / maxR) * 100)}%` }} /></div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-4">
+            <p className="font-semibold text-gray-800 mb-3">Сделки{reasonFilter ? ` · ${data.reasons.find((r) => r.reason === reasonFilter)?.label}` : ''}</p>
+            <div className="space-y-2 max-h-[560px] overflow-y-auto">
+              {deals.map((d) => (
+                <button key={d.bitrixDealId} onClick={() => onOpen(d.bitrixDealId)} className="w-full text-left border-b border-gray-50 pb-2 hover:text-[#029cda]">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-sm text-gray-900">{d.company || `Сделка #${d.bitrixDealId}`}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 shrink-0">{d.reasonLabel}</span>
+                  </div>
+                  {d.summary && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{d.summary}</p>}
+                  <div className="flex gap-3 text-xs text-gray-400 mt-1">{d.manager && <span>{d.manager}</span>}{d.closedAt && <span>{new Date(d.closedAt).toLocaleDateString('ru-RU')}</span>}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────── Настройки AI ─────────── */
 function Settings() {
   const [s, setS] = useState<Record<string, unknown> | null>(null);
@@ -1312,6 +1384,11 @@ export default function AiSalesSection({ view, onNavigate, initialTemperature, i
   if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
   if (view === 'tags') return <Tags onNavigate={onNavigate} />;
   if (view === 'settings') return <Settings />;
+  if (view === 'lost') {
+    return openDeal
+      ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
+      : <LostDeals onOpen={setOpenDeal} />;
+  }
   if (view === 'rop') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />

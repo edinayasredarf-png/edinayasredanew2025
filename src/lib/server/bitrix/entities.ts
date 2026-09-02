@@ -117,6 +117,7 @@ export interface BxDeal {
   opportunity: number | null;
   currency: string | null;
   isClosed: boolean;
+  isWon: boolean | null; // true — выиграна, false — проиграна, null — не закрыта/неясно
   bitrixCreatedAt: Date | null;
   bitrixUpdatedAt: Date | null;
   raw: Record<string, unknown>;
@@ -137,16 +138,25 @@ export async function fetchDeals(sinceModify?: Date): Promise<BxDeal[]> {
 }
 
 export function mapDeal(r: Record<string, unknown>): BxDeal {
+  const stageId = bxStr(r.STAGE_ID) || null;
+  const isClosed = bxStr(r.CLOSED) === "Y";
+  // Won/lost по семантике стадии Bitrix: *:WON / *:LOSE|APOLOGY|FAIL.
+  let isWon: boolean | null = null;
+  if (isClosed && stageId) {
+    if (/won$/i.test(stageId)) isWon = true;
+    else if (/(lose|apology|fail|junk)$/i.test(stageId)) isWon = false;
+  }
   return {
     bitrixDealId: bxStr(r.ID),
     title: bxStr(r.TITLE) || null,
     bitrixCompanyId: bxStr(r.COMPANY_ID) || null,
     bitrixContactId: bxStr(r.CONTACT_ID) || null,
     bitrixUserId: bxStr(r.ASSIGNED_BY_ID) || null,
-    stageId: bxStr(r.STAGE_ID) || null,
+    stageId,
     opportunity: r.OPPORTUNITY != null && r.OPPORTUNITY !== "" ? Number(r.OPPORTUNITY) : null,
     currency: bxStr(r.CURRENCY_ID) || null,
-    isClosed: bxStr(r.CLOSED) === "Y",
+    isClosed,
+    isWon,
     bitrixCreatedAt: bxDate(r.DATE_CREATE),
     bitrixUpdatedAt: bxDate(r.DATE_MODIFY),
     raw: r,
