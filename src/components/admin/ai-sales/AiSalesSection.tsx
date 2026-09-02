@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
 type View = 'dashboard' | 'calls' | 'deals' | 'reco';
+export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string };
 
 const fmtDur = (sec: number | null) => {
   if (sec == null) return '—';
@@ -33,14 +34,16 @@ const STATUS_LABEL: Record<string, string> = {
   FAILED: 'Ошибка', RETRY_PENDING: 'Повтор', NO_RECORDING: 'Нет записи',
 };
 
-function Kpi({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
-  return (
-    <div className="bg-[#F6F7F9] rounded-xl p-5">
+function Kpi({ label, value, sub, onClick }: { label: string; value: React.ReactNode; sub?: string; onClick?: () => void }) {
+  const cls = "bg-[#F6F7F9] rounded-xl p-5 text-left w-full" + (onClick ? " hover:bg-[#029cda]/10 transition cursor-pointer" : "");
+  const inner = (
+    <>
       <p className="text-sm text-gray-600">{label}</p>
       <p className="text-2xl font-semibold text-gray-900 mt-1">{value}</p>
       {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
-    </div>
+    </>
   );
+  return onClick ? <button type="button" onClick={onClick} className={cls}>{inner}</button> : <div className={cls}>{inner}</div>;
 }
 
 /* ─────────── Фильтр периода (общий для всех вкладок) ─────────── */
@@ -96,7 +99,7 @@ interface Dash {
   queue: { pending: number; running: number; failed: number; retry: number };
 }
 
-function Dashboard() {
+function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   const [data, setData] = useState<Dash | null>(null);
   const [err, setErr] = useState<string>('');
   const [busy, setBusy] = useState(false);
@@ -162,17 +165,17 @@ function Dashboard() {
       <PeriodBar value={period} onChange={setPeriod} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-        <Kpi label="Звонки" value={data.calls.total} sub={`Проанализировано: ${data.calls.analyzed}`} />
+        <Kpi label="Звонки" value={data.calls.total} sub={`Проанализировано: ${data.calls.analyzed}`} onClick={onNavigate ? () => onNavigate({ tab: 'ai-calls' }) : undefined} />
         <Kpi label="Средняя длит." value={fmtDur(data.calls.avgDurationSec)} />
         <Kpi label="Средний Deal Score" value={data.calls.avgDealScore ?? '—'} sub="0–100" />
-        <Kpi label="Средняя оценка менеджера" value={data.calls.avgManagerScore ?? '—'} sub="0–10" />
+        <Kpi label="Средняя оценка менеджера" value={data.calls.avgManagerScore ?? '—'} sub="0–10 · по сделкам" />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-        <Kpi label="🔥 Горячие" value={data.temperature.hot} />
-        <Kpi label="Тёплые" value={data.temperature.warm} />
-        <Kpi label="Холодные" value={data.temperature.cold} />
-        <Kpi label="Без следующего шага" value={data.attention.withoutNextStep} />
+        <Kpi label="🔥 Горячие" value={data.temperature.hot} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'HOT' }) : undefined} />
+        <Kpi label="Тёплые" value={data.temperature.warm} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'WARM' }) : undefined} />
+        <Kpi label="Холодные" value={data.temperature.cold} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'COLD' }) : undefined} />
+        <Kpi label="Кому звонить сегодня" value={data.attention.withoutNextStep} sub="AI рекомендует →" onClick={onNavigate ? () => onNavigate({ tab: 'ai-reco' }) : undefined} />
       </div>
 
       <div className="bg-[#F6F7F9] rounded-xl p-5">
@@ -196,10 +199,10 @@ interface CallItem {
   resultType: string | null; nextStep: string | null; status: string;
 }
 
-function Calls({ onOpen }: { onOpen: (id: string) => void }) {
+function Calls({ onOpen, initialTemperature }: { onOpen: (id: string) => void; initialTemperature?: string }) {
   const [items, setItems] = useState<CallItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [temp, setTemp] = useState('');
+  const [temp, setTemp] = useState(initialTemperature || '');
   const [status, setStatus] = useState('');
   const [period, setPeriod] = useState<Period>(NO_PERIOD);
   const [sort, setSort] = useState<'asc' | 'desc'>('desc');
@@ -478,10 +481,10 @@ interface DealItem {
   temperature: string | null; managerScore: number | null; nextAction: string | null; lastCallAt: string | null;
 }
 
-function Deals({ onOpen }: { onOpen: (id: string) => void }) {
+function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; initialTemperature?: string }) {
   const [items, setItems] = useState<DealItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [temp, setTemp] = useState('');
+  const [temp, setTemp] = useState(initialTemperature || '');
   const [period, setPeriod] = useState<Period>(NO_PERIOD);
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
@@ -754,11 +757,15 @@ function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
 }
 
 /* ─────────── Обёртка раздела ─────────── */
-export default function AiSalesSection({ view }: { view: View }) {
+export default function AiSalesSection({ view, onNavigate, initialTemperature }: {
+  view: View;
+  onNavigate?: (t: NavTarget) => void;
+  initialTemperature?: string;
+}) {
   const [openCall, setOpenCall] = useState<string | null>(null);
   const [openDeal, setOpenDeal] = useState<string | null>(null);
 
-  if (view === 'dashboard') return <Dashboard />;
+  if (view === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
   if (view === 'reco') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
@@ -767,9 +774,9 @@ export default function AiSalesSection({ view }: { view: View }) {
   if (view === 'deals') {
     return openDeal
       ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} />
-      : <Deals onOpen={setOpenDeal} />;
+      : <Deals onOpen={setOpenDeal} initialTemperature={initialTemperature} />;
   }
   return openCall
     ? <CallDetail id={openCall} onBack={() => setOpenCall(null)} />
-    : <Calls onOpen={setOpenCall} />;
+    : <Calls onOpen={setOpenCall} initialTemperature={initialTemperature} />;
 }

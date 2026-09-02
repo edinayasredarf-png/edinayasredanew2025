@@ -36,6 +36,7 @@ export default function AdminPanel() {
     'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
     | 'ai-dashboard' | 'ai-calls' | 'ai-deals' | 'ai-reco'
   >('dashboard');
+  const [salesTemp, setSalesTemp] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -170,7 +171,7 @@ export default function AdminPanel() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => setActiveTab(item.id)}
+                    onClick={() => { setActiveTab(item.id); setSalesTemp(undefined); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                       activeTab === item.id ? 'bg-[#029cda]/10 text-[#029cda] font-medium' : 'text-gray-600 hover:bg-gray-50'
                     }`}
@@ -192,9 +193,11 @@ export default function AdminPanel() {
           )}
 
           {activeTab === 'ai-reco' && <AiSalesSection view="reco" />}
-          {activeTab === 'ai-dashboard' && <AiSalesSection view="dashboard" />}
-          {activeTab === 'ai-deals' && <AiSalesSection view="deals" />}
-          {activeTab === 'ai-calls' && <AiSalesSection view="calls" />}
+          {activeTab === 'ai-dashboard' && (
+            <AiSalesSection view="dashboard" onNavigate={(t) => { setSalesTemp(t.temperature); setActiveTab(t.tab); }} />
+          )}
+          {activeTab === 'ai-deals' && <AiSalesSection view="deals" initialTemperature={salesTemp} />}
+          {activeTab === 'ai-calls' && <AiSalesSection view="calls" initialTemperature={salesTemp} />}
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
