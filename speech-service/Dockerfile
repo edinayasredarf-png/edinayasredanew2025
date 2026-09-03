@@ -16,10 +16,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # CTranslate2 .so помечена «нужен исполняемый стек» — новые ядра/glibc это запрещают
-# ("cannot enable executable stack as shared object requires"). Снимаем флаг execstack.
-RUN apt-get update && apt-get install -y --no-install-recommends execstack \
-    && find / -name 'libctranslate2*.so*' -exec execstack -c {} \; \
-    && apt-get purge -y execstack && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+# ("cannot enable executable stack as shared object requires"). Снимаем флаг через
+# patchelf --clear-execstack (execstack из Debian удалён; patchelf 0.18+ есть в trixie).
+RUN apt-get update && apt-get install -y --no-install-recommends patchelf \
+    && find / -name 'libctranslate2*.so*' -exec patchelf --clear-execstack {} \; \
+    && apt-get purge -y patchelf && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 COPY app.py .
 
