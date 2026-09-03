@@ -84,7 +84,10 @@ export class YandexSpeechKitV3Provider implements TranscriptionProvider {
           textNormalization: {
             textNormalization: "TEXT_NORMALIZATION_ENABLED",
             profanityFilter: false,
-            literatureText: false,
+            // «Литературный текст» — пунктуация, заглавные буквы, кавычки в
+            // finalRefinement.normalizedText. Без него даже улучшенная версия
+            // приходит сырой (нижний регистр, без знаков препинания).
+            literatureText: true,
           },
           languageRestriction: {
             restrictionType: "WHITELIST",
