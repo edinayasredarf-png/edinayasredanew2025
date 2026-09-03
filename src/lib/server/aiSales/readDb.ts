@@ -9,6 +9,29 @@ import { computeConversationMetrics, type ConversationMetrics } from "@/lib/serv
  * managerBitrixId — фильтр «менеджер видит только своё» (null → весь отдел).
  */
 
+interface RawSeg {
+  idx: number; role: string | null; speaker_label: string | null;
+  start_ms: number | null; end_ms: number | null; text: string;
+}
+
+/** Склеить подряд идущие сегменты одного спикера в одну реплику (по роли, иначе
+ *  по метке спикера). Сегменты без спикера не склеиваем — чтобы не слить разных. */
+function coalesceSegments(rows: RawSeg[]): RawSeg[] {
+  const out: RawSeg[] = [];
+  for (const s of rows) {
+    const key = s.role ?? s.speaker_label;
+    const prev = out[out.length - 1];
+    const prevKey = prev ? (prev.role ?? prev.speaker_label) : null;
+    if (prev && key != null && key === prevKey) {
+      prev.text = `${prev.text} ${s.text}`.trim();
+      if (s.end_ms != null) prev.end_ms = s.end_ms;
+    } else {
+      out.push({ ...s });
+    }
+  }
+  return out;
+}
+
 export interface DashboardData {
   calls: {
     total: number;
@@ -296,15 +319,20 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
       `select idx, role, speaker_label, start_ms, end_ms, text from ai_transcript_segments where transcript_id = $1 order by idx asc`,
       [tr.rows[0].id]
     );
+    // Yandex v3 дробит одну реплику на много коротких фраз (по паузам). Склеиваем
+    // подряд идущие сегменты одного спикера (по роли, иначе по метке спикера) в одну
+    // реплику — иначе счётчик реплик и «длинный монолог» раздуты, а диалог выглядит
+    // разорванным. Делаем на чтении, чтобы применилось и к уже расшифрованным звонкам.
+    const merged = coalesceSegments(seg.rows);
     transcript = {
       provider: tr.rows[0].provider,
       language: tr.rows[0].language,
-      segments: seg.rows.map((s) => ({
-        idx: s.idx, role: s.role, speakerLabel: s.speaker_label, startMs: s.start_ms, text: s.text,
+      segments: merged.map((s, i) => ({
+        idx: i, role: s.role, speakerLabel: s.speaker_label, startMs: s.start_ms, text: s.text,
       })),
     };
     metrics = computeConversationMetrics(
-      seg.rows.map((s) => ({ role: s.role, text: s.text, startMs: s.start_ms, endMs: s.end_ms }))
+      merged.map((s) => ({ role: s.role, text: s.text, startMs: s.start_ms, endMs: s.end_ms }))
     );
   }
 
