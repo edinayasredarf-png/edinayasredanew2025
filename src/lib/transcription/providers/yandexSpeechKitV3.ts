@@ -129,25 +129,36 @@ export class YandexSpeechKitV3Provider implements TranscriptionProvider {
     const body = await rRes.text();
     const objs = parseJsonStream(body);
 
-    const segments: TranscriptSegment[] = [];
-    let idx = 0;
-    for (const o of objs) {
-      const r = (o as V3StreamResponse).result;
-      const norm = r?.finalRefinement?.normalizedText ?? r?.final;
-      const alts = norm?.alternatives;
-      if (!alts || !alts.length) continue;
-      const alt = alts[0];
-      const text = (alt.text || "").trim();
-      if (!text) continue;
+    // v3 присылает для каждой фразы ДВЕ версии: final (сырая) и finalRefinement
+    // (улучшенная, с пунктуацией/нормализацией). Берём только улучшенную, а сырую
+    // — лишь как fallback, если улучшенных нет вовсе. Иначе — дубли реплик.
+    const refined: TranscriptSegment[] = [];
+    const rawFallback: TranscriptSegment[] = [];
+    const build = (so: V3StreamResponse, norm: V3NormalizedText | undefined): TranscriptSegment | null => {
+      const alt = norm?.alternatives?.[0];
+      const text = (alt?.text || "").trim();
+      if (!alt || !text) return null;
       const words = alt.words || [];
       const startMs = numMs(words[0]?.startTimeMs);
       const endMs = numMs(words[words.length - 1]?.endTimeMs);
       const speaker =
         alt.speakerTag != null
           ? `SPEAKER_${alt.speakerTag}`
-          : (o as V3StreamResponse).channelTag ?? r?.channelTag ?? null;
-      segments.push({ idx: idx++, speakerLabel: speaker, startMs, endMs, text });
+          : so.channelTag ?? so.result?.channelTag ?? null;
+      return { idx: 0, speakerLabel: speaker, startMs, endMs, text };
+    };
+    for (const o of objs) {
+      const so = o as V3StreamResponse;
+      const ref = so.result?.finalRefinement?.normalizedText;
+      if (ref) {
+        const s = build(so, ref);
+        if (s) refined.push(s);
+      } else if (so.result?.final) {
+        const s = build(so, so.result.final);
+        if (s) rawFallback.push(s);
+      }
     }
+    const segments = (refined.length ? refined : rawFallback).map((s, i) => ({ ...s, idx: i }));
 
     const maxEnd = segments.reduce((m, s) => (s.endMs != null ? Math.max(m, s.endMs) : m), 0);
     const result: TranscriptionResult = {
