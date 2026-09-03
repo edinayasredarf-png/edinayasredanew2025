@@ -466,7 +466,7 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
                 </div>
               </div>
             )}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-sm text-gray-700">
+            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-x-6 gap-y-2 text-sm text-gray-700">
               <span>Длительность: <b>{fmtSec(m.durationSec)}</b></span>
               <span>Реплик: <b>{m.managerUtterances}</b> / {m.clientUtterances}</span>
               <span>Ср. реплика мен.: <b>{m.avgManagerUtteranceWords ?? '—'}</b> сл.</span>
@@ -484,7 +484,7 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="font-semibold text-gray-800 mb-3">Транскрипция</p>
           {!data.transcript ? <p className="text-gray-400 text-sm">Пока нет транскрипта.</p> : (
-            <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[520px] xl:max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
               {data.transcript.segments.map((s) => (
                 <div key={s.idx} className="text-sm">
                   <button onClick={() => seek(s.startMs)} disabled={s.startMs == null}
@@ -744,7 +744,7 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
         {/* Таймлайн звонков сделки */}
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="font-semibold text-gray-800 mb-3">Звонки по сделке ({data.calls.length})</p>
-          <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[520px] xl:max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
             {data.calls.map((c) => (
               <div key={c.id} onClick={() => onOpenCall?.(c.id)}
                 className={`flex items-center justify-between text-sm border-b border-gray-50 pb-2 ${onOpenCall ? 'cursor-pointer hover:bg-sky-50/60 -mx-1 px-1 rounded' : ''}`}>
