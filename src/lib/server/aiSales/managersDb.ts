@@ -21,6 +21,17 @@ function dealRange(range: DateRange | undefined, params: unknown[]): string {
   return parts.length ? ` and ${parts.join(" and ")}` : "";
 }
 
+/** Лёгкий список менеджеров для выпадающего фильтра (id + имя). */
+export async function listManagerOptions(): Promise<Array<{ bitrixUserId: string; name: string | null }>> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query<{ bitrix_user_id: string; full_name: string | null }>(
+    `select bitrix_user_id, full_name from ai_managers
+      where bitrix_user_id in (select distinct bitrix_user_id from ai_calls where bitrix_user_id is not null)
+      order by full_name asc nulls last`
+  );
+  return rows.map((r) => ({ bitrixUserId: r.bitrix_user_id, name: r.full_name }));
+}
+
 export interface ManagerRow {
   bitrixUserId: string;
   name: string | null;

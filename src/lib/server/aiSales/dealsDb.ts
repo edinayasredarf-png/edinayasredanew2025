@@ -220,6 +220,8 @@ export interface DealDetailData {
     startedAt: string | null;
     callType: string | null;
     status: string;
+    phone: string | null;
+    clientName: string | null;
     dealScore: number | null;
     managerScore: number | null;
     temperature: string | null;
@@ -249,15 +251,19 @@ export async function getDealDetail(bitrixDealId: string): Promise<DealDetailDat
   );
 
   const cr = await pool.query<{
-    id: string; started_at: Date | null; status: string;
+    id: string; started_at: Date | null; status: string; phone_number: string | null; client_name: string | null;
     deal_score: number | null; manager_score: string | null; deal_temperature: string | null; call_type: string | null;
   }>(
-    `select c.id, c.started_at, c.status, a.deal_score, a.manager_score, a.deal_temperature,
+    `select c.id, c.started_at, c.status, c.phone_number,
+            coalesce(co.title, ct.full_name) as client_name,
+            a.deal_score, a.manager_score, a.deal_temperature,
             a.data->>'callType' as call_type
        from ai_calls c
        left join lateral (
          select * from ai_call_analysis aa where aa.call_id = c.id order by aa.created_at desc limit 1
        ) a on true
+       left join ai_companies co on co.bitrix_company_id = c.bitrix_company_id
+       left join ai_contacts ct on ct.bitrix_contact_id = c.bitrix_contact_id
       where c.bitrix_deal_id = $1
       order by c.started_at desc nulls last`,
     [bitrixDealId]
@@ -278,6 +284,8 @@ export async function getDealDetail(bitrixDealId: string): Promise<DealDetailDat
       startedAt: r.started_at ? r.started_at.toISOString() : null,
       callType: r.call_type,
       status: r.status,
+      phone: r.phone_number,
+      clientName: r.client_name,
       dealScore: r.deal_score,
       managerScore: r.manager_score != null ? Number(r.manager_score) : null,
       temperature: r.deal_temperature,

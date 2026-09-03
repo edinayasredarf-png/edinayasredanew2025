@@ -11,22 +11,26 @@ import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
  * Идемпотентно: upsert по bitrix_activity_id, задача транскрипции с idempotencyKey.
  */
 export interface IngestResult {
-  callId: string;
+  callId?: string;
   hasRecording: boolean;
+  skipped?: string;
 }
 
 export async function ingestCallActivity(activityId: string): Promise<IngestResult> {
   const activity = await fetchCallActivity(activityId);
-  const callId = await upsertCallFromActivity(activity);
 
-  const hasRecording = Boolean(activity.recordingUrl);
-  if (hasRecording) {
-    await enqueueJob({
-      type: "call.transcribe",
-      payload: { callId },
-      idempotencyKey: `transcribe:${callId}`,
-      priority: 50,
-    });
+  // Реальный звонок = активность С ЗАПИСЬЮ. Задачи/планы «связаться» (без записи)
+  // НЕ заводим как звонки — иначе в списке появляются фантомные «звонки» в будущем.
+  if (!activity.recordingUrl) {
+    return { hasRecording: false, skipped: "no recording (task/planned activity)" };
   }
-  return { callId, hasRecording };
+
+  const callId = await upsertCallFromActivity(activity);
+  await enqueueJob({
+    type: "call.transcribe",
+    payload: { callId },
+    idempotencyKey: `transcribe:${callId}`,
+    priority: 50,
+  });
+  return { callId, hasRecording: true };
 }

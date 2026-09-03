@@ -137,7 +137,8 @@ export interface CallListItem {
   id: string;
   startedAt: string | null;
   managerName: string | null;
-  companyTitle: string | null;
+  companyTitle: string | null; // клиент (компания/контакт)
+  phone: string | null;
   bitrixDealId: string | null;
   dealUrl: string | null;
   durationSec: number | null;
@@ -151,7 +152,8 @@ export interface CallListItem {
 }
 
 export interface CallListFilters {
-  managerBitrixId?: string | null; // RBAC
+  managerBitrixId?: string | null; // RBAC (менеджер видит своё)
+  managerFilter?: string | null;   // явный фильтр по менеджеру из UI
   temperature?: string | null;
   status?: string | null;
   tag?: string | null; // slug тега
@@ -162,6 +164,14 @@ export interface CallListFilters {
   offset?: number;
 }
 
+// Клиент: компания звонка → компания сделки → контакт (звонка/сделки).
+const CALL_JOINS = `
+   left join lateral (select * from ai_call_analysis aa where aa.call_id = c.id order by aa.created_at desc limit 1) a on true
+   left join ai_managers m on m.bitrix_user_id = c.bitrix_user_id
+   left join ai_deals d on d.bitrix_deal_id = c.bitrix_deal_id
+   left join ai_companies co on co.bitrix_company_id = coalesce(c.bitrix_company_id, d.bitrix_company_id)
+   left join ai_contacts ct on ct.bitrix_contact_id = coalesce(c.bitrix_contact_id, d.bitrix_contact_id)`;
+
 export async function listCalls(f: CallListFilters): Promise<{ items: CallListItem[]; total: number }> {
   const pool = getTimewebPool();
   const origin = bitrixPortalOrigin();
@@ -170,12 +180,13 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
   let i = 1;
 
   if (f.managerBitrixId) { where.push(`c.bitrix_user_id = $${i++}`); params.push(f.managerBitrixId); }
+  if (f.managerFilter) { where.push(`c.bitrix_user_id = $${i++}`); params.push(f.managerFilter); }
   if (f.temperature) { where.push(`a.deal_temperature = $${i++}`); params.push(f.temperature); }
   if (f.status) { where.push(`c.status = $${i++}`); params.push(f.status); }
   if (f.from) { where.push(`c.started_at >= $${i++}::date`); params.push(f.from); }
   if (f.to) { where.push(`c.started_at < ($${i++}::date + interval '1 day')`); params.push(f.to); }
   if (f.tag) {
-    where.push(`exists (select 1 from ai_call_tags ct join ai_tags t on t.id = ct.tag_id where ct.call_id = c.id and t.slug = $${i++})`);
+    where.push(`exists (select 1 from ai_call_tags cct join ai_tags tg on tg.id = cct.tag_id where cct.call_id = c.id and tg.slug = $${i++})`);
     params.push(f.tag);
   }
 
@@ -185,26 +196,22 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
   const offset = f.offset ?? 0;
 
   const totalRes = await pool.query<{ n: string }>(
-    `select count(*)::text as n
-       from ai_calls c
-       left join ai_call_analysis a on a.call_id = c.id
-      where ${whereSql}`,
+    `select count(*)::text as n from ai_calls c ${CALL_JOINS} where ${whereSql}`,
     params
   );
 
   const rows = await pool.query<{
     id: string; started_at: Date | null; manager_name: string | null; company_title: string | null;
+    contact_name: string | null; phone_number: string | null;
     bitrix_deal_id: string | null; duration_sec: number | null; product: string | null;
     deal_score: number | null; manager_score: string | null; deal_temperature: string | null;
     result_type: string | null; next_step: string | null; status: string;
   }>(
     `select c.id, c.started_at, m.full_name as manager_name, co.title as company_title,
+            ct.full_name as contact_name, c.phone_number,
             c.bitrix_deal_id, c.duration_sec, c.product,
             a.deal_score, a.manager_score, a.deal_temperature, a.result_type, a.next_step, c.status
-       from ai_calls c
-       left join ai_call_analysis a on a.call_id = c.id
-       left join ai_managers m on m.bitrix_user_id = c.bitrix_user_id
-       left join ai_companies co on co.bitrix_company_id = c.bitrix_company_id
+       from ai_calls c ${CALL_JOINS}
       where ${whereSql}
       order by c.started_at ${sort} nulls last
       limit ${limit} offset ${offset}`,
@@ -217,7 +224,8 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
       id: r.id,
       startedAt: r.started_at ? r.started_at.toISOString() : null,
       managerName: r.manager_name,
-      companyTitle: r.company_title,
+      companyTitle: r.company_title || r.contact_name,
+      phone: r.phone_number,
       bitrixDealId: r.bitrix_deal_id,
       dealUrl: r.bitrix_deal_id && origin ? `${origin}/crm/deal/details/${r.bitrix_deal_id}/` : null,
       durationSec: r.duration_sec,

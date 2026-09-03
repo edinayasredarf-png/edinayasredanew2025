@@ -67,26 +67,48 @@ const periodQS = (p: Period) => {
   return qs;
 };
 
+/** Ключ пресета, соответствующий текущему периоду (для подсветки кнопки). */
+function keyForPeriod(p: Period): string {
+  if (!p.from && !p.to) return 'all';
+  for (const k of ['today', 'week', 'month']) {
+    const r = presetRange(k);
+    if (r.from === p.from && r.to === p.to) return k;
+  }
+  return 'custom';
+}
+
+/* Период по умолчанию — «Сегодня», общий для всех вкладок и сохраняется
+   при переходах туда-обратно (модульная переменная переживает размонтирование). */
+let sharedPeriod: Period = presetRange('today');
+function usePersistentPeriod(): [Period, (p: Period) => void] {
+  const [period, setState] = useState<Period>(() => sharedPeriod);
+  const setPeriod = useCallback((p: Period) => { sharedPeriod = p; setState(p); }, []);
+  return [period, setPeriod];
+}
+
 function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
-  const [active, setActive] = useState('all');
-  const pick = (key: string) => { setActive(key); onChange(presetRange(key)); };
-  const presets = [['all', 'Всё'], ['today', 'Сегодня'], ['week', 'Неделя'], ['month', 'Месяц']];
+  const active = keyForPeriod(value);
+  const presets = [['today', 'Сегодня'], ['week', 'Неделя'], ['month', 'Месяц']];
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
       {presets.map(([key, label]) => (
-        <button key={key} onClick={() => pick(key)}
+        <button key={key} onClick={() => onChange(presetRange(key))}
           className={`px-3 py-1.5 rounded-lg text-sm transition ${active === key ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
           {label}
         </button>
       ))}
       <span className="text-gray-300 mx-1">|</span>
       <input type="date" value={value.from || ''} max={value.to || undefined}
-        onChange={(e) => { setActive('custom'); onChange({ from: e.target.value || null, to: value.to }); }}
+        onChange={(e) => onChange({ from: e.target.value || null, to: value.to })}
         className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-700" />
       <span className="text-gray-400 text-sm">—</span>
       <input type="date" value={value.to || ''} min={value.from || undefined}
-        onChange={(e) => { setActive('custom'); onChange({ from: value.from, to: e.target.value || null }); }}
+        onChange={(e) => onChange({ from: value.from, to: e.target.value || null })}
         className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-700" />
+      <button onClick={() => onChange(NO_PERIOD)}
+        className={`px-3 py-1.5 rounded-lg text-sm transition ${active === 'all' ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+        Всё
+      </button>
     </div>
   );
 }
@@ -104,7 +126,7 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   const [err, setErr] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
 
   const load = useCallback(async () => {
     setErr('');
@@ -194,6 +216,7 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
 /* ─────────── Список звонков ─────────── */
 interface CallItem {
   id: string; startedAt: string | null; managerName: string | null; companyTitle: string | null;
+  phone: string | null;
   bitrixDealId: string | null; dealUrl: string | null; durationSec: number | null; product: string | null;
   dealScore: number | null; managerScore: number | null; temperature: string | null;
   resultType: string | null; nextStep: string | null; status: string;
@@ -205,10 +228,19 @@ function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string
   const [temp, setTemp] = useState(initialTemperature || '');
   const [status, setStatus] = useState('');
   const [tag, setTag] = useState(initialTag || '');
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [manager, setManager] = useState('');
+  const [managerOptions, setManagerOptions] = useState<Array<{ bitrixUserId: string; name: string | null }>>([]);
+  const [period, setPeriod] = usePersistentPeriod();
   const [sort, setSort] = useState<'asc' | 'desc'>('desc');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/ai-sales/managers/options')
+      .then((r) => r.json())
+      .then((j) => { if (Array.isArray(j.items)) setManagerOptions(j.items); })
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
@@ -217,6 +249,7 @@ function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string
       if (temp) qs.set('temperature', temp);
       if (status) qs.set('status', status);
       if (tag) qs.set('tag', tag);
+      if (manager) qs.set('manager', manager);
       qs.set('sort', sort);
       qs.set('limit', '200');
       const r = await fetch(`/api/ai-sales/calls?${qs}`);
@@ -226,7 +259,7 @@ function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Ошибка');
     } finally { setLoading(false); }
-  }, [temp, status, tag, period, sort]);
+  }, [temp, status, tag, manager, period, sort]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -235,6 +268,13 @@ function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
         <div className="flex gap-2">
+          <select value={manager} onChange={(e) => setManager(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-gray-300 text-sm max-w-[180px]">
+            <option value="">Все менеджеры</option>
+            {managerOptions.map((m) => (
+              <option key={m.bitrixUserId} value={m.bitrixUserId}>{m.name || `ID ${m.bitrixUserId}`}</option>
+            ))}
+          </select>
           <select value={temp} onChange={(e) => setTemp(e.target.value)}
             className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
             <option value="">Все температуры</option>
@@ -282,7 +322,10 @@ function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string
                 <tr key={c.id} onClick={() => onOpen(c.id)} className="hover:bg-sky-50/60 cursor-pointer">
                   <td className="px-3 py-2 whitespace-nowrap">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}</td>
                   <td className="px-3 py-2 whitespace-nowrap">{c.managerName || '—'}</td>
-                  <td className="px-3 py-2">{c.companyTitle || '—'}</td>
+                  <td className="px-3 py-2">
+                    <div>{c.companyTitle || '—'}</div>
+                    {c.phone && <div className="text-xs text-gray-400">{c.phone}</div>}
+                  </td>
                   <td className="px-3 py-2">{fmtDur(c.durationSec)}</td>
                   <td className="px-3 py-2">{c.product || '—'}</td>
                   <td className="px-3 py-2 font-medium">{c.dealScore ?? '—'}</td>
@@ -533,7 +576,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
   const [items, setItems] = useState<DealItem[]>([]);
   const [total, setTotal] = useState(0);
   const [temp, setTemp] = useState(initialTemperature || '');
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -608,10 +651,10 @@ interface DealDetailData {
     stageRecommendation?: string | null;
   };
   managerScore: number | null;
-  calls: Array<{ id: string; startedAt: string | null; callType: string | null; status: string; dealScore: number | null; managerScore: number | null; temperature: string | null }>;
+  calls: Array<{ id: string; startedAt: string | null; callType: string | null; status: string; phone: string | null; clientName: string | null; dealScore: number | null; managerScore: number | null; temperature: string | null }>;
 }
 
-function DealDetail({ id, onBack }: { id: string; onBack: () => void }) {
+function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void; onOpenCall?: (id: string) => void }) {
   const [data, setData] = useState<DealDetailData | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -703,10 +746,14 @@ function DealDetail({ id, onBack }: { id: string; onBack: () => void }) {
           <p className="font-semibold text-gray-800 mb-3">Звонки по сделке ({data.calls.length})</p>
           <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
             {data.calls.map((c) => (
-              <div key={c.id} className="flex items-center justify-between text-sm border-b border-gray-50 pb-2">
+              <div key={c.id} onClick={() => onOpenCall?.(c.id)}
+                className={`flex items-center justify-between text-sm border-b border-gray-50 pb-2 ${onOpenCall ? 'cursor-pointer hover:bg-sky-50/60 -mx-1 px-1 rounded' : ''}`}>
                 <div>
                   <span className="text-gray-800">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}</span>
                   {c.callType && <span className="ml-2 text-xs text-gray-500">{CALL_TYPE_LABEL[c.callType] || c.callType}</span>}
+                  <div className="text-xs text-gray-400">
+                    {(c.clientName || data.deal.companyTitle) || '—'}{c.phone ? ` · ${c.phone}` : ''}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{c.temperature}</span>}
@@ -757,7 +804,7 @@ function RecoCard({ it, onOpen }: { it: RecoItem; onOpen: (id: string) => void }
 
 function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<RecoData | null>(null);
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -855,7 +902,7 @@ function TopList({ title, rows, max }: { title: string; rows: Array<{ label: str
 
 function Insights() {
   const [data, setData] = useState<InsightsData | null>(null);
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -993,7 +1040,7 @@ interface LostData {
 
 function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<LostData | null>(null);
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
   const [reasonFilter, setReasonFilter] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
@@ -1157,7 +1204,7 @@ const TAG_CAT_COLOR: Record<string, string> = {
 
 function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   const [data, setData] = useState<TagsData | null>(null);
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -1219,7 +1266,7 @@ interface RopData {
 
 function Rop({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<RopData | null>(null);
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -1295,7 +1342,7 @@ interface ManagerRow {
 
 function Managers({ onOpen }: { onOpen: (id: string) => void }) {
   const [items, setItems] = useState<ManagerRow[]>([]);
-  const [period, setPeriod] = useState<Period>(NO_PERIOD);
+  const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -1352,7 +1399,7 @@ interface ManagerDetailData {
   recentCalls: Array<{ id: string; startedAt: string | null; callType: string | null; managerScore: number | null; temperature: string | null }>;
 }
 
-function ManagerDetail({ id, onBack }: { id: string; onBack: () => void }) {
+function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void; onOpenCall?: (id: string) => void }) {
   const [data, setData] = useState<ManagerDetailData | null>(null);
   const [err, setErr] = useState('');
   useEffect(() => {
@@ -1393,7 +1440,8 @@ function ManagerDetail({ id, onBack }: { id: string; onBack: () => void }) {
         <p className="font-semibold text-gray-800 mb-3">Последние звонки</p>
         <div className="space-y-2">
           {data.recentCalls.map((c) => (
-            <div key={c.id} className="flex items-center justify-between text-sm border-b border-gray-50 pb-2">
+            <div key={c.id} onClick={() => onOpenCall?.(c.id)}
+              className={`flex items-center justify-between text-sm border-b border-gray-50 pb-2 ${onOpenCall ? 'cursor-pointer hover:bg-sky-50/60 -mx-1 px-1 rounded' : ''}`}>
               <span className="text-gray-700">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}
                 {c.callType && <span className="ml-2 text-xs text-gray-400">{CALL_TYPE_LABEL[c.callType] || c.callType}</span>}</span>
               <div className="flex items-center gap-2">
@@ -1440,17 +1488,19 @@ export default function AiSalesSection() {
   };
 
   const body = (() => {
+    // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки).
+    if (openCall) return <CallDetail id={openCall} onBack={() => setOpenCall(null)} />;
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
     if (view === 'settings') return <Settings />;
     if (view === 'insights') return <Insights />;
     if (view === 'followups') return <FollowUps />;
-    if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <LostDeals onOpen={setOpenDeal} />;
-    if (view === 'rop') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Rop onOpen={setOpenDeal} />;
-    if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Managers onOpen={setOpenDeal} />;
-    if (view === 'reco') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Recommendations onOpen={setOpenDeal} />;
-    if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
-    return openCall ? <CallDetail id={openCall} onBack={() => setOpenCall(null)} /> : <Calls onOpen={setOpenCall} initialTemperature={initTemp} initialTag={initTag} />;
+    if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <LostDeals onOpen={setOpenDeal} />;
+    if (view === 'rop') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Rop onOpen={setOpenDeal} />;
+    if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Managers onOpen={setOpenDeal} />;
+    if (view === 'reco') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Recommendations onOpen={setOpenDeal} />;
+    if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
+    return <Calls onOpen={setOpenCall} initialTemperature={initTemp} initialTag={initTag} />;
   })();
 
   return (

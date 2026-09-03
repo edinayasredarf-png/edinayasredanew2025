@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
   try {
     const data = await listCalls({
       managerBitrixId: managerFilterFor(user),
+      managerFilter: sp.get("manager"),
       temperature: sp.get("temperature"),
       status: sp.get("status"),
       tag: sp.get("tag"),

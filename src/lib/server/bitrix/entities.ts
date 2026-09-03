@@ -181,6 +181,7 @@ export interface BxCallActivity {
   subject: string | null;
   startedAt: Date | null;
   durationSec: number | null;
+  phone: string | null; // номер клиента (из COMMUNICATIONS)
   fileId: string | null;
   recordingUrl: string | null; // disk.file.get URL
   raw: Record<string, unknown>;
@@ -221,6 +222,10 @@ export async function fetchCallActivity(activityId: string): Promise<BxCallActiv
   const dir = bxStr(a.DIRECTION);
   const direction = dir === "2" ? "out" : dir === "1" ? "in" : null;
 
+  // Телефон клиента — из COMMUNICATIONS активности.
+  const comms = Array.isArray(a.COMMUNICATIONS) ? (a.COMMUNICATIONS as Array<{ VALUE?: unknown; TYPE?: unknown }>) : [];
+  const phone = comms.map((c) => bxStr(c?.VALUE)).find(Boolean) || null;
+
   return {
     bitrixActivityId: bxStr(a.ID) || activityId,
     ownerId,
@@ -233,7 +238,8 @@ export async function fetchCallActivity(activityId: string): Promise<BxCallActiv
     direction,
     subject: bxStr(a.SUBJECT) || null,
     startedAt: bxDate(a.START_TIME) || bxDate(a.CREATED),
-    durationSec: null, // при необходимости уточняется из телефонии
+    durationSec: null, // проставляется из STT после транскрипции
+    phone,
     fileId,
     recordingUrl,
     raw: a,

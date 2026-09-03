@@ -45,8 +45,8 @@ export async function upsertCallFromActivity(a: BxCallActivity): Promise<string>
     `insert into ai_calls (
        bitrix_activity_id, bitrix_deal_id, bitrix_lead_id, bitrix_contact_id,
        bitrix_company_id, bitrix_user_id, direction, started_at, duration_sec,
-       recording_url, status, raw, updated_at
-     ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb, now())
+       phone_number, recording_url, status, raw, updated_at
+     ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb, now())
      on conflict (bitrix_activity_id) do update set
        bitrix_deal_id = excluded.bitrix_deal_id,
        bitrix_lead_id = excluded.bitrix_lead_id,
@@ -55,6 +55,7 @@ export async function upsertCallFromActivity(a: BxCallActivity): Promise<string>
        bitrix_user_id = excluded.bitrix_user_id,
        direction = excluded.direction,
        started_at = excluded.started_at,
+       phone_number = excluded.phone_number,
        recording_url = excluded.recording_url,
        raw = excluded.raw,
        updated_at = now()
@@ -62,7 +63,7 @@ export async function upsertCallFromActivity(a: BxCallActivity): Promise<string>
     [
       a.bitrixActivityId, a.bitrixDealId, a.bitrixLeadId, a.bitrixContactId,
       a.bitrixCompanyId, a.bitrixUserId, a.direction, a.startedAt, a.durationSec,
-      a.recordingUrl, status, JSON.stringify(a.raw),
+      a.phone, a.recordingUrl, status, JSON.stringify(a.raw),
     ]
   );
   return rows[0].id;
@@ -109,6 +110,10 @@ export async function saveTranscript(callId: string, t: TranscriptionResult): Pr
          on conflict (transcript_id, idx) do nothing`,
         [transcriptId, s.idx, s.speakerLabel, null, s.startMs, s.endMs, s.text]
       );
+    }
+    // Длительность звонка — из STT (в Bitrix её нет надёжно).
+    if (t.durationSec != null) {
+      await client.query(`update ai_calls set duration_sec = $2 where id = $1`, [callId, Math.round(t.durationSec)]);
     }
     await client.query("commit");
     return transcriptId;
