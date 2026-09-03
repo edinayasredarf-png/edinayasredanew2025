@@ -14,14 +14,15 @@ interface RawSeg {
   start_ms: number | null; end_ms: number | null; text: string;
 }
 
-/** Склеить подряд идущие сегменты одного спикера в одну реплику (по роли, иначе
- *  по метке спикера). Сегменты без спикера не склеиваем — чтобы не слить разных. */
+/** Склеить подряд идущие сегменты одного спикера в одну реплику. Ключ склейки —
+ *  МЕТКА ДИАРИЗАЦИИ (speaker_label), а роль лишь запасной вариант: так реплики
+ *  разных людей не слипаются, даже если LLM ошибочно назначил им одну роль. */
 function coalesceSegments(rows: RawSeg[]): RawSeg[] {
   const out: RawSeg[] = [];
   for (const s of rows) {
-    const key = s.role ?? s.speaker_label;
+    const key = s.speaker_label ?? s.role;
     const prev = out[out.length - 1];
-    const prevKey = prev ? (prev.role ?? prev.speaker_label) : null;
+    const prevKey = prev ? (prev.speaker_label ?? prev.role) : null;
     if (prev && key != null && key === prevKey) {
       prev.text = `${prev.text} ${s.text}`.trim();
       if (s.end_ms != null) prev.end_ms = s.end_ms;
