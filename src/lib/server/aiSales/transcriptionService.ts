@@ -37,7 +37,19 @@ function fileIdFromRaw(raw: unknown): string | null {
 
 async function afterTranscribed(callId: string): Promise<void> {
   await setCallStatus(callId, "TRANSCRIBED");
-  // Сначала разметка ролей (Менеджер/Клиент), затем анализ (в обработчике call.roles).
+  // Гибрид: если включена диаризация pyannote — сначала разделяем спикеров на своём
+  // сервере (call.diarize сам поставит call.roles), иначе сразу к ролям.
+  const { getDiarizationSetting } = await import("@/lib/server/aiSales/settingsDb");
+  const diar = await getDiarizationSetting();
+  if (diar === "pyannote" || diar === "selfhosted") {
+    await enqueueJob({
+      type: "call.diarize",
+      payload: { callId },
+      idempotencyKey: `diarize:${callId}`,
+      priority: 54,
+    });
+    return;
+  }
   await enqueueJob({
     type: "call.roles",
     payload: { callId },

@@ -1,23 +1,24 @@
 """
-Self-hosted STT + диаризация для «Единая среда AI Sales» (Фаза 2).
+Self-hosted ДИАРИЗАЦИЯ для «Единая среда» (гибрид: текст — Yandex, спикеры — pyannote).
 
-faster-whisper (ASR + слово-таймкоды) + pyannote.audio (разделение спикеров на моно).
-Отдаёт сегменты {start, end, speaker, text}. «Менеджер/Клиент» доразмечает основное
-приложение (LLM roleSplit) поверх уже правильно разделённых реплик.
+Только pyannote.audio (разделение говорящих на моно). Транскрипцию (текст) делает
+Yandex SpeechKit в основном приложении; сюда приходит только аудио, обратно —
+интервалы говорящих. Приложение сопоставляет реплики Yandex со спикерами по таймкодам,
+затем LLM-roleSplit размечает Менеджер/Клиент.
 
-Контракт (совпадает с src/lib/transcription/providers/selfHosted.ts):
-  POST /v1/transcribe  { "audio_url": "<url>", "language": "ru" } -> { "job_id": "..." }
-  GET  /v1/jobs/{id}   -> { "status": "queued|processing|done|error", "error": ...,
-        "result": { "language","duration","segments":[{start,end,speaker,text}] } }
+Лёгкий по ресурсам: нет whisper/ctranslate2 — только pyannote. Влезает в 2 CPU / 4 ГБ.
+
+Контракт (совпадает с src/lib/transcription/diarization.ts):
+  POST /v1/diarize   { "audio_url": "<url>" } -> { "job_id": "..." }
+  GET  /v1/jobs/{id} -> { "status": "queued|processing|done|error", "error": ...,
+        "result": { "duration": 123.4, "turns": [{"start":0.4,"end":4.8,"speaker":"SPEAKER_0"}] } }
 
 ENV:
-  WHISPER_MODEL      medium (CPU) | large-v3 (GPU)         — размер модели ASR
-  DEVICE             cpu | cuda
-  COMPUTE_TYPE       int8 (CPU) | float16 (GPU)
-  HF_TOKEN           токен HuggingFace (для pyannote, gated — принять условия модели)
-  EXPECTED_SPEAKERS  2 (для звонков — всегда 2 стороны; ускоряет и точнит диаризацию)
+  HF_TOKEN           токен HuggingFace (pyannote gated — принять условия моделей)
+  MIN_SPEAKERS       1 (нижняя граница; на автоответчике/молчащей стороне бывает 1)
+  MAX_SPEAKERS       2 (стороны звонка)
   API_TOKEN          если задан — требуется Authorization: Bearer <API_TOKEN>
-  LANGUAGE           ru
+  DEVICE             cpu | cuda
 """
 import os
 import uuid
@@ -31,36 +32,27 @@ import requests
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 
-WHISPER_MODEL = os.getenv("WHISPER_MODEL", "medium")
-DEVICE = os.getenv("DEVICE", "cpu")
-COMPUTE_TYPE = os.getenv("COMPUTE_TYPE", "int8" if DEVICE == "cpu" else "float16")
 HF_TOKEN = os.getenv("HF_TOKEN", "")
-EXPECTED_SPEAKERS = int(os.getenv("EXPECTED_SPEAKERS", "2"))
+DEVICE = os.getenv("DEVICE", "cpu")
+MIN_SPEAKERS = int(os.getenv("MIN_SPEAKERS", "1"))
+MAX_SPEAKERS = int(os.getenv("MAX_SPEAKERS", "2"))
 API_TOKEN = os.getenv("API_TOKEN", "")
-LANGUAGE = os.getenv("LANGUAGE", "ru")
 
-app = FastAPI(title="ES Speech Service")
+app = FastAPI(title="ES Diarization Service")
 
-# Простое in-memory хранилище задач (MVP, один инстанс). Для масштаба — Redis/БД.
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
 
-# Очередь работ: звонки считаются ПО ОЧЕРЕДИ одним воркером. На слабом CPU-сервере
-# (2 ядра / 4 ГБ рядом с n8n) параллельные распознавания душат CPU и вызывают OOM.
-WORK_QUEUE: "queue.Queue[tuple[str, str, str]]" = queue.Queue()
+# Очередь: диаризация считается ПО ОДНОЙ (2 CPU не перегружаются).
+WORK_QUEUE: "queue.Queue[tuple[str, str]]" = queue.Queue()
 
-# Модели грузим лениво при первом запросе (экономим память на старте).
-_whisper = None
 _diarizer = None
 _models_lock = threading.Lock()
 
 
-def _load_models():
-    global _whisper, _diarizer
+def _load_diarizer():
+    global _diarizer
     with _models_lock:
-        if _whisper is None:
-            from faster_whisper import WhisperModel
-            _whisper = WhisperModel(WHISPER_MODEL, device=DEVICE, compute_type=COMPUTE_TYPE)
         if _diarizer is None:
             from pyannote.audio import Pipeline
             _diarizer = Pipeline.from_pretrained(
@@ -72,7 +64,7 @@ def _load_models():
                     _diarizer.to(torch.device("cuda"))
             except Exception:
                 pass
-    return _whisper, _diarizer
+    return _diarizer
 
 
 def _download(url: str, dst: str):
@@ -90,72 +82,27 @@ def _to_wav16k_mono(src: str, dst: str):
     )
 
 
-def _speaker_at(turns, t: float) -> Optional[str]:
-    """Кто говорил в момент t (по диаризации)."""
-    best = None
-    best_gap = 1e9
-    for (start, end, spk) in turns:
-        if start <= t <= end:
-            return spk
-        gap = min(abs(t - start), abs(t - end))
-        if gap < best_gap:
-            best_gap, best = gap, spk
-    return best
-
-
-def _process(job_id: str, audio_url: str, language: str):
+def _process(job_id: str, audio_url: str):
     with JOBS_LOCK:
         JOBS[job_id]["status"] = "processing"
-    tmp = tempfile.mkdtemp(prefix="es_stt_")
+    tmp = tempfile.mkdtemp(prefix="es_diar_")
     try:
-        whisper, diarizer = _load_models()
+        diarizer = _load_diarizer()
         raw = os.path.join(tmp, "in")
         wav = os.path.join(tmp, "audio.wav")
         _download(audio_url, raw)
         _to_wav16k_mono(raw, wav)
 
-        # 1) ASR со слово-таймкодами
-        seg_iter, info = whisper.transcribe(
-            wav, language=language or LANGUAGE, word_timestamps=True, vad_filter=True
-        )
-        words = []
-        for s in seg_iter:
-            for w in (s.words or []):
-                words.append((float(w.start), float(w.end), w.word))
-        duration = float(getattr(info, "duration", 0.0)) or (words[-1][1] if words else 0.0)
-
-        # 2) Диаризация (разделение спикеров)
-        diar_kwargs = {}
-        if EXPECTED_SPEAKERS > 0:
-            diar_kwargs["num_speakers"] = EXPECTED_SPEAKERS
-        diarization = diarizer(wav, **diar_kwargs)
-        turns = [(float(t.start), float(t.end), spk)
-                 for t, _, spk in diarization.itertracks(yield_label=True)]
-
-        # 3) Слить: каждому слову — спикер по середине; склеить подряд одинаковых
-        segments = []
-        cur = None
-        for (ws, we, wtext) in words:
-            spk = _speaker_at(turns, (ws + we) / 2.0) or "SPEAKER_0"
-            if cur and cur["speaker"] == spk:
-                cur["end"] = we
-                cur["text"] += wtext
-            else:
-                if cur:
-                    segments.append(cur)
-                cur = {"start": ws, "end": we, "speaker": spk, "text": wtext}
-        if cur:
-            segments.append(cur)
-        for s in segments:
-            s["text"] = s["text"].strip()
+        diarization = diarizer(wav, min_speakers=MIN_SPEAKERS, max_speakers=MAX_SPEAKERS)
+        turns = [
+            {"start": float(t.start), "end": float(t.end), "speaker": str(spk)}
+            for t, _, spk in diarization.itertracks(yield_label=True)
+        ]
+        duration = max((t["end"] for t in turns), default=0.0)
 
         with JOBS_LOCK:
             JOBS[job_id]["status"] = "done"
-            JOBS[job_id]["result"] = {
-                "language": language or LANGUAGE,
-                "duration": duration,
-                "segments": [s for s in segments if s["text"]],
-            }
+            JOBS[job_id]["result"] = {"duration": duration, "turns": turns}
     except Exception as e:  # noqa: BLE001
         with JOBS_LOCK:
             JOBS[job_id]["status"] = "error"
@@ -168,9 +115,8 @@ def _process(job_id: str, audio_url: str, language: str):
             pass
 
 
-class TranscribeIn(BaseModel):
+class DiarizeIn(BaseModel):
     audio_url: str
-    language: Optional[str] = None
 
 
 def _check_auth(authorization: Optional[str]):
@@ -178,13 +124,13 @@ def _check_auth(authorization: Optional[str]):
         raise HTTPException(status_code=401, detail="unauthorized")
 
 
-@app.post("/v1/transcribe")
-def transcribe(body: TranscribeIn, authorization: Optional[str] = Header(default=None)):
+@app.post("/v1/diarize")
+def diarize(body: DiarizeIn, authorization: Optional[str] = Header(default=None)):
     _check_auth(authorization)
     job_id = uuid.uuid4().hex
     with JOBS_LOCK:
         JOBS[job_id] = {"status": "queued"}
-    WORK_QUEUE.put((job_id, body.audio_url, body.language or LANGUAGE))
+    WORK_QUEUE.put((job_id, body.audio_url))
     return {"job_id": job_id}
 
 
@@ -204,23 +150,19 @@ def job(job_id: str, authorization: Optional[str] = Header(default=None)):
 
 @app.get("/health")
 def health():
-    return {
-        "ok": True, "model": WHISPER_MODEL, "device": DEVICE,
-        "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
-    }
+    return {"ok": True, "mode": "diarize", "device": DEVICE,
+            "jobs": len(JOBS), "queued": WORK_QUEUE.qsize()}
 
 
 def _worker():
-    """Единственный воркер: берёт задачи из очереди и считает по одной."""
     while True:
-        job_id, audio_url, language = WORK_QUEUE.get()
+        job_id, audio_url = WORK_QUEUE.get()
         try:
-            _process(job_id, audio_url, language)
-        except Exception:  # noqa: BLE001 — статус ошибки уже проставлен внутри _process
+            _process(job_id, audio_url)
+        except Exception:  # noqa: BLE001 — статус ошибки уже проставлен
             pass
         finally:
             WORK_QUEUE.task_done()
 
 
-# Запускаем один фоновый воркер при импорте модуля (uvicorn app:app).
 threading.Thread(target=_worker, daemon=True).start()

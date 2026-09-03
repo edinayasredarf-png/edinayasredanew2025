@@ -2,18 +2,13 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 requests==2.32.3
-# ctranslate2 пиним на CPU-совместимую версию: свежие сборки линкуются с CUDA 13
-# и падают на CPU (libcudart.so.13: cannot open shared object file).
-ctranslate2==4.4.0
-faster-whisper==1.0.3
-# huggingface_hub <0.26: в 0.26 удалён use_auth_token, который pyannote 3.3.1 ещё
-# использует (hf_hub_download() got an unexpected keyword argument 'use_auth_token').
+# huggingface_hub <0.26: pyannote 3.3.1 использует use_auth_token, удалённый в 0.26.
 huggingface_hub==0.25.2
 pyannote.audio==3.3.1
-# transformers, совместимый с huggingface_hub 0.25.x (новые требуют >=0.26).
+# transformers, совместимый с huggingface_hub 0.25.x.
 transformers==4.44.2
-# pyannote импортирует matplotlib (визуализация) — без него падает при загрузке пайплайна.
+# pyannote импортирует matplotlib при загрузке пайплайна.
 matplotlib==3.9.2
-# onnxruntime строго CPU (без -gpu), pyannote иначе может подтянуть GPU-сборку.
+# onnxruntime строго CPU (без -gpu).
 onnxruntime==1.19.2
 # torch + torchaudio ставятся отдельно CPU-колёсами — см. Dockerfile.

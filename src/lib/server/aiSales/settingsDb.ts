@@ -35,6 +35,7 @@ export const EDITABLE_KEYS = new Set<string>([
   "ai.analysis_enabled",
   "ai.confidence_threshold",
   "transcription.provider",
+  "diarization.provider",
   "bitrix.auto_write",
   "bitrix.auto_create_tasks",
   "retention.transcript_days",
@@ -51,6 +52,11 @@ async function getSetting<T>(key: string, fallback: T): Promise<T> {
 /** Провайдер транскрибации: сначала БД (ai_settings), потом env, потом yandex. */
 export async function getTranscriptionSetting(): Promise<string> {
   return getSetting<string>("transcription.provider", (process.env.TRANSCRIPTION_PROVIDER || "yandex").trim());
+}
+
+/** Провайдер диаризации: yandex (метки самого STT) | pyannote (self-hosted). */
+export async function getDiarizationSetting(): Promise<string> {
+  return getSetting<string>("diarization.provider", (process.env.DIARIZATION_PROVIDER || "yandex").trim());
 }
 
 /** Провайдер + модель анализа: сначала БД (ai_settings), потом env. */

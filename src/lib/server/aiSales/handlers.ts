@@ -5,6 +5,7 @@ import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncSe
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ingestCallActivity } from "@/lib/server/aiSales/callIngestService";
 import { runTranscription } from "@/lib/server/aiSales/transcriptionService";
+import { runDiarization } from "@/lib/server/aiSales/diarizationService";
 import { runRoleSplit } from "@/lib/server/aiSales/roleSplitService";
 import { runAnalysis } from "@/lib/server/aiSales/analysisService";
 import { runDealInsight } from "@/lib/server/aiSales/dealInsightService";
@@ -57,6 +58,17 @@ export function registerAllHandlers(): void {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("call.transcribe: пустой callId");
     return runTranscription({
+      callId,
+      operationId: job.payload.operationId ? String(job.payload.operationId) : undefined,
+      polls: typeof job.payload.polls === "number" ? job.payload.polls : undefined,
+    });
+  });
+
+  // Гибридная диаризация (pyannote): разделение спикеров поверх текста Yandex.
+  registerJobHandler("call.diarize", async (job) => {
+    const callId = String(job.payload.callId || "");
+    if (!callId) throw new Error("call.diarize: пустой callId");
+    return runDiarization({
       callId,
       operationId: job.payload.operationId ? String(job.payload.operationId) : undefined,
       polls: typeof job.payload.polls === "number" ? job.payload.polls : undefined,

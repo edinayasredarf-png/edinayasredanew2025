@@ -1128,6 +1128,7 @@ function Settings() {
     try {
       const updates = {
         'transcription.provider': s['transcription.provider'],
+        'diarization.provider': s['diarization.provider'],
         'ai.provider': s['ai.provider'],
         'ai.model.analysis': s['ai.model.analysis'],
         'ai.analysis_enabled': s['ai.analysis_enabled'],
@@ -1167,6 +1168,12 @@ function Settings() {
             <option value="selfhosted">Свой сервер (faster-whisper + pyannote)</option>
             <option value="yandex">Yandex SpeechKit v2 (без диаризации)</option>
             <option value="whisper">Whisper-endpoint</option>
+          </select>
+        </Field>
+        <Field label="Диаризация (разделение спикеров)" hint="yandex — метки говорящих от самого SpeechKit (слабее на моно); pyannote — свой сервер точно режет по говорящим поверх текста Yandex (как Voicee). Для pyannote нужен SELFHOSTED_STT_URL.">
+          <select value={str('diarization.provider', 'yandex')} onChange={(e) => set('diarization.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
+            <option value="yandex">Yandex (встроенная)</option>
+            <option value="pyannote">pyannote (свой сервер, точнее)</option>
           </select>
         </Field>
         <Field label="AI-провайдер анализа" hint="anthropic (Claude) или yandex (YandexGPT)">

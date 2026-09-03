@@ -187,6 +187,21 @@ export async function updateSegmentRoles(
   }
 }
 
+/** Перезаписать метки говорящих (speaker_label) после диаризации pyannote. */
+export async function updateSegmentSpeakers(
+  transcriptId: string,
+  speakers: Array<{ idx: number; speaker: string }>
+): Promise<void> {
+  if (!speakers.length) return;
+  const pool = getTimewebPool();
+  for (const s of speakers) {
+    await pool.query(
+      `update ai_transcript_segments set speaker_label = $3 where transcript_id = $1 and idx = $2`,
+      [transcriptId, s.idx, s.speaker]
+    );
+  }
+}
+
 /** Сохранить результат AI-анализа. Идемпотентно по (call_id, input_hash). */
 export async function saveAnalysis(input: {
   callId: string;

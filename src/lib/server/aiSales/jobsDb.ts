@@ -15,6 +15,7 @@ export type AiJobType =
   | "bitrix.sync"
   | "call.ingest"
   | "call.transcribe"
+  | "call.diarize"
   | "call.roles"
   | "call.analyze"
   | "deal.analyze"
