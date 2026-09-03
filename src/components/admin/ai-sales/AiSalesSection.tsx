@@ -1505,7 +1505,6 @@ export default function AiSalesSection() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Речевая аналитика</h1>
       <div className="mb-5 border-b border-gray-200 overflow-x-auto">
         <div className="flex gap-1 min-w-max">
           {SECTIONS.map((s) => (

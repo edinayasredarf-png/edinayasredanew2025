@@ -20,6 +20,53 @@ interface AdminStats {
   recentComments: any[];
 }
 
+/* ─────────── Иконки навигации (line-стиль, currentColor) ─────────── */
+type IconProps = { className?: string };
+const mkIcon = (d: string) => function Icon({ className }: IconProps) {
+  return (
+    <svg className={className || 'w-5 h-5'} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
+};
+const IconGrid = mkIcon('M4 4h6v6H4Z M14 4h6v6h-6Z M4 14h6v6H4Z M14 14h6v6h-6Z');
+const IconNews = mkIcon('M4 5h16v14H4Z M8 9h8 M8 13h8 M8 17h4');
+const IconLink = mkIcon('M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1 M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1');
+const IconMail = mkIcon('M4 6h16v12H4Z M4 7l8 6 8-6');
+const IconChat = mkIcon('M21 12a8 8 0 01-11.5 7.2L4 20l1-4.5A8 8 0 1121 12Z');
+const IconWave = mkIcon('M6 9v6 M10 5v14 M14 8v8 M18 10v4 M2 11v2 M22 11v2');
+const IconRadar = mkIcon('M5 19a1 1 0 100-2 1 1 0 000 2 M4 11a9 9 0 019 9 M4 5a15 15 0 0115 15');
+const IconChart = mkIcon('M4 20V10 M10 20V4 M16 20v-8 M22 20H2');
+const IconMailOpen = mkIcon('M4 9l8-5 8 5v9H4Z M4 9l8 5 8-5');
+const IconUsers = mkIcon('M16 20v-2a4 4 0 00-8 0v2 M12 12a4 4 0 100-8 4 4 0 000 8 M22 20v-2a4 4 0 00-3-3.8');
+const IconShare = mkIcon('M8 12a3 3 0 10-3-3 3 3 0 003 3 M16 6a3 3 0 10-3-3 3 3 0 003 3 M16 21a3 3 0 10-3-3 3 3 0 003 3 M9 11l6-4 M9 13l6 4');
+const IconBell = mkIcon('M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9 M13.7 21a2 2 0 01-3.4 0');
+
+type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback' | 'ai-analytics';
+const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
+  { group: 'Контент', items: [
+    { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
+    { id: 'press', label: 'СМИ о нас', icon: IconNews },
+    { id: 'utm', label: 'UTM-метки', icon: IconLink },
+    { id: 'letters', label: 'Письма', icon: IconMail },
+    { id: 'feedback', label: 'Обратная связь', icon: IconChat },
+  ] },
+  { group: 'AI', items: [
+    { id: 'ai-analytics', label: 'Речевая аналитика', icon: IconWave },
+  ] },
+  { group: 'Мониторинг', items: [
+    { id: 'radar', label: 'Новостной радар', icon: IconRadar },
+  ] },
+  { group: 'Аналитика', items: [
+    { id: 'metrika', label: 'Посещаемость', icon: IconChart },
+    { id: 'email', label: 'Email-активность', icon: IconMailOpen },
+    { id: 'leads', label: 'Лиды', icon: IconUsers },
+    { id: 'social', label: 'Соцсети', icon: IconShare },
+  ] },
+];
+const NAV_FLAT = NAV.flatMap((s) => s.items);
+
 export default function AdminPanel() {
   const [stats, setStats] = useState<AdminStats>({
     totalPosts: 0,
@@ -32,10 +79,7 @@ export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback'
-    | 'ai-analytics'
-  >('dashboard');
+  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
 
   useEffect(() => {
     const checkAuth = () => {
@@ -131,57 +175,71 @@ export default function AdminPanel() {
     );
   }
 
+  const activeItem = NAV_FLAT.find((i) => i.id === activeTab);
   return (
-    <div className="min-h-screen bg-white">
-      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-8 flex flex-col lg:flex-row gap-6">
-        {/* Левое меню */}
-        <aside className="lg:w-64 shrink-0">
-          <div className="bg-[#F6F7F9] rounded-2xl p-3 lg:sticky lg:top-6">
-            <h1 className="px-3 pt-2 pb-3 text-lg font-bold text-gray-900">Админ-панель</h1>
-            {([
-              { group: 'Контент', items: [
-                { id: 'dashboard', label: 'Дашборд' },
-                { id: 'press', label: 'СМИ о нас' },
-                { id: 'utm', label: 'UTM-метки' },
-                { id: 'letters', label: 'Письма' },
-                { id: 'feedback', label: 'Обратная связь' },
-              ] },
-              { group: 'AI', items: [
-                { id: 'ai-analytics', label: 'Речевая аналитика' },
-              ] },
-              { group: 'Мониторинг', items: [
-                { id: 'radar', label: 'Новостной радар' },
-              ] },
-              { group: 'Аналитика', items: [
-                { id: 'metrika', label: 'Посещаемость' },
-                { id: 'email', label: 'Email-активность' },
-                { id: 'leads', label: 'Лиды' },
-                { id: 'social', label: 'Соцсети' },
-              ] },
-            ] as const).map((section) => (
-              <div key={section.group} className="mb-2">
-                <div className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-[#9AA6B2]">
-                  {section.group}
-                </div>
-                {section.items.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      activeTab === item.id ? 'bg-[#029cda]/10 text-[#029cda] font-medium' : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            ))}
+    <div className="min-h-screen bg-gradient-to-b from-[#eef4fb] to-[#f7fafd]">
+      <div className="w-full max-w-[1900px] mx-auto px-3 sm:px-4 lg:px-6 py-4 lg:py-6 flex gap-4 lg:gap-6">
+        {/* Иконочный рельс (десктоп) */}
+        <aside className="hidden lg:flex flex-col items-center w-[76px] shrink-0 bg-[#029cda] rounded-[28px] py-5 sticky top-6 h-[calc(100vh-48px)] shadow-lg shadow-[#029cda]/20">
+          <div className="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center mb-5 text-white">
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 5l6 6 6-6 M6 12l6 6 6-6" /></svg>
           </div>
+          <nav className="flex flex-col items-center gap-1 w-full">
+            {NAV.map((section, gi) => (
+              <React.Fragment key={section.group}>
+                {gi > 0 && <div className="my-2 h-px w-8 bg-white/25" />}
+                {section.items.map((item) => {
+                  const Ic = item.icon;
+                  const active = activeTab === item.id;
+                  return (
+                    <button key={item.id} type="button" title={item.label} onClick={() => setActiveTab(item.id)}
+                      className={`group relative w-11 h-11 rounded-2xl flex items-center justify-center transition ${active ? 'bg-white text-[#029cda] shadow' : 'text-white/85 hover:bg-white/15'}`}>
+                      <Ic className="w-5 h-5" />
+                      <span className="pointer-events-none absolute left-[54px] z-30 whitespace-nowrap rounded-lg bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </nav>
         </aside>
 
         {/* Контент */}
         <div className="flex-1 min-w-0">
+          {/* Верхний бар */}
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <div className="flex items-center gap-3">
+              {activeItem && (
+                <span className="hidden sm:flex w-10 h-10 rounded-xl bg-white items-center justify-center text-[#029cda] shadow-sm">
+                  {React.createElement(activeItem.icon, { className: 'w-5 h-5' })}
+                </span>
+              )}
+              <div>
+                <p className="text-xs text-gray-400 leading-none mb-1">Админ-панель</p>
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 leading-none">{activeItem?.label ?? 'Дашборд'}</h1>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button type="button" className="relative w-10 h-10 rounded-xl bg-white text-gray-500 hover:text-[#029cda] shadow-sm flex items-center justify-center">
+                <IconBell className="w-5 h-5" />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-white" />
+              </button>
+              <div className="w-10 h-10 rounded-xl bg-[#029cda]/10 text-[#029cda] font-semibold flex items-center justify-center">ЕС</div>
+            </div>
+          </div>
+
+          {/* Мобильная навигация */}
+          <div className="lg:hidden -mx-3 px-3 mb-4 overflow-x-auto">
+            <div className="flex gap-2 min-w-max">
+              {NAV_FLAT.map((item) => (
+                <button key={item.id} type="button" onClick={() => setActiveTab(item.id)}
+                  className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition ${activeTab === item.id ? 'bg-[#029cda] text-white' : 'bg-white text-gray-600 border border-gray-200'}`}>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {status && (
             <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
               <p className="text-blue-800">{status}</p>
