@@ -2,6 +2,11 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 requests==2.32.3
+# ctranslate2 пиним на CPU-совместимую версию: свежие сборки линкуются с CUDA 13
+# и падают на CPU (libcudart.so.13: cannot open shared object file).
+ctranslate2==4.4.0
 faster-whisper==1.0.3
 pyannote.audio==3.3.1
-# torch ставится отдельно под CPU/GPU — см. Dockerfile / README.
+# onnxruntime строго CPU (без -gpu), pyannote иначе может подтянуть GPU-сборку.
+onnxruntime==1.19.2
+# torch + torchaudio ставятся отдельно CPU-колёсами — см. Dockerfile.
