@@ -12,6 +12,8 @@ huggingface_hub==0.25.2
 pyannote.audio==3.3.1
 # transformers, совместимый с huggingface_hub 0.25.x (новые требуют >=0.26).
 transformers==4.44.2
+# pyannote импортирует matplotlib (визуализация) — без него падает при загрузке пайплайна.
+matplotlib==3.9.2
 # onnxruntime строго CPU (без -gpu), pyannote иначе может подтянуть GPU-сборку.
 onnxruntime==1.19.2
 # torch + torchaudio ставятся отдельно CPU-колёсами — см. Dockerfile.
