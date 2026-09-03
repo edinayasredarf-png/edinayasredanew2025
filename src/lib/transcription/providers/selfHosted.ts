@@ -71,10 +71,12 @@ export class SelfHostedSttProvider implements TranscriptionProvider {
 
   async startAsync(audioUri: string, languageHint?: string): Promise<AsyncStartResult> {
     const { base, lang } = this.cfg();
+    // Whisper ждёт ISO-код без региона ("ru"), а не "ru-RU" (формат Yandex).
+    const language = (languageHint || lang).split("-")[0].toLowerCase();
     const res = await fetch(`${base}/v1/transcribe`, {
       method: "POST",
       headers: this.headers(),
-      body: JSON.stringify({ audio_url: audioUri, language: languageHint || lang }),
+      body: JSON.stringify({ audio_url: audioUri, language }),
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
