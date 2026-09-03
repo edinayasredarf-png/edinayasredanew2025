@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { resolveDiskDownloadUrl } from "@/lib/server/bitrix/entities";
-import { getTranscriptionProvider } from "@/lib/transcription";
+import { getTranscriptionProviderFromSettings } from "@/lib/transcription";
 import { putObject, objectStorageConfigured } from "@/lib/storage/objectStorage";
 import {
   getCallById,
@@ -54,7 +54,7 @@ export async function runTranscription(payload: TranscribePayload): Promise<unkn
     return { skipped: "no recording" };
   }
 
-  const provider = getTranscriptionProvider();
+  const provider = await getTranscriptionProviderFromSettings();
 
   // ── Фаза poll (async) ──
   if (payload.operationId) {

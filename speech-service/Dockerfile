@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 
-ENV WHISPER_MODEL=medium DEVICE=cpu COMPUTE_TYPE=int8 EXPECTED_SPEAKERS=2 LANGUAGE=ru
+# small — безопасно по RAM на 2 CPU / 4 GB рядом с n8n. Есть запас памяти — WHISPER_MODEL=medium (точнее текст).
+ENV WHISPER_MODEL=small DEVICE=cpu COMPUTE_TYPE=int8 EXPECTED_SPEAKERS=2 LANGUAGE=ru
 EXPOSE 8000
 
 # 1 воркер: модели держатся в памяти одного процесса; параллелизм — через очередь приложения.

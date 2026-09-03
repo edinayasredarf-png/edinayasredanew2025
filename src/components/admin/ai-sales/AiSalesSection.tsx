@@ -1127,6 +1127,7 @@ function Settings() {
     setBusy(true); setMsg('');
     try {
       const updates = {
+        'transcription.provider': s['transcription.provider'],
         'ai.provider': s['ai.provider'],
         'ai.model.analysis': s['ai.model.analysis'],
         'ai.analysis_enabled': s['ai.analysis_enabled'],
@@ -1160,6 +1161,14 @@ function Settings() {
       <p className="text-sm text-gray-500 mb-4">Влияют на следующий анализ. Ключи Yandex/Anthropic/STT задаются в переменных окружения (Vercel).</p>
 
       <div className="bg-white rounded-xl border border-gray-100 px-5">
+        <Field label="Провайдер транскрибации" hint="yandex_v3 — облако Yandex со спикерами (моно); selfhosted — свой сервер faster-whisper + pyannote (диаризация как у Voicee); yandex — SpeechKit v2 без диаризации; whisper — свой Whisper-endpoint. Меняется на лету, применится к следующим звонкам.">
+          <select value={str('transcription.provider', 'yandex_v3')} onChange={(e) => set('transcription.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
+            <option value="yandex_v3">Yandex SpeechKit v3 (спикеры, облако)</option>
+            <option value="selfhosted">Свой сервер (faster-whisper + pyannote)</option>
+            <option value="yandex">Yandex SpeechKit v2 (без диаризации)</option>
+            <option value="whisper">Whisper-endpoint</option>
+          </select>
+        </Field>
         <Field label="AI-провайдер анализа" hint="anthropic (Claude) или yandex (YandexGPT)">
           <select value={str('ai.provider', 'yandex')} onChange={(e) => set('ai.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
             <option value="yandex">YandexGPT</option>

@@ -34,6 +34,7 @@ export const EDITABLE_KEYS = new Set<string>([
   "ai.model.analysis",
   "ai.analysis_enabled",
   "ai.confidence_threshold",
+  "transcription.provider",
   "bitrix.auto_write",
   "bitrix.auto_create_tasks",
   "retention.transcript_days",
@@ -45,6 +46,11 @@ async function getSetting<T>(key: string, fallback: T): Promise<T> {
   const pool = getTimewebPool();
   const { rows } = await pool.query<{ value: unknown }>(`select value from ai_settings where key = $1`, [key]);
   return (rows[0]?.value as T) ?? fallback;
+}
+
+/** Провайдер транскрибации: сначала БД (ai_settings), потом env, потом yandex. */
+export async function getTranscriptionSetting(): Promise<string> {
+  return getSetting<string>("transcription.provider", (process.env.TRANSCRIPTION_PROVIDER || "yandex").trim());
 }
 
 /** Провайдер + модель анализа: сначала БД (ai_settings), потом env. */
