@@ -21,6 +21,7 @@ ENV:
 """
 import os
 import uuid
+import queue
 import tempfile
 import threading
 import subprocess
@@ -43,6 +44,10 @@ app = FastAPI(title="ES Speech Service")
 # Простое in-memory хранилище задач (MVP, один инстанс). Для масштаба — Redis/БД.
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
+
+# Очередь работ: звонки считаются ПО ОЧЕРЕДИ одним воркером. На слабом CPU-сервере
+# (2 ядра / 4 ГБ рядом с n8n) параллельные распознавания душат CPU и вызывают OOM.
+WORK_QUEUE: "queue.Queue[tuple[str, str, str]]" = queue.Queue()
 
 # Модели грузим лениво при первом запросе (экономим память на старте).
 _whisper = None
@@ -179,9 +184,7 @@ def transcribe(body: TranscribeIn, authorization: Optional[str] = Header(default
     job_id = uuid.uuid4().hex
     with JOBS_LOCK:
         JOBS[job_id] = {"status": "queued"}
-    threading.Thread(
-        target=_process, args=(job_id, body.audio_url, body.language or LANGUAGE), daemon=True
-    ).start()
+    WORK_QUEUE.put((job_id, body.audio_url, body.language or LANGUAGE))
     return {"job_id": job_id}
 
 
@@ -201,4 +204,23 @@ def job(job_id: str, authorization: Optional[str] = Header(default=None)):
 
 @app.get("/health")
 def health():
-    return {"ok": True, "model": WHISPER_MODEL, "device": DEVICE, "jobs": len(JOBS)}
+    return {
+        "ok": True, "model": WHISPER_MODEL, "device": DEVICE,
+        "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
+    }
+
+
+def _worker():
+    """Единственный воркер: берёт задачи из очереди и считает по одной."""
+    while True:
+        job_id, audio_url, language = WORK_QUEUE.get()
+        try:
+            _process(job_id, audio_url, language)
+        except Exception:  # noqa: BLE001 — статус ошибки уже проставлен внутри _process
+            pass
+        finally:
+            WORK_QUEUE.task_done()
+
+
+# Запускаем один фоновый воркер при импорте модуля (uvicorn app:app).
+threading.Thread(target=_worker, daemon=True).start()
