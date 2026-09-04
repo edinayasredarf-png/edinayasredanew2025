@@ -2,6 +2,9 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 requests==2.32.3
+# numpy < 2: pyannote 3.3.1 использует np.NAN, удалённый в numpy 2.0
+# (module 'numpy' has no attribute 'NAN').
+numpy==1.26.4
 # ctranslate2 4.4.0 — CPU-совместимая (свежие тянут CUDA 13). execstack снимается
 # в Dockerfile через patchelf.
 ctranslate2==4.4.0
