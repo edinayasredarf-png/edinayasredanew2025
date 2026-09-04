@@ -20,7 +20,8 @@ import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
  * Не блокируем serverless-функцию на всю длительность распознавания.
  */
 
-const MAX_POLLS = 40; // ~20 минут при runAfter 30с
+const MAX_POLLS = 180; // ~3 часа при runAfter 60с — чтобы opId не отваливались, пока ждут очередь self-hosted при бэклоге
+const POLL_INTERVAL_MS = 60_000;
 
 interface TranscribePayload {
   callId: string;
@@ -78,7 +79,7 @@ export async function runTranscription(payload: TranscribePayload): Promise<unkn
       await enqueueJob({
         type: "call.transcribe",
         payload: { callId: call.id, operationId: payload.operationId, polls },
-        runAfter: new Date(Date.now() + 30_000),
+        runAfter: new Date(Date.now() + POLL_INTERVAL_MS),
         priority: 50,
       });
       return { pending: true, polls };
