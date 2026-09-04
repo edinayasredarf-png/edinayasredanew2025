@@ -2,6 +2,11 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 requests==2.32.3
+# ctranslate2 4.4.0 — CPU-совместимая (свежие тянут CUDA 13). execstack снимается
+# в Dockerfile через patchelf.
+ctranslate2==4.4.0
+# faster-whisper 1.1.0 — поддерживает модель large-v3-turbo (быстрый WhisperX-текст).
+faster-whisper==1.1.0
 # huggingface_hub <0.26: pyannote 3.3.1 использует use_auth_token, удалённый в 0.26.
 huggingface_hub==0.25.2
 pyannote.audio==3.3.1
