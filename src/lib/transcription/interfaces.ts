@@ -6,12 +6,20 @@ import "server-only";
  * маппинг в MANAGER/CLIENT делаем отдельно.
  */
 
+export interface TranscriptWord {
+  text: string;
+  startMs: number | null;
+  endMs: number | null;
+}
+
 export interface TranscriptSegment {
   idx: number;
   speakerLabel: string | null; // speaker_0 / speaker_1
   startMs: number | null;
   endMs: number | null;
   text: string;
+  /** Пословные таймкоды (Yandex v3) — нужны для пословного выравнивания со спикерами. */
+  words?: TranscriptWord[];
 }
 
 export interface TranscriptionResult {

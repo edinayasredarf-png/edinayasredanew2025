@@ -141,14 +141,18 @@ export class YandexSpeechKitV3Provider implements TranscriptionProvider {
       const alt = norm?.alternatives?.[0];
       const text = (alt?.text || "").trim();
       if (!alt || !text) return null;
-      const words = alt.words || [];
-      const startMs = numMs(words[0]?.startTimeMs);
-      const endMs = numMs(words[words.length - 1]?.endTimeMs);
+      const rawWords = alt.words || [];
+      const startMs = numMs(rawWords[0]?.startTimeMs);
+      const endMs = numMs(rawWords[rawWords.length - 1]?.endTimeMs);
       const speaker =
         alt.speakerTag != null
           ? `SPEAKER_${alt.speakerTag}`
           : so.channelTag ?? so.result?.channelTag ?? null;
-      return { idx: 0, speakerLabel: speaker, startMs, endMs, text };
+      // Пословные таймкоды — для пословного выравнивания со спикерами (диаризация).
+      const words = rawWords
+        .map((w) => ({ text: String(w.text ?? "").trim(), startMs: numMs(w.startTimeMs), endMs: numMs(w.endTimeMs) }))
+        .filter((w) => w.text);
+      return { idx: 0, speakerLabel: speaker, startMs, endMs, text, words };
     };
     for (const o of objs) {
       const so = o as V3StreamResponse;

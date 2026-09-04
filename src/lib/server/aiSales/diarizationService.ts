@@ -1,7 +1,7 @@
 import "server-only";
 
 import { resolveDiskDownloadUrl } from "@/lib/server/bitrix/entities";
-import { getCallById, getTranscript, updateSegmentSpeakers } from "@/lib/server/aiSales/callsDb";
+import { getCallById, getTranscript, replaceSegments } from "@/lib/server/aiSales/callsDb";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 
 /**
@@ -53,21 +53,50 @@ function speakerAt(turns: Turn[], t: number): string | null {
   return best;
 }
 
-/** Проставить сегментам транскрипта спикеров из интервалов pyannote. */
+const midSec = (a: number | null, b: number | null): number => ((a ?? b ?? 0) + (b ?? a ?? 0)) / 2 / 1000;
+
+interface OutSeg { speakerLabel: string | null; startMs: number | null; endMs: number | null; text: string }
+
+/**
+ * Пословное выравнивание: каждому слову Yandex ставим спикера pyannote по таймкоду
+ * и режем реплику ровно на границах говорящих. Где вся фраза одного человека —
+ * оставляем красивый текст Yandex; где спикер меняется посередине — рвём фразу и
+ * склеиваем слова каждого куска (только у таких — «сырой» текст). Пересобираем
+ * сегменты заново. Если пословных таймкодов нет — фолбэк: спикер по середине фразы.
+ */
 async function applyTurns(callId: string, turns: Turn[]): Promise<number> {
   const transcript = await getTranscript(callId);
   if (!transcript) return 0;
-  const updates: Array<{ idx: number; speaker: string }> = [];
+  const out: OutSeg[] = [];
+
   for (const s of transcript.segments) {
-    if (s.startMs == null && s.endMs == null) continue;
-    const start = s.startMs ?? s.endMs ?? 0;
-    const end = s.endMs ?? s.startMs ?? start;
-    const midSec = (start + end) / 2 / 1000;
-    const spk = speakerAt(turns, midSec);
-    if (spk) updates.push({ idx: s.idx, speaker: spk });
+    const words = s.words;
+    if (!words || !words.length) {
+      out.push({ speakerLabel: speakerAt(turns, midSec(s.startMs, s.endMs)), startMs: s.startMs, endMs: s.endMs, text: s.text });
+      continue;
+    }
+    // Разбиваем слова фразы на «прогоны» подряд идущих слов одного спикера.
+    const runs: Array<{ speaker: string | null; startMs: number | null; endMs: number | null; parts: string[] }> = [];
+    for (const w of words) {
+      const spk = speakerAt(turns, midSec(w.startMs, w.endMs));
+      const last = runs[runs.length - 1];
+      if (last && last.speaker === spk) {
+        last.parts.push(w.text);
+        if (w.endMs != null) last.endMs = w.endMs;
+      } else {
+        runs.push({ speaker: spk, startMs: w.startMs, endMs: w.endMs, parts: [w.text] });
+      }
+    }
+    if (runs.length <= 1) {
+      // Вся фраза — один спикер: сохраняем нормализованный текст Yandex.
+      out.push({ speakerLabel: runs[0]?.speaker ?? null, startMs: s.startMs, endMs: s.endMs, text: s.text });
+    } else {
+      for (const r of runs) out.push({ speakerLabel: r.speaker, startMs: r.startMs, endMs: r.endMs, text: r.parts.join(" ") });
+    }
   }
-  await updateSegmentSpeakers(transcript.id, updates);
-  return updates.length;
+
+  await replaceSegments(transcript.id, out);
+  return out.length;
 }
 
 export async function runDiarization(payload: DiarPayload): Promise<unknown> {

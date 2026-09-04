@@ -105,10 +105,10 @@ export async function saveTranscript(callId: string, t: TranscriptionResult): Pr
     const transcriptId = rows[0].id;
     for (const s of t.segments) {
       await client.query(
-        `insert into ai_transcript_segments (transcript_id, idx, speaker_label, role, start_ms, end_ms, text)
-         values ($1,$2,$3,$4,$5,$6,$7)
+        `insert into ai_transcript_segments (transcript_id, idx, speaker_label, role, start_ms, end_ms, text, words)
+         values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb)
          on conflict (transcript_id, idx) do nothing`,
-        [transcriptId, s.idx, s.speakerLabel, null, s.startMs, s.endMs, s.text]
+        [transcriptId, s.idx, s.speakerLabel, null, s.startMs, s.endMs, s.text, s.words ? JSON.stringify(s.words) : null]
       );
     }
     // Длительность звонка — из STT (в Bitrix её нет надёжно).
@@ -138,6 +138,7 @@ export interface TranscriptWithSegments {
     startMs: number | null;
     endMs: number | null;
     text: string;
+    words?: Array<{ text: string; startMs: number | null; endMs: number | null }> | null;
   }>;
 }
 
@@ -150,8 +151,9 @@ export async function getTranscript(callId: string): Promise<TranscriptWithSegme
   if (!t) return null;
   const seg = await pool.query<{
     idx: number; speaker_label: string | null; role: string | null; start_ms: number | null; end_ms: number | null; text: string;
+    words: Array<{ text: string; startMs: number | null; endMs: number | null }> | null;
   }>(
-    `select idx, speaker_label, role, start_ms, end_ms, text
+    `select idx, speaker_label, role, start_ms, end_ms, text, words
        from ai_transcript_segments where transcript_id = $1 order by idx asc`,
     [t.id]
   );
@@ -168,8 +170,36 @@ export async function getTranscript(callId: string): Promise<TranscriptWithSegme
       startMs: r.start_ms,
       endMs: r.end_ms,
       text: r.text,
+      words: r.words,
     })),
   };
+}
+
+/** Полностью заменить сегменты транскрипта (после пословного пересбора по спикерам). */
+export async function replaceSegments(
+  transcriptId: string,
+  segments: Array<{ speakerLabel: string | null; startMs: number | null; endMs: number | null; text: string }>
+): Promise<void> {
+  const pool = getTimewebPool();
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    await client.query(`delete from ai_transcript_segments where transcript_id = $1`, [transcriptId]);
+    let idx = 0;
+    for (const s of segments) {
+      await client.query(
+        `insert into ai_transcript_segments (transcript_id, idx, speaker_label, role, start_ms, end_ms, text)
+         values ($1,$2,$3,$4,$5,$6,$7)`,
+        [transcriptId, idx++, s.speakerLabel, null, s.startMs, s.endMs, s.text]
+      );
+    }
+    await client.query("commit");
+  } catch (e) {
+    await client.query("rollback");
+    throw e;
+  } finally {
+    client.release();
+  }
 }
 
 /** Обновить роли сегментов после разметки (MANAGER/CLIENT). */
