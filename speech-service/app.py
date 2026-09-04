@@ -22,6 +22,7 @@ ENV:
   LANGUAGE        ru
 """
 import os
+import re
 import uuid
 import queue
 import tempfile
@@ -95,6 +96,20 @@ def _to_wav16k_mono(src: str, dst: str):
     )
 
 
+# Типовые галлюцинации Whisper (обучен на ютуб-субтитрах): на тишине/шуме выдумывает
+# фразы из субтитров, которых в звонке не было. Дропаем сегменты, целиком совпадающие.
+_HALLUCINATION = re.compile(
+    r"субтитр|редактор субтитров|корректор|продолжение следует|спасибо за просмотр|"
+    r"спасибо за внимание|дубровск|подпишись|поставьте лайк|переводчик|"
+    r"dimatorzok|amara\.org|подписывайтесь на канал|спасибо, что смотрели",
+    re.IGNORECASE,
+)
+
+
+def _is_hallucination(text: str) -> bool:
+    return bool(_HALLUCINATION.search(text or ""))
+
+
 def _speaker_at(turns, t: float) -> Optional[str]:
     """Кто говорил в момент t (сек): по включению, иначе — ближайший интервал."""
     best = None
@@ -120,8 +135,13 @@ def _process(job_id: str, audio_url: str, language: str):
         _to_wav16k_mono(raw, wav)
 
         # 1) ASR со словами (в токене слова уже есть пунктуация и ведущий пробел).
+        #    condition_on_previous_text=False + hallucination_silence_threshold — меньше
+        #    выдуманного текста на тишине/шуме (типовые галлюцинации whisper).
         seg_iter, info = whisper.transcribe(
-            wav, language=language or LANGUAGE, word_timestamps=True, vad_filter=True
+            wav, language=language or LANGUAGE, word_timestamps=True,
+            vad_filter=True, condition_on_previous_text=False,
+            hallucination_silence_threshold=2.0,
+            no_speech_threshold=0.6, log_prob_threshold=-1.0,
         )
         words = []
         for s in seg_iter:
@@ -158,7 +178,7 @@ def _process(job_id: str, audio_url: str, language: str):
             JOBS[job_id]["result"] = {
                 "language": language or LANGUAGE,
                 "duration": duration,
-                "segments": [s for s in segments if s["text"]],
+                "segments": [s for s in segments if s["text"] and not _is_hallucination(s["text"])],
             }
     except Exception as e:  # noqa: BLE001
         with JOBS_LOCK:
