@@ -140,7 +140,6 @@ def _process(job_id: str, audio_url: str, language: str):
         seg_iter, info = whisper.transcribe(
             wav, language=language or LANGUAGE, word_timestamps=True,
             vad_filter=True, condition_on_previous_text=False,
-            hallucination_silence_threshold=2.0,
             no_speech_threshold=0.6, log_prob_threshold=-1.0,
         )
         words = []
