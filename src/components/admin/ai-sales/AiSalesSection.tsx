@@ -1254,7 +1254,8 @@ function Settings() {
         <Field label="Провайдер транскрибации" hint="yandex_v3 — облако Yandex со спикерами (моно); selfhosted — свой сервер faster-whisper + pyannote (диаризация как у Voicee); yandex — SpeechKit v2 без диаризации; whisper — свой Whisper-endpoint. Меняется на лету, применится к следующим звонкам.">
           <select value={str('transcription.provider', 'yandex_v3')} onChange={(e) => set('transcription.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
             <option value="yandex_v3">Yandex SpeechKit v3 (спикеры, облако)</option>
-            <option value="selfhosted">Свой сервер (faster-whisper + pyannote)</option>
+            <option value="selfhosted">Свой сервер — Whisper (faster-whisper + pyannote)</option>
+            <option value="gigaam">Свой сервер — GigaAM (Sber, русский) + pyannote</option>
             <option value="yandex">Yandex SpeechKit v2 (без диаризации)</option>
             <option value="whisper">Whisper-endpoint</option>
           </select>

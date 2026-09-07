@@ -43,23 +43,26 @@ MIN_SPEAKERS = int(os.getenv("MIN_SPEAKERS", "1"))
 MAX_SPEAKERS = int(os.getenv("MAX_SPEAKERS", "2"))
 API_TOKEN = os.getenv("API_TOKEN", "")
 LANGUAGE = os.getenv("LANGUAGE", "ru")
+# GigaAM (Sber) — альтернативный ASR (движок выбирается в запросе engine=gigaam).
+GIGAAM_MODEL = os.getenv("GIGAAM_MODEL", "v2_ctc")  # v2_ctc | v2_rnnt | ctc | rnnt
 
-app = FastAPI(title="ES WhisperX Service")
+app = FastAPI(title="ES Speech Service")
 
 # In-memory задачи (MVP, один инстанс).
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
 
-# Очередь: звонки считаются ПО ОДНОМУ (не перегружаем CPU, память ограничена).
-WORK_QUEUE: "queue.Queue[tuple[str, str, str]]" = queue.Queue()
+# Очередь: звонки считаются ПО ОДНОМУ. Элемент: (job_id, audio_url, language, engine).
+WORK_QUEUE: "queue.Queue[tuple[str, str, str, str]]" = queue.Queue()
 
 _whisper = None
+_gigaam = None
 _diarizer = None
 _models_lock = threading.Lock()
 
 
-def _load_models():
-    global _whisper, _diarizer
+def _load_whisper():
+    global _whisper
     with _models_lock:
         if _whisper is None:
             from faster_whisper import WhisperModel
@@ -67,6 +70,21 @@ def _load_models():
             if CPU_THREADS > 0:
                 kw["cpu_threads"] = CPU_THREADS
             _whisper = WhisperModel(WHISPER_MODEL, **kw)
+    return _whisper
+
+
+def _load_gigaam():
+    global _gigaam
+    with _models_lock:
+        if _gigaam is None:
+            import gigaam
+            _gigaam = gigaam.load_model(GIGAAM_MODEL)
+    return _gigaam
+
+
+def _load_diarizer():
+    global _diarizer
+    with _models_lock:
         if _diarizer is None:
             from pyannote.audio import Pipeline
             _diarizer = Pipeline.from_pretrained(
@@ -78,7 +96,7 @@ def _load_models():
                     _diarizer.to(torch.device("cuda"))
             except Exception:
                 pass
-    return _whisper, _diarizer
+    return _diarizer
 
 
 def _download(url: str, dst: str):
@@ -123,52 +141,81 @@ def _speaker_at(turns, t: float) -> Optional[str]:
     return best
 
 
-def _process(job_id: str, audio_url: str, language: str):
+def _diarize(wav: str):
+    diarizer = _load_diarizer()
+    diarization = diarizer(wav, min_speakers=MIN_SPEAKERS, max_speakers=MAX_SPEAKERS)
+    return [(float(t.start), float(t.end), str(spk)) for t, _, spk in diarization.itertracks(yield_label=True)]
+
+
+def _asr_whisper(wav: str, language: str):
+    """Whisper: слова с таймкодами (пунктуация в токенах)."""
+    whisper = _load_whisper()
+    seg_iter, info = whisper.transcribe(
+        wav, language=language or LANGUAGE, word_timestamps=True,
+        vad_filter=True, condition_on_previous_text=False,
+        no_speech_threshold=0.6, log_prob_threshold=-1.0,
+    )
+    words = []
+    for s in seg_iter:
+        for w in (s.words or []):
+            words.append((float(w.start), float(w.end), w.word))
+    duration = float(getattr(info, "duration", 0.0)) or (words[-1][1] if words else 0.0)
+    return words, duration
+
+
+def _asr_gigaam(wav: str, language: str):
+    """GigaAM: сегменты с границами (VAD внутри longform). Пословных таймкодов нет —
+    спикера ставим на сегмент. Возвращает [(start, end, text)] и длительность."""
+    model = _load_gigaam()
+    recs = model.transcribe_longform(wav)
+    segs = []
+    for r in recs:
+        text = str((r.get("transcription") if isinstance(r, dict) else getattr(r, "transcription", "")) or "").strip()
+        b = (r.get("boundaries") if isinstance(r, dict) else getattr(r, "boundaries", None)) or {}
+        start = float(b.get("start", 0.0)) if isinstance(b, dict) else float(getattr(b, "start", 0.0) or 0.0)
+        end = float(b.get("end", start)) if isinstance(b, dict) else float(getattr(b, "end", start) or start)
+        if text:
+            segs.append((start, end, text))
+    duration = segs[-1][1] if segs else 0.0
+    return segs, duration
+
+
+def _process(job_id: str, audio_url: str, language: str, engine: str):
     with JOBS_LOCK:
         JOBS[job_id]["status"] = "processing"
-    tmp = tempfile.mkdtemp(prefix="es_wx_")
+    tmp = tempfile.mkdtemp(prefix="es_stt_")
     try:
-        whisper, diarizer = _load_models()
         raw = os.path.join(tmp, "in")
         wav = os.path.join(tmp, "audio.wav")
         _download(audio_url, raw)
         _to_wav16k_mono(raw, wav)
 
-        # 1) ASR со словами (в токене слова уже есть пунктуация и ведущий пробел).
-        #    condition_on_previous_text=False + hallucination_silence_threshold — меньше
-        #    выдуманного текста на тишине/шуме (типовые галлюцинации whisper).
-        seg_iter, info = whisper.transcribe(
-            wav, language=language or LANGUAGE, word_timestamps=True,
-            vad_filter=True, condition_on_previous_text=False,
-            no_speech_threshold=0.6, log_prob_threshold=-1.0,
-        )
-        words = []
-        for s in seg_iter:
-            for w in (s.words or []):
-                words.append((float(w.start), float(w.end), w.word))
-        duration = float(getattr(info, "duration", 0.0)) or (words[-1][1] if words else 0.0)
+        turns = _diarize(wav)
 
-        # 2) Диаризация (разделение говорящих).
-        diarization = diarizer(wav, min_speakers=MIN_SPEAKERS, max_speakers=MAX_SPEAKERS)
-        turns = [
-            (float(t.start), float(t.end), str(spk))
-            for t, _, spk in diarization.itertracks(yield_label=True)
-        ]
+        if engine == "gigaam":
+            # ASR сегментами (GigaAM), спикер — по середине сегмента.
+            segs, duration = _asr_gigaam(wav, language)
+            segments = []
+            for (s, e, text) in segs:
+                spk = _speaker_at(turns, (s + e) / 2.0) or "SPEAKER_0"
+                segments.append({"start": s, "end": e, "speaker": spk, "text": text})
+        else:
+            # ASR словами (Whisper), пословное сопоставление со спикерами.
+            words, duration = _asr_whisper(wav, language)
+            segments = []
+            cur = None
+            for (ws, we, wtext) in words:
+                spk = _speaker_at(turns, (ws + we) / 2.0) or "SPEAKER_0"
+                if cur and cur["speaker"] == spk:
+                    cur["end"] = we
+                    cur["text"] += wtext
+                else:
+                    if cur:
+                        segments.append(cur)
+                    cur = {"start": ws, "end": we, "speaker": spk, "text": wtext}
+            if cur:
+                segments.append(cur)
 
-        # 3) Пословно: каждому слову — спикер по середине; клеим подряд одного спикера.
-        segments = []
-        cur = None
-        for (ws, we, wtext) in words:
-            spk = _speaker_at(turns, (ws + we) / 2.0) or "SPEAKER_0"
-            if cur and cur["speaker"] == spk:
-                cur["end"] = we
-                cur["text"] += wtext
-            else:
-                if cur:
-                    segments.append(cur)
-                cur = {"start": ws, "end": we, "speaker": spk, "text": wtext}
-        if cur:
-            segments.append(cur)
         for s in segments:
             s["text"] = s["text"].strip()
 
@@ -176,6 +223,7 @@ def _process(job_id: str, audio_url: str, language: str):
             JOBS[job_id]["status"] = "done"
             JOBS[job_id]["result"] = {
                 "language": language or LANGUAGE,
+                "engine": engine,
                 "duration": duration,
                 "segments": [s for s in segments if s["text"] and not _is_hallucination(s["text"])],
             }
@@ -194,6 +242,7 @@ def _process(job_id: str, audio_url: str, language: str):
 class TranscribeIn(BaseModel):
     audio_url: str
     language: Optional[str] = None
+    engine: Optional[str] = None  # whisper (default) | gigaam
 
 
 def _check_auth(authorization: Optional[str]):
@@ -207,7 +256,8 @@ def transcribe(body: TranscribeIn, authorization: Optional[str] = Header(default
     job_id = uuid.uuid4().hex
     with JOBS_LOCK:
         JOBS[job_id] = {"status": "queued"}
-    WORK_QUEUE.put((job_id, body.audio_url, body.language or LANGUAGE))
+    engine = "gigaam" if (body.engine or "").lower() == "gigaam" else "whisper"
+    WORK_QUEUE.put((job_id, body.audio_url, body.language or LANGUAGE, engine))
     return {"job_id": job_id}
 
 
@@ -228,17 +278,17 @@ def job(job_id: str, authorization: Optional[str] = Header(default=None)):
 @app.get("/health")
 def health():
     return {
-        "ok": True, "mode": "whisperx", "model": WHISPER_MODEL, "device": DEVICE,
-        "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
+        "ok": True, "mode": "whisperx+gigaam", "model": WHISPER_MODEL, "gigaam": GIGAAM_MODEL,
+        "device": DEVICE, "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
     }
 
 
 def _worker():
     """Единственный воркер: звонки считаются по одному."""
     while True:
-        job_id, audio_url, language = WORK_QUEUE.get()
+        job_id, audio_url, language, engine = WORK_QUEUE.get()
         try:
-            _process(job_id, audio_url, language)
+            _process(job_id, audio_url, language, engine)
         except Exception:  # noqa: BLE001 — статус ошибки уже проставлен в _process
             pass
         finally:

@@ -43,9 +43,14 @@ interface SelfHostedJob {
 }
 
 export class SelfHostedSttProvider implements TranscriptionProvider {
-  readonly name = "selfhosted";
+  readonly name: string;
   readonly mode = "async" as const;
   readonly needsObjectStorage = false; // сервис скачивает запись сам по URL
+
+  /** engine: undefined/"whisper" — WhisperX; "gigaam" — GigaAM (Sber). Тот же сервер. */
+  constructor(private readonly engine?: string) {
+    this.name = engine === "gigaam" ? "selfhosted_gigaam" : "selfhosted";
+  }
 
   private cfg() {
     const base = process.env.SELFHOSTED_STT_URL?.trim();
@@ -76,7 +81,7 @@ export class SelfHostedSttProvider implements TranscriptionProvider {
     const res = await fetch(`${base}/v1/transcribe`, {
       method: "POST",
       headers: this.headers(),
-      body: JSON.stringify({ audio_url: audioUri, language }),
+      body: JSON.stringify({ audio_url: audioUri, language, engine: this.engine || "whisper" }),
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
