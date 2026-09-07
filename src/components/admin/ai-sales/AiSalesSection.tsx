@@ -488,6 +488,15 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
     } finally { setBusy(false); }
   };
 
+  const retranscribe = async () => {
+    setBusy(true); setMsg('');
+    try {
+      const r = await fetch(`/api/ai-sales/calls/${id}/transcribe`, { method: 'POST' });
+      const j = await r.json();
+      setMsg(r.ok ? 'Перетранскрибация поставлена в очередь' : (j.error || 'Ошибка'));
+    } finally { setBusy(false); }
+  };
+
   const seek = (startMs: number | null) => {
     if (startMs == null || !audioRef.current) return;
     audioRef.current.currentTime = startMs / 1000;
@@ -514,13 +523,20 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
     <div>
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="text-sm text-[#029cda]">{backLabel}</button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {data.call.dealUrl
             ? <a href={data.call.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>
             : data.call.leadUrl
               ? <a href={data.call.leadUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Лид в Bitrix</a>
               : null}
-          <button onClick={reanalyze} disabled={busy} className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Переанализировать</button>
+          <button onClick={retranscribe} disabled={busy} title="Перетранскрибировать — заново распознать запись (текущим провайдером)"
+            className="w-9 h-9 rounded-lg border border-gray-300 text-gray-600 hover:text-[#029cda] hover:border-[#029cda] flex items-center justify-center disabled:opacity-50">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a4 4 0 00-4 4v4a4 4 0 008 0V7a4 4 0 00-4-4z M5 11a7 7 0 0014 0 M12 18v3" /></svg>
+          </button>
+          <button onClick={reanalyze} disabled={busy} title="Переанализировать — заново прогнать AI-разбор звонка"
+            className="w-9 h-9 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] flex items-center justify-center disabled:opacity-50">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3 M12 18v3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M3 12h3 M18 12h3 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1" /></svg>
+          </button>
         </div>
       </div>
       {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm">{msg}</div>}
