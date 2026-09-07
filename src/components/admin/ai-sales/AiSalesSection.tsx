@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -13,6 +13,13 @@ const fmtDur = (sec: number | null) => {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
+};
+
+const pluralCalls = (n: number) => {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return 'звонок';
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'звонка';
+  return 'звонков';
 };
 
 const TEMP_BADGE: Record<string, string> = {
@@ -222,7 +229,7 @@ interface CallItem {
   resultType: string | null; nextStep: string | null; status: string;
 }
 
-function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string) => void; initialTemperature?: string; initialTag?: string }) {
+function Calls({ initialTemperature, initialTag }: { initialTemperature?: string; initialTag?: string }) {
   const [items, setItems] = useState<CallItem[]>([]);
   const [total, setTotal] = useState(0);
   const [temp, setTemp] = useState(initialTemperature || '');
@@ -263,6 +270,39 @@ function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string
 
   useEffect(() => { load(); }, [load]);
 
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [expandedCall, setExpandedCall] = useState<string | null>(null);
+  const toggleGroup = (key: string) => setExpandedGroups((prev) => {
+    const n = new Set(prev); if (n.has(key)) n.delete(key); else n.add(key); return n;
+  });
+  const toggleCall = (id: string) => setExpandedCall((prev) => (prev === id ? null : id));
+
+  // Группировка по сделке (иначе по номеру) — все звонки одного клиента вместе,
+  // со счётчиком за выбранный период.
+  const groups = useMemo(() => {
+    const map = new Map<string, CallItem[]>();
+    for (const c of items) {
+      const key = c.bitrixDealId ? `deal:${c.bitrixDealId}` : c.phone ? `phone:${c.phone}` : `call:${c.id}`;
+      const arr = map.get(key); if (arr) arr.push(c); else map.set(key, [c]);
+    }
+    const byDateDesc = (a: CallItem, b: CallItem) => (b.startedAt || '').localeCompare(a.startedAt || '');
+    const out = [...map.entries()].map(([key, calls]) => {
+      const sorted = [...calls].sort(byDateDesc);
+      return {
+        key, calls: sorted, count: sorted.length,
+        client: sorted.find((c) => c.companyTitle)?.companyTitle ?? null,
+        phone: sorted.find((c) => c.phone)?.phone ?? null,
+        manager: sorted.find((c) => c.managerName)?.managerName ?? null,
+        temp: sorted.find((c) => c.temperature)?.temperature ?? null,
+        latest: sorted[0]?.startedAt ?? null,
+      };
+    });
+    out.sort((a, b) => sort === 'desc'
+      ? (b.latest || '').localeCompare(a.latest || '')
+      : (a.latest || '').localeCompare(b.latest || ''));
+    return out;
+  }, [items, sort]);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -301,46 +341,70 @@ function Calls({ onOpen, initialTemperature, initialTag }: { onOpen: (id: string
           </span>
         </div>
       )}
-      <PeriodBar value={period} onChange={setPeriod} />
+      <div className="flex items-center justify-between mb-3">
+        <PeriodBar value={period} onChange={setPeriod} />
+        <button onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}
+          className="text-sm text-gray-500 hover:text-[#029cda] whitespace-nowrap">
+          По дате {sort === 'desc' ? '↓' : '↑'}
+        </button>
+      </div>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
-      {loading ? <div className="text-gray-500">Загрузка…</div> : (
-        <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
-          <table className="min-w-full text-sm">
-            <thead className="bg-[#F6F7F9] text-gray-600">
-              <tr>
-                <th className="text-left font-medium px-3 py-2 whitespace-nowrap cursor-pointer select-none hover:text-[#029cda]"
-                    onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}>
-                  Дата {sort === 'desc' ? '↓' : '↑'}
-                </th>
-                {['Менеджер', 'Клиент', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
-                  <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {items.map((c) => (
-                <tr key={c.id} onClick={() => onOpen(c.id)} className="hover:bg-sky-50/60 cursor-pointer">
-                  <td className="px-3 py-2 whitespace-nowrap">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}</td>
-                  <td className="px-3 py-2 whitespace-nowrap">{c.managerName || '—'}</td>
-                  <td className="px-3 py-2">
-                    <div>{c.companyTitle || '—'}</div>
-                    {c.phone && <div className="text-xs text-gray-400">{c.phone}</div>}
-                  </td>
-                  <td className="px-3 py-2">{fmtDur(c.durationSec)}</td>
-                  <td className="px-3 py-2">{c.product || '—'}</td>
-                  <td className="px-3 py-2 font-medium">{c.dealScore ?? '—'}</td>
-                  <td className="px-3 py-2">{c.managerScore ?? '—'}</td>
-                  <td className="px-3 py-2">
-                    {c.temperature ? <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{c.temperature}</span> : '—'}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-gray-600">{STATUS_LABEL[c.status] || c.status}</td>
-                </tr>
-              ))}
-              {items.length === 0 && (
-                <tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">Звонков нет. Запустите синхронизацию и обработку очереди.</td></tr>
-              )}
-            </tbody>
-          </table>
+      {loading ? <div className="text-gray-500">Загрузка…</div> : groups.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-100 px-3 py-8 text-center text-gray-400">
+          Звонков нет за выбранный период.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {groups.map((g) => {
+            const single = g.count === 1;
+            const groupOpen = single ? expandedCall === g.calls[0].id : expandedGroups.has(g.key);
+            return (
+              <div key={g.key} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                <button type="button"
+                  onClick={() => single ? toggleCall(g.calls[0].id) : toggleGroup(g.key)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sky-50/60 transition">
+                  <span className="text-gray-400 w-4 text-center">{groupOpen ? '▾' : '▸'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 truncate">{g.client || g.phone || '—'}</div>
+                    <div className="text-xs text-gray-400 truncate">{[g.phone, g.manager].filter(Boolean).join(' · ') || '—'}</div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-xs bg-[#029cda]/10 text-[#029cda] whitespace-nowrap">{g.count} {pluralCalls(g.count)}</span>
+                  {g.temp && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[g.temp] || ''}`}>{g.temp}</span>}
+                  <span className="text-xs text-gray-500 whitespace-nowrap hidden sm:block">{g.latest ? new Date(g.latest).toLocaleString('ru-RU') : ''}</span>
+                </button>
+
+                {single && groupOpen && (
+                  <div className="border-t border-gray-100 p-4 bg-[#FAFBFC]">
+                    <CallDetail id={g.calls[0].id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
+                  </div>
+                )}
+
+                {!single && groupOpen && (
+                  <div className="border-t border-gray-100 divide-y divide-gray-50">
+                    {g.calls.map((c) => (
+                      <div key={c.id}>
+                        <button type="button" onClick={() => toggleCall(c.id)}
+                          className="w-full flex items-center gap-3 pl-10 pr-4 py-2 text-left text-sm hover:bg-sky-50/60 transition">
+                          <span className="text-gray-400 w-4 text-center">{expandedCall === c.id ? '▾' : '▸'}</span>
+                          <span className="whitespace-nowrap text-gray-700">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}</span>
+                          <span className="text-gray-400">{fmtDur(c.durationSec)}</span>
+                          <span className="flex-1" />
+                          {c.dealScore != null && <span className="text-gray-500">Score {c.dealScore}</span>}
+                          {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{c.temperature}</span>}
+                          <span className="text-gray-500 whitespace-nowrap">{STATUS_LABEL[c.status] || c.status}</span>
+                        </button>
+                        {expandedCall === c.id && (
+                          <div className="border-t border-gray-100 p-4 bg-[#FAFBFC]">
+                            <CallDetail id={c.id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -375,7 +439,7 @@ const ms2tc = (ms: number | null) => {
   return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
 };
 
-function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
+function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: string; onBack: () => void; backLabel?: string }) {
   const [data, setData] = useState<DetailData | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -428,7 +492,7 @@ function CallDetail({ id, onBack }: { id: string; onBack: () => void }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="text-sm text-[#029cda]">← К списку</button>
+        <button onClick={onBack} className="text-sm text-[#029cda]">{backLabel}</button>
         <div className="flex gap-2">
           {data.call.dealUrl && <a href={data.call.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>}
           <button onClick={reanalyze} disabled={busy} className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Переанализировать</button>
@@ -1516,7 +1580,7 @@ export default function AiSalesSection() {
     if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Managers onOpen={setOpenDeal} />;
     if (view === 'reco') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Recommendations onOpen={setOpenDeal} />;
     if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
-    return <Calls onOpen={setOpenCall} initialTemperature={initTemp} initialTag={initTag} />;
+    return <Calls initialTemperature={initTemp} initialTag={initTag} />;
   })();
 
   return (
