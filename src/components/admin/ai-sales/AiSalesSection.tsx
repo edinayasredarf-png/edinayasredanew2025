@@ -437,7 +437,7 @@ interface DetailData {
   call: {
     id: string; startedAt: string | null; durationSec: number | null; direction: string | null;
     status: string; product: string | null; recordingUrl: string | null;
-    managerName: string | null; companyTitle: string | null; bitrixDealId: string | null; dealUrl: string | null;
+    managerName: string | null; companyTitle: string | null; bitrixDealId: string | null; dealUrl: string | null; bitrixLeadId?: string | null; leadUrl?: string | null;
   };
   transcript: { provider: string; language: string | null; segments: Array<{ idx: number; role: string | null; speakerLabel: string | null; startMs: number | null; text: string }> } | null;
   analysis: Record<string, unknown> | null;
@@ -515,7 +515,11 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="text-sm text-[#029cda]">{backLabel}</button>
         <div className="flex gap-2">
-          {data.call.dealUrl && <a href={data.call.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>}
+          {data.call.dealUrl
+            ? <a href={data.call.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>
+            : data.call.leadUrl
+              ? <a href={data.call.leadUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Лид в Bitrix</a>
+              : null}
           <button onClick={reanalyze} disabled={busy} className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Переанализировать</button>
         </div>
       </div>

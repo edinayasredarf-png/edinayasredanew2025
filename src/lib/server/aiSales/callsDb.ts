@@ -45,8 +45,8 @@ export async function upsertCallFromActivity(a: BxCallActivity): Promise<string>
     `insert into ai_calls (
        bitrix_activity_id, bitrix_deal_id, bitrix_lead_id, bitrix_contact_id,
        bitrix_company_id, bitrix_user_id, direction, started_at, duration_sec,
-       phone_number, recording_url, status, raw, updated_at
-     ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb, now())
+       phone_number, client_title, recording_url, status, raw, updated_at
+     ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb, now())
      on conflict (bitrix_activity_id) do update set
        bitrix_deal_id = excluded.bitrix_deal_id,
        bitrix_lead_id = excluded.bitrix_lead_id,
@@ -56,6 +56,7 @@ export async function upsertCallFromActivity(a: BxCallActivity): Promise<string>
        direction = excluded.direction,
        started_at = excluded.started_at,
        phone_number = excluded.phone_number,
+       client_title = coalesce(excluded.client_title, ai_calls.client_title),
        recording_url = excluded.recording_url,
        raw = excluded.raw,
        updated_at = now()
@@ -63,7 +64,7 @@ export async function upsertCallFromActivity(a: BxCallActivity): Promise<string>
     [
       a.bitrixActivityId, a.bitrixDealId, a.bitrixLeadId, a.bitrixContactId,
       a.bitrixCompanyId, a.bitrixUserId, a.direction, a.startedAt, a.durationSec,
-      a.phone, a.recordingUrl, status, JSON.stringify(a.raw),
+      a.phone, a.clientTitle ?? null, a.recordingUrl, status, JSON.stringify(a.raw),
     ]
   );
   return rows[0].id;

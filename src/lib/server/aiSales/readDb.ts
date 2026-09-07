@@ -161,10 +161,12 @@ export interface CallListItem {
   id: string;
   startedAt: string | null;
   managerName: string | null;
-  companyTitle: string | null; // клиент (компания/контакт)
+  companyTitle: string | null; // клиент (компания/контакт/лид)
   phone: string | null;
   bitrixDealId: string | null;
+  bitrixLeadId: string | null;
   dealUrl: string | null;
+  leadUrl: string | null;
   durationSec: number | null;
   product: string | null;
   dealScore: number | null;
@@ -226,14 +228,14 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
 
   const rows = await pool.query<{
     id: string; started_at: Date | null; manager_name: string | null; company_title: string | null;
-    contact_name: string | null; phone_number: string | null;
-    bitrix_deal_id: string | null; duration_sec: number | null; product: string | null;
+    contact_name: string | null; client_title: string | null; phone_number: string | null;
+    bitrix_deal_id: string | null; bitrix_lead_id: string | null; duration_sec: number | null; product: string | null;
     deal_score: number | null; manager_score: string | null; deal_temperature: string | null;
     result_type: string | null; next_step: string | null; status: string;
   }>(
     `select c.id, c.started_at, m.full_name as manager_name, co.title as company_title,
-            ct.full_name as contact_name, c.phone_number,
-            c.bitrix_deal_id, c.duration_sec, c.product,
+            ct.full_name as contact_name, c.client_title, c.phone_number,
+            c.bitrix_deal_id, c.bitrix_lead_id, c.duration_sec, c.product,
             a.deal_score, a.manager_score, a.deal_temperature, a.result_type, a.next_step, c.status
        from ai_calls c ${CALL_JOINS}
       where ${whereSql}
@@ -248,10 +250,12 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
       id: r.id,
       startedAt: r.started_at ? r.started_at.toISOString() : null,
       managerName: r.manager_name,
-      companyTitle: r.company_title || r.contact_name,
+      companyTitle: r.company_title || r.contact_name || r.client_title,
       phone: r.phone_number,
       bitrixDealId: r.bitrix_deal_id,
+      bitrixLeadId: r.bitrix_lead_id,
       dealUrl: r.bitrix_deal_id && origin ? `${origin}/crm/deal/details/${r.bitrix_deal_id}/` : null,
+      leadUrl: r.bitrix_lead_id && origin ? `${origin}/crm/lead/details/${r.bitrix_lead_id}/` : null,
       durationSec: r.duration_sec,
       product: r.product,
       dealScore: r.deal_score,
@@ -276,7 +280,9 @@ export interface CallDetailData {
     managerName: string | null;
     companyTitle: string | null;
     bitrixDealId: string | null;
+    bitrixLeadId: string | null;
     dealUrl: string | null;
+    leadUrl: string | null;
   };
   transcript: {
     provider: string;
@@ -294,13 +300,17 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
   const cr = await pool.query<{
     id: string; started_at: Date | null; duration_sec: number | null; direction: string | null;
     status: string; product: string | null; recording_url: string | null;
-    manager_name: string | null; company_title: string | null; bitrix_deal_id: string | null;
+    manager_name: string | null; company_title: string | null; contact_name: string | null;
+    client_title: string | null; bitrix_deal_id: string | null; bitrix_lead_id: string | null;
   }>(
     `select c.id, c.started_at, c.duration_sec, c.direction, c.status, c.product, c.recording_url,
-            m.full_name as manager_name, co.title as company_title, c.bitrix_deal_id
+            m.full_name as manager_name, co.title as company_title, ct.full_name as contact_name,
+            c.client_title, c.bitrix_deal_id, c.bitrix_lead_id
        from ai_calls c
+       left join ai_deals d on d.bitrix_deal_id = c.bitrix_deal_id
        left join ai_managers m on m.bitrix_user_id = c.bitrix_user_id
-       left join ai_companies co on co.bitrix_company_id = c.bitrix_company_id
+       left join ai_companies co on co.bitrix_company_id = coalesce(c.bitrix_company_id, d.bitrix_company_id)
+       left join ai_contacts ct on ct.bitrix_contact_id = coalesce(c.bitrix_contact_id, d.bitrix_contact_id)
       where c.id = $1`,
     [callId]
   );
@@ -352,9 +362,11 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
       product: call.product,
       recordingUrl: call.recording_url,
       managerName: call.manager_name,
-      companyTitle: call.company_title,
+      companyTitle: call.company_title || call.contact_name || call.client_title,
       bitrixDealId: call.bitrix_deal_id,
+      bitrixLeadId: call.bitrix_lead_id,
       dealUrl: call.bitrix_deal_id && origin ? `${origin}/crm/deal/details/${call.bitrix_deal_id}/` : null,
+      leadUrl: call.bitrix_lead_id && origin ? `${origin}/crm/lead/details/${call.bitrix_lead_id}/` : null,
     },
     transcript,
     analysis: an.rows[0]?.data ?? null,

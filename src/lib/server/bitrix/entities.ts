@@ -182,6 +182,7 @@ export interface BxCallActivity {
   startedAt: Date | null;
   durationSec: number | null;
   phone: string | null; // номер клиента (из COMMUNICATIONS)
+  clientTitle?: string | null; // название лида (для звонков по лиду)
   fileId: string | null;
   recordingUrl: string | null; // disk.file.get URL
   raw: Record<string, unknown>;
@@ -226,6 +227,21 @@ export async function fetchCallActivity(activityId: string): Promise<BxCallActiv
   const comms = Array.isArray(a.COMMUNICATIONS) ? (a.COMMUNICATIONS as Array<{ VALUE?: unknown; TYPE?: unknown }>) : [];
   const phone = comms.map((c) => bxStr(c?.VALUE)).find(Boolean) || null;
 
+  // Звонок по ЛИДУ (не по сделке): лиды мы отдельно не синхронизируем, поэтому
+  // подтягиваем название лида прямо из Bitrix, чтобы показать клиента в списке.
+  let clientTitle: string | null = null;
+  if (ownerTypeId === OWNER_TYPE.LEAD && ownerId) {
+    try {
+      const { result: l } = await bitrixCall<Record<string, unknown>>("crm.lead.get", { id: ownerId });
+      const lr = l || {};
+      clientTitle =
+        bxStr(lr.TITLE) ||
+        [bxStr(lr.NAME), bxStr(lr.SECOND_NAME), bxStr(lr.LAST_NAME)].filter(Boolean).join(" ") ||
+        bxStr(lr.COMPANY_TITLE) ||
+        null;
+    } catch { /* лид мог быть удалён */ }
+  }
+
   return {
     bitrixActivityId: bxStr(a.ID) || activityId,
     ownerId,
@@ -240,6 +256,7 @@ export async function fetchCallActivity(activityId: string): Promise<BxCallActiv
     startedAt: bxDate(a.START_TIME) || bxDate(a.CREATED),
     durationSec: null, // проставляется из STT после транскрипции
     phone,
+    clientTitle,
     fileId,
     recordingUrl,
     raw: a,
