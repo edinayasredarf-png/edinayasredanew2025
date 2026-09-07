@@ -3,8 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
-import { sb_listPosts } from '@/lib/blogStore';
-import { sb_listAllComments } from '@/lib/commentsStore';
+import AdminDashboard from './AdminDashboard';
 import UtmGenerator from './UtmGenerator';
 import PressAdmin from './PressAdmin';
 import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
@@ -12,14 +11,6 @@ import LettersAdmin from './LettersAdmin';
 import NewsRadar from './NewsRadar';
 import CitizenFeedback from './CitizenFeedback';
 import AiSalesSection from './ai-sales/AiSalesSection';
-
-interface AdminStats {
-  totalPosts: number;
-  totalComments: number;
-  pendingApplications: number;
-  recentPosts: any[];
-  recentComments: any[];
-}
 
 /* ─────────── Иконки навигации (line-стиль, currentColor) ─────────── */
 type IconProps = { className?: string };
@@ -77,13 +68,6 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
 const NAV_FLAT = NAV.flatMap((s) => s.items);
 
 export default function AdminPanel() {
-  const [stats, setStats] = useState<AdminStats>({
-    totalPosts: 0,
-    totalComments: 0,
-    pendingApplications: 0,
-    recentPosts: [],
-    recentComments: []
-  });
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -121,7 +105,7 @@ export default function AdminPanel() {
       if (initialized) {
         setAuthChecked(true);
         setIsAuthorized(isAdmin);
-        if (isAdmin) loadAdminData();
+        if (isAdmin) setLoading(false);
       }
     };
 
@@ -129,51 +113,6 @@ export default function AdminPanel() {
     const unsubscribe = authStore.subscribe(checkAuth);
     return unsubscribe;
   }, []);
-
-  const loadAdminData = async () => {
-    try {
-      setLoading(true);
-      console.log('Loading admin data...');
-      
-      // Загружаем посты
-      console.log('Loading posts...');
-      const posts = await sb_listPosts();
-      console.log('Posts loaded:', posts.length);
-      
-      // Загружаем комментарии
-      console.log('Loading comments...');
-      const comments = await sb_listAllComments();
-      console.log('Comments loaded:', comments.length);
-      
-      // Сортируем посты по дате создания
-      const sortedPosts = posts.sort((a, b) => b.createdAt - a.createdAt);
-      
-      // Сортируем комментарии по дате создания
-      const sortedComments = comments.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      
-      console.log('Setting stats:', {
-        totalPosts: posts.length,
-        totalComments: comments.length,
-        recentPosts: sortedPosts.slice(0, 5),
-        recentComments: sortedComments.slice(0, 5)
-      });
-      
-      setStats({
-        totalPosts: posts.length,
-        totalComments: comments.length,
-        pendingApplications: 0, // Пока нет таблицы заявок
-        recentPosts: sortedPosts.slice(0, 5),
-        recentComments: sortedComments.slice(0, 5)
-      });
-    } catch (error: any) {
-      console.error('Error loading admin data:', error);
-      setStatus(`Ошибка загрузки данных: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!authChecked) {
     return (
@@ -215,7 +154,7 @@ export default function AdminPanel() {
     return (
       <div key={item.id} className="group relative">
         <button type="button" onClick={() => setActiveTab(item.id)}
-          className={`w-full flex items-center gap-3 pl-3 pr-8 py-2 rounded-xl text-sm transition ${active ? 'text-[#029cda] font-medium bg-white' : 'text-gray-600 hover:bg-white'}`}>
+          className={`w-full flex items-center gap-3 pl-3 pr-8 py-2 rounded-xl text-sm transition ${active ? 'text-[#029cda] font-medium' : 'text-gray-600 hover:text-gray-900'}`}>
           <Ic className="w-5 h-5 shrink-0" />
           <span className="truncate">{item.label}</span>
         </button>
@@ -274,7 +213,7 @@ export default function AdminPanel() {
               <span className="text-gray-400 text-xs">{showProfileMenu ? '▾' : '▸'}</span>
             </button>
             {showProfileMenu && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-lg border border-gray-100 py-1 z-40">
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl border border-gray-200 py-1 z-40">
                 <a href="/profile" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-gray-800 text-sm">
                   <Image src="/icons/profile.svg" alt="" width={16} height={16} /> Профиль
                 </a>
@@ -319,7 +258,7 @@ export default function AdminPanel() {
                   { kind: 'lesson', label: 'Обучение', desc: 'Урок / обучающий материал' },
                 ] as const).map((w) => (
                   <a key={w.kind} href={`/blog/new?kind=${w.kind}`}
-                    className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#029cda]/40 hover:shadow-sm transition flex items-center gap-4">
+                    className="bg-[#F6F7F9] rounded-2xl p-5 hover:bg-gray-100 transition flex items-center gap-4">
                     <span className="w-11 h-11 rounded-xl bg-[#029cda]/10 text-[#029cda] flex items-center justify-center shrink-0"><IconPencil className="w-5 h-5" /></span>
                     <div>
                       <div className="font-semibold text-gray-900">{w.label}</div>
@@ -340,95 +279,7 @@ export default function AdminPanel() {
             <AnalyticsDashboard only={activeTab} />
           )}
 
-          {activeTab === 'dashboard' && (<>
-        {/* Статистика */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Всего статей</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalPosts}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Комментарии</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalComments}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#F6F7F9] rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Заявки на редактора</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.pendingApplications}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Последние статьи */}
-        <div className="bg-[#F6F7F9] rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Последние статьи</h2>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {stats.recentPosts.map((post, index) => (
-              <div key={post.id || index} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">{post.title}</h3>
-                    <p className="text-sm text-gray-500">{post.subtitle}</p>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {new Date(post.createdAt).toLocaleDateString('ru-RU')}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Последние комментарии */}
-        <div className="bg-[#F6F7F9] rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Последние комментарии</h2>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {stats.recentComments.map((comment, index) => (
-              <div key={comment.id || index} className="px-6 py-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900">{comment.content}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {comment.author_name || 'Аноним'} • {new Date(comment.created_at).toLocaleDateString('ru-RU')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        </>)}
+          {activeTab === 'dashboard' && <AdminDashboard />}
         </div>
       </div>
     </div>
