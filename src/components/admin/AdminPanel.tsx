@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { authStore } from '@/lib/authStore';
 import { sb_listPosts } from '@/lib/blogStore';
 import { sb_listAllComments } from '@/lib/commentsStore';
@@ -41,8 +42,6 @@ const IconChart = mkIcon('M4 20V10 M10 20V4 M16 20v-8 M22 20H2');
 const IconMailOpen = mkIcon('M4 9l8-5 8 5v9H4Z M4 9l8 5 8-5');
 const IconUsers = mkIcon('M16 20v-2a4 4 0 00-8 0v2 M12 12a4 4 0 100-8 4 4 0 000 8 M22 20v-2a4 4 0 00-3-3.8');
 const IconShare = mkIcon('M8 12a3 3 0 10-3-3 3 3 0 003 3 M16 6a3 3 0 10-3-3 3 3 0 003 3 M16 21a3 3 0 10-3-3 3 3 0 003 3 M9 11l6-4 M9 13l6 4');
-const IconBell = mkIcon('M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9 M13.7 21a2 2 0 01-3.4 0');
-const IconPlus = mkIcon('M12 5v14 M5 12h14');
 const IconPencil = mkIcon('M12 20h9 M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z');
 const IconStar = ({ className, filled }: IconProps & { filled?: boolean }) => (
   <svg className={className || 'w-5 h-5'} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'}
@@ -51,18 +50,12 @@ const IconStar = ({ className, filled }: IconProps & { filled?: boolean }) => (
   </svg>
 );
 
-// «Написать» — категории контента (ведут в редактор /blog/new с нужным kind).
-const WRITE_ITEMS: Array<{ kind: string; label: string }> = [
-  { kind: 'post', label: 'Статья' },
-  { kind: 'news', label: 'Новость' },
-  { kind: 'case', label: 'Кейс' },
-  { kind: 'lesson', label: 'Обучение' },
-];
 
-type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback' | 'ai-analytics';
+type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write';
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
+    { id: 'write', label: 'Написать', icon: IconPencil },
     { id: 'press', label: 'СМИ о нас', icon: IconNews },
     { id: 'utm', label: 'UTM-метки', icon: IconLink },
     { id: 'letters', label: 'Письма', icon: IconMail },
@@ -97,12 +90,22 @@ export default function AdminPanel() {
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [favorites, setFavorites] = useState<TabId[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
       const s = localStorage.getItem('es_admin_favs');
       if (s) setFavorites(JSON.parse(s));
     } catch { /* нет localStorage */ }
+    setAvatarUrl(authStore.getCurrentProfile()?.avatar_url);
+  }, []);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (!profileRef.current?.contains(e.target as Node)) setShowProfileMenu(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
   }, []);
 
   const toggleFav = (id: TabId) => setFavorites((prev) => {
@@ -212,13 +215,13 @@ export default function AdminPanel() {
     return (
       <div key={item.id} className="group relative">
         <button type="button" onClick={() => setActiveTab(item.id)}
-          className={`w-full flex items-center gap-3 pl-3 pr-8 py-2 rounded-xl text-sm transition ${active ? 'bg-[#029cda] text-white font-medium' : 'text-gray-600 hover:bg-white'}`}>
+          className={`w-full flex items-center gap-3 pl-3 pr-8 py-2 rounded-xl text-sm transition ${active ? 'text-[#029cda] font-medium bg-white' : 'text-gray-600 hover:bg-white'}`}>
           <Ic className="w-5 h-5 shrink-0" />
           <span className="truncate">{item.label}</span>
         </button>
         <button type="button" title={fav ? 'Убрать из избранного' : 'В избранное'}
           onClick={(e) => { e.stopPropagation(); toggleFav(item.id); }}
-          className={`absolute right-2 top-1/2 -translate-y-1/2 transition hover:text-amber-400 ${fav ? 'text-amber-400' : `${active ? 'text-white/70' : 'text-gray-300'} opacity-0 group-hover:opacity-100`}`}>
+          className={`absolute right-2 top-1/2 -translate-y-1/2 transition hover:text-amber-400 ${fav ? 'text-amber-400' : 'text-gray-300 opacity-0 group-hover:opacity-100'}`}>
           <IconStar className="w-4 h-4" filled={fav} />
         </button>
       </div>
@@ -230,11 +233,8 @@ export default function AdminPanel() {
       <div className="w-full max-w-[1900px] mx-auto px-3 sm:px-4 lg:px-6 py-4 lg:py-6 flex gap-4 lg:gap-6">
         {/* Боковое меню — серые карточки-группы (Timeweb-стиль) */}
         <aside className="hidden lg:flex flex-col w-64 shrink-0 sticky top-6 h-[calc(100vh-48px)]">
-          <div className="flex items-center gap-2 px-2 mb-3">
-            <span className="w-8 h-8 rounded-xl bg-[#029cda] text-white flex items-center justify-center">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 5l6 6 6-6 M6 12l6 6 6-6" /></svg>
-            </span>
-            <span className="font-bold text-gray-900">Админ-панель</span>
+          <div className="px-2 mb-4">
+            <Image src="/img/es_logo_blue.svg" alt="Единая среда" width={140} height={38} className="h-9 w-auto" priority />
           </div>
 
           <div className="flex-1 overflow-y-auto pr-1 space-y-3">
@@ -251,20 +251,6 @@ export default function AdminPanel() {
               </div>
             )}
 
-            {/* Написать */}
-            <div className="bg-[#F6F7F9] rounded-2xl p-2">
-              <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-[#9AA6B2]">
-                <IconPencil className="w-4 h-4" /> Написать
-              </div>
-              {WRITE_ITEMS.map((w) => (
-                <a key={w.kind} href={`/blog/new?kind=${w.kind}`}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-white transition">
-                  <IconPlus className="w-5 h-5 shrink-0 text-[#029cda]" />
-                  <span>{w.label}</span>
-                </a>
-              ))}
-            </div>
-
             {/* Группы навигации */}
             {NAV.map((section) => (
               <div key={section.group} className="bg-[#F6F7F9] rounded-2xl p-2">
@@ -274,17 +260,30 @@ export default function AdminPanel() {
             ))}
           </div>
 
-          {/* Аватар — внизу меню */}
-          <div className="mt-3 bg-[#F6F7F9] rounded-2xl p-2 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#029cda]/10 text-[#029cda] font-semibold flex items-center justify-center shrink-0">ЕС</div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-gray-800 truncate">Единая среда</div>
-              <div className="text-xs text-gray-400">Администратор</div>
-            </div>
-            <button type="button" className="relative w-8 h-8 rounded-lg text-gray-400 hover:text-[#029cda] flex items-center justify-center shrink-0">
-              <IconBell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          {/* Профиль — внизу меню (перенесён из хедера, с меню) */}
+          <div ref={profileRef} className="mt-3 relative">
+            <button type="button" onClick={() => setShowProfileMenu((v) => !v)}
+              className="w-full bg-[#F6F7F9] rounded-2xl p-2 flex items-center gap-3 hover:bg-gray-100 transition text-left">
+              <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#029cda]/10 text-[#029cda] font-semibold flex items-center justify-center shrink-0">
+                {avatarUrl ? <Image src={avatarUrl} alt="Профиль" width={36} height={36} className="w-full h-full object-cover" /> : 'ЕС'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-gray-800 truncate">Профиль</div>
+                <div className="text-xs text-gray-400">Администратор</div>
+              </div>
+              <span className="text-gray-400 text-xs">{showProfileMenu ? '▾' : '▸'}</span>
             </button>
+            {showProfileMenu && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-lg border border-gray-100 py-1 z-40">
+                <a href="/profile" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-gray-800 text-sm">
+                  <Image src="/icons/profile.svg" alt="" width={16} height={16} /> Профиль
+                </a>
+                <button type="button" onClick={async () => { await authStore.signOut(); window.location.reload(); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-sm">
+                  <Image src="/icons/sign_out.svg" alt="" width={16} height={16} /> Выход
+                </button>
+              </div>
+            )}
           </div>
         </aside>
 
@@ -308,6 +307,29 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {activeTab === 'write' && (
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Написать</h1>
+              <p className="text-sm text-gray-500 mb-6">Выберите, что создать — откроется редактор с этой категорией.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
+                {([
+                  { kind: 'post', label: 'Статья', desc: 'Материал для блога' },
+                  { kind: 'news', label: 'Новость', desc: 'Короткая новость' },
+                  { kind: 'case', label: 'Кейс', desc: 'История внедрения / проект' },
+                  { kind: 'lesson', label: 'Обучение', desc: 'Урок / обучающий материал' },
+                ] as const).map((w) => (
+                  <a key={w.kind} href={`/blog/new?kind=${w.kind}`}
+                    className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#029cda]/40 hover:shadow-sm transition flex items-center gap-4">
+                    <span className="w-11 h-11 rounded-xl bg-[#029cda]/10 text-[#029cda] flex items-center justify-center shrink-0"><IconPencil className="w-5 h-5" /></span>
+                    <div>
+                      <div className="font-semibold text-gray-900">{w.label}</div>
+                      <div className="text-xs text-gray-500">{w.desc}</div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           {activeTab === 'ai-analytics' && <AiSalesSection />}
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}

@@ -130,6 +130,9 @@ export default function NewPostPage() {
         ? (t as 'post'|'news'|'lesson'|'case')
         : null
     );
+    // Категория из URL (?kind=) — предвыбор при переходе из «Написать» админки.
+    const k = sp.get('kind');
+    if (k === 'post' || k === 'news' || k === 'lesson' || k === 'case') setKind(k);
   }, []);
 
   // загрузка черновика
@@ -137,7 +140,10 @@ export default function NewPostPage() {
     setAllTags(listAllTags());
     const d = loadDraft();
     if (d && !editSlug) {
-      setKind((d.kind as any) || 'post');
+      // Категорию из URL (?kind=) не перетираем черновиком.
+      if (!(typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('kind'))) {
+        setKind((d.kind as any) || 'post');
+      }
       setTitle(d.title || ''); setSubtitle(d.subtitle || '');
       setCover(d.cover); setBlocks((d.blocks as Block[]) || []);
       setTags(d.tags || []);
