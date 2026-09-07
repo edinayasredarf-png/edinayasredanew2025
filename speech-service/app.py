@@ -45,6 +45,8 @@ API_TOKEN = os.getenv("API_TOKEN", "")
 LANGUAGE = os.getenv("LANGUAGE", "ru")
 # GigaAM (Sber) — альтернативный ASR (движок выбирается в запросе engine=gigaam).
 GIGAAM_MODEL = os.getenv("GIGAAM_MODEL", "v2_ctc")  # v2_ctc | v2_rnnt | ctc | rnnt
+# GigaSTT — отдельный локальный сервер (Rust, быстрый) для engine=gigastt.
+GIGASTT_URL = os.getenv("GIGASTT_URL", "http://127.0.0.1:9876")
 
 app = FastAPI(title="ES Speech Service")
 
@@ -180,6 +182,29 @@ def _asr_gigaam(wav: str, language: str):
     return segs, duration
 
 
+def _asr_gigastt(wav: str, language: str):
+    """GigaSTT (локальный Rust-сервер): быстрый русский ASR. OpenAI-совместимый
+    эндпоинт с response_format=verbose_json → сегменты {start,end,text}."""
+    with open(wav, "rb") as f:
+        resp = requests.post(
+            f"{GIGASTT_URL.rstrip('/')}/v1/audio/transcriptions",
+            files={"file": ("audio.wav", f, "audio/wav")},
+            data={"response_format": "verbose_json", "language": language or LANGUAGE},
+            timeout=600,
+        )
+    resp.raise_for_status()
+    j = resp.json()
+    segs = []
+    for s in (j.get("segments") or []):
+        text = str(s.get("text") or "").strip()
+        if text:
+            segs.append((float(s.get("start", 0.0) or 0.0), float(s.get("end", 0.0) or 0.0), text))
+    if not segs and j.get("text"):
+        segs = [(0.0, 0.0, str(j["text"]).strip())]
+    duration = segs[-1][1] if segs else 0.0
+    return segs, duration
+
+
 def _process(job_id: str, audio_url: str, language: str, engine: str):
     with JOBS_LOCK:
         JOBS[job_id]["status"] = "processing"
@@ -192,9 +217,9 @@ def _process(job_id: str, audio_url: str, language: str, engine: str):
 
         turns = _diarize(wav)
 
-        if engine == "gigaam":
-            # ASR сегментами (GigaAM), спикер — по середине сегмента.
-            segs, duration = _asr_gigaam(wav, language)
+        if engine in ("gigaam", "gigastt"):
+            # ASR сегментами (GigaAM / GigaSTT), спикер — по середине сегмента (pyannote).
+            segs, duration = _asr_gigastt(wav, language) if engine == "gigastt" else _asr_gigaam(wav, language)
             segments = []
             for (s, e, text) in segs:
                 spk = _speaker_at(turns, (s + e) / 2.0) or "SPEAKER_0"
@@ -256,7 +281,8 @@ def transcribe(body: TranscribeIn, authorization: Optional[str] = Header(default
     job_id = uuid.uuid4().hex
     with JOBS_LOCK:
         JOBS[job_id] = {"status": "queued"}
-    engine = "gigaam" if (body.engine or "").lower() == "gigaam" else "whisper"
+    eng = (body.engine or "").lower()
+    engine = eng if eng in ("gigaam", "gigastt") else "whisper"
     WORK_QUEUE.put((job_id, body.audio_url, body.language or LANGUAGE, engine))
     return {"job_id": job_id}
 
@@ -278,8 +304,8 @@ def job(job_id: str, authorization: Optional[str] = Header(default=None)):
 @app.get("/health")
 def health():
     return {
-        "ok": True, "mode": "whisperx+gigaam", "model": WHISPER_MODEL, "gigaam": GIGAAM_MODEL,
-        "device": DEVICE, "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
+        "ok": True, "mode": "whisper+gigaam+gigastt", "model": WHISPER_MODEL, "gigaam": GIGAAM_MODEL,
+        "gigastt_url": GIGASTT_URL, "device": DEVICE, "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
     }
 
 

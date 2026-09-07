@@ -47,9 +47,9 @@ export class SelfHostedSttProvider implements TranscriptionProvider {
   readonly mode = "async" as const;
   readonly needsObjectStorage = false; // сервис скачивает запись сам по URL
 
-  /** engine: undefined/"whisper" — WhisperX; "gigaam" — GigaAM (Sber). Тот же сервер. */
+  /** engine: whisper (по умолчанию) | gigaam | gigastt — на том же сервере. */
   constructor(private readonly engine?: string) {
-    this.name = engine === "gigaam" ? "selfhosted_gigaam" : "selfhosted";
+    this.name = engine ? `selfhosted_${engine}` : "selfhosted";
   }
 
   private cfg() {
