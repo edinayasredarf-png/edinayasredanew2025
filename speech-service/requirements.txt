@@ -20,6 +20,7 @@ matplotlib==3.9.2
 # GigaAM (Sber) — альтернативный русский ASR (движок engine=gigaam). Библиотека
 # сама тянет модель и onnxruntime; если конфликт версий — правим при сборке.
 gigaam
-# onnxruntime строго CPU (без -gpu).
-onnxruntime==1.19.2
+# onnxruntime строго CPU (без -gpu). 1.17.3 — общая версия для gigaam (==1.17.3),
+# faster-whisper (>=1.14,<2) и pyannote.
+onnxruntime==1.17.3
 # torch + torchaudio ставятся отдельно CPU-колёсами — см. Dockerfile.
