@@ -341,70 +341,91 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
           </span>
         </div>
       )}
-      <div className="flex items-center justify-between mb-3">
-        <PeriodBar value={period} onChange={setPeriod} />
-        <button onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}
-          className="text-sm text-gray-500 hover:text-[#029cda] whitespace-nowrap">
-          По дате {sort === 'desc' ? '↓' : '↑'}
-        </button>
-      </div>
+      <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
-      {loading ? <div className="text-gray-500">Загрузка…</div> : groups.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 px-3 py-8 text-center text-gray-400">
-          Звонков нет за выбранный период.
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {groups.map((g) => {
-            const single = g.count === 1;
-            const groupOpen = single ? expandedCall === g.calls[0].id : expandedGroups.has(g.key);
-            return (
-              <div key={g.key} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                <button type="button"
-                  onClick={() => single ? toggleCall(g.calls[0].id) : toggleGroup(g.key)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sky-50/60 transition">
-                  <span className="text-gray-400 w-4 text-center">{groupOpen ? '▾' : '▸'}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate">{g.client || g.phone || '—'}</div>
-                    <div className="text-xs text-gray-400 truncate">{[g.phone, g.manager].filter(Boolean).join(' · ') || '—'}</div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full text-xs bg-[#029cda]/10 text-[#029cda] whitespace-nowrap">{g.count} {pluralCalls(g.count)}</span>
-                  {g.temp && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[g.temp] || ''}`}>{g.temp}</span>}
-                  <span className="text-xs text-gray-500 whitespace-nowrap hidden sm:block">{g.latest ? new Date(g.latest).toLocaleString('ru-RU') : ''}</span>
-                </button>
+      {loading ? <div className="text-gray-500">Загрузка…</div> : (
+        <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+          <table className="min-w-full text-sm">
+            <thead className="bg-[#F6F7F9] text-gray-600">
+              <tr>
+                <th className="text-left font-medium px-3 py-2 whitespace-nowrap cursor-pointer select-none hover:text-[#029cda]"
+                    onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}>
+                  Дата {sort === 'desc' ? '↓' : '↑'}
+                </th>
+                {['Менеджер', 'Клиент', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
+                  <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            {groups.length === 0 ? (
+              <tbody><tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">Звонков нет за выбранный период.</td></tr></tbody>
+            ) : groups.map((g) => {
+              const single = g.count === 1;
+              const one = g.calls[0];
+              const groupOpen = single ? expandedCall === one.id : expandedGroups.has(g.key);
+              const tempBadge = (t: string | null) => t
+                ? <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[t] || ''}`}>{t}</span> : '—';
+              return (
+                <tbody key={g.key} className="border-t border-gray-100">
+                  {/* Строка-группа */}
+                  <tr onClick={() => single ? toggleCall(one.id) : toggleGroup(g.key)}
+                    className="hover:bg-sky-50/60 cursor-pointer">
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span className="text-gray-400 mr-1">{groupOpen ? '▾' : '▸'}</span>
+                      {single
+                        ? (one.startedAt ? new Date(one.startedAt).toLocaleString('ru-RU') : '—')
+                        : <span className="font-medium text-[#029cda]">{g.count} {pluralCalls(g.count)}</span>}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">{g.manager || '—'}</td>
+                    <td className="px-3 py-2">
+                      <div>{g.client || '—'}</div>
+                      {g.phone && <div className="text-xs text-gray-400">{g.phone}</div>}
+                    </td>
+                    <td className="px-3 py-2">{single ? fmtDur(one.durationSec) : '—'}</td>
+                    <td className="px-3 py-2">{single ? (one.product || '—') : '—'}</td>
+                    <td className="px-3 py-2 font-medium">{single ? (one.dealScore ?? '—') : '—'}</td>
+                    <td className="px-3 py-2">{single ? (one.managerScore ?? '—') : '—'}</td>
+                    <td className="px-3 py-2">{tempBadge(single ? one.temperature : g.temp)}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-600">
+                      {single ? (STATUS_LABEL[one.status] || one.status) : <span className="text-xs text-gray-400">{g.latest ? new Date(g.latest).toLocaleDateString('ru-RU') : ''}</span>}
+                    </td>
+                  </tr>
 
-                {single && groupOpen && (
-                  <div className="border-t border-gray-100 p-4 bg-[#FAFBFC]">
-                    <CallDetail id={g.calls[0].id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
-                  </div>
-                )}
+                  {/* Один звонок — раскрытие карточки прямо тут */}
+                  {single && groupOpen && (
+                    <tr><td colSpan={9} className="p-4 bg-[#FAFBFC] border-t border-gray-100">
+                      <CallDetail id={one.id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
+                    </td></tr>
+                  )}
 
-                {!single && groupOpen && (
-                  <div className="border-t border-gray-100 divide-y divide-gray-50">
-                    {g.calls.map((c) => (
-                      <div key={c.id}>
-                        <button type="button" onClick={() => toggleCall(c.id)}
-                          className="w-full flex items-center gap-3 pl-10 pr-4 py-2 text-left text-sm hover:bg-sky-50/60 transition">
-                          <span className="text-gray-400 w-4 text-center">{expandedCall === c.id ? '▾' : '▸'}</span>
-                          <span className="whitespace-nowrap text-gray-700">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}</span>
-                          <span className="text-gray-400">{fmtDur(c.durationSec)}</span>
-                          <span className="flex-1" />
-                          {c.dealScore != null && <span className="text-gray-500">Score {c.dealScore}</span>}
-                          {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{c.temperature}</span>}
-                          <span className="text-gray-500 whitespace-nowrap">{STATUS_LABEL[c.status] || c.status}</span>
-                        </button>
-                        {expandedCall === c.id && (
-                          <div className="border-t border-gray-100 p-4 bg-[#FAFBFC]">
-                            <CallDetail id={c.id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  {/* Несколько звонков — строки по каждому + раскрытие карточки */}
+                  {!single && groupOpen && g.calls.map((c) => (
+                    <React.Fragment key={c.id}>
+                      <tr onClick={() => toggleCall(c.id)} className="bg-gray-50/40 hover:bg-sky-50/60 cursor-pointer">
+                        <td className="px-3 py-2 whitespace-nowrap pl-8">
+                          <span className="text-gray-400 mr-1">{expandedCall === c.id ? '▾' : '▸'}</span>
+                          {c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">{c.managerName || '—'}</td>
+                        <td className="px-3 py-2">{c.companyTitle || '—'}</td>
+                        <td className="px-3 py-2">{fmtDur(c.durationSec)}</td>
+                        <td className="px-3 py-2">{c.product || '—'}</td>
+                        <td className="px-3 py-2 font-medium">{c.dealScore ?? '—'}</td>
+                        <td className="px-3 py-2">{c.managerScore ?? '—'}</td>
+                        <td className="px-3 py-2">{tempBadge(c.temperature)}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-gray-600">{STATUS_LABEL[c.status] || c.status}</td>
+                      </tr>
+                      {expandedCall === c.id && (
+                        <tr><td colSpan={9} className="p-4 bg-[#FAFBFC] border-t border-gray-100">
+                          <CallDetail id={c.id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
+                        </td></tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              );
+            })}
+          </table>
         </div>
       )}
     </div>
