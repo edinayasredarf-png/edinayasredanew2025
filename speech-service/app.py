@@ -43,6 +43,8 @@ MIN_SPEAKERS = int(os.getenv("MIN_SPEAKERS", "1"))
 MAX_SPEAKERS = int(os.getenv("MAX_SPEAKERS", "2"))
 API_TOKEN = os.getenv("API_TOKEN", "")
 LANGUAGE = os.getenv("LANGUAGE", "ru")
+# Число параллельных воркеров. На 8 ГБ / 4 ядра можно 2 (≈×2 пропускная способность).
+WORKERS = int(os.getenv("WORKERS", "1"))
 # GigaAM (Sber) — альтернативный ASR (движок выбирается в запросе engine=gigaam).
 GIGAAM_MODEL = os.getenv("GIGAAM_MODEL", "v2_ctc")  # v2_ctc | v2_rnnt | ctc | rnnt
 # GigaSTT — отдельный локальный сервер (Rust, быстрый) для engine=gigastt.
@@ -305,12 +307,13 @@ def job(job_id: str, authorization: Optional[str] = Header(default=None)):
 def health():
     return {
         "ok": True, "mode": "whisper+gigaam+gigastt", "model": WHISPER_MODEL, "gigaam": GIGAAM_MODEL,
-        "gigastt_url": GIGASTT_URL, "device": DEVICE, "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
+        "gigastt_url": GIGASTT_URL, "device": DEVICE, "workers": WORKERS,
+        "jobs": len(JOBS), "queued": WORK_QUEUE.qsize(),
     }
 
 
 def _worker():
-    """Единственный воркер: звонки считаются по одному."""
+    """Воркер: берёт задачи из очереди и считает. Запускается WORKERS штук."""
     while True:
         job_id, audio_url, language, engine = WORK_QUEUE.get()
         try:
@@ -321,4 +324,5 @@ def _worker():
             WORK_QUEUE.task_done()
 
 
-threading.Thread(target=_worker, daemon=True).start()
+for _ in range(max(1, WORKERS)):
+    threading.Thread(target=_worker, daemon=True).start()
