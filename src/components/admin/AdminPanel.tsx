@@ -44,6 +44,57 @@ const IconStar = ({ className, filled }: IconProps & { filled?: boolean }) => (
 );
 
 
+/* ─────────── Форма входа в админку ─────────── */
+function AdminLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+    setSubmitting(true); setError('');
+    try {
+      await authStore.signInWithEmail(email.trim(), password);
+      // Успех: authStore уведомит подписчиков, AdminPanel перерисуется сам.
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось войти. Проверьте email и пароль.');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <form onSubmit={submit} className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8">
+        <div className="flex justify-center mb-6">
+          <Image src="/img/es_logo_blue.svg" alt="Единая среда" width={160} height={40} priority />
+        </div>
+        <h1 className="text-lg font-bold text-gray-900 text-center mb-1">Вход в админ-панель</h1>
+        <p className="text-sm text-gray-500 text-center mb-6">Войдите под учётной записью администратора</p>
+
+        {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
+
+        <label className="block text-sm text-gray-600 mb-1">Email</label>
+        <input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)}
+          className="w-full mb-4 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]"
+          placeholder="you@example.com" required />
+
+        <label className="block text-sm text-gray-600 mb-1">Пароль</label>
+        <input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)}
+          className="w-full mb-5 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]"
+          placeholder="••••••••" required />
+
+        <button type="submit" disabled={submitting || !email.trim() || !password}
+          className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-[#029cda] text-white disabled:opacity-50 flex items-center justify-center gap-2">
+          {submitting && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
+          {submitting ? 'Вход…' : 'Войти'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write';
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
@@ -126,14 +177,20 @@ export default function AdminPanel() {
   }
 
   if (!isAuthorized) {
+    // Не залогинен — показываем форму входа вместо голой ошибки.
+    if (!authStore.isAuthenticated()) {
+      return <AdminLogin />;
+    }
+    // Залогинен, но без прав администратора.
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <h2 className="text-xl font-bold mb-2">Доступ запрещен</h2>
-            <p>У вас нет прав для доступа к админ-панели.</p>
-            <p className="text-sm mt-2">Только администраторы могут просматривать эту страницу.</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm text-center bg-white rounded-2xl border border-gray-100 p-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Доступ запрещён</h2>
+          <p className="text-sm text-gray-600">У этого аккаунта нет прав администратора.</p>
+          <button onClick={() => authStore.signOut()}
+            className="mt-5 px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white">
+            Войти под другим аккаунтом
+          </button>
         </div>
       </div>
     );
