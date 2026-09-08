@@ -199,10 +199,18 @@ def _asr_gigastt(wav: str, language: str):
     segs = []
     for s in (j.get("segments") or []):
         text = str(s.get("text") or "").strip()
-        if text:
-            segs.append((float(s.get("start", 0.0) or 0.0), float(s.get("end", 0.0) or 0.0), text))
+        if not text:
+            continue
+        raw_spk = s.get("speaker")
+        if raw_spk is None:
+            raw_spk = s.get("speaker_id")
+        spk = None
+        if raw_spk is not None:
+            sv = str(raw_spk)
+            spk = sv if sv.upper().startswith("SPEAKER") else f"SPEAKER_{sv}"
+        segs.append((float(s.get("start", 0.0) or 0.0), float(s.get("end", 0.0) or 0.0), text, spk))
     if not segs and j.get("text"):
-        segs = [(0.0, 0.0, str(j["text"]).strip())]
+        segs = [(0.0, 0.0, str(j["text"]).strip(), None)]
     duration = segs[-1][1] if segs else 0.0
     return segs, duration
 
@@ -217,18 +225,26 @@ def _process(job_id: str, audio_url: str, language: str, engine: str):
         _download(audio_url, raw)
         _to_wav16k_mono(raw, wav)
 
-        turns = _diarize(wav)
-
-        if engine in ("gigaam", "gigastt"):
+        if engine == "gigastt_native":
+            # GigaSTT сам даёт спикеров — pyannote НЕ запускаем (максимальная скорость).
+            segs, duration = _asr_gigastt(wav, language)
+            segments = [{"start": s, "end": e, "speaker": spk, "text": text} for (s, e, text, spk) in segs]
+        elif engine in ("gigaam", "gigastt"):
             # ASR сегментами (GigaAM / GigaSTT), спикер — по середине сегмента (pyannote).
-            segs, duration = _asr_gigastt(wav, language) if engine == "gigastt" else _asr_gigaam(wav, language)
+            if engine == "gigastt":
+                segs, duration = _asr_gigastt(wav, language)
+            else:
+                raw_segs, duration = _asr_gigaam(wav, language)
+                segs = [(s, e, t, None) for (s, e, t) in raw_segs]
+            turns = _diarize(wav)
             segments = []
-            for (s, e, text) in segs:
+            for (s, e, text, _spk) in segs:
                 spk = _speaker_at(turns, (s + e) / 2.0) or "SPEAKER_0"
                 segments.append({"start": s, "end": e, "speaker": spk, "text": text})
         else:
-            # ASR словами (Whisper), пословное сопоставление со спикерами.
+            # ASR словами (Whisper), пословное сопоставление со спикерами (pyannote).
             words, duration = _asr_whisper(wav, language)
+            turns = _diarize(wav)
             segments = []
             cur = None
             for (ws, we, wtext) in words:
@@ -284,7 +300,7 @@ def transcribe(body: TranscribeIn, authorization: Optional[str] = Header(default
     with JOBS_LOCK:
         JOBS[job_id] = {"status": "queued"}
     eng = (body.engine or "").lower()
-    engine = eng if eng in ("gigaam", "gigastt") else "whisper"
+    engine = eng if eng in ("gigaam", "gigastt", "gigastt_native") else "whisper"
     WORK_QUEUE.put((job_id, body.audio_url, body.language or LANGUAGE, engine))
     return {"job_id": job_id}
 

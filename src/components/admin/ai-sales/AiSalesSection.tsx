@@ -1273,6 +1273,7 @@ function Settings() {
             <option value="selfhosted">Свой сервер — Whisper (faster-whisper + pyannote)</option>
             <option value="gigaam">Свой сервер — GigaAM (Sber, русский) + pyannote</option>
             <option value="gigastt">Свой сервер — GigaSTT (быстрый, Rust) + pyannote</option>
+            <option value="gigastt_native">Свой сервер — GigaSTT со своей диаризацией (без pyannote, самый быстрый)</option>
             <option value="yandex">Yandex SpeechKit v2 (без диаризации)</option>
             <option value="whisper">Whisper-endpoint</option>
           </select>

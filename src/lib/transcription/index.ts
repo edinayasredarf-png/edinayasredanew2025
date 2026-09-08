@@ -17,12 +17,14 @@ export * from "@/lib/transcription/interfaces";
  *   • whisper    — Whisper-совместимый endpoint.
  */
 
-export const TRANSCRIPTION_PROVIDERS = ["yandex", "yandex_v3", "selfhosted", "gigaam", "gigastt", "whisper"] as const;
+export const TRANSCRIPTION_PROVIDERS = ["yandex", "yandex_v3", "selfhosted", "gigaam", "gigastt", "gigastt_native", "whisper"] as const;
 
 function makeProvider(id: string): TranscriptionProvider {
   switch (id) {
     case "whisper":
       return new WhisperProvider();
+    case "gigastt_native":
+      return new SelfHostedSttProvider("gigastt_native");
     case "gigastt":
       return new SelfHostedSttProvider("gigastt");
     case "gigaam":
