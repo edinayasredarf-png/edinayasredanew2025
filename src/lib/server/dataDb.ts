@@ -556,3 +556,56 @@ export async function dbDeletePress(id: string) {
   const { rowCount } = await pool.query("delete from press_mentions where id = $1", [id]);
   return rowCount ?? 0;
 }
+
+/* ───────────────── Рекламные баннеры (правая панель в блоге) ───────────────── */
+
+export async function dbEnsureAdsTable() {
+  const pool = getTimewebPool();
+  await pool.query(`
+    create table if not exists ad_banners (
+      id text primary key,
+      image text not null default '',
+      href text not null default '',
+      alt text not null default '',
+      sort integer not null default 0,
+      created_at bigint not null default 0
+    )
+  `);
+}
+
+export async function dbListAds() {
+  const pool = getTimewebPool();
+  await dbEnsureAdsTable();
+  const { rows } = await pool.query(
+    "select * from ad_banners order by sort asc, created_at asc"
+  );
+  return rows;
+}
+
+export async function dbUpsertAd(payload: Record<string, unknown>) {
+  const pool = getTimewebPool();
+  await dbEnsureAdsTable();
+  await pool.query(
+    `insert into ad_banners (id, image, href, alt, sort, created_at)
+     values ($1,$2,$3,$4,$5,$6)
+     on conflict (id) do update set
+       image = excluded.image,
+       href = excluded.href,
+       alt = excluded.alt,
+       sort = excluded.sort`,
+    [
+      payload.id,
+      payload.image ?? '',
+      payload.href ?? '',
+      payload.alt ?? '',
+      payload.sort ?? 0,
+      payload.created_at ?? Date.now(),
+    ]
+  );
+}
+
+export async function dbDeleteAd(id: string) {
+  const pool = getTimewebPool();
+  const { rowCount } = await pool.query("delete from ad_banners where id = $1", [id]);
+  return rowCount ?? 0;
+}

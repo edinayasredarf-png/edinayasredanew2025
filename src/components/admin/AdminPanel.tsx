@@ -6,6 +6,7 @@ import { authStore } from '@/lib/authStore';
 import AdminDashboard from './AdminDashboard';
 import UtmGenerator from './UtmGenerator';
 import PressAdmin from './PressAdmin';
+import AdsAdmin from './AdsAdmin';
 import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
 import LettersAdmin from './LettersAdmin';
 import NewsRadar from './NewsRadar';
@@ -34,6 +35,7 @@ const IconMailOpen = mkIcon('M4 9l8-5 8 5v9H4Z M4 9l8 5 8-5');
 const IconUsers = mkIcon('M16 20v-2a4 4 0 00-8 0v2 M12 12a4 4 0 100-8 4 4 0 000 8 M22 20v-2a4 4 0 00-3-3.8');
 const IconShare = mkIcon('M8 12a3 3 0 10-3-3 3 3 0 003 3 M16 6a3 3 0 10-3-3 3 3 0 003 3 M16 21a3 3 0 10-3-3 3 3 0 003 3 M9 11l6-4 M9 13l6 4');
 const IconPencil = mkIcon('M12 20h9 M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z');
+const IconAds = mkIcon('M4 5h16v14H4Z M4 9h16 M8 13h4 M8 16h6');
 const IconStar = ({ className, filled }: IconProps & { filled?: boolean }) => (
   <svg className={className || 'w-5 h-5'} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'}
     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -42,12 +44,13 @@ const IconStar = ({ className, filled }: IconProps & { filled?: boolean }) => (
 );
 
 
-type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write';
+type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write';
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
     { id: 'write', label: 'Написать', icon: IconPencil },
     { id: 'press', label: 'СМИ о нас', icon: IconNews },
+    { id: 'ads', label: 'Реклама', icon: IconAds },
     { id: 'utm', label: 'UTM-метки', icon: IconLink },
     { id: 'letters', label: 'Письма', icon: IconMail },
     { id: 'feedback', label: 'Обратная связь', icon: IconChat },
@@ -272,6 +275,7 @@ export default function AdminPanel() {
           {activeTab === 'ai-analytics' && <AiSalesSection />}
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
+          {activeTab === 'ads' && <AdsAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
           {activeTab === 'radar' && <NewsRadar />}
           {activeTab === 'feedback' && <CitizenFeedback />}
