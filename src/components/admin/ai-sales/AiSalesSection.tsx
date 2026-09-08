@@ -29,6 +29,33 @@ const TEMP_BADGE: Record<string, string> = {
   COLD: 'bg-sky-100 text-sky-700',
 };
 
+const TEMP_LABEL: Record<string, string> = {
+  HOT: 'Горячий', WARM: 'Тёплый', COLD: 'Холодный',
+};
+/** Русская подпись температуры (для бейджей вместо HOT/WARM/COLD). */
+const tempRu = (t: string | null | undefined) => (t ? (TEMP_LABEL[t] || t) : '');
+
+const TEMP_RANK: Record<string, number> = { HOT: 3, WARM: 2, COLD: 1 };
+/** «Общая» температура группы — самая горячая из присутствующих. */
+function hottestTemp(temps: Array<string | null>): string | null {
+  let best: string | null = null; let bestRank = 0;
+  for (const t of temps) {
+    const r = t ? (TEMP_RANK[t] || 0) : 0;
+    if (r > bestRank) { bestRank = r; best = t; }
+  }
+  return best;
+}
+const sumNums = (ns: Array<number | null>) => {
+  let s = 0, has = false;
+  for (const n of ns) if (typeof n === 'number') { s += n; has = true; }
+  return has ? s : null;
+};
+const maxNum = (ns: Array<number | null>) => {
+  let m: number | null = null;
+  for (const n of ns) if (typeof n === 'number') m = m === null ? n : Math.max(m, n);
+  return m;
+};
+
 const CALL_TYPE_LABEL: Record<string, string> = {
   first_contact: 'Первичный контакт', discovery: 'Выявление потребности',
   presentation: 'Презентация', demo: 'Демонстрация', negotiation: 'Переговоры',
@@ -438,8 +465,14 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
         client: sorted.find((c) => c.companyTitle)?.companyTitle ?? null,
         phone: sorted.find((c) => c.phone)?.phone ?? null,
         manager: sorted.find((c) => c.managerName)?.managerName ?? null,
-        temp: sorted.find((c) => c.temperature)?.temperature ?? null,
-        latest: sorted[0]?.startedAt ?? null,
+        // Агрегаты по группе:
+        temp: hottestTemp(sorted.map((c) => c.temperature)),                    // самая горячая
+        latest: sorted[0]?.startedAt ?? null,                                    // дата последнего
+        status: sorted[0]?.status ?? null,                                       // статус последнего
+        duration: sumNums(sorted.map((c) => c.durationSec)),                     // сумма длительностей
+        product: sorted.find((c) => c.product && c.product.trim())?.product ?? null, // первый заполненный
+        dealScore: maxNum(sorted.map((c) => c.dealScore)),                       // максимальный score
+        managerScore: maxNum(sorted.map((c) => c.managerScore)),                 // максимальные баллы
       };
     });
     out.sort((a, b) => sort === 'desc'
@@ -509,7 +542,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
               const one = g.calls[0];
               const groupOpen = single ? expandedCall === one.id : expandedGroups.has(g.key);
               const tempBadge = (t: string | null) => t
-                ? <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[t] || ''}`}>{t}</span> : '—';
+                ? <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[t] || ''}`}>{tempRu(t)}</span> : '—';
               return (
                 <tbody key={g.key} className="border-t border-gray-100">
                   {/* Строка-группа */}
@@ -526,13 +559,18 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                       <div>{g.client || '—'}</div>
                       {g.phone && <div className="text-xs text-gray-400">{g.phone}</div>}
                     </td>
-                    <td className="px-3 py-2">{single ? fmtDur(one.durationSec) : '—'}</td>
-                    <td className="px-3 py-2">{single ? (one.product || '—') : '—'}</td>
-                    <td className="px-3 py-2 font-medium">{single ? (one.dealScore ?? '—') : '—'}</td>
-                    <td className="px-3 py-2">{single ? (one.managerScore ?? '—') : '—'}</td>
+                    <td className="px-3 py-2">{fmtDur(single ? one.durationSec : g.duration)}</td>
+                    <td className="px-3 py-2">{(single ? one.product : g.product) || '—'}</td>
+                    <td className="px-3 py-2 font-medium">{(single ? one.dealScore : g.dealScore) ?? '—'}</td>
+                    <td className="px-3 py-2">{(single ? one.managerScore : g.managerScore) ?? '—'}</td>
                     <td className="px-3 py-2">{tempBadge(single ? one.temperature : g.temp)}</td>
                     <td className="px-3 py-2 whitespace-nowrap text-gray-600">
-                      {single ? (STATUS_LABEL[one.status] || one.status) : <span className="text-xs text-gray-400">{g.latest ? new Date(g.latest).toLocaleDateString('ru-RU') : ''}</span>}
+                      {single ? (STATUS_LABEL[one.status] || one.status) : (
+                        <div>
+                          <div>{g.status ? (STATUS_LABEL[g.status] || g.status) : '—'}</div>
+                          {g.latest && <div className="text-xs text-gray-400">{new Date(g.latest).toLocaleDateString('ru-RU')}</div>}
+                        </div>
+                      )}
                     </td>
                   </tr>
 
@@ -769,7 +807,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
               )}
               {a.dealScore && (
                 <div className="flex items-center gap-3">
-                  <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[a.dealScore.temperature || ''] || ''}`}>{a.dealScore.temperature}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[a.dealScore.temperature || ''] || ''}`}>{tempRu(a.dealScore.temperature)}</span>
                   <span className="text-2xl font-bold text-gray-900">{a.dealScore.score}<span className="text-sm text-gray-400">/100</span></span>
                   {a.managerPerformance?.overall != null
                     ? <span className="text-gray-600">Менеджер: <b>{a.managerPerformance.overall}/10</b></span>
@@ -871,7 +909,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
                   <td className="px-3 py-2">{d.companyTitle || d.title || `Сделка #${d.bitrixDealId}`}</td>
                   <td className="px-3 py-2 whitespace-nowrap">{d.managerName || '—'}</td>
                   <td className="px-3 py-2">{d.callsCount}{d.scoredCalls < d.callsCount ? <span className="text-gray-400"> ({d.scoredCalls} показ.)</span> : null}</td>
-                  <td className="px-3 py-2">{d.temperature ? <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[d.temperature] || ''}`}>{d.temperature}</span> : '—'}</td>
+                  <td className="px-3 py-2">{d.temperature ? <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[d.temperature] || ''}`}>{tempRu(d.temperature)}</span> : '—'}</td>
                   <td className="px-3 py-2 font-medium">{d.dealScore ?? '—'}</td>
                   <td className="px-3 py-2">{d.managerScore != null ? `${d.managerScore}/10` : '—'}</td>
                   <td className="px-3 py-2 max-w-[280px] truncate text-gray-600">{d.nextAction || '—'}</td>
@@ -960,7 +998,7 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
             <div className="space-y-4 text-sm">
               {ins.dealScore && (
                 <div className="flex items-center gap-3">
-                  <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[ins.dealScore.temperature || ''] || ''}`}>{ins.dealScore.temperature}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[ins.dealScore.temperature || ''] || ''}`}>{tempRu(ins.dealScore.temperature)}</span>
                   <span className="text-2xl font-bold text-gray-900">{ins.dealScore.score}<span className="text-sm text-gray-400">/100</span></span>
                   {data.managerScore != null && <span className="text-gray-600">Менеджер по сделке: <b>{data.managerScore}/10</b></span>}
                 </div>
@@ -1006,7 +1044,7 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{c.temperature}</span>}
+                  {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{tempRu(c.temperature)}</span>}
                   <span className="text-gray-500">{c.dealScore ?? '—'}/100</span>
                   <span className="text-gray-400">{c.managerScore != null ? `${c.managerScore}/10` : '—'}</span>
                 </div>
@@ -1039,7 +1077,7 @@ function RecoCard({ it, onOpen }: { it: RecoItem; onOpen: (id: string) => void }
     <button onClick={() => onOpen(it.bitrixDealId)} className="w-full text-left bg-white rounded-xl border border-gray-100 p-3 hover:border-[#029cda]/40 hover:shadow-sm transition">
       <div className="flex items-start justify-between gap-2">
         <span className="font-medium text-gray-900 text-sm leading-snug">{it.company || it.title || `Сделка #${it.bitrixDealId}`}</span>
-        {it.temperature && <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[it.temperature] || ''}`}>{it.temperature}</span>}
+        {it.temperature && <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[it.temperature] || ''}`}>{tempRu(it.temperature)}</span>}
       </div>
       <p className="text-sm text-gray-700 mt-1">{it.reason}</p>
       {it.action && <p className="text-xs text-[#029cda] mt-1">→ {it.action}</p>}
@@ -1714,7 +1752,7 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
               <span className="text-gray-700">{c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}
                 {c.callType && <span className="ml-2 text-xs text-gray-400">{CALL_TYPE_LABEL[c.callType] || c.callType}</span>}</span>
               <div className="flex items-center gap-2">
-                {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{c.temperature}</span>}
+                {c.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[c.temperature] || ''}`}>{tempRu(c.temperature)}</span>}
                 <span className="text-gray-400">{c.managerScore != null ? `${c.managerScore}/10` : '—'}</span>
               </div>
             </div>
