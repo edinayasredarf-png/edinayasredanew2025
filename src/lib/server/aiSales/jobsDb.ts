@@ -179,3 +179,82 @@ export async function queueStats(): Promise<QueueStats> {
   }
   return stats;
 }
+
+/* ─────────── Детальная очередь (для панели «Очередь обработки») ─────────── */
+
+export interface QueueJob {
+  id: string;
+  type: AiJobType;
+  status: AiJobStatus;
+  attempts: number;
+  maxAttempts: number;
+  payload: Record<string, unknown>;
+  lastError: string | null;
+  runAfter: string;
+  updatedAt: string;
+}
+
+export interface QueueByType {
+  type: AiJobType;
+  count: number;
+}
+
+export interface QueueDetails {
+  stats: QueueStats;
+  running: QueueJob[];
+  pending: QueueJob[];
+  failed: QueueJob[];
+  byType: QueueByType[];
+}
+
+function mapJob(r: {
+  id: string; type: AiJobType; status: AiJobStatus; attempts: number; max_attempts: number;
+  payload: Record<string, unknown> | null; last_error: string | null; run_after: Date; updated_at: Date;
+}): QueueJob {
+  return {
+    id: r.id,
+    type: r.type,
+    status: r.status,
+    attempts: r.attempts,
+    maxAttempts: r.max_attempts,
+    payload: r.payload ?? {},
+    lastError: r.last_error,
+    runAfter: r.run_after instanceof Date ? r.run_after.toISOString() : String(r.run_after),
+    updatedAt: r.updated_at instanceof Date ? r.updated_at.toISOString() : String(r.updated_at),
+  };
+}
+
+/** Полная картина очереди: что выполняется, что ждёт (по типам) и что упало. */
+export async function queueDetails(): Promise<QueueDetails> {
+  const pool = getTimewebPool();
+  const [stats, running, pending, failed, byType] = await Promise.all([
+    queueStats(),
+    pool.query(
+      `select id, type, status, attempts, max_attempts, payload, last_error, run_after, updated_at
+         from ai_jobs where status = 'RUNNING'
+        order by updated_at desc limit 50`
+    ),
+    pool.query(
+      `select id, type, status, attempts, max_attempts, payload, last_error, run_after, updated_at
+         from ai_jobs where status in ('PENDING','RETRY_PENDING')
+        order by priority asc, run_after asc limit 50`
+    ),
+    pool.query(
+      `select id, type, status, attempts, max_attempts, payload, last_error, run_after, updated_at
+         from ai_jobs where status = 'FAILED'
+        order by updated_at desc limit 50`
+    ),
+    pool.query<{ type: AiJobType; n: string }>(
+      `select type, count(*)::text as n from ai_jobs
+        where status in ('PENDING','RETRY_PENDING')
+        group by type order by count(*) desc`
+    ),
+  ]);
+  return {
+    stats,
+    running: running.rows.map(mapJob),
+    pending: pending.rows.map(mapJob),
+    failed: failed.rows.map(mapJob),
+    byType: byType.rows.map((r) => ({ type: r.type, count: Number(r.n) })),
+  };
+}

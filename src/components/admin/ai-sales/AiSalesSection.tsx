@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -133,6 +134,7 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   const [err, setErr] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [queueTick, setQueueTick] = useState(0);
   const [period, setPeriod] = usePersistentPeriod();
 
   const load = useCallback(async () => {
@@ -155,6 +157,7 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
       const r = await fetch('/api/ai-sales/sync?entity=all', { method: 'POST' });
       const j = await r.json();
       setMsg(r.ok ? 'Синхронизация поставлена в очередь' : (j.error || 'Ошибка'));
+      setQueueTick((t) => t + 1);
     } finally { setBusy(false); }
   };
 
@@ -168,11 +171,12 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
         ? `Взято ${rep.claimed ?? 0}, выполнено ${rep.completed ?? 0}, ошибок ${rep.failed ?? 0}${rep.reaped ? `, восстановлено ${rep.reaped}` : ''}`
         : (j.error || 'Ошибка'));
       load();
+      setQueueTick((t) => t + 1);
     } finally { setBusy(false); }
   };
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
-  if (!data) return <div className="text-gray-500">Загрузка…</div>;
+  if (!data) return <LoadingBlock />;
 
   return (
     <div>
@@ -207,15 +211,156 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
         <Kpi label="Кому звонить сегодня" value={data.attention.withoutNextStep} sub="AI рекомендует →" onClick={onNavigate ? () => onNavigate({ tab: 'ai-reco' }) : undefined} />
       </div>
 
-      <div className="bg-[#F6F7F9] rounded-xl p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-2">Очередь обработки</p>
-        <div className="flex gap-6 text-sm text-gray-700">
-          <span>В очереди: <b>{data.queue.pending}</b></span>
-          <span>Выполняется: <b>{data.queue.running}</b></span>
-          <span>Повтор: <b>{data.queue.retry}</b></span>
-          <span className={data.queue.failed ? 'text-red-600' : ''}>Ошибки: <b>{data.queue.failed}</b></span>
-        </div>
+      <QueuePanel refreshSignal={queueTick} />
+    </div>
+  );
+}
+
+/* ─────────── Панель очереди обработки ─────────── */
+const JOB_TYPE_LABELS: Record<string, string> = {
+  'bitrix.sync': 'Синхронизация Bitrix',
+  'call.ingest': 'Загрузка звонка',
+  'call.transcribe': 'Транскрибация',
+  'call.diarize': 'Диаризация',
+  'call.roles': 'Разметка ролей',
+  'call.analyze': 'AI-анализ звонка',
+  'deal.analyze': 'Анализ сделки',
+  'manager.analyze': 'Анализ менеджера',
+  'ai.report': 'Формирование отчёта',
+  'followup.check': 'Проверка follow-up',
+};
+const jobLabel = (t: string) => JOB_TYPE_LABELS[t] || t;
+
+function jobRef(payload: Record<string, unknown>): string {
+  const p = payload || {};
+  if (p.callId) return `звонок ${String(p.callId).slice(0, 8)}`;
+  if (p.dealId) return `сделка ${p.dealId}`;
+  if (p.managerId) return `менеджер ${p.managerId}`;
+  if (p.entity) return String(p.entity);
+  return '';
+}
+
+interface QueueJobT {
+  id: string; type: string; status: string; attempts: number; maxAttempts: number;
+  payload: Record<string, unknown>; lastError: string | null; runAfter: string; updatedAt: string;
+}
+interface QueueDetailsT {
+  stats: { pending: number; running: number; failed: number; retry: number };
+  running: QueueJobT[]; pending: QueueJobT[]; failed: QueueJobT[];
+  byType: { type: string; count: number }[];
+}
+
+function StatChip({ label, value, tone }: { label: string; value: number; tone: 'run' | 'wait' | 'err' }) {
+  const cls = tone === 'err'
+    ? (value > 0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-white text-gray-400 border-gray-200')
+    : tone === 'run'
+      ? (value > 0 ? 'bg-[#029cda]/10 text-[#029cda] border-[#029cda]/20' : 'bg-white text-gray-400 border-gray-200')
+      : (value > 0 ? 'bg-white text-gray-700 border-gray-200' : 'bg-white text-gray-400 border-gray-200');
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm ${cls}`}>
+      {label}: <b>{value}</b>
+    </span>
+  );
+}
+
+function QueuePanel({ refreshSignal }: { refreshSignal?: number }) {
+  const [q, setQ] = useState<QueueDetailsT | null>(null);
+  const [err, setErr] = useState('');
+  const [openErrors, setOpenErrors] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch('/api/ai-sales/jobs/queue');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setQ(j); setErr('');
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+  }, []);
+
+  useEffect(() => { load(); }, [load, refreshSignal]);
+
+  // Автообновление, пока есть активность в очереди.
+  useEffect(() => {
+    if (!q) return;
+    const active = q.stats.running > 0 || q.stats.pending > 0 || q.stats.retry > 0;
+    if (!active) return;
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, [q, load]);
+
+  return (
+    <div className="bg-[#F6F7F9] rounded-xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-semibold text-gray-700">Очередь обработки</p>
+        <button onClick={load} className="text-xs text-[#029cda] hover:underline">Обновить</button>
       </div>
+
+      {err && <div className="text-sm text-red-600 mb-2">{err}</div>}
+      {!q ? <LoadingBlock /> : (
+        <>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <StatChip label="Выполняется" value={q.stats.running} tone="run" />
+            <StatChip label="В очереди" value={q.stats.pending} tone="wait" />
+            <StatChip label="Повтор" value={q.stats.retry} tone="wait" />
+            <StatChip label="Ошибки" value={q.stats.failed} tone="err" />
+          </div>
+
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Сейчас обрабатывается</p>
+            {q.running.length === 0 ? (
+              <p className="text-sm text-gray-400">— нет активных задач</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {q.running.map((j) => (
+                  <li key={j.id} className="flex items-center gap-2 text-sm text-gray-700">
+                    <Spinner size={14} />
+                    <span className="font-medium">{jobLabel(j.type)}</span>
+                    {jobRef(j.payload) && <span className="text-gray-500">· {jobRef(j.payload)}</span>}
+                    {j.attempts > 1 && <span className="text-xs text-gray-400">попытка {j.attempts}/{j.maxAttempts}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">В очереди</p>
+            {q.byType.length === 0 ? (
+              <p className="text-sm text-gray-400">— очередь пуста</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {q.byType.map((t) => (
+                  <span key={t.type} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-sm text-gray-700">
+                    {jobLabel(t.type)} <b className="text-[#029cda]">{t.count}</b>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {q.failed.length > 0 && (
+            <div>
+              <button onClick={() => setOpenErrors((v) => !v)} className="text-xs font-semibold text-red-600 uppercase mb-2 flex items-center gap-1">
+                Ошибки ({q.failed.length}) <span className="text-[10px]">{openErrors ? '▲' : '▼'}</span>
+              </button>
+              {openErrors && (
+                <ul className="space-y-2">
+                  {q.failed.map((j) => (
+                    <li key={j.id} className="text-sm bg-white border border-red-100 rounded-lg p-2.5">
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <span className="font-medium">{jobLabel(j.type)}</span>
+                        {jobRef(j.payload) && <span className="text-gray-500">· {jobRef(j.payload)}</span>}
+                        <span className="text-xs text-gray-400 ml-auto">{new Date(j.updatedAt).toLocaleString('ru-RU')}</span>
+                      </div>
+                      {j.lastError && <p className="text-xs text-red-600 mt-1 break-words">{j.lastError}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -343,7 +488,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
       )}
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
-      {loading ? <div className="text-gray-500">Загрузка…</div> : (
+      {loading ? <LoadingBlock /> : (
         <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
@@ -504,7 +649,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
   };
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
-  if (!data) return <div className="text-gray-500">Загрузка…</div>;
+  if (!data) return <LoadingBlock />;
 
   const a = data.analysis as null | {
     summary?: string;
@@ -712,7 +857,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
       </div>
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
-      {loading ? <div className="text-gray-500">Загрузка…</div> : (
+      {loading ? <LoadingBlock /> : (
         <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
@@ -786,7 +931,7 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
   };
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
-  if (!data) return <div className="text-gray-500">Загрузка…</div>;
+  if (!data) return <LoadingBlock />;
   const ins = data.insight;
 
   return (
@@ -935,7 +1080,7 @@ function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
       </div>
       <p className="text-sm text-gray-500 mb-4">Приоритетные сделки по данным разборов звонков. Клик — открыть карточку сделки.</p>
       <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : (
+      {loading ? <LoadingBlock /> : !data ? null : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {(['critical', 'risk', 'opportunity'] as const).map((key) => (
             <div key={key} className={`rounded-2xl border ${RECO_COL[key].ring} bg-[#F6F7F9]/60 p-3`}>
@@ -1032,7 +1177,7 @@ function Insights() {
       <h2 className="text-xl font-bold text-gray-900 mb-1">AI Insights</h2>
       <p className="text-sm text-gray-500 mb-4">Агрегаты по разборам звонков за период.</p>
       <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : (
+      {loading ? <LoadingBlock /> : !data ? null : (
         <div className="space-y-4">
           {data.headlines.length > 0 && (
             <div className="bg-[#029cda]/5 border border-[#029cda]/20 rounded-xl p-4">
@@ -1110,7 +1255,7 @@ function FollowUps() {
       </div>
       <p className="text-sm text-gray-500 mb-4">Обещания менеджеров из звонков («отправить КП», «перезвонить»). Отметьте выполненные.</p>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
-      {loading ? <div className="text-gray-500">Загрузка…</div> : (
+      {loading ? <LoadingBlock /> : (
         <div className="space-y-2">
           {items.map((it) => (
             <div key={it.id} className={`flex items-center justify-between gap-3 bg-white rounded-xl border p-3 ${it.overdue ? 'border-red-200' : 'border-gray-100'}`}>
@@ -1171,7 +1316,7 @@ function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
       <h2 className="text-xl font-bold text-gray-900 mb-1">Проигранные сделки</h2>
       <p className="text-sm text-gray-500 mb-4">Причины проигрыша по AI-разбору звонков (не только по полю Bitrix).</p>
       <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : data.total === 0 ? (
+      {loading ? <LoadingBlock /> : !data ? null : data.total === 0 ? (
         <p className="text-gray-400 py-8">Проигранных сделок с разбором за период нет. (Убедитесь, что синхронизация обновила статусы сделок.)</p>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -1249,7 +1394,7 @@ function Settings() {
   };
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
-  if (!s) return <div className="text-gray-500">Загрузка…</div>;
+  if (!s) return <LoadingBlock />;
   const str = (k: string, d = '') => (s[k] == null ? d : String(s[k]));
   const bool = (k: string) => s[k] === true;
 
@@ -1353,7 +1498,7 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
       <h2 className="text-xl font-bold text-gray-900 mb-1">AI-теги</h2>
       <p className="text-sm text-gray-500 mb-4">Автотеги из разборов звонков. Клик по тегу — звонки с этим тегом.</p>
       <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : data.groups.length === 0 ? (
+      {loading ? <LoadingBlock /> : !data ? null : data.groups.length === 0 ? (
         <p className="text-gray-400 py-8">Тегов пока нет — появятся после анализа звонков.</p>
       ) : (
         <div className="space-y-5">
@@ -1413,7 +1558,7 @@ function Rop({ onOpen }: { onOpen: (id: string) => void }) {
       <h2 className="text-xl font-bold text-gray-900 mb-1">AI РОП — сводка по отделу</h2>
       <p className="text-sm text-gray-500 mb-4">Ключевые цифры, кто в топе, где проблемы и что требует внимания.</p>
       <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <div className="text-gray-500">Загрузка…</div> : !data ? null : (
+      {loading ? <LoadingBlock /> : !data ? null : (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Kpi label="Звонки" value={data.dept.calls} sub={`Проанализировано: ${data.dept.analyzed}`} />
@@ -1488,7 +1633,7 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
     <div>
       <h2 className="text-xl font-bold text-gray-900 mb-4">Менеджеры</h2>
       <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <div className="text-gray-500">Загрузка…</div> : (
+      {loading ? <LoadingBlock /> : (
         <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
@@ -1538,7 +1683,7 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
   }, [id]);
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
-  if (!data) return <div className="text-gray-500">Загрузка…</div>;
+  if (!data) return <LoadingBlock />;
   const m = data.metrics;
 
   return (
@@ -1584,10 +1729,10 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
 /* ─────────── Раздел «Речевая аналитика» (единый, со своим навбаром) ─────────── */
 const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'dashboard', label: 'Обзор' },
+  { view: 'calls', label: 'Коммуникации' },
   { view: 'rop', label: 'AI РОП' },
   { view: 'reco', label: 'Рекомендации' },
   { view: 'followups', label: 'Follow-up' },
-  { view: 'calls', label: 'Коммуникации' },
   { view: 'deals', label: 'Сделки' },
   { view: 'managers', label: 'Менеджеры' },
   { view: 'lost', label: 'Проигрыши' },
