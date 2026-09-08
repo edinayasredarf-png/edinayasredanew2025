@@ -719,6 +719,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
     risks?: Array<{ type: string; detail: string }>;
     managerPerformance?: { overall?: number | null; didWell?: string[]; mistakes?: string[]; improveNextTime?: string[] };
     products?: Array<{ name: string; confidence: number }>;
+    objections?: Array<{ text?: string; quote?: string | null; raisedBy?: string; handled?: boolean; managerResponse?: string | null; responseQuality?: string | null; recommendation?: string | null; startMs?: number | null; endMs?: number | null }>;
   };
 
   return (
@@ -886,6 +887,34 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
                   {a.managerPerformance.didWell?.length ? <div><p className="text-xs uppercase tracking-wide text-emerald-600">Хорошо</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.didWell.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                   {a.managerPerformance.mistakes?.length ? <div><p className="text-xs uppercase tracking-wide text-amber-600">Ошибки</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.mistakes.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                   {a.managerPerformance.improveNextTime?.length ? <div><p className="text-xs uppercase tracking-wide text-sky-600">Улучшить</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.improveNextTime.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                </div>
+              )}
+              {a.objections && a.objections.filter((o) => (o.text || o.quote)?.trim()).length > 0 && (
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Возражения</p>
+                  <ul className="space-y-2">
+                    {a.objections.filter((o) => (o.text || o.quote)?.trim()).map((o, i) => (
+                      <li key={i} className="rounded-lg bg-[#F6F7F9] p-2.5">
+                        <div className="flex items-start gap-2">
+                          {o.startMs != null ? (
+                            <button onClick={() => seek(o.startMs ?? null)} title="Прослушать момент"
+                              className="shrink-0 inline-flex items-center gap-1 text-xs text-[#029cda] hover:underline mt-0.5">
+                              ▶ {ms2tc(o.startMs)}
+                            </button>
+                          ) : null}
+                          <div className="flex-1">
+                            <p className="text-gray-800">{o.text || o.quote}
+                              <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${o.handled ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                {o.handled ? 'отработано' : 'не отработано'}
+                              </span>
+                            </p>
+                            {o.quote && o.quote !== o.text && <p className="text-xs text-gray-400 mt-0.5">«{o.quote}»</p>}
+                            {o.recommendation && <p className="text-xs text-sky-600 mt-0.5">{o.recommendation}</p>}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>

@@ -12,7 +12,7 @@ import * as z from "zod/v4";
  * поле (undefined), поэтому явные `.default()` не нужны. Инференс типа стабилен.
  */
 
-export const ANALYSIS_VERSION = "call-analysis-v1";
+export const ANALYSIS_VERSION = "call-analysis-v2";
 
 // ── Толерантные примитивы ──
 const nstr = z.string().nullable().catch(null); // string | null
@@ -78,13 +78,19 @@ const Procurement = z
 const Objection = z
   .object({
     text: str,
+    // Дословная реплика клиента с возражением — по ней находим момент в аудио.
+    quote: nstr,
     raisedBy: z.enum(["CLIENT", "MANAGER", "UNKNOWN"]).catch("UNKNOWN"),
     handled: z.boolean().catch(false),
     managerResponse: nstr,
     responseQuality: z.enum(["good", "average", "poor"]).nullable().catch(null),
     recommendation: nstr,
+    // Тайм-коды момента возражения (мс). Проставляются кодом по совпадению quote
+    // с сегментом транскрипта (не доверяем таймкодам LLM).
+    startMs: z.number().nullable().catch(null),
+    endMs: z.number().nullable().catch(null),
   })
-  .catch({ text: "", raisedBy: "UNKNOWN", handled: false, managerResponse: null, responseQuality: null, recommendation: null });
+  .catch({ text: "", quote: null, raisedBy: "UNKNOWN", handled: false, managerResponse: null, responseQuality: null, recommendation: null, startMs: null, endMs: null });
 
 const Competitor = z
   .object({

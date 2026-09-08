@@ -51,6 +51,44 @@ export function buildDialogue(t: TranscriptWithSegments): string {
     .join("\n");
 }
 
+/** Нормализация для сопоставления цитаты с сегментом транскрипта. */
+const normText = (s: string) =>
+  s.toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9\s]/gi, " ").replace(/\s+/g, " ").trim();
+
+const tokens = (s: string) => normText(s).split(" ").filter((w) => w.length > 2);
+
+/**
+ * Проставить тайм-коды возражениям: ищем сегмент транскрипта, наиболее совпадающий
+ * с дословной цитатой (quote) клиента. Не доверяем таймкодам самой LLM.
+ */
+function attachObjectionTimecodes(
+  objections: Array<{ text: string; quote?: string | null; startMs: number | null; endMs: number | null }>,
+  t: TranscriptWithSegments
+): void {
+  const segs = t.segments.filter((s) => typeof s.startMs === "number" && (s.text || "").trim());
+  if (!segs.length) return;
+  for (const obj of objections) {
+    const needle = normText(obj.quote || obj.text || "");
+    if (!needle) continue;
+    const needleTokens = tokens(obj.quote || obj.text || "");
+    let best: { startMs: number | null; endMs: number | null; score: number } | null = null;
+    for (const s of segs) {
+      const hay = normText(s.text || "");
+      let score = 0;
+      if (needle.length >= 6 && hay.includes(needle)) score = 1; // прямое вхождение фразы
+      else if (needleTokens.length) {
+        const hayTokens = new Set(tokens(s.text || ""));
+        const overlap = needleTokens.filter((w) => hayTokens.has(w)).length;
+        score = overlap / needleTokens.length; // доля слов цитаты, найденных в сегменте
+      }
+      if (score > 0 && (!best || score > best.score)) {
+        best = { startMs: s.startMs, endMs: s.endMs, score };
+      }
+    }
+    if (best && best.score >= 0.5) { obj.startMs = best.startMs; obj.endMs = best.endMs; }
+  }
+}
+
 interface CallContext {
   companyTitle: string | null;
   dealTitle: string | null;
@@ -138,6 +176,12 @@ export async function runAnalysis(
     cacheSystem: true,
     maxTokens: 16000,
   });
+
+  // Тайм-коды возражений — по совпадению цитаты с транскриптом (§16–17 ТЗ:
+  // руководитель кликает возражение и слышит этот момент звонка).
+  if (Array.isArray(data.objections) && data.objections.length) {
+    attachObjectionTimecodes(data.objections, transcript);
+  }
 
   await saveAnalysis({
     callId,
