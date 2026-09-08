@@ -6,7 +6,7 @@ import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts';
+type View = 'dashboard' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -662,12 +662,13 @@ const ms2tc = (ms: number | null) => {
   return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
 };
 
-function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: string; onBack: () => void; backLabel?: string }) {
+function CallDetail({ id, onBack, backLabel = '← К списку', initialSeekMs = null }: { id: string; onBack: () => void; backLabel?: string; initialSeekMs?: number | null }) {
   const [data, setData] = useState<DetailData | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const seekedRef = useRef(false);
 
   const load = useCallback(async () => {
     setErr('');
@@ -699,11 +700,20 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
     } finally { setBusy(false); }
   };
 
-  const seek = (startMs: number | null) => {
-    if (startMs == null || !audioRef.current) return;
-    audioRef.current.currentTime = startMs / 1000;
-    audioRef.current.play().catch(() => {});
-  };
+  const seek = useCallback((startMs: number | null) => {
+    const el = audioRef.current;
+    if (startMs == null || !el) return;
+    const doSeek = () => { try { el.currentTime = startMs / 1000; } catch { /* not ready */ } el.play().catch(() => {}); };
+    if (el.readyState >= 1) doSeek();
+    else { el.addEventListener('loadedmetadata', doSeek, { once: true }); el.load(); }
+  }, []);
+
+  // Переход из поиска: автоперемотка на найденный момент (один раз).
+  useEffect(() => {
+    if (!data || initialSeekMs == null || seekedRef.current) return;
+    seekedRef.current = true;
+    seek(initialSeekMs);
+  }, [data, initialSeekMs, seek]);
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
   if (!data) return <LoadingBlock />;
@@ -1843,6 +1853,119 @@ interface DeptManager { bitrixUserId: string; name: string | null; departmentId:
 const jsonPost = (url: string, body: unknown, method = 'POST') =>
   fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
+/* ─────────── Поиск по всем звонкам (полнотекстовый) ─────────── */
+interface SearchMatchT {
+  callId: string; segmentIdx: number; role: string | null; startMs: number | null;
+  snippet: string; text: string; startedAt: string | null; managerName: string | null;
+  clientTitle: string | null; phone: string | null; dealUrl: string | null; leadUrl: string | null;
+}
+
+/** Рендер сниппета ts_headline: [[…]] → жёлтая подсветка. */
+function Snippet({ text }: { text: string }) {
+  const parts = text.split(/\[\[|\]\]/);
+  // Чётные индексы — обычный текст, нечётные — подсвеченное совпадение.
+  return (
+    <>
+      {parts.map((p, i) => (i % 2 === 1
+        ? <mark key={i} className="bg-yellow-200 text-gray-900 rounded px-0.5">{p}</mark>
+        : <span key={i}>{p}</span>))}
+    </>
+  );
+}
+
+function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) => void }) {
+  const [q, setQ] = useState('');
+  const [matches, setMatches] = useState<SearchMatchT[]>([]);
+  const [total, setTotal] = useState(0);
+  const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [department, setDepartment] = useState('');
+  const [period, setPeriod] = usePersistentPeriod();
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    fetch('/api/ai-sales/departments')
+      .then((r) => r.json())
+      .then((j) => { if (Array.isArray(j.departments)) setDepartmentOptions(j.departments.map((d: { id: string; name: string }) => ({ id: d.id, name: d.name }))); })
+      .catch(() => {});
+  }, []);
+
+  const run = useCallback(async () => {
+    if (!q.trim()) return;
+    setLoading(true); setErr(''); setSearched(true);
+    try {
+      const qs = periodQS(period);
+      qs.set('q', q.trim());
+      if (department) qs.set('department', department);
+      const r = await fetch(`/api/ai-sales/search?${qs}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setMatches(j.matches); setTotal(j.total);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [q, department, period]);
+
+  const suggestions = ['дорого', 'подумаю', 'конкурент', 'отправьте КП', 'перезвоните', 'не интересно'];
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Поиск по звонкам</h2>
+      <p className="text-sm text-gray-500 mb-4">Полнотекстовый поиск по репликам всех расшифрованных звонков. Клик по результату — переход к звонку и моменту записи.</p>
+
+      <div className="flex gap-2 mb-3 flex-wrap">
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') run(); }}
+          placeholder="Например: дорого, отправьте КП, конкурент…"
+          className="flex-1 min-w-[220px] px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+        <select value={department} onChange={(e) => setDepartment(e.target.value)}
+          className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
+          <option value="">Все отделы</option>
+          {departmentOptions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+        <button onClick={run} disabled={loading || !q.trim()}
+          className="px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Искать</button>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-3">
+        {suggestions.map((s) => (
+          <button key={s} onClick={() => { setQ(s); setTimeout(run, 0); }}
+            className="text-xs px-2.5 py-1 rounded-full bg-[#F6F7F9] text-gray-600 hover:text-[#029cda]">{s}</button>
+        ))}
+      </div>
+
+      <PeriodBar value={period} onChange={setPeriod} />
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+
+      {loading ? <LoadingBlock /> : searched && (
+        <div>
+          <p className="text-sm text-gray-500 mb-3">Найдено реплик: <b>{total}</b>{total > matches.length ? ` (показаны первые ${matches.length})` : ''}</p>
+          <ul className="space-y-2">
+            {matches.map((m, i) => (
+              <li key={`${m.callId}-${m.segmentIdx}-${i}`}
+                onClick={() => onOpen(m.callId, m.startMs)}
+                className="bg-white border border-gray-100 rounded-xl p-3 hover:bg-sky-50/60 cursor-pointer">
+                <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
+                  <span>{m.startedAt ? new Date(m.startedAt).toLocaleString('ru-RU') : '—'}</span>
+                  {m.managerName && <span>· {m.managerName}</span>}
+                  {m.clientTitle && <span>· {m.clientTitle}</span>}
+                  {m.startMs != null && <span className="ml-auto text-[#029cda]">▶ {ms2tc(m.startMs)}</span>}
+                </div>
+                <p className="text-sm">
+                  <span className={`font-medium mr-1 ${m.role === 'CLIENT' ? 'text-emerald-700' : m.role === 'MANAGER' ? 'text-gray-900' : 'text-gray-500'}`}>
+                    {m.role === 'MANAGER' ? 'Менеджер:' : m.role === 'CLIENT' ? 'Клиент:' : ''}
+                  </span>
+                  <span className="text-gray-700"><Snippet text={m.snippet} /></span>
+                </p>
+              </li>
+            ))}
+            {matches.length === 0 && <li className="text-sm text-gray-400">Ничего не найдено.</li>}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Departments() {
   const [depts, setDepts] = useState<DeptRow[]>([]);
   const [managers, setManagers] = useState<DeptManager[]>([]);
@@ -2154,6 +2277,7 @@ function Scripts() {
 const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'dashboard', label: 'Обзор' },
   { view: 'calls', label: 'Коммуникации' },
+  { view: 'search', label: 'Поиск' },
   { view: 'rop', label: 'AI РОП' },
   { view: 'reco', label: 'Рекомендации' },
   { view: 'followups', label: 'Follow-up' },
@@ -2171,22 +2295,26 @@ const SECTIONS: Array<{ view: View; label: string }> = [
 export default function AiSalesSection() {
   const [view, setView] = useState<View>('dashboard');
   const [openCall, setOpenCall] = useState<string | null>(null);
+  const [openCallSeek, setOpenCallSeek] = useState<number | null>(null);
   const [openDeal, setOpenDeal] = useState<string | null>(null);
   const [initTemp, setInitTemp] = useState<string | undefined>(undefined);
   const [initTag, setInitTag] = useState<string | undefined>(undefined);
 
-  const go = (v: View) => { setView(v); setOpenCall(null); setOpenDeal(null); setInitTemp(undefined); setInitTag(undefined); };
+  const closeCall = () => { setOpenCall(null); setOpenCallSeek(null); };
+  const go = (v: View) => { setView(v); closeCall(); setOpenDeal(null); setInitTemp(undefined); setInitTag(undefined); };
   const nav = (t: NavTarget) => {
     const map: Record<string, View> = { 'ai-deals': 'deals', 'ai-calls': 'calls', 'ai-reco': 'reco' };
     setInitTemp(t.temperature); setInitTag(t.tag);
-    setOpenCall(null); setOpenDeal(null);
+    closeCall(); setOpenDeal(null);
     setView(map[t.tab] ?? 'dashboard');
   };
+  const openCallAt = (id: string, startMs: number | null) => { setOpenCall(id); setOpenCallSeek(startMs); };
 
   const body = (() => {
-    // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки).
-    if (openCall) return <CallDetail id={openCall} onBack={() => setOpenCall(null)} />;
+    // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки, поиск).
+    if (openCall) return <CallDetail id={openCall} initialSeekMs={openCallSeek} onBack={closeCall} />;
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
+    if (view === 'search') return <Search onOpen={openCallAt} />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
     if (view === 'departments') return <Departments />;
     if (view === 'scripts') return <Scripts />;
