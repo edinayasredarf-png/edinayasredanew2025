@@ -22,6 +22,7 @@ import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { createFollowUpsFromAnalysis } from "@/lib/server/aiSales/followupsDb";
 import { saveCallTags } from "@/lib/server/aiSales/tagsDb";
 import { getAiConfig } from "@/lib/server/aiSales/settingsDb";
+import { getDepartmentPromptForManager } from "@/lib/server/aiSales/departmentsDb";
 
 /**
  * Анализ звонка через Claude (§45 ТЗ). Классификация/скоринг — LLM; агрегация и
@@ -104,8 +105,20 @@ export async function runAnalysis(
   const provider = await getAiProvider();
   const model = provider.defaultModel;
 
+  // Промт анализа — свой у каждого отдела (по менеджеру звонка). Если у отдела
+  // задан кастомный промт — используем его как системный, иначе дефолтный.
+  const dept = await getDepartmentPromptForManager(call.bitrix_user_id);
+  const customPrompt = dept?.analysisPrompt?.trim() || null;
+  const systemPrompt = customPrompt || CALL_ANALYSIS_SYSTEM;
+  // Версия промта в кэш-ключе: смена промта отдела инвалидирует кэш и даёт
+  // повторный анализ этого звонка новым промтом.
+  const promptVersion = customPrompt
+    ? `${CALL_ANALYSIS_PROMPT_VERSION}+dept:${dept!.departmentId.slice(0, 8)}`
+    : CALL_ANALYSIS_PROMPT_VERSION;
+  const promptFingerprint = createHash("sha256").update(systemPrompt).digest("hex").slice(0, 12);
+
   const inputHash = createHash("sha256")
-    .update(`${CALL_ANALYSIS_PROMPT_VERSION}|${model}|${dialogue}`)
+    .update(`${promptVersion}|${promptFingerprint}|${model}|${dialogue}`)
     .digest("hex");
 
   if (!opts.force && (await analysisExists(callId, inputHash))) {
@@ -120,7 +133,7 @@ export async function runAnalysis(
 
   const { data } = await provider.generateStructured({
     schema: CallAnalysisSchema,
-    system: CALL_ANALYSIS_SYSTEM,
+    system: systemPrompt,
     user,
     cacheSystem: true,
     maxTokens: 16000,
@@ -130,7 +143,7 @@ export async function runAnalysis(
     callId,
     provider: provider.name,
     model,
-    promptVersion: CALL_ANALYSIS_PROMPT_VERSION,
+    promptVersion,
     analysisVersion: ANALYSIS_VERSION,
     inputHash,
     data,

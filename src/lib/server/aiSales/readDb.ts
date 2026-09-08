@@ -180,6 +180,7 @@ export interface CallListItem {
 export interface CallListFilters {
   managerBitrixId?: string | null; // RBAC (менеджер видит своё)
   managerFilter?: string | null;   // явный фильтр по менеджеру из UI
+  department?: string | null;      // фильтр по отделу (ai_departments.id)
   temperature?: string | null;
   status?: string | null;
   tag?: string | null; // slug тега
@@ -207,6 +208,7 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
 
   if (f.managerBitrixId) { where.push(`c.bitrix_user_id = $${i++}`); params.push(f.managerBitrixId); }
   if (f.managerFilter) { where.push(`c.bitrix_user_id = $${i++}`); params.push(f.managerFilter); }
+  if (f.department) { where.push(`m.department_id = $${i++}`); params.push(f.department); }
   if (f.temperature) { where.push(`a.deal_temperature = $${i++}`); params.push(f.temperature); }
   if (f.status) { where.push(`c.status = $${i++}`); params.push(f.status); }
   if (f.from) { where.push(`c.started_at >= $${i++}::date`); params.push(f.from); }

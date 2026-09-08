@@ -6,7 +6,7 @@ import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -409,6 +409,8 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
   const [tag, setTag] = useState(initialTag || '');
   const [manager, setManager] = useState('');
   const [managerOptions, setManagerOptions] = useState<Array<{ bitrixUserId: string; name: string | null }>>([]);
+  const [department, setDepartment] = useState('');
+  const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; name: string }>>([]);
   const [period, setPeriod] = usePersistentPeriod();
   const [sort, setSort] = useState<'asc' | 'desc'>('desc');
   const [err, setErr] = useState('');
@@ -418,6 +420,10 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
     fetch('/api/ai-sales/managers/options')
       .then((r) => r.json())
       .then((j) => { if (Array.isArray(j.items)) setManagerOptions(j.items); })
+      .catch(() => {});
+    fetch('/api/ai-sales/departments')
+      .then((r) => r.json())
+      .then((j) => { if (Array.isArray(j.departments)) setDepartmentOptions(j.departments.map((d: { id: string; name: string }) => ({ id: d.id, name: d.name }))); })
       .catch(() => {});
   }, []);
 
@@ -429,6 +435,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
       if (status) qs.set('status', status);
       if (tag) qs.set('tag', tag);
       if (manager) qs.set('manager', manager);
+      if (department) qs.set('department', department);
       qs.set('sort', sort);
       qs.set('limit', '200');
       const r = await fetch(`/api/ai-sales/calls?${qs}`);
@@ -438,7 +445,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Ошибка');
     } finally { setLoading(false); }
-  }, [temp, status, tag, manager, period, sort]);
+  }, [temp, status, tag, manager, department, period, sort]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -485,7 +492,14 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <select value={department} onChange={(e) => setDepartment(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-gray-300 text-sm max-w-[180px]">
+            <option value="">Все отделы</option>
+            {departmentOptions.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
           <select value={manager} onChange={(e) => setManager(e.target.value)}
             className="px-3 py-2 rounded-lg border border-gray-300 text-sm max-w-[180px]">
             <option value="">Все менеджеры</option>
@@ -1764,6 +1778,202 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
   );
 }
 
+/* ─────────── Отделы (структура + распределение сотрудников) ─────────── */
+interface DeptRow { id: string; name: string; slug: string | null; analysisPrompt: string | null; sort: number; managerCount: number }
+interface DeptManager { bitrixUserId: string; name: string | null; departmentId: string | null; active: boolean }
+
+const jsonPost = (url: string, body: unknown, method = 'POST') =>
+  fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+function Departments() {
+  const [depts, setDepts] = useState<DeptRow[]>([]);
+  const [managers, setManagers] = useState<DeptManager[]>([]);
+  const [names, setNames] = useState<Record<string, string>>({});
+  const [newName, setNewName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/departments');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setDepts(j.departments); setManagers(j.managers);
+      setNames(Object.fromEntries((j.departments as DeptRow[]).map((d) => [d.id, d.name])));
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const create = async () => {
+    if (!newName.trim()) return;
+    setBusy(true);
+    try { await jsonPost('/api/ai-sales/departments', { name: newName.trim() }); setNewName(''); await load(); }
+    finally { setBusy(false); }
+  };
+  const rename = async (id: string) => {
+    const name = (names[id] || '').trim(); if (!name) return;
+    await jsonPost(`/api/ai-sales/departments/${id}`, { name }, 'PATCH'); await load();
+  };
+  const remove = async (id: string) => {
+    if (!window.confirm('Удалить отдел? Сотрудники останутся без отдела.')) return;
+    await fetch(`/api/ai-sales/departments/${id}`, { method: 'DELETE' }); await load();
+  };
+  const assign = async (bitrixUserId: string, departmentId: string) => {
+    setManagers((prev) => prev.map((m) => m.bitrixUserId === bitrixUserId ? { ...m, departmentId: departmentId || null } : m));
+    await jsonPost('/api/ai-sales/managers/assign', { bitrixUserId, departmentId: departmentId || null });
+    load();
+  };
+
+  if (loading) return <LoadingBlock />;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Отделы</h2>
+      <p className="text-sm text-gray-500 mb-5">Структура компании для речевой аналитики: у каждого отдела свой промт анализа и свой состав сотрудников.</p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Отделы */}
+        <div>
+          <div className="flex gap-2 mb-3">
+            <input value={newName} onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') create(); }}
+              placeholder="Новый отдел…"
+              className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm" />
+            <button onClick={create} disabled={busy || !newName.trim()}
+              className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Добавить</button>
+          </div>
+          <ul className="space-y-2">
+            {depts.map((d) => (
+              <li key={d.id} className="flex items-center gap-2 bg-[#F6F7F9] rounded-xl px-3 py-2">
+                <input value={names[d.id] ?? ''} onChange={(e) => setNames((p) => ({ ...p, [d.id]: e.target.value }))}
+                  onBlur={() => { if ((names[d.id] || '').trim() && names[d.id] !== d.name) rename(d.id); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                  className="flex-1 bg-transparent px-2 py-1 rounded border border-transparent hover:border-gray-200 focus:border-[#029cda] focus:bg-white text-sm outline-none" />
+                <span className="text-xs text-gray-400 whitespace-nowrap">{d.managerCount} сотр.</span>
+                <button onClick={() => remove(d.id)} title="Удалить отдел"
+                  className="text-gray-300 hover:text-red-500 px-1">✕</button>
+              </li>
+            ))}
+            {depts.length === 0 && <li className="text-sm text-gray-400">Отделов пока нет.</li>}
+          </ul>
+        </div>
+
+        {/* Сотрудники */}
+        <div>
+          <p className="text-sm font-semibold text-gray-700 mb-3">Сотрудники по отделам</p>
+          <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+            <table className="min-w-full text-sm">
+              <thead className="bg-[#F6F7F9] text-gray-600">
+                <tr><th className="text-left font-medium px-3 py-2">Сотрудник</th><th className="text-left font-medium px-3 py-2">Отдел</th></tr>
+              </thead>
+              <tbody>
+                {managers.map((m) => (
+                  <tr key={m.bitrixUserId} className="border-t border-gray-100">
+                    <td className="px-3 py-2">{m.name || `ID ${m.bitrixUserId}`}{!m.active && <span className="text-xs text-gray-400"> (неактивен)</span>}</td>
+                    <td className="px-3 py-2">
+                      <select value={m.departmentId || ''} onChange={(e) => assign(m.bitrixUserId, e.target.value)}
+                        className="px-2 py-1 rounded-lg border border-gray-300 text-sm">
+                        <option value="">— без отдела —</option>
+                        {depts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+                {managers.length === 0 && <tr><td colSpan={2} className="px-3 py-6 text-center text-gray-400">Сотрудники появятся после синхронизации Bitrix.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Промты анализа по отделам ─────────── */
+function Prompts() {
+  const [depts, setDepts] = useState<DeptRow[]>([]);
+  const [defaultPrompt, setDefaultPrompt] = useState('');
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [savedId, setSavedId] = useState('');
+  const [showDefault, setShowDefault] = useState(false);
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/departments');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setDepts(j.departments); setDefaultPrompt(j.defaultAnalysisPrompt || '');
+      setDrafts(Object.fromEntries((j.departments as DeptRow[]).map((d) => [d.id, d.analysisPrompt || ''])));
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const save = async (id: string) => {
+    await jsonPost(`/api/ai-sales/departments/${id}`, { analysisPrompt: drafts[id] ?? '' }, 'PATCH');
+    setSavedId(id); setTimeout(() => setSavedId(''), 2500);
+    load();
+  };
+
+  if (loading) return <LoadingBlock />;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Промты анализа</h2>
+      <p className="text-sm text-gray-500 mb-5">Свой системный промт для YandexGPT на каждый отдел — звонки разных отделов анализируются по-разному. Пусто — используется стандартный промт (отдел продаж).</p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+
+      <div className="mb-4">
+        <button onClick={() => setShowDefault((v) => !v)} className="text-sm text-[#029cda] hover:underline">
+          {showDefault ? '▲ Скрыть' : '▼ Показать'} стандартный промт
+        </button>
+        {showDefault && (
+          <pre className="mt-2 p-3 bg-[#F6F7F9] rounded-lg text-xs text-gray-600 whitespace-pre-wrap max-h-64 overflow-y-auto">{defaultPrompt}</pre>
+        )}
+      </div>
+
+      <div className="space-y-6">
+        {depts.map((d) => {
+          const custom = (drafts[d.id] || '').trim().length > 0;
+          return (
+            <div key={d.id} className="bg-[#F6F7F9] rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-semibold text-gray-800">{d.name}
+                  <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${custom ? 'bg-[#029cda]/10 text-[#029cda]' : 'bg-gray-200 text-gray-500'}`}>
+                    {custom ? 'свой промт' : 'стандартный'}
+                  </span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setDrafts((p) => ({ ...p, [d.id]: defaultPrompt }))}
+                    className="text-xs text-gray-500 hover:text-[#029cda]">Вставить стандартный</button>
+                  <button onClick={() => setDrafts((p) => ({ ...p, [d.id]: '' }))}
+                    className="text-xs text-gray-500 hover:text-red-500">Очистить</button>
+                </div>
+              </div>
+              <textarea value={drafts[d.id] ?? ''} onChange={(e) => setDrafts((p) => ({ ...p, [d.id]: e.target.value }))}
+                rows={8} placeholder="Пусто — используется стандартный промт отдела продаж"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm font-mono bg-white outline-none focus:border-[#029cda]" />
+              <div className="flex items-center gap-3 mt-2">
+                <button onClick={() => save(d.id)}
+                  className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white">Сохранить</button>
+                {savedId === d.id && <span className="text-sm text-green-600">✓ Сохранено</span>}
+              </div>
+            </div>
+          );
+        })}
+        {depts.length === 0 && <p className="text-sm text-gray-400">Сначала создайте отделы во вкладке «Отделы».</p>}
+      </div>
+    </div>
+  );
+}
+
 /* ─────────── Раздел «Речевая аналитика» (единый, со своим навбаром) ─────────── */
 const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'dashboard', label: 'Обзор' },
@@ -1776,6 +1986,8 @@ const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'lost', label: 'Проигрыши' },
   { view: 'insights', label: 'Отчёты' },
   { view: 'tags', label: 'Разметка' },
+  { view: 'departments', label: 'Отделы' },
+  { view: 'prompts', label: 'Промты' },
   { view: 'settings', label: 'Настройки' },
 ];
 
@@ -1799,6 +2011,8 @@ export default function AiSalesSection() {
     if (openCall) return <CallDetail id={openCall} onBack={() => setOpenCall(null)} />;
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
+    if (view === 'departments') return <Departments />;
+    if (view === 'prompts') return <Prompts />;
     if (view === 'settings') return <Settings />;
     if (view === 'insights') return <Insights />;
     if (view === 'followups') return <FollowUps />;
