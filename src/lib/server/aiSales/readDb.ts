@@ -3,6 +3,7 @@ import "server-only";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 import { computeConversationMetrics, type ConversationMetrics } from "@/lib/server/aiSales/conversationMetrics";
+import { getScriptScore } from "@/lib/server/aiSales/scriptsDb";
 
 /**
  * Аналитические выборки для UI AI Sales. Агрегация — обычным SQL (не LLM, §45 ТЗ).
@@ -293,6 +294,11 @@ export interface CallDetailData {
   } | null;
   analysis: Record<string, unknown> | null;
   metrics: ConversationMetrics | null;
+  scriptScore: {
+    scriptVersion: number | null;
+    score: number | null;
+    steps: Array<{ key: string; title: string; completed: boolean; reason: string | null }>;
+  } | null;
 }
 
 export async function getCallDetail(callId: string): Promise<CallDetailData | null> {
@@ -354,6 +360,8 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
     [callId]
   );
 
+  const scriptScore = await getScriptScore(callId);
+
   return {
     call: {
       id: call.id,
@@ -373,5 +381,6 @@ export async function getCallDetail(callId: string): Promise<CallDetailData | nu
     transcript,
     analysis: an.rows[0]?.data ?? null,
     metrics,
+    scriptScore,
   };
 }

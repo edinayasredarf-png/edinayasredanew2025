@@ -8,6 +8,7 @@ import { runTranscription } from "@/lib/server/aiSales/transcriptionService";
 import { runDiarization } from "@/lib/server/aiSales/diarizationService";
 import { runRoleSplit } from "@/lib/server/aiSales/roleSplitService";
 import { runAnalysis } from "@/lib/server/aiSales/analysisService";
+import { runScriptScoring } from "@/lib/server/aiSales/scriptScoreService";
 import { runDealInsight } from "@/lib/server/aiSales/dealInsightService";
 import type { SyncEntity } from "@/lib/server/aiSales/syncDb";
 
@@ -90,7 +91,16 @@ export function registerAllHandlers(): void {
   registerJobHandler("call.analyze", async (job) => {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("call.analyze: пустой callId");
-    return runAnalysis(callId, { force: Boolean(job.payload.force) });
+    const force = Boolean(job.payload.force);
+    const res = await runAnalysis(callId, { force });
+    // Отдельный анализатор соблюдения скрипта продаж (§18). Не роняем анализ,
+    // если скрипт не задан или скоринг упал — это дополнительная метрика.
+    try {
+      await runScriptScoring(callId, { force });
+    } catch (e) {
+      console.error("script scoring failed", callId, e);
+    }
+    return res;
   });
 
   // Агрегированный разбор сделки по всем звонкам (оценка менеджера по сделке целиком).

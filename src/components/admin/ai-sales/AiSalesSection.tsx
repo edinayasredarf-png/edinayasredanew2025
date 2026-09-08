@@ -6,7 +6,7 @@ import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts';
+type View = 'dashboard' | 'calls' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -646,6 +646,11 @@ interface DetailData {
     talkRatioManagerTime: number | null; wpmManager: number | null; wpmClient: number | null;
     longestPauseSec: number | null; pausesOver3s: number | null; hasTimestamps: boolean;
   };
+  scriptScore?: null | {
+    scriptVersion: number | null;
+    score: number | null;
+    steps: Array<{ key: string; title: string; completed: boolean; reason: string | null }>;
+  };
 }
 
 const roleLabel = (role: string | null, speaker: string | null) =>
@@ -777,6 +782,30 @@ function CallDetail({ id, onBack, backLabel = '← К списку' }: { id: str
               {m.hasTimestamps && <span>Пауз &gt;3с: <b>{m.pausesOver3s ?? '—'}</b></span>}
               {m.hasTimestamps && <span>Макс. пауза: <b>{fmtSec(m.longestPauseSec)}</b></span>}
             </div>
+          </div>
+        );
+      })()}
+
+      {data.scriptScore && data.scriptScore.steps.length > 0 && (() => {
+        const ss = data.scriptScore!;
+        const done = ss.steps.filter((s) => s.completed).length;
+        const pct = ss.score ?? Math.round((done / ss.steps.length) * 100);
+        const tone = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-red-600';
+        return (
+          <div className="bg-[#F6F7F9] rounded-xl p-5 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-gray-700">Соблюдение скрипта {ss.scriptVersion != null && <span className="text-xs text-gray-400 font-normal">(v{ss.scriptVersion})</span>}</p>
+              <p className={`text-sm font-semibold ${tone}`}>{pct}% <span className="text-gray-400 font-normal">({done}/{ss.steps.length})</span></p>
+            </div>
+            <ul className="space-y-1.5">
+              {ss.steps.map((s) => (
+                <li key={s.key} className="flex items-start gap-2 text-sm">
+                  <span className={s.completed ? 'text-emerald-600' : 'text-red-500'}>{s.completed ? '✓' : '✕'}</span>
+                  <span className="text-gray-800">{s.title}</span>
+                  {s.reason && <span className="text-gray-400">— {s.reason}</span>}
+                </li>
+              ))}
+            </ul>
           </div>
         );
       })()}
@@ -1974,6 +2003,124 @@ function Prompts() {
   );
 }
 
+/* ─────────── Скрипты продаж (редактор + версии) ─────────── */
+interface ScriptStepT { key: string; title: string }
+interface SalesScriptT { id: string; departmentId: string | null; departmentName: string | null; name: string; version: number; steps: ScriptStepT[] }
+
+function Scripts() {
+  const [scripts, setScripts] = useState<SalesScriptT[]>([]);
+  const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([]);
+  const [drafts, setDrafts] = useState<Record<string, { name: string; steps: ScriptStepT[] }>>({});
+  const [loading, setLoading] = useState(true);
+  const [savedId, setSavedId] = useState('');
+  const [newScope, setNewScope] = useState('');
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/scripts');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setScripts(j.scripts); setDepartments(j.departments || []);
+      setDrafts(Object.fromEntries((j.scripts as SalesScriptT[]).map((s) => [s.id, { name: s.name, steps: s.steps.map((st) => ({ ...st })) }])));
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const save = async (id: string) => {
+    const d = drafts[id]; if (!d) return;
+    const steps = d.steps.filter((s) => s.title.trim());
+    await jsonPost(`/api/ai-sales/scripts/${id}`, { name: d.name, steps }, 'PATCH');
+    setSavedId(id); setTimeout(() => setSavedId(''), 2500);
+    load();
+  };
+  const createFor = async () => {
+    const departmentId = newScope === 'global' ? null : newScope || null;
+    if (!newScope) return;
+    await jsonPost('/api/ai-sales/scripts', { departmentId, name: 'Скрипт продаж' });
+    setNewScope(''); load();
+  };
+
+  const setDraft = (id: string, patch: Partial<{ name: string; steps: ScriptStepT[] }>) =>
+    setDrafts((p) => ({ ...p, [id]: { ...p[id], ...patch } }));
+
+  if (loading) return <LoadingBlock />;
+
+  // Scope'ы без активного скрипта (для кнопки создания).
+  const usedDeptIds = new Set(scripts.map((s) => s.departmentId));
+  const hasGlobal = scripts.some((s) => s.departmentId === null);
+  const missingScopes = [
+    ...(!hasGlobal ? [{ id: 'global', name: 'Общий (по умолчанию)' }] : []),
+    ...departments.filter((d) => !usedDeptIds.has(d.id)),
+  ];
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Скрипт продаж</h2>
+      <p className="text-sm text-gray-500 mb-5">Чек-лист шагов, по которому LLM оценивает каждый звонок. Общий скрипт применяется, если у отдела нет своего. Изменение шагов повышает версию.</p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+
+      {missingScopes.length > 0 && (
+        <div className="flex gap-2 mb-5">
+          <select value={newScope} onChange={(e) => setNewScope(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
+            <option value="">Добавить скрипт для…</option>
+            {missingScopes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+          <button onClick={createFor} disabled={!newScope}
+            className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Создать</button>
+        </div>
+      )}
+
+      <div className="space-y-6">
+        {scripts.map((s) => {
+          const d = drafts[s.id] || { name: s.name, steps: [] };
+          return (
+            <div key={s.id} className="bg-[#F6F7F9] rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3 gap-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${s.departmentId ? 'bg-[#029cda]/10 text-[#029cda]' : 'bg-gray-200 text-gray-600'}`}>
+                    {s.departmentName || 'Общий'}
+                  </span>
+                  <input value={d.name} onChange={(e) => setDraft(s.id, { name: e.target.value })}
+                    className="flex-1 max-w-xs bg-white px-2 py-1 rounded border border-gray-200 focus:border-[#029cda] text-sm outline-none" />
+                  <span className="text-xs text-gray-400">v{s.version}</span>
+                </div>
+              </div>
+
+              <ol className="space-y-2 mb-3">
+                {d.steps.map((st, idx) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400 w-5 text-right">{idx + 1}.</span>
+                    <input value={st.title}
+                      onChange={(e) => setDraft(s.id, { steps: d.steps.map((x, i) => i === idx ? { ...x, title: e.target.value } : x) })}
+                      placeholder="Название шага…"
+                      className="flex-1 bg-white px-2 py-1 rounded border border-gray-200 focus:border-[#029cda] text-sm outline-none" />
+                    <button onClick={() => setDraft(s.id, { steps: d.steps.filter((_, i) => i !== idx) })}
+                      title="Удалить шаг" className="text-gray-300 hover:text-red-500 px-1">✕</button>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex items-center gap-3">
+                <button onClick={() => setDraft(s.id, { steps: [...d.steps, { key: '', title: '' }] })}
+                  className="text-sm text-[#029cda] hover:underline">+ Добавить шаг</button>
+                <div className="flex-1" />
+                {savedId === s.id && <span className="text-sm text-green-600">✓ Сохранено</span>}
+                <button onClick={() => save(s.id)}
+                  className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white">Сохранить</button>
+              </div>
+            </div>
+          );
+        })}
+        {scripts.length === 0 && <p className="text-sm text-gray-400">Скриптов пока нет — создайте общий скрипт выше.</p>}
+      </div>
+    </div>
+  );
+}
+
 /* ─────────── Раздел «Речевая аналитика» (единый, со своим навбаром) ─────────── */
 const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'dashboard', label: 'Обзор' },
@@ -1987,6 +2134,7 @@ const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'insights', label: 'Отчёты' },
   { view: 'tags', label: 'Разметка' },
   { view: 'departments', label: 'Отделы' },
+  { view: 'scripts', label: 'Скрипт' },
   { view: 'prompts', label: 'Промты' },
   { view: 'settings', label: 'Настройки' },
 ];
@@ -2012,6 +2160,7 @@ export default function AiSalesSection() {
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
     if (view === 'departments') return <Departments />;
+    if (view === 'scripts') return <Scripts />;
     if (view === 'prompts') return <Prompts />;
     if (view === 'settings') return <Settings />;
     if (view === 'insights') return <Insights />;

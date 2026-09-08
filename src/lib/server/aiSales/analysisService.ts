@@ -40,7 +40,7 @@ const mskTime = (ms: number | null): string => {
 };
 
 /** Собрать диалог для промпта: роли (если размечены) + таймкоды. */
-function buildDialogue(t: TranscriptWithSegments): string {
+export function buildDialogue(t: TranscriptWithSegments): string {
   if (!t.segments.length) return t.fullText || "";
   return t.segments
     .map((s) => {
