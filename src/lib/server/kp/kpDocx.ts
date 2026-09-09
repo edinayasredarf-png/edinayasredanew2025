@@ -248,25 +248,44 @@ function autoHeaderBlock(headerDrawing?: string, headerText?: string): string {
   return "";
 }
 
-/** Блок подписанта в конце документа: должность, подпись+печать, ФИО. */
+/**
+ * Блок подписанта одной строкой: должность слева, подпись (и печать) по центру,
+ * ФИО справа. Реализован таблицей без границ из трёх колонок.
+ */
 function autoSignerBlock(
   sigDrawing?: string,
   stampDrawing?: string,
   role?: string,
   name?: string
 ): string {
-  if (!sigDrawing && !stampDrawing && !(name && name.trim()) && !(role && role.trim())) return "";
-  const parts: string[] = ["<w:p/>"]; // отступ
-  if (role && role.trim()) parts.push(`<w:p><w:r>${valueToTextRuns(role)}</w:r></w:p>`);
-  if (sigDrawing || stampDrawing) {
-    const inner = [sigDrawing, stampDrawing]
-      .filter(Boolean)
-      .map((d) => `<w:r>${d}</w:r>`)
-      .join('<w:r><w:t xml:space="preserve">      </w:t></w:r>');
-    parts.push(`<w:p><w:pPr></w:pPr>${inner}</w:p>`);
-  }
-  if (name && name.trim()) parts.push(`<w:p><w:r>${valueToTextRuns(name)}</w:r></w:p>`);
-  return parts.join("");
+  const hasSig = Boolean(sigDrawing || stampDrawing);
+  if (!hasSig && !(name && name.trim()) && !(role && role.trim())) return "";
+
+  const nilBorders =
+    `<w:tblBorders>` +
+    ["top", "left", "bottom", "right", "insideH", "insideV"]
+      .map((n) => `<w:${n} w:val="nil"/>`)
+      .join("") +
+    `</w:tblBorders>`;
+
+  const cell = (inner: string, jc: "left" | "center" | "right", w: number) =>
+    `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/><w:vAlign w:val="bottom"/></w:tcPr>` +
+    `<w:p><w:pPr><w:jc w:val="${jc}"/></w:pPr>${inner}</w:p></w:tc>`;
+
+  const roleRun = role && role.trim() ? `<w:r>${valueToTextRuns(role)}</w:r>` : "";
+  const centerInner = [sigDrawing, stampDrawing]
+    .filter(Boolean)
+    .map((d) => `<w:r>${d}</w:r>`)
+    .join("");
+  const nameRun = name && name.trim() ? `<w:r>${valueToTextRuns(name)}</w:r>` : "";
+
+  return (
+    `<w:p/>` +
+    `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${nilBorders}<w:tblLook w:val="0000"/></w:tblPr>` +
+    `<w:tblGrid><w:gridCol w:w="3400"/><w:gridCol w:w="3000"/><w:gridCol w:w="3200"/></w:tblGrid>` +
+    `<w:tr>${cell(roleRun, "left", 3400)}${cell(centerInner, "center", 3000)}${cell(nameRun, "right", 3200)}</w:tr>` +
+    `</w:tbl><w:p/>`
+  );
 }
 
 /* ─────────────── Сборка ─────────────── */
@@ -342,7 +361,7 @@ export async function fillDocxTemplate(
       allDrawings["signature"],
       allDrawings["stamp"],
       tags.signer_role,
-      tags.signer_name
+      tags.signer_display_name || tags.signer_name
     );
     if (block) {
       const idx = filled.lastIndexOf("<w:sectPr");

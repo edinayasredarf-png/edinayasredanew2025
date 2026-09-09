@@ -150,6 +150,12 @@ export function buildKpContext(input: {
       ? `В том числе НДС 20% — ${formatMoney((calc.grandTotal * 20) / 120)} руб.`
       : "НДС не облагается (применяется УСН).";
 
+  // ФИО подписанта в формате «А.В. Статов» (инициалы впереди) — для блока подписи.
+  const signerParsed = org.directorFio ? parseFio(org.directorFio) : null;
+  const signerDisplayName = signerParsed
+    ? `${fioInitials(signerParsed.first, signerParsed.middle)} ${signerParsed.last}`.trim()
+    : "";
+
   // Номер КП пишем только если у компании включён флаг «писать номер».
   const kpNumber = org.writeKpNumber ? payload.kp.number?.trim() || autoKpNumber() : "";
 
@@ -177,6 +183,8 @@ export function buildKpContext(input: {
     signer_name: org.directorFio || "",
     signer_role: org.directorRole || "",
     signer_fio_short: org.directorFio ? fioShortLastFirst(org.directorFio) : "",
+    // Для блока подписи справа: «А.В. Статов» (инициалы впереди).
+    signer_display_name: signerDisplayName,
     executor_fio: executor?.fio || "",
     executor_phone: executor?.phone || "",
     executor_fio_short: executor ? fioShortLastFirst(executor.fio) : "",
