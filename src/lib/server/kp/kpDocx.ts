@@ -232,6 +232,43 @@ function ensureRootNamespaces(xml: string): string {
   });
 }
 
+/* ─────────────── Авто-блоки шапки/подписанта ─────────────── */
+
+function drawingPara(drawing: string, center = true): string {
+  const jc = center ? '<w:jc w:val="center"/>' : "";
+  return `<w:p><w:pPr>${jc}</w:pPr><w:r>${drawing}</w:r></w:p>`;
+}
+
+/** Блок шапки: картинка (приоритет) или жирный центрированный текст. */
+function autoHeaderBlock(headerDrawing?: string, headerText?: string): string {
+  if (headerDrawing) return drawingPara(headerDrawing) + "<w:p/>";
+  if (headerText && headerText.trim()) {
+    return `<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/></w:rPr>${valueToTextRuns(headerText)}</w:r></w:p><w:p/>`;
+  }
+  return "";
+}
+
+/** Блок подписанта в конце документа: должность, подпись+печать, ФИО. */
+function autoSignerBlock(
+  sigDrawing?: string,
+  stampDrawing?: string,
+  role?: string,
+  name?: string
+): string {
+  if (!sigDrawing && !stampDrawing && !(name && name.trim()) && !(role && role.trim())) return "";
+  const parts: string[] = ["<w:p/>"]; // отступ
+  if (role && role.trim()) parts.push(`<w:p><w:r>${valueToTextRuns(role)}</w:r></w:p>`);
+  if (sigDrawing || stampDrawing) {
+    const inner = [sigDrawing, stampDrawing]
+      .filter(Boolean)
+      .map((d) => `<w:r>${d}</w:r>`)
+      .join('<w:r><w:t xml:space="preserve">      </w:t></w:r>');
+    parts.push(`<w:p><w:pPr></w:pPr>${inner}</w:p>`);
+  }
+  if (name && name.trim()) parts.push(`<w:p><w:r>${valueToTextRuns(name)}</w:r></w:p>`);
+  return parts.join("");
+}
+
 /* ─────────────── Сборка ─────────────── */
 
 /** Заполняет .docx-шаблон и возвращает готовый буфер .docx. */
@@ -239,22 +276,24 @@ export async function fillDocxTemplate(
   templateBuffer: Buffer,
   tags: Record<string, string>,
   table: KpTableData,
-  images: KpImage[] = []
+  images: KpImage[] = [],
+  autoBlocks = true
 ): Promise<Buffer> {
   const zip = await JSZip.loadAsync(templateBuffer);
   const docFile = zip.file("word/document.xml");
   if (!docFile) throw new Error("Некорректный шаблон: нет word/document.xml");
   let xml = await docFile.async("string");
 
-  // Регистрируем только те картинки, чей алиас реально есть в документе.
-  const imageRuns: Record<string, string> = {};
-  const present = images.filter((img) => xml.includes(`{{${img.token}}}`) && img.data?.length);
-  if (present.length) {
+  // Регистрируем ВСЕ картинки компании (шапка/подпись/печать) с данными —
+  // они пригодятся либо по алиасу, либо для авто-вставки в начало/конец.
+  const allDrawings: Record<string, string> = {};
+  const withData = images.filter((img) => img.data?.length);
+  if (withData.length) {
     const rels = await ensureRelsXml(zip);
     const usedExts = new Set<string>();
     let n = existingImageCount(rels.xml);
     let relXml = rels.xml;
-    present.forEach((img, idx) => {
+    withData.forEach((img, idx) => {
       n++;
       const ext = img.mime.includes("png") ? "png" : "jpeg";
       usedExts.add(ext);
@@ -274,14 +313,45 @@ export async function fillDocxTemplate(
         cx = Math.round(cx * k);
         cy = Math.round(cy * k);
       }
-      imageRuns[img.token] = drawingXml(rId, 1000 + idx, cx, cy, mediaName);
+      allDrawings[img.token] = drawingXml(rId, 1000 + idx, cx, cy, mediaName);
     });
     zip.file("word/_rels/document.xml.rels", relXml);
     await ensureContentTypes(zip, usedExts);
     xml = ensureRootNamespaces(xml);
   }
 
-  zip.file("word/document.xml", fillDocumentXml(xml, tags, table, imageRuns));
+  // Картинки, чей алиас есть в шаблоне, ставим на месте алиаса.
+  const imageRuns: Record<string, string> = {};
+  for (const [token, draw] of Object.entries(allDrawings)) {
+    if (xml.includes(`{{${token}}}`)) imageRuns[token] = draw;
+  }
+
+  let filled = fillDocumentXml(xml, tags, table, imageRuns);
+
+  // Авто-вставка, если в шаблоне НЕТ соответствующих алиасов: шапку — в начало
+  // тела, подписанта — перед завершающим <w:sectPr> (иначе перед </w:body>).
+  const headerAlias = /\{\{(company_header|company_header_image)\}\}/.test(xml);
+  const signerAlias = /\{\{(signature|stamp|signer_name|signer_role|sender_director)\}\}/.test(xml);
+
+  if (autoBlocks && !headerAlias) {
+    const block = autoHeaderBlock(allDrawings["company_header_image"], tags.company_header);
+    if (block) filled = filled.replace(/(<w:body[^>]*>)/, `$1${block}`);
+  }
+  if (autoBlocks && !signerAlias) {
+    const block = autoSignerBlock(
+      allDrawings["signature"],
+      allDrawings["stamp"],
+      tags.signer_role,
+      tags.signer_name
+    );
+    if (block) {
+      const idx = filled.lastIndexOf("<w:sectPr");
+      if (idx !== -1) filled = filled.slice(0, idx) + block + filled.slice(idx);
+      else filled = filled.replace("</w:body>", `${block}</w:body>`);
+    }
+  }
+
+  zip.file("word/document.xml", filled);
 
   // Колонтитулы — только текст/таблица (без картинок для MVP).
   for (const f of zip.file(/word\/(header|footer)\d*\.xml/)) {

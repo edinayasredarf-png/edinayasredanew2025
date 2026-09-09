@@ -614,6 +614,7 @@ function TemplatesTab({
   const [svc, setSvc] = useState(serviceTypes[0] || 'ИМЗ');
   const [orgKey, setOrgKey] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [skipAuto, setSkipAuto] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const upload = async () => {
@@ -625,6 +626,7 @@ function TemplatesTab({
       fd.append('name', name || file.name.replace(/\.docx$/i, ''));
       fd.append('serviceType', svc);
       fd.append('orgKey', orgKey);
+      fd.append('skipAutoBlocks', String(skipAuto));
       const res = await fetch('/api/kp/templates', { method: 'POST', credentials: 'include', body: fd });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'Ошибка загрузки');
@@ -641,6 +643,15 @@ function TemplatesTab({
   const del = async (id: number) => {
     if (!confirm('Удалить шаблон?')) return;
     await fetch(`/api/kp/templates?id=${id}`, { method: 'DELETE', credentials: 'include' });
+    onChanged();
+  };
+
+  const toggleSkip = async (id: number, skipAutoBlocks: boolean) => {
+    await fetch('/api/kp/templates', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, skipAutoBlocks }),
+    });
     onChanged();
   };
 
@@ -704,6 +715,14 @@ function TemplatesTab({
           </div>
         </div>
         <input type="file" accept=".docx" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-sm" />
+        <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+          <input type="checkbox" checked={skipAuto} onChange={(e) => setSkipAuto(e.target.checked)} />
+          Шаблон уже содержит шапку/подписанта (не добавлять автоматически)
+        </label>
+        <div className="text-xs text-gray-400">
+          Если выключено — система сама добавит шапку в начало и подписанта в конец из настроек компании.
+          Если в шаблоне есть алиасы {'{{company_header_image}}'}/{'{{signature}}'} — они всегда ставятся на своём месте.
+        </div>
         <div>
           <button onClick={upload} disabled={busy || !file} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">
             {busy ? 'Загрузка…' : 'Загрузить шаблон'}
@@ -722,8 +741,12 @@ function TemplatesTab({
                 <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{t.orgKey ? orgs.find((o) => o.key === t.orgKey)?.shortName || t.orgKey : 'общий'}</span>
               </div>
               <div className="text-xs text-gray-400 mt-0.5">{t.filename} · плейсхолдеров: {t.placeholders.length}</div>
+              <label className="flex items-center gap-2 text-xs text-gray-500 mt-1 cursor-pointer">
+                <input type="checkbox" checked={t.skipAutoBlocks} onChange={(e) => toggleSkip(t.id, e.target.checked)} />
+                уже содержит шапку/подписанта (не добавлять авто)
+              </label>
             </div>
-            <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-600 text-sm px-2">Удалить</button>
+            <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-600 text-sm px-2 shrink-0">Удалить</button>
           </div>
         ))}
       </div>

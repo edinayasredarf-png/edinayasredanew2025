@@ -46,6 +46,7 @@ export interface TemplateMeta {
   filename: string;
   placeholders: string[];
   sizeBytes: number;
+  skipAutoBlocks: boolean;
   updatedAt: string;
 }
 

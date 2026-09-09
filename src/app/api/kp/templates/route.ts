@@ -4,6 +4,7 @@ import {
   dbDeleteTemplate,
   dbInsertTemplate,
   dbListTemplates,
+  dbSetTemplateSkipAuto,
 } from "@/lib/server/kp/kpDb";
 import { extractPlaceholders } from "@/lib/server/kp/kpDocx";
 
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
   const serviceType = String(form.get("serviceType") || "").trim();
   const orgKeyRaw = String(form.get("orgKey") || "").trim();
   const orgKey = orgKeyRaw ? orgKeyRaw : null;
+  const skipAutoBlocks = String(form.get("skipAutoBlocks") || "") === "true";
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Не приложен файл шаблона" }, { status: 400 });
@@ -79,9 +81,25 @@ export async function POST(request: NextRequest) {
     filename: file.name,
     data: buf,
     placeholders,
+    skipAutoBlocks,
   });
 
   return NextResponse.json({ id, placeholders });
+}
+
+/** Переключить флаг «шаблон уже содержит шапку/подписанта». */
+export async function PATCH(request: NextRequest) {
+  const denied = await guard(request);
+  if (denied) return denied;
+  let body: { id?: number; skipAutoBlocks?: boolean };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
+  }
+  if (!body.id) return NextResponse.json({ error: "Не указан id" }, { status: 400 });
+  await dbSetTemplateSkipAuto(body.id, Boolean(body.skipAutoBlocks));
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(request: NextRequest) {

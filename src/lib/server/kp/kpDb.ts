@@ -64,6 +64,7 @@ export interface KpTemplateMeta {
   filename: string;
   placeholders: string[];
   sizeBytes: number;
+  skipAutoBlocks: boolean; // шаблон уже содержит шапку/подписанта — не добавлять авто
   updatedAt: string;
 }
 
@@ -137,6 +138,9 @@ async function ensureTables(): Promise<void> {
       updated_at timestamptz not null default now()
     )
   `);
+  await pool.query(
+    `alter table kp_templates add column if not exists skip_auto_blocks boolean not null default false`
+  );
   await pool.query(
     `create index if not exists kp_templates_lookup_idx on kp_templates (service_type, org_key)`
   );
@@ -403,6 +407,7 @@ function mapTemplateMeta(r: Record<string, unknown>): KpTemplateMeta {
     filename: String(r.filename ?? ""),
     placeholders: ph,
     sizeBytes: Number(r.size_bytes ?? 0),
+    skipAutoBlocks: Boolean(r.skip_auto_blocks),
     updatedAt: r.updated_at ? new Date(r.updated_at as string).toISOString() : "",
   };
 }
@@ -411,7 +416,7 @@ export async function dbListTemplates(): Promise<KpTemplateMeta[]> {
   await ensureTables();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    "select id, name, service_type, org_key, filename, placeholders, size_bytes, updated_at from kp_templates order by updated_at desc"
+    "select id, name, service_type, org_key, filename, placeholders, size_bytes, skip_auto_blocks, updated_at from kp_templates order by updated_at desc"
   );
   return rows.map(mapTemplateMeta);
 }
@@ -423,12 +428,13 @@ export async function dbInsertTemplate(input: {
   filename: string;
   data: Buffer;
   placeholders: string[];
+  skipAutoBlocks?: boolean;
 }): Promise<number> {
   await ensureTables();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    `insert into kp_templates (name, service_type, org_key, filename, data, placeholders, size_bytes)
-     values ($1,$2,$3,$4,$5,$6,$7) returning id`,
+    `insert into kp_templates (name, service_type, org_key, filename, data, placeholders, size_bytes, skip_auto_blocks)
+     values ($1,$2,$3,$4,$5,$6,$7,$8) returning id`,
     [
       input.name.slice(0, 300),
       input.serviceType,
@@ -437,9 +443,16 @@ export async function dbInsertTemplate(input: {
       input.data,
       JSON.stringify(input.placeholders),
       input.data.length,
+      input.skipAutoBlocks ?? false,
     ]
   );
   return Number(rows[0].id);
+}
+
+export async function dbSetTemplateSkipAuto(id: number, skip: boolean): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("update kp_templates set skip_auto_blocks=$2 where id=$1", [id, skip]);
 }
 
 export async function dbGetTemplateData(id: number): Promise<{ filename: string; data: Buffer } | null> {
@@ -454,18 +467,23 @@ export async function dbGetTemplateData(id: number): Promise<{ filename: string;
 export async function dbResolveTemplate(
   serviceType: string,
   orgKey: string
-): Promise<{ id: number; filename: string; data: Buffer } | null> {
+): Promise<{ id: number; filename: string; data: Buffer; skipAutoBlocks: boolean } | null> {
   await ensureTables();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    `select id, filename, data from kp_templates
+    `select id, filename, data, skip_auto_blocks from kp_templates
       where service_type=$1 and (org_key=$2 or org_key is null)
       order by (org_key=$2) desc, updated_at desc
       limit 1`,
     [serviceType, orgKey]
   );
   if (!rows[0]) return null;
-  return { id: Number(rows[0].id), filename: String(rows[0].filename), data: rows[0].data as Buffer };
+  return {
+    id: Number(rows[0].id),
+    filename: String(rows[0].filename),
+    data: rows[0].data as Buffer,
+    skipAutoBlocks: Boolean(rows[0].skip_auto_blocks),
+  };
 }
 
 export async function dbDeleteTemplate(id: number): Promise<void> {

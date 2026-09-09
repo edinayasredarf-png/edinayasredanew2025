@@ -129,7 +129,13 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       }
 
       const images = await orgImages(org);
-      const docx = await fillDocxTemplate(template.data, ctx.tags, ctx.table, images);
+      const docx = await fillDocxTemplate(
+        template.data,
+        ctx.tags,
+        ctx.table,
+        images,
+        !template.skipAutoBlocks // авто-шапка/подписант, если шаблон их не содержит
+      );
       docs.push({
         orgKey,
         orgName: org.name,
