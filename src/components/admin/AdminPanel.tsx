@@ -12,6 +12,7 @@ import LettersAdmin from './LettersAdmin';
 import NewsRadar from './NewsRadar';
 import CitizenFeedback from './CitizenFeedback';
 import AiSalesSection from './ai-sales/AiSalesSection';
+import KpGenerator from './kp/KpGenerator';
 
 /* ─────────── Иконки навигации (line-стиль, currentColor) ─────────── */
 type IconProps = { className?: string };
@@ -95,7 +96,7 @@ function AdminLogin() {
   );
 }
 
-type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write';
+type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp';
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
@@ -105,6 +106,9 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
     { id: 'utm', label: 'UTM-метки', icon: IconLink },
     { id: 'letters', label: 'Письма', icon: IconMail },
     { id: 'feedback', label: 'Обратная связь', icon: IconChat },
+  ] },
+  { group: 'Отдел продаж', items: [
+    { id: 'kp', label: 'Генератор КП', icon: IconPencil },
   ] },
   { group: 'AI', items: [
     { id: 'ai-analytics', label: 'Речевая аналитика', icon: IconWave },
@@ -329,6 +333,7 @@ export default function AdminPanel() {
               </div>
             </div>
           )}
+          {activeTab === 'kp' && <KpGenerator />}
           {activeTab === 'ai-analytics' && <AiSalesSection />}
           {activeTab === 'utm' && <UtmGenerator />}
           {activeTab === 'press' && <PressAdmin />}
