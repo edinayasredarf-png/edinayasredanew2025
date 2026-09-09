@@ -6,7 +6,7 @@ import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc';
+type View = 'dashboard' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -851,6 +851,11 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
       </div>
 
       <ReviewWidget callId={id} llmDeal={a?.dealScore?.score ?? null} llmManager={a?.managerPerformance?.overall ?? null} />
+
+      <details className="bg-[#F6F7F9] rounded-xl p-4 mb-4">
+        <summary className="text-sm font-semibold text-gray-700 cursor-pointer">Спросить ассистента про этот звонок</summary>
+        <div className="mt-3"><AssistantAsk callId={id} compact placeholder="Например: почему такая оценка? какие ошибки?" /></div>
+      </details>
 
       {data.metrics && (data.metrics.managerWords + data.metrics.clientWords > 0) && (() => {
         const m = data.metrics!;
@@ -2149,6 +2154,196 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
   );
 }
 
+/* ─────────── RAG-ассистент + база знаний (§31 ТЗ) ─────────── */
+interface AssistantSource { title: string; category: string | null; score: number }
+
+/** Общий блок вопрос→ответ. callId — для вопросов про конкретный звонок. */
+function AssistantAsk({ callId, compact = false, placeholder }: { callId?: string; compact?: boolean; placeholder?: string }) {
+  const [q, setQ] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [sources, setSources] = useState<AssistantSource[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const ask = async (question?: string) => {
+    const text = (question ?? q).trim();
+    if (!text) return;
+    setBusy(true); setErr(''); setAnswer(''); setSources([]);
+    try {
+      const r = await fetch('/api/ai-sales/assistant', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text, callId: callId ?? null }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setAnswer(j.answer || ''); setSources(j.sources || []);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setBusy(false); }
+  };
+
+  const suggestions = callId
+    ? ['Почему такая оценка менеджера?', 'Какие ошибки допустил менеджер?', 'Какие вопросы стоило задать?']
+    : ['Как отвечать на возражение «дорого»?', 'Какие у нас продукты и цены?', 'Что делать при возражении «подумаю»?'];
+
+  return (
+    <div>
+      <div className="flex gap-2">
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') ask(); }}
+          placeholder={placeholder || 'Задайте вопрос…'}
+          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+        <button onClick={() => ask()} disabled={busy || !q.trim()}
+          className="px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-2">
+          {busy && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}Спросить
+        </button>
+      </div>
+      {!answer && !busy && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {suggestions.map((s) => (
+            <button key={s} onClick={() => { setQ(s); ask(s); }}
+              className="text-xs px-2.5 py-1 rounded-full bg-[#F6F7F9] text-gray-600 hover:text-[#029cda]">{s}</button>
+          ))}
+        </div>
+      )}
+      {err && <div className="mt-3 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {busy && <LoadingBlock />}
+      {answer && (
+        <div className={`mt-3 ${compact ? '' : 'bg-[#F6F7F9] rounded-xl p-4'}`}>
+          <p className="text-sm text-gray-800 whitespace-pre-wrap">{answer}</p>
+          {sources.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span className="text-xs text-gray-400">Источники:</span>
+              {sources.map((s, i) => (
+                <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-600">{s.title}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Assistant() {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Ассистент</h2>
+      <p className="text-sm text-gray-500 mb-5">Задавайте вопросы — ассистент отвечает по вашей базе знаний (продукты, цены, скрипты, возражения, регламенты). Материалы добавляются во вкладке «База знаний».</p>
+      <AssistantAsk placeholder="Например: как отвечать на «дорого»? какие продукты и цены?" />
+    </div>
+  );
+}
+
+interface KbDoc { id: string; title: string; category: string | null; content: string; isActive: boolean; chunks: number; indexed: number; updatedAt: string | null }
+
+function KnowledgeBase() {
+  const [docs, setDocs] = useState<KbDoc[]>([]);
+  const [categories, setCategories] = useState<Array<{ value: string; label: string }>>([]);
+  const [sel, setSel] = useState<string | 'new' | null>(null);
+  const [draft, setDraft] = useState<{ title: string; category: string; content: string }>({ title: '', category: '', content: '' });
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/kb');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setDocs(j.documents); setCategories(j.categories || []);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const catLabel = (v: string | null) => categories.find((c) => c.value === v)?.label || v || '—';
+
+  const openNew = () => { setSel('new'); setDraft({ title: '', category: '', content: '' }); };
+  const openDoc = (d: KbDoc) => { setSel(d.id); setDraft({ title: d.title, category: d.category || '', content: d.content }); };
+
+  const save = async () => {
+    if (!draft.title.trim() && !draft.content.trim()) return;
+    setBusy(true); setErr('');
+    try {
+      if (sel === 'new') {
+        await jsonPost('/api/ai-sales/kb', { title: draft.title, category: draft.category || null, content: draft.content });
+      } else if (sel) {
+        await jsonPost(`/api/ai-sales/kb/${sel}`, { title: draft.title, category: draft.category || null, content: draft.content }, 'PATCH');
+      }
+      setSel(null); await load();
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setBusy(false); }
+  };
+  const remove = async (id: string) => {
+    if (!window.confirm('Удалить документ из базы знаний?')) return;
+    await fetch(`/api/ai-sales/kb/${id}`, { method: 'DELETE' });
+    if (sel === id) setSel(null);
+    await load();
+  };
+
+  if (loading) return <LoadingBlock />;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-xl font-bold text-gray-900">База знаний</h2>
+        <button onClick={openNew} className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white">+ Документ</button>
+      </div>
+      <p className="text-sm text-gray-500 mb-5">Материалы для ассистента: продукты, цены, FAQ, скрипты, регламенты, возражения, примеры звонков. При сохранении текст индексируется (эмбеддинги Yandex).</p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+
+      {sel && (
+        <div className="bg-[#F6F7F9] rounded-xl p-4 mb-5">
+          <div className="flex gap-2 mb-3">
+            <input value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+              placeholder="Заголовок" className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+            <select value={draft.category} onChange={(e) => setDraft((d) => ({ ...d, category: e.target.value }))}
+              className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
+              <option value="">Категория…</option>
+              {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+          <textarea value={draft.content} onChange={(e) => setDraft((d) => ({ ...d, content: e.target.value }))}
+            rows={10} placeholder="Текст материала…"
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white outline-none focus:border-[#029cda]" />
+          <div className="flex items-center gap-3 mt-2">
+            <button onClick={save} disabled={busy}
+              className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-2">
+              {busy && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}Сохранить и проиндексировать
+            </button>
+            <button onClick={() => setSel(null)} className="text-sm text-gray-500 hover:text-gray-800">Отмена</button>
+          </div>
+        </div>
+      )}
+
+      <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+        <table className="min-w-full text-sm">
+          <thead className="bg-[#F6F7F9] text-gray-600">
+            <tr>{['Заголовок', 'Категория', 'Чанки', 'Обновлён', ''].map((h) => (
+              <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
+            ))}</tr>
+          </thead>
+          <tbody>
+            {docs.map((d) => (
+              <tr key={d.id} className="border-t border-gray-100 hover:bg-sky-50/60">
+                <td className="px-3 py-2 cursor-pointer" onClick={() => openDoc(d)}><span className="text-[#029cda]">{d.title}</span></td>
+                <td className="px-3 py-2 whitespace-nowrap">{catLabel(d.category)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">
+                  {d.indexed}/{d.chunks}
+                  {d.chunks > 0 && d.indexed < d.chunks && <span className="text-xs text-amber-600 ml-1">не всё проиндексировано</span>}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-gray-400 text-xs">{d.updatedAt ? new Date(d.updatedAt).toLocaleDateString('ru-RU') : '—'}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-right"><button onClick={() => remove(d.id)} className="text-gray-300 hover:text-red-500">✕</button></td>
+              </tr>
+            ))}
+            {docs.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-gray-400">База знаний пуста — добавьте первый документ.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function Departments() {
   const [depts, setDepts] = useState<DeptRow[]>([]);
   const [managers, setManagers] = useState<DeptManager[]>([]);
@@ -2461,6 +2656,7 @@ const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'dashboard', label: 'Обзор' },
   { view: 'calls', label: 'Коммуникации' },
   { view: 'search', label: 'Поиск' },
+  { view: 'assistant', label: 'Ассистент' },
   { view: 'rop', label: 'AI РОП' },
   { view: 'reco', label: 'Рекомендации' },
   { view: 'followups', label: 'Follow-up' },
@@ -2472,6 +2668,7 @@ const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'tags', label: 'Разметка' },
   { view: 'departments', label: 'Отделы' },
   { view: 'scripts', label: 'Скрипт' },
+  { view: 'kb', label: 'База знаний' },
   { view: 'prompts', label: 'Промты' },
   { view: 'settings', label: 'Настройки' },
 ];
@@ -2500,6 +2697,8 @@ export default function AiSalesSection() {
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
     if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
+    if (view === 'assistant') return <Assistant />;
+    if (view === 'kb') return <KnowledgeBase />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
     if (view === 'departments') return <Departments />;
     if (view === 'scripts') return <Scripts />;
