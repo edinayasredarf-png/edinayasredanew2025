@@ -22,13 +22,16 @@ export interface KpOrganization {
   key: string;
   name: string;
   shortName: string;
-  directorRole: string;
-  directorFio: string;
+  directorRole: string; // роль подписанта: «Директор» / «ИП» …
+  directorFio: string; // ФИО подписанта
   requisites: string;
   phone: string;
   email: string;
+  headerImage: string; // индивидуальная шапка (картинка) — /api/media/{id}
+  headerText: string; // либо текстовая шапка (многострочная)
   stampImage: string;
   signatureImage: string;
+  writeKpNumber: boolean; // писать ли номер КП/письма в документе
   mailAccountId: number | null;
   isActive: boolean;
   sortOrder: number;
@@ -87,6 +90,13 @@ async function ensureTables(): Promise<void> {
       sort_order integer not null default 0,
       updated_at timestamptz not null default now()
     )
+  `);
+  // Миграции: индивидуальная шапка, текстовая шапка, флаг нумерации.
+  await pool.query(`
+    alter table kp_organizations
+      add column if not exists header_image text not null default '',
+      add column if not exists header_text text not null default '',
+      add column if not exists write_kp_number boolean not null default true
   `);
 
   await pool.query(`
@@ -220,8 +230,11 @@ function mapOrg(r: Record<string, unknown>): KpOrganization {
     requisites: String(r.requisites ?? ""),
     phone: String(r.phone ?? ""),
     email: String(r.email ?? ""),
+    headerImage: String(r.header_image ?? ""),
+    headerText: String(r.header_text ?? ""),
     stampImage: String(r.stamp_image ?? ""),
     signatureImage: String(r.signature_image ?? ""),
+    writeKpNumber: r.write_kp_number == null ? true : Boolean(r.write_kp_number),
     mailAccountId: r.mail_account_id == null ? null : Number(r.mail_account_id),
     isActive: Boolean(r.is_active),
     sortOrder: Number(r.sort_order ?? 0),
@@ -250,19 +263,28 @@ export async function dbUpsertOrganization(o: KpOrganization): Promise<void> {
   await pool.query(
     `insert into kp_organizations
        (key, name, short_name, director_role, director_fio, requisites, phone, email,
-        stamp_image, signature_image, mail_account_id, is_active, sort_order, updated_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13, now())
+        header_image, header_text, stamp_image, signature_image, write_kp_number,
+        mail_account_id, is_active, sort_order, updated_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16, now())
      on conflict (key) do update set
        name=excluded.name, short_name=excluded.short_name, director_role=excluded.director_role,
        director_fio=excluded.director_fio, requisites=excluded.requisites, phone=excluded.phone,
-       email=excluded.email, stamp_image=excluded.stamp_image, signature_image=excluded.signature_image,
-       mail_account_id=excluded.mail_account_id, is_active=excluded.is_active,
-       sort_order=excluded.sort_order, updated_at=now()`,
+       email=excluded.email, header_image=excluded.header_image, header_text=excluded.header_text,
+       stamp_image=excluded.stamp_image, signature_image=excluded.signature_image,
+       write_kp_number=excluded.write_kp_number, mail_account_id=excluded.mail_account_id,
+       is_active=excluded.is_active, sort_order=excluded.sort_order, updated_at=now()`,
     [
       o.key, o.name, o.shortName, o.directorRole, o.directorFio, o.requisites, o.phone, o.email,
-      o.stampImage, o.signatureImage, o.mailAccountId, o.isActive, o.sortOrder,
+      o.headerImage, o.headerText, o.stampImage, o.signatureImage, o.writeKpNumber,
+      o.mailAccountId, o.isActive, o.sortOrder,
     ]
   );
+}
+
+export async function dbDeleteOrganization(key: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("delete from kp_organizations where key=$1", [key]);
 }
 
 /* ─────────────── Ценовые тиры ─────────────── */

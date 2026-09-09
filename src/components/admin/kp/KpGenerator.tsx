@@ -1,60 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import KpSettings from './KpSettings';
 
 /* ─────────────── Типы (зеркало серверных) ─────────────── */
-interface Organization {
-  key: string;
-  name: string;
-  shortName: string;
-  isActive: boolean;
-  sortOrder: number;
-}
-interface Tier {
-  orgKey: string;
-  serviceType: string;
-  pricePerHaDirect: number;
-  pricePerHaTender: number;
-  aisPrice: number;
-  renewalPerYear: number;
-  minHectares: number;
-}
-interface Executor {
-  id: number;
-  fio: string;
-  phone: string;
-  email: string;
-  isActive: boolean;
-}
-interface TemplateMeta {
-  id: number;
-  name: string;
-  serviceType: string;
-  orgKey: string | null;
-  filename: string;
-  placeholders: string[];
-  sizeBytes: number;
-  updatedAt: string;
-}
-interface HistoryRow {
-  id: number;
-  title: string;
-  clientOrg: string;
-  serviceType: string;
-  orgKey: string;
-  orgName: string;
-  format: string;
-  totalCost: number;
-  createdBy: string;
-  createdAt: string;
-}
-interface CalcRow {
-  name: string;
-  cadastral: string;
-  areaSqm: string;
-}
-
-type PriceMode = 'direct' | 'tender';
+import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, CalcRow, PriceMode } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
 function toNum(v: string | number): number {
@@ -74,7 +24,7 @@ function fmtMoney(n: number): string {
 const emptyRow = (): CalcRow => ({ name: '', cadastral: '', areaSqm: '' });
 
 export default function KpGenerator() {
-  const [tab, setTab] = useState<'create' | 'templates' | 'history'>('create');
+  const [tab, setTab] = useState<'create' | 'templates' | 'settings' | 'history'>('create');
 
   // Справочники
   const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -283,7 +233,7 @@ export default function KpGenerator() {
           </p>
         </div>
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
-          {(['create', 'templates', 'history'] as const).map((t) => (
+          {(['create', 'templates', 'settings', 'history'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -291,7 +241,7 @@ export default function KpGenerator() {
                 tab === t ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'
               }`}
             >
-              {t === 'create' ? '📝 Создать КП' : t === 'templates' ? '📁 Шаблоны' : '🗄 История'}
+              {t === 'create' ? '📝 Создать КП' : t === 'templates' ? '📁 Шаблоны' : t === 'settings' ? '⚙️ Настройки' : '🗄 История'}
             </button>
           ))}
         </div>
@@ -327,6 +277,17 @@ export default function KpGenerator() {
           orgs={orgs}
           serviceTypes={serviceTypes}
           templates={templates}
+          onChanged={loadMeta}
+          setStatus={setStatus}
+        />
+      )}
+
+      {tab === 'settings' && (
+        <KpSettings
+          orgs={orgs}
+          tiers={tiers}
+          executors={executors}
+          serviceTypes={serviceTypes}
           onChanged={loadMeta}
           setStatus={setStatus}
         />
@@ -688,8 +649,41 @@ function TemplatesTab({
 
   return (
     <div className="space-y-4">
+      <details className="bg-[#EAF6FC] border border-[#cbe8f5] rounded-2xl p-4">
+        <summary className="text-sm font-semibold text-[#0b5c7d] cursor-pointer">📌 Справочник алиасов (что подставляется в шаблон)</summary>
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-[#0b5c7d]">
+          <div><b>Шапка и подписант берутся из настроек компании:</b></div><div></div>
+          {[
+            ['{{company_header}}', 'текстовая шапка компании'],
+            ['{{company_header_image}}', 'шапка-картинка'],
+            ['{{sender_org}} / {{sender_org_short}}', 'название компании'],
+            ['{{signer_role}} / {{signer_name}}', 'должность и ФИО подписанта'],
+            ['{{signature}} / {{stamp}}', 'подпись и печать (картинки)'],
+            ['{{kp_number}} / {{line_kp_number}}', 'номер (пусто, если выкл. у компании)'],
+            ['{{kp_date}} / {{kp_validity_period}}', 'дата и срок КП'],
+            ['{{client_org_full}} / {{client_fio_full}}', 'клиент'],
+            ['{{client_fio_short}} / {{client_salutation}}', '«Иванов И.И.», обращение'],
+            ['{{client_request_reference}}', '№ … от … (входящий запрос)'],
+            ['{{executor_fio}} / {{executor_phone}}', 'исполнитель-менеджер'],
+            ['{{cadastral_table}}', 'таблица участков с ИТОГО'],
+            ['{{area_ha}} / {{location}}', 'площадь и местоположение'],
+            ['{{total_cost}} / {{total_cost_in_words}}', 'итог и прописью'],
+            ['{{ais_total}} / {{line_ais_offer}}', 'АИС: сумма и блок-предложение'],
+            ['{{renewal_total}} / {{renewal_period}}', 'пролонгация'],
+          ].map(([a, desc]) => (
+            <div key={a} className="flex justify-between gap-2">
+              <code className="font-mono">{a}</code>
+              <span className="text-[#4a7d92] text-right">{desc}</span>
+            </div>
+          ))}
+          <div className="col-span-full text-[11px] text-[#4a7d92] mt-2">
+            Плейсхолдеры вида {'{{line_*}}'} удаляют свой абзац, если значение пустое (условные строки).
+          </div>
+        </div>
+      </details>
+
       <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-3">
-        <div className="text-sm font-semibold text-[#313131]">➕ Загрузить шаблон (.docx с плейсхолдерами {'{{...}}'})</div>
+        <div className="text-sm font-semibold text-[#313131]">➕ Загрузить шаблон услуги (.docx с алиасами {'{{...}}'})</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <div className={label}>Название</div>

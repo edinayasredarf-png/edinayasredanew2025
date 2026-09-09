@@ -150,10 +150,14 @@ export function buildKpContext(input: {
       ? `В том числе НДС 20% — ${formatMoney((calc.grandTotal * 20) / 120)} руб.`
       : "НДС не облагается (применяется УСН).";
 
+  // Номер КП пишем только если у компании включён флаг «писать номер».
+  const kpNumber = org.writeKpNumber ? payload.kp.number?.trim() || autoKpNumber() : "";
+
   const tags: Record<string, string> = {
     // КП
     kp_date: todayRu(payload.kp.date),
-    kp_number: payload.kp.number?.trim() || autoKpNumber(),
+    kp_number: kpNumber,
+    line_kp_number: kpNumber, // {{line_kp_number}} — удаляет абзац, если номер не пишем
     kp_validity_period: payload.kp.validityPeriod?.trim() || "30 дней",
     // Клиент
     client_org_full: payload.client.orgFull.trim(),
@@ -165,10 +169,14 @@ export function buildKpContext(input: {
     client_request_number: payload.client.requestNumber?.trim() || "",
     client_request_date: shortDateRu(payload.client.requestDate),
     client_request_reference: requestRef,
-    // Отправитель / исполнитель
+    // Отправитель / исполнитель / шапка / подписант
     sender_org: org.name,
     sender_org_short: org.shortName || org.name,
+    company_header: org.headerText || "",
     sender_director: org.directorFio || "",
+    signer_name: org.directorFio || "",
+    signer_role: org.directorRole || "",
+    signer_fio_short: org.directorFio ? fioShortLastFirst(org.directorFio) : "",
     executor_fio: executor?.fio || "",
     executor_phone: executor?.phone || "",
     executor_fio_short: executor ? fioShortLastFirst(executor.fio) : "",

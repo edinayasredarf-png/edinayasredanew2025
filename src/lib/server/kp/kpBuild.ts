@@ -6,8 +6,43 @@ import {
   dbResolveTemplate,
 } from "./kpDb";
 import { buildKpContext, type KpFormPayload } from "./kpMerge";
-import { fillDocxTemplate } from "./kpDocx";
+import { fillDocxTemplate, type KpImage } from "./kpDocx";
 import type { PriceTier } from "./kpCalc";
+import { dbGetEditorMedia } from "@/lib/server/dataDb";
+import type { KpOrganization } from "./kpDb";
+
+/** Достаёт байты картинки по ссылке /api/media/{id} (шапка/подпись/печать). */
+async function loadMediaImage(
+  url: string,
+  token: string,
+  maxWidthPt: number
+): Promise<KpImage | null> {
+  const id = (url || "").split("/").filter(Boolean).pop();
+  if (!id) return null;
+  try {
+    const media = await dbGetEditorMedia(id);
+    if (!media?.data?.length) return null;
+    return { token, data: media.data, mime: media.mimeType || "image/png", maxWidthPt };
+  } catch {
+    return null;
+  }
+}
+
+/** Собирает картинки компании для вставки по алиасам в шаблон. */
+async function orgImages(org: KpOrganization): Promise<KpImage[]> {
+  const out: KpImage[] = [];
+  const items: Array<[string, string, number]> = [
+    [org.headerImage, "company_header_image", 470], // шапка на всю ширину
+    [org.signatureImage, "signature", 130],
+    [org.stampImage, "stamp", 130],
+  ];
+  for (const [url, token, w] of items) {
+    if (!url) continue;
+    const img = await loadMediaImage(url, token, w);
+    if (img) out.push(img);
+  }
+  return out;
+}
 
 /** Запрос генерации: одна форма (клиент + расчёт) → несколько организаций. */
 export interface KpGenerateRequest {
@@ -93,7 +128,8 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         continue;
       }
 
-      const docx = await fillDocxTemplate(template.data, ctx.tags, ctx.table);
+      const images = await orgImages(org);
+      const docx = await fillDocxTemplate(template.data, ctx.tags, ctx.table, images);
       docs.push({
         orgKey,
         orgName: org.name,
