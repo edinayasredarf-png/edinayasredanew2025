@@ -193,7 +193,8 @@ export default function KpGenerator() {
     }
   };
 
-  const buildPayload = () => ({
+  const buildPayload = (format: 'docx' | 'pdf' | 'both') => ({
+    format,
     form: {
       serviceType,
       mode,
@@ -229,20 +230,20 @@ export default function KpGenerator() {
     return null;
   };
 
-  const generate = async () => {
+  const generate = async (format: 'docx' | 'pdf' | 'both' = 'docx') => {
     const err = validate();
     if (err) {
       setStatus(err);
       return;
     }
     setBusy(true);
-    setStatus('Генерация…');
+    setStatus(format === 'docx' ? 'Генерация…' : 'Генерация (LibreOffice → PDF может занять время)…');
     try {
       const res = await fetch('/api/kp/generate', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildPayload()),
+        body: JSON.stringify(buildPayload(format)),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -369,7 +370,7 @@ function CreateTab(p: CreateProps) {
     aisLicenses: string; setAisLicenses: (v: string) => void; aisPrice: string; setAisPrice: (v: string) => void;
     renewalYears: string; setRenewalYears: (v: string) => void; renewalPrice: string; setRenewalPrice: (v: string) => void;
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
-    generate: () => void; busy: boolean;
+    generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
   };
 
   const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
@@ -597,13 +598,29 @@ function CreateTab(p: CreateProps) {
           ))}
 
           <button
-            onClick={generate}
+            onClick={() => generate('docx')}
             disabled={busy || perOrgTotals.length === 0}
             className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50"
           >
-            {busy ? 'Генерация…' : selectedOrgs.length > 1 ? `📦 Скачать ${selectedOrgs.length} КП (ZIP)` : '📄 Скачать DOCX'}
+            {busy ? 'Генерация…' : selectedOrgs.length > 1 ? `📦 Скачать ${selectedOrgs.length} DOCX (ZIP)` : '📄 Скачать DOCX'}
           </button>
-          <div className="text-[11px] text-gray-400 text-center">PDF и рассылка на почту — следующий этап.</div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => generate('pdf')}
+              disabled={busy || perOrgTotals.length === 0}
+              className="px-3 py-2 rounded-lg text-sm font-medium bg-[#2563eb] text-white hover:bg-[#1d4ed8] disabled:opacity-50"
+            >
+              📕 PDF
+            </button>
+            <button
+              onClick={() => generate('both')}
+              disabled={busy || perOrgTotals.length === 0}
+              className="px-3 py-2 rounded-lg text-sm font-medium bg-[#d97706] text-white hover:bg-[#b45309] disabled:opacity-50"
+            >
+              📄+📕 DOCX+PDF
+            </button>
+          </div>
+          <div className="text-[11px] text-gray-400 text-center">PDF — через сервис pdf-service (LibreOffice). Рассылка на почту — следующий этап.</div>
         </div>
       </div>
     </div>
