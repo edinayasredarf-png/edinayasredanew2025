@@ -12,7 +12,6 @@ export const SITE_CONFIG = {
 
   social: {
     // Профили-сущности для sameAs (entity-склейка для поиска и ИИ).
-    // ВАЖНО: только официальные и рабочие ссылки.
     vk: 'https://vk.com/edinayasredarf',
     telegram: 'https://t.me/edinayasredarf',
     rustore: 'https://www.rustore.ru/catalog/app/ru.edinayasreda',
@@ -21,7 +20,7 @@ export const SITE_CONFIG = {
 
   analytics: {
     yandex: '89202191',
-    google: 'G-6HGCDX1CZC', // ✅ ВАШ РЕАЛЬНЫЙ ID!
+    google: 'G-6HGCDX1CZC',
   },
 
   verification: {

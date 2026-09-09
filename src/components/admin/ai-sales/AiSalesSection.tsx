@@ -6,7 +6,7 @@ import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts';
+type View = 'dashboard' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -662,6 +662,89 @@ const ms2tc = (ms: number | null) => {
   return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
 };
 
+/* Эталонная оценка звонка (контроль качества LLM, §33 ТЗ). */
+function ReviewWidget({ callId, llmDeal, llmManager }: { callId: string; llmDeal: number | null; llmManager: number | null }) {
+  const [deal, setDeal] = useState('');
+  const [mgr, setMgr] = useState('');
+  const [note, setNote] = useState('');
+  const [open, setOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [has, setHas] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/ai-sales/calls/${callId}/review`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.review) {
+          setDeal(j.review.dealScore != null ? String(j.review.dealScore) : '');
+          setMgr(j.review.managerScore != null ? String(j.review.managerScore) : '');
+          setNote(j.review.note || '');
+          setHas(j.review.dealScore != null || j.review.managerScore != null);
+          setOpen(true);
+        }
+      })
+      .catch(() => {});
+  }, [callId]);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      await fetch(`/api/ai-sales/calls/${callId}/review`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealScore: deal === '' ? null : Number(deal), managerScore: mgr === '' ? null : Number(mgr), note }),
+      });
+      setSaved(true); setHas(deal !== '' || mgr !== ''); setTimeout(() => setSaved(false), 2500);
+    } finally { setBusy(false); }
+  };
+
+  const delta = (h: string, l: number | null) => (h !== '' && l != null ? Number(h) - l : null);
+  const dDeal = delta(deal, llmDeal);
+  const dMgr = delta(mgr, llmManager);
+
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)} className="mb-4 text-sm text-[#029cda] hover:underline">
+        + Поставить эталонную оценку (контроль качества)
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#F6F7F9] rounded-xl p-5 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-semibold text-gray-700">Эталонная оценка (контроль качества) {has && <span className="text-xs text-emerald-600 font-normal">✓ оценено</span>}</p>
+      </div>
+      <div className="flex flex-wrap items-end gap-5">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Качество сделки (0–100)</label>
+          <div className="flex items-center gap-2">
+            <input type="number" min={0} max={100} value={deal} onChange={(e) => setDeal(e.target.value)}
+              className="w-24 px-2 py-1.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+            <span className="text-xs text-gray-400">LLM: {llmDeal ?? '—'}{dDeal != null && <span className={Math.abs(dDeal) <= 10 ? 'text-emerald-600' : 'text-red-600'}> (Δ {dDeal > 0 ? '+' : ''}{dDeal})</span>}</span>
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Работа менеджера (0–10)</label>
+          <div className="flex items-center gap-2">
+            <input type="number" min={0} max={10} step={0.5} value={mgr} onChange={(e) => setMgr(e.target.value)}
+              className="w-20 px-2 py-1.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+            <span className="text-xs text-gray-400">LLM: {llmManager ?? '—'}{dMgr != null && <span className={Math.abs(dMgr) <= 2 ? 'text-emerald-600' : 'text-red-600'}> (Δ {dMgr > 0 ? '+' : ''}{dMgr})</span>}</span>
+          </div>
+        </div>
+        <div className="flex-1 min-w-[180px]">
+          <label className="block text-xs text-gray-500 mb-1">Комментарий</label>
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="почему такая оценка…"
+            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+        </div>
+        <button onClick={save} disabled={busy}
+          className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Сохранить</button>
+        {saved && <span className="text-sm text-green-600">✓</span>}
+      </div>
+    </div>
+  );
+}
+
 function CallDetail({ id, onBack, backLabel = '← К списку', initialSeekMs = null }: { id: string; onBack: () => void; backLabel?: string; initialSeekMs?: number | null }) {
   const [data, setData] = useState<DetailData | null>(null);
   const [err, setErr] = useState('');
@@ -766,6 +849,8 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
           <audio ref={audioRef} controls preload="none" src={`/api/ai-sales/calls/${id}/audio`} className="w-full mt-4" />
         )}
       </div>
+
+      <ReviewWidget callId={id} llmDeal={a?.dealScore?.score ?? null} llmManager={a?.managerPerformance?.overall ?? null} />
 
       {data.metrics && (data.metrics.managerWords + data.metrics.clientWords > 0) && (() => {
         const m = data.metrics!;
@@ -1966,6 +2051,104 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
   );
 }
 
+/* ─────────── Контроль качества LLM (эталон руководителя vs модель) ─────────── */
+interface QcMetricT { count: number; mae: number | null; bias: number | null; pearson: number | null; within: number | null }
+interface QcRowT {
+  callId: string; startedAt: string | null; managerName: string | null; clientTitle: string | null;
+  reviewerEmail: string | null; humanDeal: number | null; humanManager: number | null;
+  llmDeal: number | null; llmManager: number | null; promptVersion: string | null; model: string | null;
+}
+interface QcDataT {
+  summary: { count: number; deal: QcMetricT; manager: QcMetricT; byVersion: Array<{ promptVersion: string; count: number; dealMae: number | null; managerMae: number | null }> };
+  rows: QcRowT[];
+}
+
+function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
+  const [data, setData] = useState<QcDataT | null>(null);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/ai-sales/qc')
+      .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Ошибка'); return j; })
+      .then((j) => setData(j))
+      .catch((e) => setErr(e instanceof Error ? e.message : 'Ошибка'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingBlock />;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (!data) return null;
+
+  const s = data.summary;
+  const corrLabel = (p: number | null) => p == null ? '—' : p >= 0.7 ? `${p} (сильная)` : p >= 0.4 ? `${p} (средняя)` : `${p} (слабая)`;
+  const dlt = (h: number | null, l: number | null, thr: number) => {
+    if (h == null || l == null) return null;
+    const d = h - l;
+    return <span className={Math.abs(d) <= thr ? 'text-emerald-600' : 'text-red-600'}>{d > 0 ? '+' : ''}{Math.round(d * 10) / 10}</span>;
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Контроль качества</h2>
+      <p className="text-sm text-gray-500 mb-5">Эталонные оценки руководителя против оценок LLM. Главная цель — чтобы оценка модели <b>коррелировала</b> с оценкой человека. Эталон ставится в карточке звонка.</p>
+
+      {s.count === 0 ? (
+        <div className="bg-[#F6F7F9] rounded-xl p-6 text-sm text-gray-500">
+          Пока нет эталонных оценок. Откройте звонок и поставьте оценку в блоке «Эталонная оценка (контроль качества)».
+          Для надёжной корреляции ТЗ рекомендует набрать 100–300 оценённых звонков.
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+            <Kpi label="Оценено звонков" value={s.count} />
+            <Kpi label="Корреляция (сделка)" value={corrLabel(s.deal.pearson)} sub={`MAE ${s.deal.mae ?? '—'} · ±10: ${s.deal.within ?? '—'}%`} />
+            <Kpi label="Корреляция (менеджер)" value={corrLabel(s.manager.pearson)} sub={`MAE ${s.manager.mae ?? '—'} · ±2: ${s.manager.within ?? '—'}%`} />
+            <Kpi label="Смещение LLM" value={`${s.deal.bias != null ? (s.deal.bias > 0 ? '+' : '') + s.deal.bias : '—'} / ${s.manager.bias != null ? (s.manager.bias > 0 ? '+' : '') + s.manager.bias : '—'}`} sub="сделка / менеджер (человек − LLM)" />
+          </div>
+
+          {s.byVersion.length > 1 && (
+            <div className="bg-[#F6F7F9] rounded-xl p-4 mb-5">
+              <p className="text-sm font-semibold text-gray-700 mb-2">По версиям промта (MAE — чем меньше, тем ближе к человеку)</p>
+              <div className="flex flex-wrap gap-2">
+                {s.byVersion.map((v) => (
+                  <span key={v.promptVersion} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm text-gray-700">
+                    {v.promptVersion} <span className="text-gray-400">({v.count})</span>
+                    <b>сделка {v.dealMae ?? '—'}</b> · <b>мен. {v.managerMae ?? '—'}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+            <table className="min-w-full text-sm">
+              <thead className="bg-[#F6F7F9] text-gray-600">
+                <tr>{['Дата', 'Менеджер', 'Клиент', 'Сделка: чел./LLM/Δ', 'Менеджер: чел./LLM/Δ', 'Ревьюер'].map((h) => (
+                  <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
+                ))}</tr>
+              </thead>
+              <tbody>
+                {data.rows.map((r) => (
+                  <tr key={r.callId} onClick={() => onOpen(r.callId)} className="border-t border-gray-100 hover:bg-sky-50/60 cursor-pointer">
+                    <td className="px-3 py-2 whitespace-nowrap">{r.startedAt ? new Date(r.startedAt).toLocaleDateString('ru-RU') : '—'}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{r.managerName || '—'}</td>
+                    <td className="px-3 py-2">{r.clientTitle || '—'}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{r.humanDeal ?? '—'} / {r.llmDeal ?? '—'} / {dlt(r.humanDeal, r.llmDeal, 10) ?? '—'}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{r.humanManager ?? '—'} / {r.llmManager ?? '—'} / {dlt(r.humanManager, r.llmManager, 2) ?? '—'}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-400 text-xs">{r.reviewerEmail || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Departments() {
   const [depts, setDepts] = useState<DeptRow[]>([]);
   const [managers, setManagers] = useState<DeptManager[]>([]);
@@ -2285,6 +2468,7 @@ const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'managers', label: 'Менеджеры' },
   { view: 'lost', label: 'Проигрыши' },
   { view: 'insights', label: 'Отчёты' },
+  { view: 'qc', label: 'Контроль качества' },
   { view: 'tags', label: 'Разметка' },
   { view: 'departments', label: 'Отделы' },
   { view: 'scripts', label: 'Скрипт' },
@@ -2315,6 +2499,7 @@ export default function AiSalesSection() {
     if (openCall) return <CallDetail id={openCall} initialSeekMs={openCallSeek} onBack={closeCall} />;
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
+    if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
     if (view === 'departments') return <Departments />;
     if (view === 'scripts') return <Scripts />;
