@@ -9,6 +9,7 @@ import {
 } from "./kpDb";
 import { buildKpContext, type KpFormPayload } from "./kpMerge";
 import { fillDocxTemplate, type KpImage } from "./kpDocx";
+import { buildDocxFromHtml } from "./kpHtmlDocx";
 import type { PriceTier } from "./kpCalc";
 import { dbGetEditorMedia } from "@/lib/server/dataDb";
 import type { KpOrganization } from "./kpDb";
@@ -136,9 +137,15 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         continue;
       }
 
+      // HTML-шаблон → собираем .docx из тела; иначе берём загруженные байты.
+      const templateBuffer =
+        template.source === "html" || !template.data
+          ? await buildDocxFromHtml(template.bodyHtml)
+          : template.data;
+
       const images = await orgImages(org);
       const docx = await fillDocxTemplate(
-        template.data,
+        templateBuffer,
         mergedTags,
         ctx.table,
         images,

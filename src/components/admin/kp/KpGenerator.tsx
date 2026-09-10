@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import nextDynamic from 'next/dynamic';
 import KpSettings from './KpSettings';
+
+const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
 import { evalFormulaSafe } from './formulaClient';
 import KpCalcGrid from './KpCalcGrid';
@@ -314,6 +317,7 @@ export default function KpGenerator() {
           orgs={orgs}
           serviceTypes={serviceTypes}
           templates={templates}
+          aliases={aliases}
           onChanged={loadMeta}
           setStatus={setStatus}
         />
@@ -616,37 +620,67 @@ function Chk({ checked, onChange, text }: { checked: boolean; onChange: (v: bool
 }
 
 /* ═══════════════ Вкладка «Шаблоны» ═══════════════ */
+interface TemplateDraft {
+  id?: number;
+  name: string;
+  serviceType: string;
+  orgKey: string;
+  bodyHtml: string;
+  skipAuto: boolean;
+}
+
 function TemplatesTab({
-  orgs, serviceTypes, templates, onChanged, setStatus,
+  orgs, serviceTypes, templates, aliases, onChanged, setStatus,
 }: {
   orgs: Organization[];
   serviceTypes: string[];
   templates: TemplateMeta[];
+  aliases: Alias[];
   onChanged: () => void;
   setStatus: (s: string) => void;
 }) {
-  const [name, setName] = useState('');
-  const [svc, setSvc] = useState(serviceTypes[0] || 'ИМЗ');
-  const [orgKey, setOrgKey] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [skipAuto, setSkipAuto] = useState(false);
+  const [draft, setDraft] = useState<TemplateDraft | null>(null);
   const [busy, setBusy] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
-  const upload = async () => {
-    if (!file) return setStatus('Приложите .docx');
+  const openNew = () =>
+    setDraft({ name: '', serviceType: serviceTypes[0] || 'ИМЗ', orgKey: '', bodyHtml: '', skipAuto: false });
+
+  const openEdit = async (id: number) => {
+    try {
+      const res = await fetch(`/api/kp/templates?id=${id}`, { credentials: 'include' });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка');
+      const t = d.template;
+      setDraft({ id: t.id, name: t.name, serviceType: t.serviceType, orgKey: t.orgKey || '', bodyHtml: t.bodyHtml || '', skipAuto: t.skipAutoBlocks });
+    } catch (e) {
+      setStatus((e as Error).message);
+    }
+  };
+
+  const saveDraft = async () => {
+    if (!draft) return;
+    if (!draft.serviceType) return setStatus('Укажите тип услуги');
     setBusy(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('name', name || file.name.replace(/\.docx$/i, ''));
-      fd.append('serviceType', svc);
-      fd.append('orgKey', orgKey);
-      fd.append('skipAutoBlocks', String(skipAuto));
-      const res = await fetch('/api/kp/templates', { method: 'POST', credentials: 'include', body: fd });
+      const payload = {
+        id: draft.id,
+        name: draft.name || 'Шаблон',
+        serviceType: draft.serviceType,
+        orgKey: draft.orgKey || null,
+        bodyHtml: draft.bodyHtml,
+        skipAutoBlocks: draft.skipAuto,
+      };
+      const res = await fetch('/api/kp/templates', {
+        method: draft.id ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || 'Ошибка загрузки');
-      setStatus(`Шаблон загружен · плейсхолдеров: ${d.placeholders?.length ?? 0}`);
-      setName(''); setFile(null);
+      if (!res.ok) throw new Error(d.error || 'Ошибка сохранения');
+      setStatus('Шаблон сохранён');
+      setDraft(null);
       onChanged();
     } catch (e) {
       setStatus((e as Error).message);
@@ -673,98 +707,188 @@ function TemplatesTab({
   const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
   const label = 'block text-xs font-medium text-gray-500 mb-1';
 
-  return (
-    <div className="space-y-4">
-      <details className="bg-[#EAF6FC] border border-[#cbe8f5] rounded-2xl p-4">
-        <summary className="text-sm font-semibold text-[#0b5c7d] cursor-pointer">📌 Справочник алиасов (что подставляется в шаблон)</summary>
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-[#0b5c7d]">
-          <div><b>Шапка и подписант берутся из настроек компании:</b></div><div></div>
-          {[
-            ['{{company_header}}', 'текстовая шапка компании'],
-            ['{{company_header_image}}', 'шапка-картинка'],
-            ['{{sender_org}} / {{sender_org_short}}', 'название компании'],
-            ['{{signer_role}} / {{signer_name}}', 'должность и ФИО подписанта'],
-            ['{{signature}} / {{stamp}}', 'подпись и печать (картинки)'],
-            ['{{kp_number}} / {{line_kp_number}}', 'номер (пусто, если выкл. у компании)'],
-            ['{{kp_date}} / {{kp_validity_period}}', 'дата и срок КП'],
-            ['{{client_org_full}} / {{client_fio_full}}', 'клиент'],
-            ['{{client_fio_short}} / {{client_salutation}}', '«Иванов И.И.», обращение'],
-            ['{{client_request_reference}}', '№ … от … (входящий запрос)'],
-            ['{{executor_fio}} / {{executor_phone}}', 'исполнитель-менеджер'],
-            ['{{cadastral_table}}', 'таблица участков с ИТОГО'],
-            ['{{area_ha}} / {{location}}', 'площадь и местоположение'],
-            ['{{total_cost}} / {{total_cost_in_words}}', 'итог и прописью'],
-            ['{{ais_total}} / {{line_ais_offer}}', 'АИС: сумма и блок-предложение'],
-            ['{{renewal_total}} / {{renewal_period}}', 'пролонгация'],
-          ].map(([a, desc]) => (
-            <div key={a} className="flex justify-between gap-2">
-              <code className="font-mono">{a}</code>
-              <span className="text-[#4a7d92] text-right">{desc}</span>
+  if (draft) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-3">
+          <div className="text-sm font-semibold text-[#313131]">{draft.id ? '✏️ Редактирование шаблона' : '➕ Новый шаблон'}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <div className={label}>Название</div>
+              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={input} placeholder="ИМЗ Экострой" />
             </div>
-          ))}
-          <div className="col-span-full text-[11px] text-[#4a7d92] mt-2">
-            Плейсхолдеры вида {'{{line_*}}'} удаляют свой абзац, если значение пустое (условные строки).
-          </div>
-        </div>
-      </details>
-
-      <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-3">
-        <div className="text-sm font-semibold text-[#313131]">➕ Загрузить шаблон услуги (.docx с алиасами {'{{...}}'})</div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <div className={label}>Название</div>
-            <input value={name} onChange={(e) => setName(e.target.value)} className={input} placeholder="ИМЗ Экострой" />
-          </div>
-          <div>
-            <div className={label}>Тип услуги *</div>
-            <select value={svc} onChange={(e) => setSvc(e.target.value)} className={input}>
-              {serviceTypes.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
+            <div>
+              <div className={label}>Тип услуги *</div>
+              <select value={draft.serviceType} onChange={(e) => setDraft({ ...draft, serviceType: e.target.value })} className={input}>
+                {serviceTypes.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <div className={label}>Компания (пусто = общий)</div>
+              <select value={draft.orgKey} onChange={(e) => setDraft({ ...draft, orgKey: e.target.value })} className={input}>
+                <option value="">Для всех компаний</option>
+                {orgs.map((o) => <option key={o.key} value={o.key}>{o.name}</option>)}
+              </select>
+            </div>
           </div>
           <div>
-            <div className={label}>Организация (пусто = общий)</div>
-            <select value={orgKey} onChange={(e) => setOrgKey(e.target.value)} className={input}>
-              <option value="">Для всех организаций</option>
-              {orgs.map((o) => <option key={o.key} value={o.key}>{o.name}</option>)}
-            </select>
+            <div className={label}>Тело шаблона (форматируйте как в Word; вставляйте алиасы {'{{...}}'} из панели справа)</div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+              <RichEditor key={draft.id || 'new'} initialHtml={draft.bodyHtml} onChange={(html) => setDraft((d) => (d ? { ...d, bodyHtml: html } : d))} />
+            </div>
           </div>
-        </div>
-        <input type="file" accept=".docx" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-sm" />
-        <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-          <input type="checkbox" checked={skipAuto} onChange={(e) => setSkipAuto(e.target.checked)} />
-          Шаблон уже содержит шапку/подписанта (не добавлять автоматически)
-        </label>
-        <div className="text-xs text-gray-400">
-          Если выключено — система сама добавит шапку в начало и подписанта в конец из настроек компании.
-          Если в шаблоне есть алиасы {'{{company_header_image}}'}/{'{{signature}}'} — они всегда ставятся на своём месте.
+          <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+            <input type="checkbox" checked={draft.skipAuto} onChange={(e) => setDraft({ ...draft, skipAuto: e.target.checked })} />
+            Шаблон уже содержит шапку/подписанта (не добавлять автоматически)
+          </label>
+          <div className="flex gap-2">
+            <button onClick={saveDraft} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">{busy ? 'Сохранение…' : 'Сохранить шаблон'}</button>
+            <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+          </div>
         </div>
         <div>
-          <button onClick={upload} disabled={busy || !file} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">
-            {busy ? 'Загрузка…' : 'Загрузить шаблон'}
-          </button>
+          <AliasPanel aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <button onClick={openNew} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">➕ Создать шаблон</button>
+        <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">⤴️ Загрузить .docx</button>
+      </div>
+
+      {uploadOpen && <DocxUpload orgs={orgs} serviceTypes={serviceTypes} onChanged={onChanged} setStatus={setStatus} />}
 
       <div className="space-y-2">
-        {templates.length === 0 && <div className="text-sm text-gray-400">Шаблонов пока нет.</div>}
+        {templates.length === 0 && <div className="text-sm text-gray-400">Шаблонов пока нет. Создайте новый или загрузите .docx.</div>}
         {templates.map((t) => (
           <div key={t.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3">
             <div>
               <div className="font-medium text-sm text-[#313131]">
                 {t.name}{' '}
                 <span className="text-xs bg-[#EAF6FC] text-[#0b5c7d] px-2 py-0.5 rounded ml-1">{t.serviceType}</span>{' '}
-                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{t.orgKey ? orgs.find((o) => o.key === t.orgKey)?.shortName || t.orgKey : 'общий'}</span>
+                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{t.orgKey ? orgs.find((o) => o.key === t.orgKey)?.shortName || t.orgKey : 'общий'}</span>{' '}
+                <span className="text-xs text-gray-400">{t.source === 'html' ? 'редактируемый' : '.docx'}</span>
               </div>
-              <div className="text-xs text-gray-400 mt-0.5">{t.filename} · плейсхолдеров: {t.placeholders.length}</div>
+              <div className="text-xs text-gray-400 mt-0.5">плейсхолдеров: {t.placeholders.length}</div>
               <label className="flex items-center gap-2 text-xs text-gray-500 mt-1 cursor-pointer">
                 <input type="checkbox" checked={t.skipAutoBlocks} onChange={(e) => toggleSkip(t.id, e.target.checked)} />
                 уже содержит шапку/подписанта (не добавлять авто)
               </label>
             </div>
-            <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-600 text-sm px-2 shrink-0">Удалить</button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button onClick={() => openEdit(t.id)} className="text-sm text-[#029cda] hover:text-[#0280b5]">Изменить</button>
+              <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-600 text-sm">Удалить</button>
+            </div>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* Панель алиасов: копирование в буфер + создание своих. */
+function AliasPanel({ aliases, onChanged, setStatus }: { aliases: Alias[]; onChanged: () => void; setStatus: (s: string) => void }) {
+  const [k, setK] = useState('');
+  const [lbl, setLbl] = useState('');
+  const [val, setVal] = useState('');
+  const copy = async (key: string) => {
+    try { await navigator.clipboard.writeText(`{{${key}}}`); setStatus(`Скопировано: {{${key}}}`); }
+    catch { setStatus(`Вставьте вручную: {{${key}}}`); }
+  };
+  const create = async () => {
+    if (!k.trim()) return setStatus('Укажите ключ алиаса');
+    const res = await fetch('/api/kp/aliases', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: k, label: lbl, value: val }),
+    });
+    const j = await res.json();
+    if (!res.ok) return setStatus(j.error || 'Ошибка');
+    setK(''); setLbl(''); setVal('');
+    setStatus('Алиас создан');
+    onChanged();
+  };
+  const custom = aliases.filter((a) => a.isCustom);
+  const builtin = aliases.filter((a) => !a.isCustom);
+  const chip = (a: Alias) => (
+    <button key={a.key} onClick={() => copy(a.key)} title={`${a.label}${a.isCustom ? ` = ${a.value}` : ''} — нажмите, чтобы скопировать`}
+      className="text-left px-2 py-1 rounded border border-gray-200 bg-white hover:border-[#029cda] text-xs">
+      <code className="font-mono text-[#0b5c7d]">{`{{${a.key}}}`}</code>
+      <span className="text-gray-400 block truncate">{a.label}</span>
+    </button>
+  );
+  return (
+    <div className="bg-[#EAF6FC] border border-[#cbe8f5] rounded-2xl p-4 space-y-3 sticky top-4">
+      <div className="text-sm font-semibold text-[#0b5c7d]">🏷 Алиасы (клик — копировать)</div>
+      <div className="text-[11px] text-[#4a7d92]">Нажмите на алиас, чтобы скопировать, и вставьте в текст (Ctrl+V). Шапка/подписант/таблица подставляются автоматически.</div>
+      {custom.length > 0 && (
+        <>
+          <div className="text-xs font-medium text-[#0b5c7d]">Свои</div>
+          <div className="grid grid-cols-2 gap-1">{custom.map(chip)}</div>
+        </>
+      )}
+      <div className="text-xs font-medium text-[#0b5c7d]">Встроенные</div>
+      <div className="grid grid-cols-2 gap-1 max-h-72 overflow-y-auto pr-1">{builtin.map(chip)}</div>
+      <div className="border-t border-[#cbe8f5] pt-2 space-y-1">
+        <div className="text-xs font-medium text-[#0b5c7d]">➕ Новый алиас</div>
+        <input value={k} onChange={(e) => setK(e.target.value)} placeholder="ключ (латиница)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
+        <input value={lbl} onChange={(e) => setLbl(e.target.value)} placeholder="описание" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
+        <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="значение (текст)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
+        <button onClick={create} className="w-full px-3 py-1.5 rounded-lg bg-[#029cda] text-white text-xs hover:bg-[#0280b5]">Создать</button>
+      </div>
+    </div>
+  );
+}
+
+/* Загрузка готового .docx. */
+function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organization[]; serviceTypes: string[]; onChanged: () => void; setStatus: (s: string) => void }) {
+  const [name, setName] = useState('');
+  const [svc, setSvc] = useState(serviceTypes[0] || 'ИМЗ');
+  const [orgKey, setOrgKey] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [skipAuto, setSkipAuto] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
+  const label = 'block text-xs font-medium text-gray-500 mb-1';
+  const upload = async () => {
+    if (!file) return setStatus('Приложите .docx');
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('name', name || file.name.replace(/\.docx$/i, ''));
+      fd.append('serviceType', svc);
+      fd.append('orgKey', orgKey);
+      fd.append('skipAutoBlocks', String(skipAuto));
+      const res = await fetch('/api/kp/templates', { method: 'POST', credentials: 'include', body: fd });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка загрузки');
+      setStatus(`Шаблон загружен · плейсхолдеров: ${d.placeholders?.length ?? 0}`);
+      setName(''); setFile(null);
+      onChanged();
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div><div className={label}>Название</div><input value={name} onChange={(e) => setName(e.target.value)} className={input} /></div>
+        <div><div className={label}>Тип услуги *</div><select value={svc} onChange={(e) => setSvc(e.target.value)} className={input}>{serviceTypes.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
+        <div><div className={label}>Компания (пусто = общий)</div><select value={orgKey} onChange={(e) => setOrgKey(e.target.value)} className={input}><option value="">Для всех компаний</option>{orgs.map((o) => <option key={o.key} value={o.key}>{o.name}</option>)}</select></div>
+      </div>
+      <input type="file" accept=".docx" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-sm" />
+      <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+        <input type="checkbox" checked={skipAuto} onChange={(e) => setSkipAuto(e.target.checked)} />
+        Шаблон уже содержит шапку/подписанта
+      </label>
+      <button onClick={upload} disabled={busy || !file} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">{busy ? 'Загрузка…' : 'Загрузить'}</button>
     </div>
   );
 }

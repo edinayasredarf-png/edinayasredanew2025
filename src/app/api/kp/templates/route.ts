@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import mammoth from "mammoth";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import {
   dbDeleteTemplate,
+  dbGetTemplateData,
+  dbGetTemplateFull,
   dbInsertTemplate,
   dbListTemplates,
   dbSetTemplateSkipAuto,
+  dbUpdateTemplate,
 } from "@/lib/server/kp/kpDb";
 import { extractPlaceholders } from "@/lib/server/kp/kpDocx";
+import { extractPlaceholdersFromHtml } from "@/lib/server/kp/kpHtmlDocx";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,6 +33,27 @@ async function guard(request: NextRequest): Promise<NextResponse | null> {
 export async function GET(request: NextRequest) {
   const denied = await guard(request);
   if (denied) return denied;
+
+  const id = Number(new URL(request.url).searchParams.get("id"));
+  if (id) {
+    const full = await dbGetTemplateFull(id);
+    if (!full) return NextResponse.json({ error: "Шаблон не найден" }, { status: 404 });
+    let bodyHtml = full.bodyHtml;
+    // Загруженный .docx конвертируем в HTML для редактирования (один раз).
+    if (full.source === "docx" && full.hasDocx && !bodyHtml) {
+      const doc = await dbGetTemplateData(id);
+      if (doc) {
+        try {
+          const res = await mammoth.convertToHtml({ buffer: doc.data });
+          bodyHtml = res.value;
+        } catch {
+          bodyHtml = "";
+        }
+      }
+    }
+    return NextResponse.json({ template: { ...full, bodyHtml } });
+  }
+
   const templates = await dbListTemplates();
   return NextResponse.json({ templates });
 }
@@ -36,6 +62,39 @@ export async function POST(request: NextRequest) {
   const denied = await guard(request);
   if (denied) return denied;
 
+  const ctype = request.headers.get("content-type") || "";
+
+  // JSON → создание HTML-шаблона (редактируется в админке).
+  if (ctype.includes("application/json")) {
+    let b: {
+      name?: string;
+      serviceType?: string;
+      orgKey?: string | null;
+      bodyHtml?: string;
+      skipAutoBlocks?: boolean;
+    };
+    try {
+      b = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
+    }
+    if (!b.serviceType) return NextResponse.json({ error: "Укажите тип услуги" }, { status: 400 });
+    const bodyHtml = b.bodyHtml || "";
+    const id = await dbInsertTemplate({
+      name: b.name || "Новый шаблон",
+      serviceType: b.serviceType,
+      orgKey: b.orgKey || null,
+      filename: `${b.name || "template"}.html`,
+      data: null,
+      placeholders: extractPlaceholdersFromHtml(bodyHtml),
+      skipAutoBlocks: b.skipAutoBlocks ?? false,
+      source: "html",
+      bodyHtml,
+    });
+    return NextResponse.json({ id });
+  }
+
+  // multipart → загрузка .docx
   let form: FormData;
   try {
     form = await request.formData();
@@ -56,10 +115,7 @@ export async function POST(request: NextRequest) {
   if (!serviceType) {
     return NextResponse.json({ error: "Укажите тип услуги" }, { status: 400 });
   }
-  if (
-    file.type !== DOCX_MIME &&
-    !file.name.toLowerCase().endsWith(".docx")
-  ) {
+  if (file.type !== DOCX_MIME && !file.name.toLowerCase().endsWith(".docx")) {
     return NextResponse.json({ error: "Шаблон должен быть в формате .docx" }, { status: 400 });
   }
 
@@ -68,10 +124,7 @@ export async function POST(request: NextRequest) {
   try {
     placeholders = await extractPlaceholders(buf);
   } catch {
-    return NextResponse.json(
-      { error: "Не удалось прочитать .docx — файл повреждён?" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Не удалось прочитать .docx — файл повреждён?" }, { status: 400 });
   }
 
   const id = await dbInsertTemplate({
@@ -82,22 +135,44 @@ export async function POST(request: NextRequest) {
     data: buf,
     placeholders,
     skipAutoBlocks,
+    source: "docx",
   });
 
   return NextResponse.json({ id, placeholders });
 }
 
-/** Переключить флаг «шаблон уже содержит шапку/подписанта». */
 export async function PATCH(request: NextRequest) {
   const denied = await guard(request);
   if (denied) return denied;
-  let body: { id?: number; skipAutoBlocks?: boolean };
+  let body: {
+    id?: number;
+    skipAutoBlocks?: boolean;
+    name?: string;
+    serviceType?: string;
+    orgKey?: string | null;
+    bodyHtml?: string;
+  };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
   }
   if (!body.id) return NextResponse.json({ error: "Не указан id" }, { status: 400 });
+
+  // Полное редактирование (HTML-тело задано).
+  if (typeof body.bodyHtml === "string" && body.serviceType) {
+    await dbUpdateTemplate(body.id, {
+      name: body.name || "Шаблон",
+      serviceType: body.serviceType,
+      orgKey: body.orgKey || null,
+      skipAutoBlocks: body.skipAutoBlocks ?? false,
+      bodyHtml: body.bodyHtml,
+      placeholders: extractPlaceholdersFromHtml(body.bodyHtml),
+    });
+    return NextResponse.json({ ok: true });
+  }
+
+  // Только переключение флага.
   await dbSetTemplateSkipAuto(body.id, Boolean(body.skipAutoBlocks));
   return NextResponse.json({ ok: true });
 }
