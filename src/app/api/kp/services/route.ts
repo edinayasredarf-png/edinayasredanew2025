@@ -5,6 +5,7 @@ import {
   dbDeleteServiceType,
   dbListServiceTypes,
   dbRenameServiceType,
+  dbSetServiceDefaultTable,
   dbSetServiceFormula,
   dbSetServiceTypeActive,
 } from "@/lib/server/kp/kpDb";
@@ -56,6 +57,7 @@ export async function PATCH(request: NextRequest) {
     name?: string;
     isActive?: boolean;
     rowFormula?: string;
+    defaultTable?: string;
   };
   try {
     body = await request.json();
@@ -64,6 +66,10 @@ export async function PATCH(request: NextRequest) {
   }
   if (body.oldName && body.newName) {
     await dbRenameServiceType(body.oldName, body.newName);
+    return NextResponse.json({ ok: true });
+  }
+  if (body.name && typeof body.defaultTable === "string") {
+    await dbSetServiceDefaultTable(body.name, body.defaultTable);
     return NextResponse.json({ ok: true });
   }
   if (body.name && typeof body.rowFormula === "string") {

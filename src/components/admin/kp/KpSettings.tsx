@@ -54,7 +54,7 @@ export default function KpSettings({
       <AliasesManager aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
 
       {/* Услуги */}
-      <ServicesManager services={services} onChanged={onChanged} setStatus={setStatus} />
+      <ServicesManager services={services} calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
       {/* Компании */}
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -653,14 +653,25 @@ function TableEditor({
 
 /* ─────────── Услуги ─────────── */
 function ServicesManager({
-  services, onChanged, setStatus,
+  services, calcTables, onChanged, setStatus,
 }: {
   services: ServiceType[];
+  calcTables: CalcTableDef[];
   onChanged: () => void;
   setStatus: (s: string) => void;
 }) {
   const [newName, setNewName] = useState('');
   const [edits, setEdits] = useState<Record<string, string>>({});
+
+  const setDefaultTable = async (name: string, defaultTable: string) => {
+    await fetch('/api/kp/services', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, defaultTable }),
+    });
+    setStatus('Таблица услуги обновлена');
+    onChanged();
+  };
 
   const add = async () => {
     if (!newName.trim()) return;
@@ -724,6 +735,17 @@ function ServicesManager({
               {(edits[s.name] ?? s.name) !== s.name && (
                 <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
               )}
+              <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                таблица:
+                <select
+                  value={s.defaultTable}
+                  onChange={(e) => setDefaultTable(s.name, e.target.value)}
+                  className="px-2 py-1 rounded border border-gray-200 text-xs bg-white"
+                >
+                  <option value="">— без таблицы —</option>
+                  {calcTables.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
+                </select>
+              </label>
               <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
                 <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
                 активна

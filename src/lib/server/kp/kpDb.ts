@@ -621,6 +621,12 @@ export async function dbSetServiceFormula(name: string, formula: string): Promis
   await pool.query("update kp_service_types set row_formula=$2 where name=$1", [name, formula.slice(0, 1000)]);
 }
 
+export async function dbSetServiceDefaultTable(name: string, tableKey: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("update kp_service_types set default_table=$2 where name=$1", [name, tableKey.slice(0, 100)]);
+}
+
 export async function dbAddServiceType(name: string, sortOrder = 0): Promise<void> {
   await ensureTables();
   const pool = getTimewebPool();
