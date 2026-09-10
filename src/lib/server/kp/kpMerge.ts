@@ -312,15 +312,15 @@ export function buildKpContext(input: {
     line_service_quantity: payload.object?.quantityUnits ? " " : "",
   };
 
-  // Строка «ВСЕГО с АИС» в подвале таблицы (под колонкой стоимости).
+  // Строка «ВСЕГО с АИС» в подвале таблицы — под каждой денежной колонкой (обе цены).
   const table = ct.data;
-  if (payload.includes.ais && aisTotal > 0 && ct.costColIndex >= 0) {
+  if (payload.includes.ais && aisTotal > 0 && ct.moneyCols.length) {
     table.footers.push(
       table.headers.map((_, ci) =>
         ci === 0
           ? 'ВСЕГО с АИС «Единая среда»'
-          : ci === ct.costColIndex
-            ? formatMoney(serviceTotal + aisTotal)
+          : ct.moneyCols.includes(ci)
+            ? formatMoney(ct.colSums[ci] + aisTotal)
             : ""
       )
     );

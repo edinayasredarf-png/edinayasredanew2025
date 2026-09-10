@@ -23,6 +23,13 @@ function fmtMoney(n: number): string {
   return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + '.' + d;
 }
 
+/** Состав КП по названию услуги: услуга / АИС «ЕС» / пролонгация. */
+function deriveIncludes(svc: string): { service: boolean; ais: boolean; renewal: boolean } {
+  const prolong = svc.includes('Пролонгац');
+  const es = svc.includes('ЕС') || svc.includes('Единая');
+  return { service: !prolong, ais: es && !prolong, renewal: prolong };
+}
+
 /** Стоимость услуги по строкам через колонку-стоимость таблицы (для превью). */
 function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Record<string, number>): number {
   const costCol = columns.find((c) => c.isCost);
@@ -62,9 +69,8 @@ export default function KpGenerator() {
   const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
   const [mode, setMode] = useState<PriceMode>('direct');
   const [ruralSettlement, setRuralSettlement] = useState(false);
-  const [incService, setIncService] = useState(true);
-  const [incAis, setIncAis] = useState(false);
-  const [incRenewal, setIncRenewal] = useState(false);
+  // Состав КП выводится из выбранной услуги (свой шаблон на услугу).
+  const inc = deriveIncludes(serviceType);
 
   const [clientOrgFull, setClientOrgFull] = useState('');
   const [clientFio, setClientFio] = useState('');
@@ -105,10 +111,6 @@ export default function KpGenerator() {
   const [columns, setColumns] = useState<CalcColumn[]>([]);
   const [rows, setRows] = useState<RowData[]>([{}]);
 
-  const [aisLicenses, setAisLicenses] = useState('1');
-  const [aisPrice, setAisPrice] = useState('');
-  const [renewalYears, setRenewalYears] = useState('1');
-  const [renewalPrice, setRenewalPrice] = useState('');
 
   const [busy, setBusy] = useState(false);
 
@@ -157,6 +159,13 @@ export default function KpGenerator() {
     setRows([{}]);
   };
 
+  // Смена услуги → автоматически подставляем её таблицу расчёта.
+  const onSelectService = (name: string) => {
+    setServiceType(name);
+    const def = services.find((s) => s.name === name)?.defaultTable;
+    if (def && calcTables.some((t) => t.key === def)) onSelectTable(def);
+  };
+
   const tierFor = useCallback(
     (orgKey: string): Tier | undefined =>
       tiers.find((t) => t.orgKey === orgKey && t.serviceType === serviceType),
@@ -180,12 +189,9 @@ export default function KpGenerator() {
         price_tender: tier?.pricePerHaTender ?? 0,
         min_ha: tier?.minHectares ?? 1,
       };
-      const serviceTotal = incService ? computeServiceTotal(columns, rows, scope) : 0;
-      const aisPer = toNum(aisPrice || tier?.aisPrice || 0) / (ruralSettlement ? 1.6 : 1);
-      const ais = incAis ? toNum(aisLicenses) * aisPer : 0;
-      const renewal = incRenewal
-        ? toNum(renewalYears) * toNum(renewalPrice || tier?.renewalPerYear || 0)
-        : 0;
+      const serviceTotal = inc.service ? computeServiceTotal(columns, rows, scope) : 0;
+      const ais = inc.ais ? toNum(tier?.aisPrice || 0) / (ruralSettlement ? 1.6 : 1) : 0;
+      const renewal = inc.renewal ? toNum(tier?.renewalPerYear || 0) : 0;
       const hasTemplate = templates.some(
         (t) => t.serviceType === serviceType && (t.orgKey === key || t.orgKey === null)
       );
@@ -199,7 +205,7 @@ export default function KpGenerator() {
         hasTemplate,
       };
     });
-  }, [selectedOrgs, orgs, tierFor, mode, ruralSettlement, incService, incAis, incRenewal, aisLicenses, aisPrice, renewalYears, renewalPrice, rows, columns, templates, serviceType]);
+  }, [selectedOrgs, orgs, tierFor, mode, ruralSettlement, inc.service, inc.ais, inc.renewal, rows, columns, templates, serviceType]);
 
   const previewTier = tierFor(selectedOrgs[0] || '');
   const previewScope = {
@@ -215,7 +221,7 @@ export default function KpGenerator() {
       serviceType,
       mode,
       ruralSettlement,
-      includes: { service: incService, ais: incAis, renewal: incRenewal },
+      includes: inc,
       client: {
         orgFull: clientOrgFull,
         fioFull: clientFio,
@@ -228,10 +234,8 @@ export default function KpGenerator() {
       kp: { date: kpDate || undefined, number: kpNumber || undefined, validityPeriod },
       table: { key: selectedTableKey, name: calcTables.find((t) => t.key === selectedTableKey)?.name, columns },
       rows: rows.filter((r) => Object.values(r).some((v) => (v || '').trim())),
-      ais: incAis ? { licenses: toNum(aisLicenses), pricePerLicense: toNum(aisPrice) } : undefined,
-      renewal: incRenewal
-        ? { years: toNum(renewalYears), pricePerYear: toNum(renewalPrice) }
-        : undefined,
+      ais: inc.ais ? { licenses: 1 } : undefined,
+      renewal: inc.renewal ? { years: 1 } : undefined,
     },
     bitrix: uploadToBitrix && dealId ? { dealId, upload: true } : undefined,
     orgKeys: selectedOrgs,
@@ -327,9 +331,8 @@ export default function KpGenerator() {
       {tab === 'create' && (
         <CreateTab
           {...{
-            orgs, serviceTypes, serviceType, setServiceType,
+            orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
-            incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
             clientOrgFull, setClientOrgFull,
             clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
@@ -337,8 +340,6 @@ export default function KpGenerator() {
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
-            aisLicenses, setAisLicenses, aisPrice, setAisPrice,
-            renewalYears, setRenewalYears, renewalPrice, setRenewalPrice,
             perOrgTotals, generate, busy,
           }}
         />
@@ -379,9 +380,8 @@ export default function KpGenerator() {
 type CreateProps = Record<string, unknown>;
 function CreateTab(p: CreateProps) {
   const {
-    orgs, serviceTypes, serviceType, setServiceType,
+    orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
-    incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
     clientOrgFull, setClientOrgFull,
     clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
@@ -389,15 +389,12 @@ function CreateTab(p: CreateProps) {
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
-    aisLicenses, setAisLicenses, aisPrice, setAisPrice,
-    renewalYears, setRenewalYears, renewalPrice, setRenewalPrice,
     perOrgTotals, generate, busy,
   } = p as never as {
-    orgs: Organization[]; serviceTypes: string[]; serviceType: string; setServiceType: (v: string) => void;
+    orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
+    inc: { service: boolean; ais: boolean; renewal: boolean };
     selectedOrgs: string[]; toggleOrg: (k: string) => void; tierFor: (k: string) => Tier | undefined;
     mode: PriceMode; setMode: (v: PriceMode) => void; ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
-    incService: boolean; setIncService: (v: boolean) => void; incAis: boolean; setIncAis: (v: boolean) => void;
-    incRenewal: boolean; setIncRenewal: (v: boolean) => void;
     clientOrgFull: string; setClientOrgFull: (v: string) => void;
     clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
@@ -412,8 +409,6 @@ function CreateTab(p: CreateProps) {
     columns: CalcColumn[]; setColumns: React.Dispatch<React.SetStateAction<CalcColumn[]>>;
     rows: RowData[]; setRows: React.Dispatch<React.SetStateAction<RowData[]>>;
     previewScope: { price: number; price_direct: number; price_tender: number; min_ha: number };
-    aisLicenses: string; setAisLicenses: (v: string) => void; aisPrice: string; setAisPrice: (v: string) => void;
-    renewalYears: string; setRenewalYears: (v: string) => void; renewalPrice: string; setRenewalPrice: (v: string) => void;
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
   };
@@ -429,7 +424,7 @@ function CreateTab(p: CreateProps) {
         <div className={panel}>
           <div>
             <div className={label}>Тип услуги</div>
-            <select value={serviceType} onChange={(e) => setServiceType(e.target.value)} className={input}>
+            <select value={serviceType} onChange={(e) => onSelectService(e.target.value)} className={input}>
               {serviceTypes.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
@@ -478,13 +473,13 @@ function CreateTab(p: CreateProps) {
               </label>
             </div>
             <div>
-              <div className={label}>Что включаем в КП</div>
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Chk checked={incService} onChange={setIncService} text="Услуга" desc="Основная услуга по таблице расчёта" />
-                <Chk checked={incAis} onChange={setIncAis} text='АИС «Единая среда»' desc="Продажа системы: лицензии + обучение и внедрение" />
-                <Chk checked={incRenewal} onChange={setIncRenewal} text="Пролонгация" desc="Продление, поддержка и обновления по годам" />
+              <div className={label}>Входит в услугу</div>
+              <div className="flex flex-wrap gap-1 pt-1 text-xs">
+                {inc.service && <span className="px-2 py-1 rounded-lg bg-[#EAF6FC] text-[#0b5c7d]">Услуга</span>}
+                {inc.ais && <span className="px-2 py-1 rounded-lg bg-[#EAF6FC] text-[#0b5c7d]">АИС «Единая среда»</span>}
+                {inc.renewal && <span className="px-2 py-1 rounded-lg bg-[#EAF6FC] text-[#0b5c7d]">Пролонгация</span>}
               </div>
-              <div className="text-[11px] text-gray-400 mt-1">Итоговая стоимость = сумма отмеченных блоков. Отмечайте нужные продукты для этого КП.</div>
+              <div className="text-[11px] text-gray-400 mt-1">Состав определяется выбранной услугой (у каждой свой шаблон и таблица).</div>
             </div>
           </div>
         </div>
@@ -590,33 +585,10 @@ function CreateTab(p: CreateProps) {
           />
         </div>
 
-        {/* АИС / Пролонгация */}
-        {(incAis || incRenewal) && (
-          <div className={panel}>
-            {incAis && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <div className={label}>АИС: количество лицензий</div>
-                  <input value={aisLicenses} onChange={(e) => setAisLicenses(e.target.value)} className={input} inputMode="numeric" />
-                </div>
-                <div>
-                  <div className={label}>АИС: цена за лицензию (пусто = из тарифа)</div>
-                  <input value={aisPrice} onChange={(e) => setAisPrice(e.target.value)} className={input} inputMode="decimal" placeholder="из тарифа организации" />
-                </div>
-              </div>
-            )}
-            {incRenewal && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <div className={label}>Пролонгация: лет</div>
-                  <input value={renewalYears} onChange={(e) => setRenewalYears(e.target.value)} className={input} inputMode="numeric" />
-                </div>
-                <div>
-                  <div className={label}>Пролонгация: цена за год (пусто = из тарифа)</div>
-                  <input value={renewalPrice} onChange={(e) => setRenewalPrice(e.target.value)} className={input} inputMode="decimal" placeholder="из тарифа организации" />
-                </div>
-              </div>
-            )}
+        {(inc.ais || inc.renewal) && (
+          <div className="text-xs text-gray-400">
+            {inc.ais && <span>Цена АИС «Единая среда» берётся из тарифа выбранной компании{ruralSettlement ? ' (÷1,6 для сельского поселения)' : ''}. </span>}
+            {inc.renewal && <span>Стоимость пролонгации — из тарифа компании.</span>}
           </div>
         )}
       </div>
@@ -668,19 +640,6 @@ function CreateTab(p: CreateProps) {
         </div>
       </div>
     </div>
-  );
-}
-
-function Chk({ checked, onChange, text, desc }: { checked: boolean; onChange: (v: boolean) => void; text: string; desc?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className={`text-left px-3 py-2 rounded-lg text-sm border ${checked ? 'border-[#029cda] bg-[#EAF6FC] text-[#0b5c7d]' : 'border-gray-200 bg-white text-gray-600'}`}
-    >
-      <div className="font-medium">{checked ? '✓ ' : ''}{text}</div>
-      {desc && <div className="text-[11px] text-gray-400 leading-tight mt-0.5">{desc}</div>}
-    </button>
   );
 }
 

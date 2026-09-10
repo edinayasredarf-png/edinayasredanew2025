@@ -78,6 +78,7 @@ export interface ComputedTable {
   serviceTotal: number;
   costColIndex: number; // индекс колонки стоимости (для строки «+АИС»)
   colSums: number[]; // суммы по колонкам (0, если не суммируется)
+  moneyCols: number[]; // индексы денежных суммируемых колонок
 }
 
 /** Вычисляет таблицу: подставляет формулы построчно, считает суммы и стоимость. */
@@ -135,6 +136,10 @@ export function computeTable(
   });
 
   const serviceTotal = costColIndex >= 0 ? colSums[costColIndex] : 0;
+  // Денежные суммируемые колонки (для строки «ВСЕГО с АИС» по обеим ценам).
+  const moneyCols = columns
+    .map((c, ci) => (c.isCost || (c.sum && c.money) ? ci : -1))
+    .filter((i) => i >= 0);
 
   // строка ИТОГО: «ВСЕГО» в первой колонке, суммы — под суммируемыми
   const footerRow: string[] = columns.map((c, ci) => {
@@ -148,6 +153,7 @@ export function computeTable(
     serviceTotal,
     costColIndex,
     colSums,
+    moneyCols,
   };
 }
 

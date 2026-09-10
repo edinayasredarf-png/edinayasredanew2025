@@ -97,6 +97,7 @@ export interface ServiceType {
   sortOrder: number;
   isActive: boolean;
   rowFormula: string;
+  defaultTable: string;
 }
 
 export interface HeaderLayout {

@@ -54,7 +54,7 @@ const TEMPLATES: SeedTemplate[] = [
 <p>{{client_greeting}}</p>
 <p>Направляем Вам коммерческое предложение на оказание услуг по проведению инвентаризации мест захоронений и внесению сведений о них в цифровой реестр АИС «Единая Среда» на территории {{territory}}.</p>
 ${ES_BLOCK}
-<p><strong>Стоимость проведения инвентаризации ({{cadastral_cost_type}}):</strong></p>
+<p><strong>Стоимость проведения инвентаризации:</strong></p>
 <p>{{cadastral_table}}</p>
 ${NOTE}`.trim(),
   },
@@ -89,7 +89,7 @@ ${NOTE}`.trim(),
     bodyHtml: `
 <p>{{client_greeting}}</p>
 <p>{{request_intro}} создание электронной базы данных мест захоронений с занесением сведений в АИС «Единая Среда» на территории {{territory}}, сообщаем:</p>
-<p><strong>Стоимость работ ({{cadastral_cost_type}}):</strong></p>
+<p><strong>Стоимость работ:</strong></p>
 <p>{{cadastral_table}}</p>
 ${NOTE}
 ${INCLUDES}`.trim(),

@@ -199,13 +199,38 @@ async function ensureTables(): Promise<void> {
   await pool.query(
     `alter table kp_service_types add column if not exists row_formula text not null default ''`
   );
-  // Добавляем недостающие услуги (не затирая пользовательские).
+  await pool.query(
+    `alter table kp_service_types add column if not exists default_table text not null default ''`
+  );
+  // Добавляем недостающие услуги (не затирая пользовательские) + таблица по умолчанию.
+  const svcDefaultTable: Record<string, string> = {
+    "ИМЗ": "raschet",
+    "ИМЗ + ЕС": "raschet",
+    "ИЗН": "izn",
+    "ИЗН + ЕС": "uslugi",
+    "ИЗН + ИМЗ + ЕС": "uslugi",
+    "Контейнерные площадки": "containers",
+    "ЕС": "flat",
+    "Лесохозяйственный регламент": "flat",
+    "Лесоустройство": "flat",
+    "Лес + ЛХР": "flat",
+    "Проект освоения лесов": "flat",
+    "Пролонгация ЕС": "flat",
+    "ФГИС ЛК": "flat",
+  };
   let stI = 1;
   for (const name of KP_SERVICE_TYPES) {
     await pool.query(
-      "insert into kp_service_types (name, sort_order) values ($1,$2) on conflict (name) do nothing",
-      [name, stI++]
+      "insert into kp_service_types (name, sort_order, default_table) values ($1,$2,$3) on conflict (name) do nothing",
+      [name, stI++, svcDefaultTable[name] || ""]
     );
+    // Проставить таблицу по умолчанию, если ещё пусто (миграция существующих).
+    if (svcDefaultTable[name]) {
+      await pool.query(
+        "update kp_service_types set default_table=$2 where name=$1 and coalesce(default_table,'')=''",
+        [name, svcDefaultTable[name]]
+      );
+    }
   }
 
   // Настройки (key/value JSON): например, расположение шапки документа.
@@ -275,31 +300,32 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
   // (не затирает пользовательские правки).
   const idx = { key: "idx", label: "№", kind: "index", align: "center" };
   const money = { isCost: true, sum: true, money: true };
+  const costD = { isCost: true, sum: true, money: true }; // колонка «прямой» — идёт в итог
+  const costT = { sum: true, money: true }; // колонка «торги» — только показ/сумма
 
   const defaults: Array<{ key: string; name: string; sort: number; columns: unknown[] }> = [
     {
       key: "raschet",
-      name: "Кладбища / территории (авто-цена из тарифа)",
+      name: "Кладбища / территории (прямой + торги, авто-цена)",
       sort: 1,
       columns: [
         idx,
         { key: "name", label: "Наименование территории", kind: "text", align: "left" },
         { key: "cadastral", label: "Кадастровый номер", kind: "text", align: "center" },
-        { key: "area_sqm", label: "Площадь, м²", kind: "number", align: "center", sum: true },
-        { key: "cost", label: "Стоимость, руб.", kind: "formula", formula: "max(area_sqm/10000, min_ha) * price", align: "center", ...money },
+        { key: "area_sqm", label: "Площадь, кв.м", kind: "number", align: "center", sum: true },
+        { key: "cost_direct", label: "Стоимость, руб. (для прямого контракта)", kind: "formula", formula: "max(area_sqm/10000, min_ha) * price_direct", align: "center", ...costD },
+        { key: "cost_tender", label: "Стоимость, руб. (торги)", kind: "formula", formula: "max(area_sqm/10000, min_ha) * price_tender", align: "center", ...costT },
       ],
     },
     {
       key: "izn",
-      name: "ИЗН (площадь/протяжённость, цена за единицу)",
+      name: "ИЗН (прямой + торги, цена вручную)",
       sort: 2,
       columns: [
-        idx,
-        { key: "name", label: "Наименование услуги", kind: "text", align: "left" },
-        { key: "qty", label: "Кол-во (Га/км)", kind: "number", align: "center", sum: true },
-        { key: "unit", label: "Ед. изм.", kind: "text", align: "center" },
-        { key: "unit_price", label: "Цена за ед., руб.", kind: "number", align: "center" },
-        { key: "cost", label: "Стоимость, руб.", kind: "formula", formula: "qty * unit_price", align: "center", ...money },
+        { key: "name", label: "Услуга", kind: "text", align: "left" },
+        { key: "area", label: "Площадь", kind: "text", align: "center" },
+        { key: "cost_direct", label: "Стоимость, руб. (для прямого контракта)", kind: "number", align: "center", ...costD },
+        { key: "cost_tender", label: "Стоимость, руб. (для торгового контракта)", kind: "number", align: "center", ...costT },
       ],
     },
     {
@@ -341,6 +367,29 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
       "insert into kp_calc_tables (key, name, columns, sort_order) values ($1,$2,$3,$4) on conflict (key) do nothing",
       [t.key, t.name, JSON.stringify(t.columns), t.sort]
     );
+  }
+
+  // Миграция ранее засеянных raschet/izn на две ценовые колонки (прямой+торги).
+  // Обновляем только если ещё старая схема (нет колонки cost_direct) — правки не трогаем.
+  for (const key of ["raschet", "izn"]) {
+    const def = defaults.find((d) => d.key === key);
+    if (!def) continue;
+    const { rows } = await pool.query("select columns from kp_calc_tables where key=$1", [key]);
+    if (!rows[0]) continue;
+    let cols: Array<{ key?: string }> = [];
+    try {
+      cols = JSON.parse(String(rows[0].columns));
+    } catch {
+      cols = [];
+    }
+    const hasDirect = cols.some((c) => c.key === "cost_direct");
+    if (!hasDirect) {
+      await pool.query("update kp_calc_tables set name=$2, columns=$3 where key=$1", [
+        key,
+        def.name,
+        JSON.stringify(def.columns),
+      ]);
+    }
   }
 }
 
@@ -541,19 +590,21 @@ export interface KpServiceTypeRow {
   sortOrder: number;
   isActive: boolean;
   rowFormula: string;
+  defaultTable: string; // ключ таблицы расчёта по умолчанию для этой услуги
 }
 
 export async function dbListServiceTypes(activeOnly = false): Promise<KpServiceTypeRow[]> {
   await ensureTables();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    `select name, sort_order, is_active, row_formula from kp_service_types ${activeOnly ? "where is_active" : ""} order by sort_order, name`
+    `select name, sort_order, is_active, row_formula, default_table from kp_service_types ${activeOnly ? "where is_active" : ""} order by sort_order, name`
   );
   return rows.map((r) => ({
     name: String(r.name),
     sortOrder: Number(r.sort_order ?? 0),
     isActive: Boolean(r.is_active),
     rowFormula: String(r.row_formula ?? ""),
+    defaultTable: String(r.default_table ?? ""),
   }));
 }
 
