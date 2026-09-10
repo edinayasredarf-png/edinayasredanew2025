@@ -8,6 +8,7 @@ const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { s
 
 import { evalFormulaSafe } from './formulaClient';
 import KpCalcGrid from './KpCalcGrid';
+import KpAutocomplete from './KpAutocomplete';
 import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, PriceMode, ServiceType, HeaderLayout, Alias, CalcColumn, CalcTableDef, RowData } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
@@ -65,7 +66,6 @@ export default function KpGenerator() {
   const [incRenewal, setIncRenewal] = useState(false);
 
   const [clientOrgFull, setClientOrgFull] = useState('');
-  const [clientOrgShort, setClientOrgShort] = useState('');
   const [clientFio, setClientFio] = useState('');
   const [clientPosition, setClientPosition] = useState('');
   const [salutation, setSalutation] = useState('');
@@ -193,7 +193,6 @@ export default function KpGenerator() {
       includes: { service: incService, ais: incAis, renewal: incRenewal },
       client: {
         orgFull: clientOrgFull,
-        orgShort: clientOrgShort,
         fioFull: clientFio,
         position: clientPosition || undefined,
         salutation: salutation || undefined,
@@ -301,7 +300,7 @@ export default function KpGenerator() {
             orgs, serviceTypes, serviceType, setServiceType,
             selectedOrgs, toggleOrg, tierFor, mode, setMode,
             incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
-            clientOrgFull, setClientOrgFull, clientOrgShort, setClientOrgShort,
+            clientOrgFull, setClientOrgFull,
             clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -352,7 +351,7 @@ function CreateTab(p: CreateProps) {
     orgs, serviceTypes, serviceType, setServiceType,
     selectedOrgs, toggleOrg, tierFor, mode, setMode,
     incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
-    clientOrgFull, setClientOrgFull, clientOrgShort, setClientOrgShort,
+    clientOrgFull, setClientOrgFull,
     clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -367,7 +366,7 @@ function CreateTab(p: CreateProps) {
     mode: PriceMode; setMode: (v: PriceMode) => void;
     incService: boolean; setIncService: (v: boolean) => void; incAis: boolean; setIncAis: (v: boolean) => void;
     incRenewal: boolean; setIncRenewal: (v: boolean) => void;
-    clientOrgFull: string; setClientOrgFull: (v: string) => void; clientOrgShort: string; setClientOrgShort: (v: string) => void;
+    clientOrgFull: string; setClientOrgFull: (v: string) => void;
     clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
     kpDate: string; setKpDate: (v: string) => void; kpNumber: string; setKpNumber: (v: string) => void;
     requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
@@ -455,26 +454,21 @@ function CreateTab(p: CreateProps) {
           <div className="text-sm font-semibold text-[#313131]">👤 Данные клиента</div>
           <div>
             <div className={label}>Полное наименование организации клиента *</div>
-            <input value={clientOrgFull} onChange={(e) => setClientOrgFull(e.target.value)} className={input} placeholder='Администрация Николаевского муниципального района' />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <div className={label}>Короткое название (для имени файла)</div>
-              <input value={clientOrgShort} onChange={(e) => setClientOrgShort(e.target.value)} className={input} placeholder="Николаевский р-н" />
-            </div>
-            <div>
-              <div className={label}>Обращение</div>
-              <select value={salutation} onChange={(e) => setSalutation(e.target.value)} className={input}>
-                <option value="">Авто (по ФИО)</option>
-                <option value="Уважаемый">Уважаемый</option>
-                <option value="Уважаемая">Уважаемая</option>
-              </select>
-            </div>
+            <KpAutocomplete value={clientOrgFull} onChange={setClientOrgFull} type="company" onPick={(it) => setClientOrgFull(it.title)} className={input} placeholder='Администрация Николаевского муниципального района' />
+            <div className="text-xs text-gray-400 mt-1">Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.</div>
           </div>
           <div>
             <div className={label}>Полное ФИО клиента *</div>
-            <input value={clientFio} onChange={(e) => setClientFio(e.target.value)} className={input} placeholder="Иванов Иван Иванович" />
-            <div className="text-xs text-gray-400 mt-1">Система сама сделает «Иванов И.И.» / «Иванову И.И.» (дат.) и подберёт обращение по роду.</div>
+            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); }} className={input} placeholder="Иванов Иван Иванович" />
+            <div className="text-xs text-gray-400 mt-1">Подсказки из Bitrix24 (контакты). «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.</div>
+          </div>
+          <div>
+            <div className={label}>Обращение</div>
+            <select value={salutation} onChange={(e) => setSalutation(e.target.value)} className={`${input} sm:max-w-xs`}>
+              <option value="">Авто (по ФИО)</option>
+              <option value="Уважаемый">Уважаемый</option>
+              <option value="Уважаемая">Уважаемая</option>
+            </select>
           </div>
           <div>
             <div className={label}>Должность клиента (для адресата в шапке)</div>

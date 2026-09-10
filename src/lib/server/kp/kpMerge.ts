@@ -106,6 +106,19 @@ export function fioShortLastFirst(fio: string): string {
   return `${last} ${ini}`.trim();
 }
 
+/** Короткое имя организации для имени файла: из кавычек или без правовой формы. */
+export function deriveShortName(orgFull: string): string {
+  const s = (orgFull || "").trim();
+  if (!s) return "";
+  const q = s.match(/[«"]([^»"]+)[»"]/);
+  if (q?.[1]) return q[1].trim().slice(0, 60);
+  const stripped = s.replace(
+    /^(ООО|ОАО|ЗАО|ПАО|АО|НАО|ИП|МУП|ГУП|ФГУП|МКУ|МБУ|ГБУ|ФГБУ|Общество с ограниченной ответственностью|Индивидуальный предприниматель|Акционерное общество|Публичное акционерное общество)\s+/i,
+    ""
+  );
+  return stripped.replace(/[«»"]/g, "").trim().slice(0, 60) || s.slice(0, 60);
+}
+
 /** «Иванову И.И.» — фамилия в дательном падеже + инициалы. */
 export function fioShortDative(fio: string): string {
   const { last, first, middle } = parseFio(fio);
@@ -210,7 +223,7 @@ export function buildKpContext(input: {
     kp_validity_period: payload.kp.validityPeriod?.trim() || "30 дней",
     // Клиент
     client_org_full: payload.client.orgFull.trim(),
-    client_org_short: payload.client.orgShort?.trim() || payload.client.orgFull.trim(),
+    client_org_short: payload.client.orgShort?.trim() || deriveShortName(payload.client.orgFull),
     client_fio_full: payload.client.fioFull.trim(),
     client_fio_short: fioShortLastFirst(payload.client.fioFull),
     client_fio_short_dative: fioShortDative(payload.client.fioFull),
@@ -295,7 +308,7 @@ export function buildKpContext(input: {
     );
   }
 
-  const filenameBase = `КП ${payload.client.orgShort?.trim() || payload.client.orgFull.trim()} ${org.shortName || org.name}`.trim();
+  const filenameBase = `КП ${payload.client.orgShort?.trim() || deriveShortName(payload.client.orgFull)} ${org.shortName || org.name}`.trim();
 
   return {
     tags,
