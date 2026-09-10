@@ -43,7 +43,12 @@ export interface KpFormPayload {
   ais?: { licenses: number; pricePerLicense: number };
   renewal?: { years: number; pricePerYear: number };
   vat?: { mode: "none" | "usn" | "nds"; rate?: number };
+  /** Сельское поселение: цена АИС делится на 1,6. */
+  ruralSettlement?: boolean;
 }
+
+/** Коэффициент удешевления АИС для сельского поселения. */
+const RURAL_AIS_DIVISOR = 1.6;
 
 interface KpCalcSummary {
   serviceTotal: number;
@@ -184,8 +189,16 @@ export function buildKpContext(input: {
       }`
     : "";
 
+  // Готовая вступительная фраза: есть номер запроса → «В ответ на ваш запрос …»,
+  // иначе → «Направляем для вас КП на».
+  const requestIntro = payload.client.requestNumber?.trim()
+    ? `В ответ на ваш запрос ${requestRef}`
+    : "Направляем для вас КП на";
+
   const aisLicenses = payload.ais?.licenses ?? 0;
-  const aisPrice = payload.ais?.pricePerLicense ?? tier.aisPrice;
+  // Сельское поселение — цена АИС делится на 1,6.
+  const aisPriceRaw = payload.ais?.pricePerLicense ?? tier.aisPrice;
+  const aisPrice = payload.ruralSettlement ? toNum(aisPriceRaw) / RURAL_AIS_DIVISOR : toNum(aisPriceRaw);
   const renewalYears = payload.renewal?.years ?? 0;
   const renewalPerYear = payload.renewal?.pricePerYear ?? tier.renewalPerYear;
 
@@ -234,6 +247,7 @@ export function buildKpContext(input: {
     client_request_number: payload.client.requestNumber?.trim() || "",
     client_request_date: shortDateRu(payload.client.requestDate),
     client_request_reference: requestRef,
+    request_intro: requestIntro, // «В ответ на ваш запрос …» или «Направляем для вас КП на»
     // Отправитель / исполнитель / шапка / подписант
     sender_org: org.name,
     sender_org_short: org.shortName || org.name,

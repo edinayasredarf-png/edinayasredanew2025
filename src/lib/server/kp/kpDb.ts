@@ -400,6 +400,7 @@ const BUILTIN_ALIASES: Array<[string, string]> = [
   ["client_position_dative", "Должность дат. (Главе …)"],
   ["client_salutation", "Обращение (Уважаемый/-ая)"],
   ["client_request_reference", "Ссылка на запрос (№ … от …)"],
+  ["request_intro", "Вступление: «В ответ на ваш запрос…» / «Направляем для вас КП на»"],
   ["sender_org", "Компания-отправитель"],
   ["sender_org_short", "Компания (кратко)"],
   ["company_header", "Текстовая шапка компании"],

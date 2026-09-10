@@ -61,6 +61,7 @@ export default function KpGenerator() {
   const [serviceType, setServiceType] = useState('ИМЗ');
   const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
   const [mode, setMode] = useState<PriceMode>('direct');
+  const [ruralSettlement, setRuralSettlement] = useState(false);
   const [incService, setIncService] = useState(true);
   const [incAis, setIncAis] = useState(false);
   const [incRenewal, setIncRenewal] = useState(false);
@@ -179,7 +180,8 @@ export default function KpGenerator() {
         min_ha: tier?.minHectares ?? 1,
       };
       const serviceTotal = incService ? computeServiceTotal(columns, rows, scope) : 0;
-      const ais = incAis ? toNum(aisLicenses) * toNum(aisPrice || tier?.aisPrice || 0) : 0;
+      const aisPer = toNum(aisPrice || tier?.aisPrice || 0) / (ruralSettlement ? 1.6 : 1);
+      const ais = incAis ? toNum(aisLicenses) * aisPer : 0;
       const renewal = incRenewal
         ? toNum(renewalYears) * toNum(renewalPrice || tier?.renewalPerYear || 0)
         : 0;
@@ -196,7 +198,7 @@ export default function KpGenerator() {
         hasTemplate,
       };
     });
-  }, [selectedOrgs, orgs, tierFor, mode, incService, incAis, incRenewal, aisLicenses, aisPrice, renewalYears, renewalPrice, rows, columns, templates, serviceType]);
+  }, [selectedOrgs, orgs, tierFor, mode, ruralSettlement, incService, incAis, incRenewal, aisLicenses, aisPrice, renewalYears, renewalPrice, rows, columns, templates, serviceType]);
 
   const previewTier = tierFor(selectedOrgs[0] || '');
   const previewScope = {
@@ -211,6 +213,7 @@ export default function KpGenerator() {
     form: {
       serviceType,
       mode,
+      ruralSettlement,
       includes: { service: incService, ais: incAis, renewal: incRenewal },
       client: {
         orgFull: clientOrgFull,
@@ -323,7 +326,7 @@ export default function KpGenerator() {
         <CreateTab
           {...{
             orgs, serviceTypes, serviceType, setServiceType,
-            selectedOrgs, toggleOrg, tierFor, mode, setMode,
+            selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
             incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
             clientOrgFull, setClientOrgFull,
             clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
@@ -375,7 +378,7 @@ type CreateProps = Record<string, unknown>;
 function CreateTab(p: CreateProps) {
   const {
     orgs, serviceTypes, serviceType, setServiceType,
-    selectedOrgs, toggleOrg, tierFor, mode, setMode,
+    selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
     incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
     clientOrgFull, setClientOrgFull,
     clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
@@ -390,7 +393,7 @@ function CreateTab(p: CreateProps) {
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; setServiceType: (v: string) => void;
     selectedOrgs: string[]; toggleOrg: (k: string) => void; tierFor: (k: string) => Tier | undefined;
-    mode: PriceMode; setMode: (v: PriceMode) => void;
+    mode: PriceMode; setMode: (v: PriceMode) => void; ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
     incService: boolean; setIncService: (v: boolean) => void; incAis: boolean; setIncAis: (v: boolean) => void;
     incRenewal: boolean; setIncRenewal: (v: boolean) => void;
     clientOrgFull: string; setClientOrgFull: (v: string) => void;
@@ -466,6 +469,10 @@ function CreateTab(p: CreateProps) {
                   </button>
                 ))}
               </div>
+              <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer mt-2">
+                <input type="checkbox" checked={ruralSettlement} onChange={(e) => setRuralSettlement(e.target.checked)} />
+                Сельское поселение <span className="text-xs text-gray-400">(цена АИС ÷ 1,6)</span>
+              </label>
             </div>
             <div>
               <div className={label}>Что включаем в КП</div>
