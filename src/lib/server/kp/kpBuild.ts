@@ -4,7 +4,6 @@ import {
   dbGetExecutor,
   dbGetHeaderLayout,
   dbGetOrganization,
-  dbGetServiceFormula,
   dbGetTier,
   dbResolveTemplate,
 } from "./kpDb";
@@ -89,10 +88,9 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
 
   const executor = req.executorId ? await dbGetExecutor(req.executorId) : null;
   const serviceType = req.form.serviceType;
-  const [headerLayout, customAliases, rowFormula] = await Promise.all([
+  const [headerLayout, customAliases] = await Promise.all([
     dbGetHeaderLayout(),
     dbGetCustomAliasValues(),
-    dbGetServiceFormula(serviceType),
   ]);
 
   for (const orgKey of req.orgKeys) {
@@ -125,7 +123,7 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
           : { years: req.form.renewal?.years ?? 1, pricePerYear: tier.renewalPerYear },
       };
 
-      const ctx = buildKpContext({ payload: form, org, executor, tier, rowFormula });
+      const ctx = buildKpContext({ payload: form, org, executor, tier });
       // Пользовательские алиасы дополняют теги (встроенные имеют приоритет).
       const mergedTags = { ...customAliases, ...ctx.tags };
 
@@ -145,7 +143,8 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         ctx.table,
         images,
         !template.skipAutoBlocks, // авто-шапка/подписант, если шаблон их не содержит
-        headerLayout // расположение реквизитов/адресата (лево/центр/право)
+        headerLayout, // расположение реквизитов/адресата (лево/центр/право)
+        ctx.tableAlias // {{<алиас таблицы>}} тоже заменяется на таблицу
       );
       docs.push({
         orgKey,

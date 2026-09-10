@@ -63,15 +63,33 @@ export interface HistoryRow {
   createdAt: string;
 }
 
-export interface CalcRow {
-  name: string;
-  cadastral: string;
-  areaSqm: string;
-  quantity?: string;
-  distanceKm?: string;
+export type PriceMode = 'direct' | 'tender';
+
+export type ColAlign = 'left' | 'center' | 'right';
+export type ColKind = 'index' | 'text' | 'number' | 'const' | 'formula';
+
+export interface CalcColumn {
+  key: string;
+  label: string;
+  kind: ColKind;
+  formula?: string;
+  constValue?: string;
+  align?: ColAlign;
+  sum?: boolean;
+  isCost?: boolean;
+  money?: boolean;
 }
 
-export type PriceMode = 'direct' | 'tender';
+export interface CalcTableDef {
+  key: string;
+  name: string;
+  columns: CalcColumn[];
+  isActive: boolean;
+  sortOrder: number;
+}
+
+/** Строка расчётной таблицы: ключ_колонки → значение. */
+export type RowData = Record<string, string>;
 
 export interface ServiceType {
   name: string;

@@ -3,9 +3,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import KpSettings from './KpSettings';
 
-/* ─────────────── Типы (зеркало серверных) ─────────────── */
-import { evalFormulaSafe, DEFAULT_ROW_FORMULA } from './formulaClient';
-import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, CalcRow, PriceMode, ServiceType, HeaderLayout, Alias } from './types';
+import { evalFormulaSafe } from './formulaClient';
+import KpCalcGrid from './KpCalcGrid';
+import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, PriceMode, ServiceType, HeaderLayout, Alias, CalcColumn, CalcTableDef, RowData } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
 function toNum(v: string | number | undefined): number {
@@ -14,16 +14,29 @@ function toNum(v: string | number | undefined): number {
   const n = parseFloat(String(v).replace(/\s+/g, '').replace(',', '.'));
   return isFinite(n) ? n : 0;
 }
-function rowHa(r: CalcRow): number {
-  return toNum(r.areaSqm) / 10000;
-}
 function fmtMoney(n: number): string {
   const [i, d = '00'] = (Math.round(n * 100) / 100).toFixed(2).split('.');
   return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + '.' + d;
 }
 
-/* ─────────────── Компонент ─────────────── */
-const emptyRow = (): CalcRow => ({ name: '', cadastral: '', areaSqm: '', quantity: '', distanceKm: '' });
+/** Стоимость услуги по строкам через колонку-стоимость таблицы (для превью). */
+function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Record<string, number>): number {
+  const costCol = columns.find((c) => c.isCost);
+  if (!costCol) return 0;
+  let total = 0;
+  rows.forEach((row, ri) => {
+    const s: Record<string, number> = { ...scope, row_index: ri + 1 };
+    for (const c of columns) {
+      if (c.kind === 'number') s[c.key] = toNum(row[c.key]);
+      else if (c.kind === 'const') s[c.key] = toNum(c.constValue);
+    }
+    for (const c of columns) {
+      if (c.kind === 'formula') s[c.key] = evalFormulaSafe(c.formula || '0', s);
+    }
+    total += s[costCol.key] || 0;
+  });
+  return total;
+}
 
 export default function KpGenerator() {
   const [tab, setTab] = useState<'create' | 'templates' | 'settings' | 'history'>('create');
@@ -60,8 +73,10 @@ export default function KpGenerator() {
   const [validityPeriod, setValidityPeriod] = useState('30 дней');
   const [executorId, setExecutorId] = useState<number | ''>('');
 
-  const [rows, setRows] = useState<CalcRow[]>([emptyRow()]);
-  const [pasteText, setPasteText] = useState('');
+  const [calcTables, setCalcTables] = useState<CalcTableDef[]>([]);
+  const [selectedTableKey, setSelectedTableKey] = useState('');
+  const [columns, setColumns] = useState<CalcColumn[]>([]);
+  const [rows, setRows] = useState<RowData[]>([{}]);
 
   const [aisLicenses, setAisLicenses] = useState('1');
   const [aisPrice, setAisPrice] = useState('');
@@ -84,6 +99,7 @@ export default function KpGenerator() {
       setServices(d.services || []);
       if (d.headerLayout) setHeaderLayout(d.headerLayout);
       setAliases(d.aliases || []);
+      setCalcTables(d.calcTables || []);
     } catch (e) {
       setStatus((e as Error).message);
     } finally {
@@ -94,6 +110,25 @@ export default function KpGenerator() {
   useEffect(() => {
     loadMeta();
   }, [loadMeta]);
+
+  // Инициализация выбранной таблицы расчёта.
+  useEffect(() => {
+    if (!calcTables.length) return;
+    if (!selectedTableKey || !calcTables.some((t) => t.key === selectedTableKey)) {
+      const t = calcTables[0];
+      setSelectedTableKey(t.key);
+      setColumns(t.columns);
+      setRows([{}]);
+    }
+  }, [calcTables, selectedTableKey]);
+
+  const onSelectTable = (key: string) => {
+    const t = calcTables.find((x) => x.key === key);
+    if (!t) return;
+    setSelectedTableKey(key);
+    setColumns(t.columns);
+    setRows([{}]);
+  };
 
   const tierFor = useCallback(
     (orgKey: string): Tier | undefined =>
@@ -108,28 +143,17 @@ export default function KpGenerator() {
 
   // Живой расчёт итога по каждой выбранной организации (матрица «3 КП»).
   const perOrgTotals = useMemo(() => {
-    const validRows = rows.filter((r) => toNum(r.areaSqm) > 0 || toNum(r.quantity) > 0 || toNum(r.distanceKm) > 0);
-    const formula = services.find((s) => s.name === serviceType)?.rowFormula?.trim() || DEFAULT_ROW_FORMULA;
     return selectedOrgs.map((key) => {
       const org = orgs.find((o) => o.key === key);
       const tier = tierFor(key);
       const perHa = mode === 'tender' ? tier?.pricePerHaTender ?? 0 : tier?.pricePerHaDirect ?? 0;
-      const min = tier?.minHectares ?? 1;
-      const serviceTotal = incService
-        ? validRows.reduce((s, r) => {
-            const scope = {
-              area_ha: rowHa(r),
-              area_sqm: toNum(r.areaSqm),
-              quantity: toNum(r.quantity),
-              distance_km: toNum(r.distanceKm),
-              min_ha: min,
-              price: perHa,
-              price_direct: tier?.pricePerHaDirect ?? 0,
-              price_tender: tier?.pricePerHaTender ?? 0,
-            };
-            return s + evalFormulaSafe(formula, scope);
-          }, 0)
-        : 0;
+      const scope = {
+        price: perHa,
+        price_direct: tier?.pricePerHaDirect ?? 0,
+        price_tender: tier?.pricePerHaTender ?? 0,
+        min_ha: tier?.minHectares ?? 1,
+      };
+      const serviceTotal = incService ? computeServiceTotal(columns, rows, scope) : 0;
       const ais = incAis ? toNum(aisLicenses) * toNum(aisPrice || tier?.aisPrice || 0) : 0;
       const renewal = incRenewal
         ? toNum(renewalYears) * toNum(renewalPrice || tier?.renewalPerYear || 0)
@@ -147,21 +171,14 @@ export default function KpGenerator() {
         hasTemplate,
       };
     });
-  }, [selectedOrgs, orgs, tierFor, mode, incService, incAis, incRenewal, aisLicenses, aisPrice, renewalYears, renewalPrice, rows, templates, serviceType, services]);
+  }, [selectedOrgs, orgs, tierFor, mode, incService, incAis, incRenewal, aisLicenses, aisPrice, renewalYears, renewalPrice, rows, columns, templates, serviceType]);
 
-  const importPaste = () => {
-    // Вставка из Excel: строки «Наименование<TAB>Кадастр<TAB>Площадь» (или площадь одна).
-    const lines = pasteText.split('\n').map((l) => l.trim()).filter(Boolean);
-    const parsed: CalcRow[] = lines.map((l) => {
-      const parts = l.split(/\t|;/).map((p) => p.trim());
-      if (parts.length >= 3) return { name: parts[0], cadastral: parts[1], areaSqm: parts[2] };
-      if (parts.length === 2) return { name: parts[0], cadastral: '', areaSqm: parts[1] };
-      return { name: '', cadastral: '', areaSqm: parts[0] };
-    });
-    if (parsed.length) {
-      setRows((rs) => [...rs.filter((r) => r.name || r.cadastral || r.areaSqm), ...parsed]);
-      setPasteText('');
-    }
+  const previewTier = tierFor(selectedOrgs[0] || '');
+  const previewScope = {
+    price: mode === 'tender' ? previewTier?.pricePerHaTender ?? 0 : previewTier?.pricePerHaDirect ?? 0,
+    price_direct: previewTier?.pricePerHaDirect ?? 0,
+    price_tender: previewTier?.pricePerHaTender ?? 0,
+    min_ha: previewTier?.minHectares ?? 1,
   };
 
   const buildPayload = (format: 'docx' | 'pdf' | 'both') => ({
@@ -179,15 +196,8 @@ export default function KpGenerator() {
         requestDate: requestDate || undefined,
       },
       kp: { date: kpDate || undefined, number: kpNumber || undefined, validityPeriod },
-      rows: rows
-        .filter((r) => r.name || r.cadastral || toNum(r.areaSqm) > 0 || toNum(r.quantity) > 0 || toNum(r.distanceKm) > 0)
-        .map((r) => ({
-          name: r.name,
-          cadastral: r.cadastral,
-          areaSqm: toNum(r.areaSqm),
-          quantity: toNum(r.quantity),
-          distanceKm: toNum(r.distanceKm),
-        })),
+      table: { key: selectedTableKey, name: calcTables.find((t) => t.key === selectedTableKey)?.name, columns },
+      rows: rows.filter((r) => Object.values(r).some((v) => (v || '').trim())),
       ais: incAis ? { licenses: toNum(aisLicenses), pricePerLicense: toNum(aisPrice) } : undefined,
       renewal: incRenewal
         ? { years: toNum(renewalYears), pricePerYear: toNum(renewalPrice) }
@@ -291,7 +301,7 @@ export default function KpGenerator() {
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
-            rows, setRows, pasteText, setPasteText, importPaste,
+            calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             aisLicenses, setAisLicenses, aisPrice, setAisPrice,
             renewalYears, setRenewalYears, renewalPrice, setRenewalPrice,
             perOrgTotals, generate, busy,
@@ -318,6 +328,7 @@ export default function KpGenerator() {
           services={services}
           headerLayout={headerLayout}
           aliases={aliases}
+          calcTables={calcTables}
           onChanged={loadMeta}
           setStatus={setStatus}
         />
@@ -340,7 +351,7 @@ function CreateTab(p: CreateProps) {
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
-    rows, setRows, pasteText, setPasteText, importPaste,
+    calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     aisLicenses, setAisLicenses, aisPrice, setAisPrice,
     renewalYears, setRenewalYears, renewalPrice, setRenewalPrice,
     perOrgTotals, generate, busy,
@@ -356,15 +367,16 @@ function CreateTab(p: CreateProps) {
     requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
     validityPeriod: string; setValidityPeriod: (v: string) => void;
     executors: Executor[]; executorId: number | ''; setExecutorId: (v: number | '') => void;
-    rows: CalcRow[]; setRows: React.Dispatch<React.SetStateAction<CalcRow[]>>;
-    pasteText: string; setPasteText: (v: string) => void; importPaste: () => void;
+    calcTables: CalcTableDef[]; selectedTableKey: string; onSelectTable: (k: string) => void;
+    columns: CalcColumn[]; setColumns: React.Dispatch<React.SetStateAction<CalcColumn[]>>;
+    rows: RowData[]; setRows: React.Dispatch<React.SetStateAction<RowData[]>>;
+    previewScope: { price: number; price_direct: number; price_tender: number; min_ha: number };
     aisLicenses: string; setAisLicenses: (v: string) => void; aisPrice: string; setAisPrice: (v: string) => void;
     renewalYears: string; setRenewalYears: (v: string) => void; renewalPrice: string; setRenewalPrice: (v: string) => void;
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
   };
 
-  const [showExtra, setShowExtra] = useState(false);
   const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
   const label = 'block text-xs font-medium text-gray-500 mb-1';
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
@@ -495,65 +507,19 @@ function CreateTab(p: CreateProps) {
           </div>
         </div>
 
-        {/* Таблица расчёта */}
+        {/* Таблица расчёта — конфигурируемая (Excel-стиль) */}
         <div className={panel}>
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-[#313131]">📊 Таблица расчёта (территории / участки)</div>
-            <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
-              <input type="checkbox" checked={showExtra} onChange={(e) => setShowExtra(e.target.checked)} />
-              Кол-во / расстояние (для формул по штукам/км)
-            </label>
-          </div>
-          <div className="overflow-x-auto -mx-5 px-5">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-500">
-                  <th className="pb-1 w-8">№</th>
-                  <th className="pb-1">Наименование территории</th>
-                  <th className="pb-1">Кадастровый номер</th>
-                  <th className="pb-1 w-28">Площадь, м²</th>
-                  {showExtra && <th className="pb-1 w-24">Кол-во</th>}
-                  {showExtra && <th className="pb-1 w-24">Расст., км</th>}
-                  <th className="pb-1 w-8"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={i}>
-                    <td className="py-1 text-gray-400">{i + 1}</td>
-                    <td className="py-1 pr-2">
-                      <input value={r.name} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} className={input} />
-                    </td>
-                    <td className="py-1 pr-2">
-                      <input value={r.cadastral} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, cadastral: e.target.value } : x)))} className={input} />
-                    </td>
-                    <td className="py-1 pr-2">
-                      <input value={r.areaSqm} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, areaSqm: e.target.value } : x)))} className={input} inputMode="decimal" />
-                    </td>
-                    {showExtra && (
-                      <td className="py-1 pr-2">
-                        <input value={r.quantity ?? ''} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, quantity: e.target.value } : x)))} className={input} inputMode="decimal" />
-                      </td>
-                    )}
-                    {showExtra && (
-                      <td className="py-1 pr-2">
-                        <input value={r.distanceKm ?? ''} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, distanceKm: e.target.value } : x)))} className={input} inputMode="decimal" />
-                      </td>
-                    )}
-                    <td className="py-1">
-                      <button onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} className="text-red-500 hover:text-red-600 px-2">✕</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <button onClick={() => setRows((rs) => [...rs, emptyRow()])} className="text-sm text-[#029cda] hover:text-[#0280b5]">+ Добавить строку</button>
-          <div>
-            <div className={label}>Быстрый импорт из Excel (Наименование ⭾ Кадастр ⭾ Площадь м², по строке на участок)</div>
-            <textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} className={`${input} h-20 font-mono text-xs`} placeholder={'Город Николаевск\t27:20:0010103:566\t113537'} />
-            <button onClick={importPaste} disabled={!pasteText.trim()} className="mt-1 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
-          </div>
+          <div className="text-sm font-semibold text-[#313131]">📊 Таблица расчёта</div>
+          <KpCalcGrid
+            calcTables={calcTables}
+            selectedKey={selectedTableKey}
+            onSelectTable={onSelectTable}
+            columns={columns}
+            setColumns={setColumns}
+            rows={rows}
+            setRows={setRows}
+            previewScope={previewScope}
+          />
         </div>
 
         {/* АИС / Пролонгация */}

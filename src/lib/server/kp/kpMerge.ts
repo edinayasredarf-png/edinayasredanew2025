@@ -1,17 +1,15 @@
 import "server-only";
 import { parseFio, initials as fioInitials, detectGender } from "../nameTransforms";
 import {
-  computeKp,
   formatHa,
   formatInt,
   formatMoney,
-  type CalcRow,
-  type KpCalcResult,
   type KpIncludes,
   type PriceMode,
   type PriceTier,
 } from "./kpCalc";
 import { rublesInWords, countInWords } from "./kpNumberWords";
+import { computeTable, type CalcColumn, type KpTableData } from "./kpTable";
 import type { KpExecutor, KpOrganization } from "./kpDb";
 
 /** Полезная нагрузка формы «Создать КП» (одинаковая для всех организаций). */
@@ -37,27 +35,38 @@ export interface KpFormPayload {
     distanceKm?: number;
     quantityUnits?: number;
   };
-  rows: CalcRow[];
+  /** Конфигурируемая таблица расчёта: колонки + ключ-алиас. */
+  table: { key: string; name?: string; columns: CalcColumn[] };
+  /** Строки таблицы: карта ключ_колонки → значение. */
+  rows: Array<Record<string, string>>;
   ais?: { licenses: number; pricePerLicense: number };
   renewal?: { years: number; pricePerYear: number };
   vat?: { mode: "none" | "usn" | "nds"; rate?: number };
 }
 
-export interface KpTableData {
-  headers: string[];
-  rows: string[][];
-  totalLabel: string;
-  totalValue: string;
-  totalWithAisLabel?: string;
-  totalWithAisValue?: string;
+interface KpCalcSummary {
+  serviceTotal: number;
+  aisTotal: number;
+  renewalTotal: number;
+  grandTotal: number;
 }
 
 export interface KpContext {
   tags: Record<string, string>;
-  calc: KpCalcResult;
+  calc: KpCalcSummary;
   table: KpTableData;
+  tableAlias: string;
   totalCost: number;
   filenameBase: string;
+}
+
+function toNum(v: unknown): number {
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+  if (typeof v === "string") {
+    const n = parseFloat(v.replace(/\s+/g, "").replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
 }
 
 function todayRu(d?: string): string {
@@ -106,20 +115,16 @@ export function buildKpContext(input: {
 }): KpContext {
   const { payload, org, executor, tier } = input;
 
-  const calc = computeKp({
-    rows: payload.rows,
-    tier,
-    mode: payload.mode,
-    includes: payload.includes,
-    ais: payload.ais,
-    renewal: payload.renewal,
-    rowFormula: input.rowFormula,
+  const activePrice = payload.mode === "tender" ? tier.pricePerHaTender : tier.pricePerHaDirect;
+  const ct = computeTable(payload.table?.columns || [], payload.rows || [], {
+    price: toNum(activePrice),
+    price_direct: toNum(tier.pricePerHaDirect),
+    price_tender: toNum(tier.pricePerHaTender),
+    min_ha: tier.minHectares ?? 1,
   });
 
-  const areaHaTotal = calc.rows.reduce((s, r) => s + r.areaHaResolved, 0);
-  const location =
-    payload.object?.location?.trim() ||
-    calc.rows.map((r) => r.name).filter(Boolean).join(", ");
+  const areaHaTotal = deriveAreaHa(payload);
+  const location = payload.object?.location?.trim() || deriveLocation(payload);
 
   // Обращение: из формы или по роду ФИО клиента.
   const { first, middle } = parseFio(payload.client.fioFull);
@@ -140,16 +145,21 @@ export function buildKpContext(input: {
   const renewalYears = payload.renewal?.years ?? 0;
   const renewalPerYear = payload.renewal?.pricePerYear ?? tier.renewalPerYear;
 
+  const serviceTotal = payload.includes.service ? ct.serviceTotal : 0;
+  const aisTotal = payload.includes.ais ? toNum(aisLicenses) * toNum(aisPrice) : 0;
+  const renewalTotal = payload.includes.renewal ? toNum(renewalYears) * toNum(renewalPerYear) : 0;
+  const grandTotal = serviceTotal + aisTotal + renewalTotal;
+
   const aisOfferText = payload.includes.ais
     ? `Предлагаем внедрение АИС «Единая среда»: ${aisLicenses} лиценз${
         aisLicenses === 1 ? "ия" : "ий"
-      } на сумму ${formatMoney(calc.aisTotal)} руб. В стоимость включено обучение, внедрение, онбординг, настройка и сервис.`
+      } на сумму ${formatMoney(aisTotal)} руб. В стоимость включено обучение, внедрение, онбординг, настройка и сервис.`
     : "";
 
   const vatMode = payload.vat?.mode ?? "usn";
   const vatBlock =
     vatMode === "nds"
-      ? `В том числе НДС 20% — ${formatMoney((calc.grandTotal * 20) / 120)} руб.`
+      ? `В том числе НДС 20% — ${formatMoney((grandTotal * 20) / 120)} руб.`
       : "НДС не облагается (применяется УСН).";
 
   // ФИО подписанта в формате «А.В. Статов» (инициалы впереди) — для блока подписи.
@@ -209,24 +219,24 @@ export function buildKpContext(input: {
     // АИС
     ais_licenses: String(aisLicenses),
     ais_license_price: formatMoney(aisPrice),
-    ais_total: formatMoney(calc.aisTotal),
+    ais_total: formatMoney(aisTotal),
     ais_license_price_in_words: rublesInWords(aisPrice),
-    ais_total_in_words: rublesInWords(calc.aisTotal),
+    ais_total_in_words: rublesInWords(aisTotal),
     ais_offer_text: aisOfferText,
     line_ais_offer: aisOfferText,
     // Пролонгация
     renewal_period: renewalYears ? countInWords(renewalYears, ["год", "года", "лет"]) : "",
     renewal_price_per_year: formatMoney(renewalPerYear),
-    renewal_total: formatMoney(calc.renewalTotal),
+    renewal_total: formatMoney(renewalTotal),
     renewal_price_per_year_in_words: rublesInWords(renewalPerYear),
-    renewal_total_in_words: rublesInWords(calc.renewalTotal),
+    renewal_total_in_words: rublesInWords(renewalTotal),
     // Итоги
-    total_cost: formatMoney(calc.grandTotal),
-    total_cost_kopecks: String(Math.round((calc.grandTotal % 1) * 100)).padStart(2, "0"),
-    total_cost_in_words: rublesInWords(calc.grandTotal),
+    total_cost: formatMoney(grandTotal),
+    total_cost_kopecks: String(Math.round((grandTotal % 1) * 100)).padStart(2, "0"),
+    total_cost_in_words: rublesInWords(grandTotal),
     // НДС
     vat_rate: vatMode === "nds" ? "20%" : "0%",
-    vat_amount: vatMode === "nds" ? formatMoney((calc.grandTotal * 20) / 120) : "0.00",
+    vat_amount: vatMode === "nds" ? formatMoney((grandTotal * 20) / 120) : "0.00",
     vat_note: vatBlock,
     vat_block: vatBlock,
     // Оформление
@@ -237,35 +247,55 @@ export function buildKpContext(input: {
     line_service_quantity: payload.object?.quantityUnits ? " " : "",
   };
 
-  const table = buildTable(payload, calc);
+  // Строка «ВСЕГО с АИС» в подвале таблицы (под колонкой стоимости).
+  const table = ct.data;
+  if (payload.includes.ais && aisTotal > 0 && ct.costColIndex >= 0) {
+    table.footers.push(
+      table.headers.map((_, ci) =>
+        ci === 0
+          ? 'ВСЕГО с АИС «Единая среда»'
+          : ci === ct.costColIndex
+            ? formatMoney(serviceTotal + aisTotal)
+            : ""
+      )
+    );
+  }
 
   const filenameBase = `КП ${payload.client.orgShort?.trim() || payload.client.orgFull.trim()} ${org.shortName || org.name}`.trim();
 
-  return { tags, calc, table, totalCost: calc.grandTotal, filenameBase };
+  return {
+    tags,
+    calc: { serviceTotal, aisTotal, renewalTotal, grandTotal },
+    table,
+    tableAlias: payload.table?.key || "",
+    totalCost: grandTotal,
+    filenameBase,
+  };
 }
 
-function buildTable(payload: KpFormPayload, calc: KpCalcResult): KpTableData {
-  const costHeader =
-    payload.mode === "tender"
-      ? "Стоимость, руб. (для торгов)"
-      : "Стоимость, руб. (для прямого контракта)";
-  const headers = ["№", "Наименование территории", "Кадастровый номер", "Площадь, Га", costHeader];
-  const rows = calc.rows.map((r) => [
-    String(r.index),
-    r.name || "",
-    r.cadastral || "",
-    formatHa(r.areaHaResolved),
-    formatMoney(r.cost),
-  ]);
-  const result: KpTableData = {
-    headers,
-    rows,
-    totalLabel: "ВСЕГО",
-    totalValue: formatMoney(calc.serviceTotal),
-  };
-  if (payload.includes.ais && calc.aisTotal > 0) {
-    result.totalWithAisLabel = 'ВСЕГО с АИС «Единая среда»';
-    result.totalWithAisValue = formatMoney(calc.serviceTotal + calc.aisTotal);
+/** Суммарная площадь в гектарах из строк таблицы (колонки area_ha или area_sqm). */
+function deriveAreaHa(payload: KpFormPayload): number {
+  const cols = payload.table?.columns || [];
+  const hasHa = cols.some((c) => c.key === "area_ha");
+  const hasSqm = cols.some((c) => c.key === "area_sqm");
+  if (!hasHa && !hasSqm) return 0;
+  let sum = 0;
+  for (const r of payload.rows || []) {
+    sum += hasHa ? toNum(r.area_ha) : toNum(r.area_sqm) / 10000;
   }
-  return result;
+  return sum;
+}
+
+/** Местоположение из строк (колонка location или name или первая текстовая). */
+function deriveLocation(payload: KpFormPayload): string {
+  const cols = payload.table?.columns || [];
+  const col =
+    cols.find((c) => c.key === "location") ||
+    cols.find((c) => c.key === "name") ||
+    cols.find((c) => c.kind === "text");
+  if (!col) return "";
+  return (payload.rows || [])
+    .map((r) => r[col.key])
+    .filter(Boolean)
+    .join(", ");
 }

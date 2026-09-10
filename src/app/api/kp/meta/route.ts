@@ -3,6 +3,7 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import {
   dbGetHeaderLayout,
   dbListAliases,
+  dbListCalcTables,
   dbListExecutors,
   dbListOrganizations,
   dbListServiceTypes,
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [organizations, tiers, executors, templates, services, headerLayout, aliases] =
+    const [organizations, tiers, executors, templates, services, headerLayout, aliases, calcTables] =
       await Promise.all([
         dbListOrganizations(),
         dbListTiers(),
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
         dbListServiceTypes(),
         dbGetHeaderLayout(),
         dbListAliases(),
+        dbListCalcTables(),
       ]);
     return NextResponse.json({
       organizations,
@@ -42,6 +44,7 @@ export async function GET(request: NextRequest) {
       serviceTypes: services.filter((s) => s.isActive).map((s) => s.name),
       headerLayout,
       aliases,
+      calcTables,
     });
   } catch (e) {
     return NextResponse.json(

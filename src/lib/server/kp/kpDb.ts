@@ -203,8 +203,104 @@ async function ensureTables(): Promise<void> {
   `);
   await seedBuiltinAliases(pool);
 
+  // Конфигурируемые расчётные таблицы (колонки в JSON).
+  await pool.query(`
+    create table if not exists kp_calc_tables (
+      key text primary key,
+      name text not null default '',
+      columns text not null default '[]',
+      is_active boolean not null default true,
+      sort_order integer not null default 0
+    )
+  `);
+  await seedDefaultCalcTable(pool);
+
   await seedDefaults(pool);
   ensured = true;
+}
+
+/* ─────────────── Расчётные таблицы ─────────────── */
+
+export interface KpCalcTable {
+  key: string;
+  name: string;
+  columns: unknown[];
+  isActive: boolean;
+  sortOrder: number;
+}
+
+async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Promise<void> {
+  const { rows } = await pool.query("select count(*)::int as n from kp_calc_tables");
+  if ((rows[0]?.n ?? 0) > 0) return;
+  const columns = [
+    { key: "idx", label: "№", kind: "index", align: "center" },
+    { key: "name", label: "Наименование территории", kind: "text", align: "left" },
+    { key: "cadastral", label: "Кадастровый номер", kind: "text", align: "center" },
+    { key: "area_sqm", label: "Площадь, м²", kind: "number", align: "center", sum: true },
+    {
+      key: "cost",
+      label: "Стоимость, руб.",
+      kind: "formula",
+      formula: "max(area_sqm/10000, min_ha) * price",
+      align: "center",
+      isCost: true,
+      sum: true,
+      money: true,
+    },
+  ];
+  await pool.query(
+    "insert into kp_calc_tables (key, name, columns, sort_order) values ('raschet','Расчёт по территориям',$1,1)",
+    [JSON.stringify(columns)]
+  );
+}
+
+function mapCalcTable(r: Record<string, unknown>): KpCalcTable {
+  let cols: unknown[] = [];
+  try {
+    cols = JSON.parse(String(r.columns ?? "[]"));
+  } catch {
+    cols = [];
+  }
+  return {
+    key: String(r.key),
+    name: String(r.name ?? ""),
+    columns: cols,
+    isActive: Boolean(r.is_active),
+    sortOrder: Number(r.sort_order ?? 0),
+  };
+}
+
+export async function dbListCalcTables(): Promise<KpCalcTable[]> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from kp_calc_tables order by sort_order, name");
+  return rows.map(mapCalcTable);
+}
+
+export async function dbUpsertCalcTable(t: {
+  key: string;
+  name: string;
+  columns: unknown[];
+  isActive?: boolean;
+  sortOrder?: number;
+}): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const key = t.key.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+  if (!key) throw new Error("Ключ таблицы: латиница/цифры/подчёркивание");
+  await pool.query(
+    `insert into kp_calc_tables (key, name, columns, is_active, sort_order)
+     values ($1,$2,$3,$4,$5)
+     on conflict (key) do update set name=excluded.name, columns=excluded.columns,
+       is_active=excluded.is_active, sort_order=excluded.sort_order`,
+    [key, t.name.slice(0, 300), JSON.stringify(t.columns || []), t.isActive ?? true, t.sortOrder ?? 0]
+  );
+}
+
+export async function dbDeleteCalcTable(key: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("delete from kp_calc_tables where key=$1", [key]);
 }
 
 /* ─────────────── Шапка документа (расположение) ─────────────── */

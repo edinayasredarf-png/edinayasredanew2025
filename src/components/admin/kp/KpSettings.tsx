@@ -1,13 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { checkFormula, DEFAULT_ROW_FORMULA } from './formulaClient';
-import type { Organization, Tier, Executor, ServiceType, HeaderLayout, Alias } from './types';
-
-const FORMULA_SAMPLE = {
-  area_ha: 5, area_sqm: 50000, quantity: 10, distance_km: 3,
-  min_ha: 1, price: 200000, price_direct: 200000, price_tender: 240000,
-};
+import type { Organization, Tier, Executor, ServiceType, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
 const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
 const label = 'block text-xs font-medium text-gray-500 mb-1';
@@ -32,7 +26,7 @@ function emptyOrg(sort: number): Organization {
 }
 
 export default function KpSettings({
-  orgs, tiers, executors, serviceTypes, services, headerLayout, aliases, onChanged, setStatus,
+  orgs, tiers, executors, serviceTypes, services, headerLayout, aliases, calcTables, onChanged, setStatus,
 }: {
   orgs: Organization[];
   tiers: Tier[];
@@ -41,6 +35,7 @@ export default function KpSettings({
   services: ServiceType[];
   headerLayout: HeaderLayout;
   aliases: Alias[];
+  calcTables: CalcTableDef[];
   onChanged: () => void;
   setStatus: (s: string) => void;
 }) {
@@ -49,6 +44,9 @@ export default function KpSettings({
 
   return (
     <div className="space-y-6">
+      {/* Таблицы расчёта */}
+      <TablesManager calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
+
       {/* Шапка документа */}
       <HeaderLayoutEditor layout={headerLayout} onChanged={onChanged} setStatus={setStatus} />
 
@@ -452,6 +450,207 @@ function AliasesManager({
   );
 }
 
+/* ─────────── Таблицы расчёта ─────────── */
+const KIND_LABELS: Record<ColKind, string> = {
+  index: '№', text: 'Текст', number: 'Число', const: 'Константа', formula: 'Формула',
+};
+
+function slugKeyClient(s: string): string {
+  const map: Record<string, string> = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y',
+    к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f',
+    х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+  };
+  return s.toLowerCase().split('').map((c) => (c in map ? map[c] : c)).join('')
+    .replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
+}
+
+function TablesManager({
+  calcTables, onChanged, setStatus,
+}: {
+  calcTables: CalcTableDef[];
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  const emptyTable = (): CalcTableDef => ({
+    key: '', name: '', isActive: true, sortOrder: calcTables.length + 1,
+    columns: [
+      { key: 'idx', label: '№', kind: 'index', align: 'center' },
+      { key: 'name', label: 'Наименование', kind: 'text', align: 'left' },
+    ],
+  });
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold text-[#313131]">📊 Таблицы расчёта (шаблоны)</h3>
+        <button onClick={() => { setCreating(true); setEditKey(null); }} className="text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Новая таблица</button>
+      </div>
+
+      {creating && (
+        <TableEditor table={emptyTable()} isNew onClose={() => setCreating(false)} onSaved={() => { setCreating(false); onChanged(); }} setStatus={setStatus} />
+      )}
+
+      <div className="space-y-2">
+        {calcTables.map((t) => (
+          <div key={t.key} className="bg-white border border-gray-200 rounded-xl">
+            <div className="flex items-center justify-between px-4 py-3">
+              <div>
+                <div className="font-medium text-sm text-[#313131]">{t.name} <code className="font-mono text-xs text-gray-400">{`{{${t.key}}}`}</code></div>
+                <div className="text-xs text-gray-400">{t.columns.length} колонок: {t.columns.map((c) => c.label).join(', ')}</div>
+              </div>
+              <button onClick={() => { setEditKey(editKey === t.key ? null : t.key); setCreating(false); }} className="text-sm text-[#029cda]">{editKey === t.key ? 'Свернуть' : 'Настроить'}</button>
+            </div>
+            {editKey === t.key && (
+              <div className="border-t border-gray-100 p-4">
+                <TableEditor table={t} onClose={() => setEditKey(null)} onSaved={() => { setEditKey(null); onChanged(); }} setStatus={setStatus} />
+              </div>
+            )}
+          </div>
+        ))}
+        {calcTables.length === 0 && <div className="text-sm text-gray-400">Таблиц пока нет.</div>}
+      </div>
+      <div className="text-xs text-gray-400 mt-2">
+        Каждая таблица имеет алиас <code className="font-mono">{'{{ключ}}'}</code> — вставьте его в Word-шаблон, туда подставится таблица.
+        В формулах колонок доступны: значения числовых колонок (по их ключу), <code>price</code>, <code>price_direct</code>, <code>price_tender</code>, <code>min_ha</code>, <code>row_index</code>.
+      </div>
+    </div>
+  );
+}
+
+function TableEditor({
+  table, isNew, onClose, onSaved, setStatus,
+}: {
+  table: CalcTableDef;
+  isNew?: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [name, setName] = useState(table.name);
+  const [key, setKey] = useState(table.key);
+  const [cols, setCols] = useState<CalcColumn[]>(table.columns);
+  const [busy, setBusy] = useState(false);
+
+  const upd = (i: number, patch: Partial<CalcColumn>) => setCols((cs) => cs.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= cols.length) return;
+    setCols((cs) => { const a = [...cs]; [a[i], a[j]] = [a[j], a[i]]; return a; });
+  };
+  const del = (i: number) => setCols((cs) => cs.filter((_, j) => j !== i));
+  const addCol = () => setCols((cs) => [...cs, { key: '', label: '', kind: 'text', align: 'left' }]);
+
+  const save = async () => {
+    const k = (key || slugKeyClient(name)).trim();
+    if (!k || !name.trim()) return setStatus('Укажите название и ключ таблицы');
+    // проставим ключи колонок
+    const used = new Set<string>();
+    const finalCols = cols.map((c) => {
+      let ck = c.key?.trim() || slugKeyClient(c.label) || 'col';
+      while (used.has(ck)) ck = ck + '_2';
+      used.add(ck);
+      return { ...c, key: ck };
+    });
+    setBusy(true);
+    try {
+      const res = await fetch('/api/kp/tables', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: k, name, columns: finalCols }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'Ошибка');
+      setStatus('Таблица сохранена');
+      onSaved();
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    if (!confirm(`Удалить таблицу «${table.name}»?`)) return;
+    await fetch(`/api/kp/tables?key=${encodeURIComponent(table.key)}`, { method: 'DELETE', credentials: 'include' });
+    setStatus('Таблица удалена');
+    onSaved();
+  };
+
+  const inp = 'px-2 py-1.5 rounded-md border border-gray-200 text-sm outline-none focus:border-[#029cda] bg-white';
+
+  return (
+    <div className="space-y-3 bg-[#F6F7F9] rounded-xl p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <div className={label}>Название таблицы *</div>
+          <input value={name} onChange={(e) => setName(e.target.value)} className={`${input}`} placeholder="Расчёт по территориям" />
+        </div>
+        <div>
+          <div className={label}>Ключ-алиас (латиница) {isNew ? '' : '— не меняется'}</div>
+          <input value={key} onChange={(e) => setKey(e.target.value)} className={`${input}`} disabled={!isNew} placeholder="raschet" />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500">
+              <th className="pb-1 pr-2">Заголовок</th>
+              <th className="pb-1 pr-2">Тип</th>
+              <th className="pb-1 pr-2">Ключ/переменная</th>
+              <th className="pb-1 pr-2">Формула / константа</th>
+              <th className="pb-1 pr-2">Σ</th>
+              <th className="pb-1 pr-2">Стоим.</th>
+              <th className="pb-1"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {cols.map((c, i) => (
+              <tr key={i}>
+                <td className="py-0.5 pr-2"><input value={c.label} onChange={(e) => upd(i, { label: e.target.value })} className={`${inp} w-40`} /></td>
+                <td className="py-0.5 pr-2">
+                  <select value={c.kind} onChange={(e) => upd(i, { kind: e.target.value as ColKind })} className={inp}>
+                    {(Object.keys(KIND_LABELS) as ColKind[]).map((k) => <option key={k} value={k}>{KIND_LABELS[k]}</option>)}
+                  </select>
+                </td>
+                <td className="py-0.5 pr-2"><input value={c.key} onChange={(e) => upd(i, { key: e.target.value })} className={`${inp} w-28 font-mono text-xs`} placeholder="auto" /></td>
+                <td className="py-0.5 pr-2">
+                  {c.kind === 'formula' ? (
+                    <input value={c.formula || ''} onChange={(e) => upd(i, { formula: e.target.value })} className={`${inp} w-64 font-mono text-xs`} placeholder="max(area_sqm/10000, min_ha) * price" />
+                  ) : c.kind === 'const' ? (
+                    <input value={c.constValue || ''} onChange={(e) => upd(i, { constValue: e.target.value })} className={`${inp} w-40`} placeholder="напр. шт." />
+                  ) : (
+                    <span className="text-xs text-gray-300">—</span>
+                  )}
+                </td>
+                <td className="py-0.5 pr-2 text-center"><input type="checkbox" checked={!!c.sum} onChange={(e) => upd(i, { sum: e.target.checked })} /></td>
+                <td className="py-0.5 pr-2 text-center"><input type="checkbox" checked={!!c.isCost} onChange={(e) => upd(i, { isCost: e.target.checked, money: e.target.checked || c.money })} title="колонка стоимости услуги" /></td>
+                <td className="py-0.5 whitespace-nowrap text-gray-400">
+                  <button onClick={() => move(i, -1)} className="hover:text-[#029cda] px-1">↑</button>
+                  <button onClick={() => move(i, 1)} className="hover:text-[#029cda] px-1">↓</button>
+                  <button onClick={() => del(i)} className="hover:text-red-500 px-1">✕</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button onClick={addCol} className="text-sm text-[#029cda]">+ Колонка</button>
+
+      <div className="flex items-center gap-2">
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
+        <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+        {!isNew && <button onClick={remove} className="ml-auto px-4 py-2 text-sm rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
+      </div>
+      <div className="text-xs text-gray-400">«Σ» — суммировать колонку в строке ИТОГО. «Стоим.» — это колонка стоимости услуги (её сумма идёт в итог КП и в матрицу организаций).</div>
+    </div>
+  );
+}
+
 /* ─────────── Услуги ─────────── */
 function ServicesManager({
   services, onChanged, setStatus,
@@ -462,20 +661,6 @@ function ServicesManager({
 }) {
   const [newName, setNewName] = useState('');
   const [edits, setEdits] = useState<Record<string, string>>({});
-  const [formulas, setFormulas] = useState<Record<string, string>>({});
-
-  const saveFormula = async (name: string) => {
-    const f = formulas[name] ?? '';
-    const res = await fetch('/api/kp/services', {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, rowFormula: f }),
-    });
-    const j = await res.json();
-    if (!res.ok) return setStatus(j.error || 'Ошибка формулы');
-    setStatus('Формула сохранена');
-    onChanged();
-  };
 
   const add = async () => {
     if (!newName.trim()) return;
@@ -528,56 +713,27 @@ function ServicesManager({
           <input className={input} placeholder="Новая услуга (например, ОКС)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
         </div>
-        <div className="space-y-2">
-          {services.map((s) => {
-            const fval = formulas[s.name] ?? s.rowFormula ?? '';
-            const chk = checkFormula(fval.trim() || DEFAULT_ROW_FORMULA, FORMULA_SAMPLE);
-            const changed = (formulas[s.name] ?? s.rowFormula ?? '') !== (s.rowFormula ?? '');
-            return (
-              <div key={s.name} className="bg-white border border-gray-200 rounded-lg px-3 py-2 space-y-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    className={`${input} flex-1`}
-                    value={edits[s.name] ?? s.name}
-                    onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
-                  />
-                  {(edits[s.name] ?? s.name) !== s.name && (
-                    <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
-                  )}
-                  <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
-                    <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
-                    активна
-                  </label>
-                  <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400 whitespace-nowrap">Формула:</span>
-                  <input
-                    className={`${input} flex-1 font-mono text-xs`}
-                    value={fval}
-                    placeholder={DEFAULT_ROW_FORMULA}
-                    onChange={(e) => setFormulas((m) => ({ ...m, [s.name]: e.target.value }))}
-                  />
-                  {changed && <button onClick={() => saveFormula(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>}
-                </div>
-                <div className={`text-xs ${chk.ok ? 'text-gray-400' : 'text-red-500'}`}>
-                  {chk.ok
-                    ? `пример (площ. 5 га, цена 200000): ${Math.round(chk.result || 0).toLocaleString('ru-RU')} ₽`
-                    : `ошибка: ${chk.error}`}
-                </div>
-              </div>
-            );
-          })}
+        <div className="space-y-1">
+          {services.map((s) => (
+            <div key={s.name} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <input
+                className={`${input} flex-1`}
+                value={edits[s.name] ?? s.name}
+                onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
+              />
+              {(edits[s.name] ?? s.name) !== s.name && (
+                <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
+              )}
+              <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
+                <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
+                активна
+              </label>
+              <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
+            </div>
+          ))}
           {services.length === 0 && <div className="text-sm text-gray-400">Услуг пока нет.</div>}
         </div>
-        <div className="text-xs text-gray-400 space-y-1">
-          <div>Список услуг общий; цены по каждой услуге задаются в карточке компании ниже.</div>
-          <div>
-            <b>Переменные формулы:</b> <code>area_ha</code>, <code>area_sqm</code>, <code>quantity</code>, <code>distance_km</code>, <code>price</code> (активная цена), <code>price_direct</code>, <code>price_tender</code>, <code>min_ha</code>.
-            Функции: <code>max, min, round, floor, ceil, abs, pow, sqrt</code>.
-          </div>
-          <div>Примеры: по площади — <code>max(area_ha, min_ha) * price</code>; по штукам — <code>quantity * price</code>; по км — <code>distance_km * price</code>.</div>
-        </div>
+        <div className="text-xs text-gray-400">Список услуг общий; цены по каждой услуге — в карточке компании; формула стоимости — в колонке таблицы расчёта (см. «Таблицы расчёта» выше).</div>
       </div>
     </div>
   );

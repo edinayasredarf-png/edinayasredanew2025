@@ -1,6 +1,6 @@
 import "server-only";
 import JSZip from "jszip";
-import type { KpTableData } from "./kpMerge";
+import type { KpTableData, ColAlign } from "./kpTable";
 
 /*
  * Заполнение Word-шаблона (.docx) без сторонних движков: JSZip + правка
@@ -70,11 +70,9 @@ function paragraphOpenTag(pXml: string): string {
 
 /* ─────────────── Таблица ─────────────── */
 
-const COL_WIDTHS_5 = [600, 3400, 2400, 1400, 1800];
-
 function tableXml(table: KpTableData): string {
-  const n = table.headers.length;
-  const widths = n === 5 ? COL_WIDTHS_5 : Array(n).fill(Math.floor(9600 / n));
+  const n = table.headers.length || 1;
+  const widths = Array(n).fill(Math.floor(9600 / n));
   const sideBorder = (name: string) =>
     `<w:${name} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`;
   const borders =
@@ -82,31 +80,26 @@ function tableXml(table: KpTableData): string {
     ["top", "left", "bottom", "right", "insideH", "insideV"].map(sideBorder).join("") +
     `</w:tblBorders>`;
   const grid = `<w:tblGrid>${widths.map((w) => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>`;
-  const cell = (text: string, o?: { bold?: boolean; span?: number; center?: boolean }) => {
-    const rpr = o?.bold ? "<w:rPr><w:b/></w:rPr>" : "";
-    const jc = o?.center ? '<w:jc w:val="center"/>' : "";
-    const tcPr =
-      `<w:tcPr><w:tcW w:w="0" w:type="auto"/>` +
-      (o?.span ? `<w:gridSpan w:val="${o.span}"/>` : "") +
-      `<w:vAlign w:val="center"/></w:tcPr>`;
-    return `<w:tc>${tcPr}<w:p><w:pPr>${jc}</w:pPr><w:r>${rpr}${valueToTextRuns(text)}</w:r></w:p></w:tc>`;
+  const cell = (text: string, align: ColAlign, bold: boolean) => {
+    const rpr = bold ? "<w:rPr><w:b/></w:rPr>" : "";
+    const tcPr = `<w:tcPr><w:tcW w:w="0" w:type="auto"/><w:vAlign w:val="center"/></w:tcPr>`;
+    return `<w:tc>${tcPr}<w:p><w:pPr><w:jc w:val="${align}"/></w:pPr><w:r>${rpr}${valueToTextRuns(text)}</w:r></w:p></w:tc>`;
   };
+  const al = (i: number): ColAlign => table.align[i] || "center";
   const headerRow =
     `<w:tr><w:trPr><w:tblHeader/></w:trPr>` +
-    table.headers.map((h) => cell(h, { bold: true, center: true })).join("") +
+    table.headers.map((h) => cell(h, "center", true)).join("") +
     `</w:tr>`;
   const bodyRows = table.rows
-    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, { center: ci === 0 || ci >= 3 })).join("") + `</w:tr>`)
+    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, al(ci), false)).join("") + `</w:tr>`)
     .join("");
-  const totalRow =
-    `<w:tr>` + cell(table.totalLabel, { bold: true, span: n - 1 }) + cell(table.totalValue, { bold: true, center: true }) + `</w:tr>`;
-  const totalAisRow = table.totalWithAisLabel
-    ? `<w:tr>` + cell(table.totalWithAisLabel, { bold: true, span: n - 1 }) + cell(table.totalWithAisValue || "", { bold: true, center: true }) + `</w:tr>`
-    : "";
+  const footerRows = table.footers
+    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, ci === 0 ? "left" : al(ci), true)).join("") + `</w:tr>`)
+    .join("");
   return (
     `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}` +
     `<w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>` +
-    `</w:tblPr>${grid}${headerRow}${bodyRows}${totalRow}${totalAisRow}</w:tbl>`
+    `</w:tblPr>${grid}${headerRow}${bodyRows}${footerRows}</w:tbl>`
   );
 }
 
@@ -194,11 +187,13 @@ function processParagraph(
   pXml: string,
   tags: Record<string, string>,
   table: KpTableData,
-  imageRuns: Record<string, string>
+  imageRuns: Record<string, string>,
+  tableAlias: string
 ): string {
   const text = paragraphText(pXml);
   if (!text.includes("{{")) return pXml;
-  if (TABLE_TOKENS.some((t) => text.includes(t))) return tableXml(table);
+  if (TABLE_TOKENS.some((t) => text.includes(t)) || (tableAlias && text.includes(`{{${tableAlias}}}`)))
+    return tableXml(table);
   for (const dt of DANGER_TOKENS) {
     if (text.includes(`{{${dt}}}`) && !(tags[dt] || "").trim()) return "";
   }
@@ -210,9 +205,12 @@ function fillDocumentXml(
   xml: string,
   tags: Record<string, string>,
   table: KpTableData,
-  imageRuns: Record<string, string>
+  imageRuns: Record<string, string>,
+  tableAlias: string
 ): string {
-  return xml.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, (p) => processParagraph(p, tags, table, imageRuns));
+  return xml.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, (p) =>
+    processParagraph(p, tags, table, imageRuns, tableAlias)
+  );
 }
 
 /** Гарантирует объявление пространств имён wp/r/a/pic на корне документа. */
@@ -341,7 +339,8 @@ export async function fillDocxTemplate(
   table: KpTableData,
   images: KpImage[] = [],
   autoBlocks = true,
-  header: HeaderLayout | null = null
+  header: HeaderLayout | null = null,
+  tableAlias = ""
 ): Promise<Buffer> {
   const zip = await JSZip.loadAsync(templateBuffer);
   const docFile = zip.file("word/document.xml");
@@ -390,7 +389,7 @@ export async function fillDocxTemplate(
     if (xml.includes(`{{${token}}}`)) imageRuns[token] = draw;
   }
 
-  let filled = fillDocumentXml(xml, tags, table, imageRuns);
+  let filled = fillDocumentXml(xml, tags, table, imageRuns, tableAlias);
 
   // Авто-вставка, если в шаблоне НЕТ соответствующих алиасов: шапку — в начало
   // тела, подписанта — перед завершающим <w:sectPr> (иначе перед </w:body>).
@@ -422,7 +421,7 @@ export async function fillDocxTemplate(
   // Колонтитулы — только текст/таблица (без картинок для MVP).
   for (const f of zip.file(/word\/(header|footer)\d*\.xml/)) {
     const hx = await f.async("string");
-    zip.file(f.name, fillDocumentXml(hx, tags, table, {}));
+    zip.file(f.name, fillDocumentXml(hx, tags, table, {}, tableAlias));
   }
 
   const out = await zip.generateAsync({
