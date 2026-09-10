@@ -396,6 +396,8 @@ const BUILTIN_ALIASES: Array<[string, string]> = [
   ["client_fio_full", "ФИО клиента (полн.)"],
   ["client_fio_short", "ФИО клиента (Иванов И.И.)"],
   ["client_fio_short_dative", "ФИО клиента дат. (Иванову И.И.)"],
+  ["client_io", "Имя Отчество клиента"],
+  ["client_greeting", "Обращение целиком (Уважаемый Иван Иванович!)"],
   ["client_position", "Должность клиента"],
   ["client_position_dative", "Должность дат. (Главе …)"],
   ["client_salutation", "Обращение (Уважаемый/-ая)"],

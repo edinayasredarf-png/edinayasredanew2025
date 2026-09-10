@@ -241,6 +241,8 @@ export function buildKpContext(input: {
     client_fio_short: fioShortLastFirst(payload.client.fioFull),
     client_fio_short_dative: fioShortDative(payload.client.fioFull),
     client_fio_initials: fioShortLastFirst(payload.client.fioFull),
+    client_io: [first, middle].filter(Boolean).join(" "), // Имя Отчество
+    client_greeting: `${salutation} ${[first, middle].filter(Boolean).join(" ")}!`, // «Уважаемый Иван Иванович!»
     client_position: payload.client.position?.trim() || "",
     client_position_dative: positionDative(payload.client.position || ""),
     client_salutation: salutation,
