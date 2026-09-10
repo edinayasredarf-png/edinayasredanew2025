@@ -102,6 +102,7 @@ export function buildKpContext(input: {
   org: KpOrganization;
   executor: KpExecutor | null;
   tier: PriceTier;
+  rowFormula?: string;
 }): KpContext {
   const { payload, org, executor, tier } = input;
 
@@ -112,6 +113,7 @@ export function buildKpContext(input: {
     includes: payload.includes,
     ais: payload.ais,
     renewal: payload.renewal,
+    rowFormula: input.rowFormula,
   });
 
   const areaHaTotal = calc.rows.reduce((s, r) => s + r.areaHaResolved, 0);

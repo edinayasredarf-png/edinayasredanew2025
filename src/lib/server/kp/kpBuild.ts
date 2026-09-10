@@ -4,6 +4,7 @@ import {
   dbGetExecutor,
   dbGetHeaderLayout,
   dbGetOrganization,
+  dbGetServiceFormula,
   dbGetTier,
   dbResolveTemplate,
 } from "./kpDb";
@@ -88,9 +89,10 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
 
   const executor = req.executorId ? await dbGetExecutor(req.executorId) : null;
   const serviceType = req.form.serviceType;
-  const [headerLayout, customAliases] = await Promise.all([
+  const [headerLayout, customAliases, rowFormula] = await Promise.all([
     dbGetHeaderLayout(),
     dbGetCustomAliasValues(),
+    dbGetServiceFormula(serviceType),
   ]);
 
   for (const orgKey of req.orgKeys) {
@@ -123,7 +125,7 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
           : { years: req.form.renewal?.years ?? 1, pricePerYear: tier.renewalPerYear },
       };
 
-      const ctx = buildKpContext({ payload: form, org, executor, tier });
+      const ctx = buildKpContext({ payload: form, org, executor, tier, rowFormula });
       // Пользовательские алиасы дополняют теги (встроенные имеют приоритет).
       const mergedTags = { ...customAliases, ...ctx.tags };
 

@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { checkFormula, DEFAULT_ROW_FORMULA } from './formulaClient';
 import type { Organization, Tier, Executor, ServiceType, HeaderLayout, Alias } from './types';
+
+const FORMULA_SAMPLE = {
+  area_ha: 5, area_sqm: 50000, quantity: 10, distance_km: 3,
+  min_ha: 1, price: 200000, price_direct: 200000, price_tender: 240000,
+};
 
 const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
 const label = 'block text-xs font-medium text-gray-500 mb-1';
@@ -456,6 +462,20 @@ function ServicesManager({
 }) {
   const [newName, setNewName] = useState('');
   const [edits, setEdits] = useState<Record<string, string>>({});
+  const [formulas, setFormulas] = useState<Record<string, string>>({});
+
+  const saveFormula = async (name: string) => {
+    const f = formulas[name] ?? '';
+    const res = await fetch('/api/kp/services', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, rowFormula: f }),
+    });
+    const j = await res.json();
+    if (!res.ok) return setStatus(j.error || 'Ошибка формулы');
+    setStatus('Формула сохранена');
+    onChanged();
+  };
 
   const add = async () => {
     if (!newName.trim()) return;
@@ -508,27 +528,56 @@ function ServicesManager({
           <input className={input} placeholder="Новая услуга (например, ОКС)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
         </div>
-        <div className="space-y-1">
-          {services.map((s) => (
-            <div key={s.name} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
-              <input
-                className={`${input} flex-1`}
-                value={edits[s.name] ?? s.name}
-                onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
-              />
-              {(edits[s.name] ?? s.name) !== s.name && (
-                <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
-              )}
-              <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
-                <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
-                активна
-              </label>
-              <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
-            </div>
-          ))}
+        <div className="space-y-2">
+          {services.map((s) => {
+            const fval = formulas[s.name] ?? s.rowFormula ?? '';
+            const chk = checkFormula(fval.trim() || DEFAULT_ROW_FORMULA, FORMULA_SAMPLE);
+            const changed = (formulas[s.name] ?? s.rowFormula ?? '') !== (s.rowFormula ?? '');
+            return (
+              <div key={s.name} className="bg-white border border-gray-200 rounded-lg px-3 py-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    className={`${input} flex-1`}
+                    value={edits[s.name] ?? s.name}
+                    onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
+                  />
+                  {(edits[s.name] ?? s.name) !== s.name && (
+                    <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
+                  )}
+                  <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
+                    <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
+                    активна
+                  </label>
+                  <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400 whitespace-nowrap">Формула:</span>
+                  <input
+                    className={`${input} flex-1 font-mono text-xs`}
+                    value={fval}
+                    placeholder={DEFAULT_ROW_FORMULA}
+                    onChange={(e) => setFormulas((m) => ({ ...m, [s.name]: e.target.value }))}
+                  />
+                  {changed && <button onClick={() => saveFormula(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>}
+                </div>
+                <div className={`text-xs ${chk.ok ? 'text-gray-400' : 'text-red-500'}`}>
+                  {chk.ok
+                    ? `пример (площ. 5 га, цена 200000): ${Math.round(chk.result || 0).toLocaleString('ru-RU')} ₽`
+                    : `ошибка: ${chk.error}`}
+                </div>
+              </div>
+            );
+          })}
           {services.length === 0 && <div className="text-sm text-gray-400">Услуг пока нет.</div>}
         </div>
-        <div className="text-xs text-gray-400">Список услуг общий; цены по каждой услуге задаются отдельно в карточке компании ниже.</div>
+        <div className="text-xs text-gray-400 space-y-1">
+          <div>Список услуг общий; цены по каждой услуге задаются в карточке компании ниже.</div>
+          <div>
+            <b>Переменные формулы:</b> <code>area_ha</code>, <code>area_sqm</code>, <code>quantity</code>, <code>distance_km</code>, <code>price</code> (активная цена), <code>price_direct</code>, <code>price_tender</code>, <code>min_ha</code>.
+            Функции: <code>max, min, round, floor, ceil, abs, pow, sqrt</code>.
+          </div>
+          <div>Примеры: по площади — <code>max(area_ha, min_ha) * price</code>; по штукам — <code>quantity * price</code>; по км — <code>distance_km * price</code>.</div>
+        </div>
       </div>
     </div>
   );

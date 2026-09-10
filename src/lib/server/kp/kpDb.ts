@@ -172,6 +172,9 @@ async function ensureTables(): Promise<void> {
       is_active boolean not null default true
     )
   `);
+  await pool.query(
+    `alter table kp_service_types add column if not exists row_formula text not null default ''`
+  );
   const { rows: stCount } = await pool.query("select count(*)::int as n from kp_service_types");
   if ((stCount[0]?.n ?? 0) === 0) {
     let i = 1;
@@ -344,19 +347,34 @@ export interface KpServiceTypeRow {
   name: string;
   sortOrder: number;
   isActive: boolean;
+  rowFormula: string;
 }
 
 export async function dbListServiceTypes(activeOnly = false): Promise<KpServiceTypeRow[]> {
   await ensureTables();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    `select name, sort_order, is_active from kp_service_types ${activeOnly ? "where is_active" : ""} order by sort_order, name`
+    `select name, sort_order, is_active, row_formula from kp_service_types ${activeOnly ? "where is_active" : ""} order by sort_order, name`
   );
   return rows.map((r) => ({
     name: String(r.name),
     sortOrder: Number(r.sort_order ?? 0),
     isActive: Boolean(r.is_active),
+    rowFormula: String(r.row_formula ?? ""),
   }));
+}
+
+export async function dbGetServiceFormula(name: string): Promise<string> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select row_formula from kp_service_types where name=$1", [name]);
+  return rows[0] ? String(rows[0].row_formula ?? "") : "";
+}
+
+export async function dbSetServiceFormula(name: string, formula: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("update kp_service_types set row_formula=$2 where name=$1", [name, formula.slice(0, 1000)]);
 }
 
 export async function dbAddServiceType(name: string, sortOrder = 0): Promise<void> {
@@ -375,7 +393,7 @@ export async function dbRenameServiceType(oldName: string, newName: string): Pro
   const nn = newName.trim().slice(0, 200);
   if (!nn || nn === oldName) return;
   await pool.query(
-    "insert into kp_service_types (name, sort_order, is_active) select $2, sort_order, is_active from kp_service_types where name=$1 on conflict (name) do nothing",
+    "insert into kp_service_types (name, sort_order, is_active, row_formula) select $2, sort_order, is_active, row_formula from kp_service_types where name=$1 on conflict (name) do nothing",
     [oldName, nn]
   );
   await pool.query("update kp_org_services set service_type=$2 where service_type=$1", [oldName, nn]);

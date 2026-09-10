@@ -4,10 +4,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import KpSettings from './KpSettings';
 
 /* ─────────────── Типы (зеркало серверных) ─────────────── */
+import { evalFormulaSafe, DEFAULT_ROW_FORMULA } from './formulaClient';
 import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, CalcRow, PriceMode, ServiceType, HeaderLayout, Alias } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
-function toNum(v: string | number): number {
+function toNum(v: string | number | undefined): number {
+  if (v == null) return 0;
   if (typeof v === 'number') return isFinite(v) ? v : 0;
   const n = parseFloat(String(v).replace(/\s+/g, '').replace(',', '.'));
   return isFinite(n) ? n : 0;
@@ -21,7 +23,7 @@ function fmtMoney(n: number): string {
 }
 
 /* ─────────────── Компонент ─────────────── */
-const emptyRow = (): CalcRow => ({ name: '', cadastral: '', areaSqm: '' });
+const emptyRow = (): CalcRow => ({ name: '', cadastral: '', areaSqm: '', quantity: '', distanceKm: '' });
 
 export default function KpGenerator() {
   const [tab, setTab] = useState<'create' | 'templates' | 'settings' | 'history'>('create');
@@ -106,14 +108,27 @@ export default function KpGenerator() {
 
   // Живой расчёт итога по каждой выбранной организации (матрица «3 КП»).
   const perOrgTotals = useMemo(() => {
-    const validRows = rows.filter((r) => toNum(r.areaSqm) > 0);
+    const validRows = rows.filter((r) => toNum(r.areaSqm) > 0 || toNum(r.quantity) > 0 || toNum(r.distanceKm) > 0);
+    const formula = services.find((s) => s.name === serviceType)?.rowFormula?.trim() || DEFAULT_ROW_FORMULA;
     return selectedOrgs.map((key) => {
       const org = orgs.find((o) => o.key === key);
       const tier = tierFor(key);
       const perHa = mode === 'tender' ? tier?.pricePerHaTender ?? 0 : tier?.pricePerHaDirect ?? 0;
       const min = tier?.minHectares ?? 1;
       const serviceTotal = incService
-        ? validRows.reduce((s, r) => s + Math.max(rowHa(r), min) * perHa, 0)
+        ? validRows.reduce((s, r) => {
+            const scope = {
+              area_ha: rowHa(r),
+              area_sqm: toNum(r.areaSqm),
+              quantity: toNum(r.quantity),
+              distance_km: toNum(r.distanceKm),
+              min_ha: min,
+              price: perHa,
+              price_direct: tier?.pricePerHaDirect ?? 0,
+              price_tender: tier?.pricePerHaTender ?? 0,
+            };
+            return s + evalFormulaSafe(formula, scope);
+          }, 0)
         : 0;
       const ais = incAis ? toNum(aisLicenses) * toNum(aisPrice || tier?.aisPrice || 0) : 0;
       const renewal = incRenewal
@@ -132,7 +147,7 @@ export default function KpGenerator() {
         hasTemplate,
       };
     });
-  }, [selectedOrgs, orgs, tierFor, mode, incService, incAis, incRenewal, aisLicenses, aisPrice, renewalYears, renewalPrice, rows, templates, serviceType]);
+  }, [selectedOrgs, orgs, tierFor, mode, incService, incAis, incRenewal, aisLicenses, aisPrice, renewalYears, renewalPrice, rows, templates, serviceType, services]);
 
   const importPaste = () => {
     // Вставка из Excel: строки «Наименование<TAB>Кадастр<TAB>Площадь» (или площадь одна).
@@ -165,8 +180,14 @@ export default function KpGenerator() {
       },
       kp: { date: kpDate || undefined, number: kpNumber || undefined, validityPeriod },
       rows: rows
-        .filter((r) => r.name || r.cadastral || toNum(r.areaSqm) > 0)
-        .map((r) => ({ name: r.name, cadastral: r.cadastral, areaSqm: toNum(r.areaSqm) })),
+        .filter((r) => r.name || r.cadastral || toNum(r.areaSqm) > 0 || toNum(r.quantity) > 0 || toNum(r.distanceKm) > 0)
+        .map((r) => ({
+          name: r.name,
+          cadastral: r.cadastral,
+          areaSqm: toNum(r.areaSqm),
+          quantity: toNum(r.quantity),
+          distanceKm: toNum(r.distanceKm),
+        })),
       ais: incAis ? { licenses: toNum(aisLicenses), pricePerLicense: toNum(aisPrice) } : undefined,
       renewal: incRenewal
         ? { years: toNum(renewalYears), pricePerYear: toNum(renewalPrice) }
@@ -343,6 +364,7 @@ function CreateTab(p: CreateProps) {
     generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
   };
 
+  const [showExtra, setShowExtra] = useState(false);
   const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
   const label = 'block text-xs font-medium text-gray-500 mb-1';
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
@@ -475,7 +497,13 @@ function CreateTab(p: CreateProps) {
 
         {/* Таблица расчёта */}
         <div className={panel}>
-          <div className="text-sm font-semibold text-[#313131]">📊 Таблица расчёта (территории / участки)</div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold text-[#313131]">📊 Таблица расчёта (территории / участки)</div>
+            <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
+              <input type="checkbox" checked={showExtra} onChange={(e) => setShowExtra(e.target.checked)} />
+              Кол-во / расстояние (для формул по штукам/км)
+            </label>
+          </div>
           <div className="overflow-x-auto -mx-5 px-5">
             <table className="w-full text-sm">
               <thead>
@@ -484,6 +512,8 @@ function CreateTab(p: CreateProps) {
                   <th className="pb-1">Наименование территории</th>
                   <th className="pb-1">Кадастровый номер</th>
                   <th className="pb-1 w-28">Площадь, м²</th>
+                  {showExtra && <th className="pb-1 w-24">Кол-во</th>}
+                  {showExtra && <th className="pb-1 w-24">Расст., км</th>}
                   <th className="pb-1 w-8"></th>
                 </tr>
               </thead>
@@ -500,6 +530,16 @@ function CreateTab(p: CreateProps) {
                     <td className="py-1 pr-2">
                       <input value={r.areaSqm} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, areaSqm: e.target.value } : x)))} className={input} inputMode="decimal" />
                     </td>
+                    {showExtra && (
+                      <td className="py-1 pr-2">
+                        <input value={r.quantity ?? ''} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, quantity: e.target.value } : x)))} className={input} inputMode="decimal" />
+                      </td>
+                    )}
+                    {showExtra && (
+                      <td className="py-1 pr-2">
+                        <input value={r.distanceKm ?? ''} onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, distanceKm: e.target.value } : x)))} className={input} inputMode="decimal" />
+                      </td>
+                    )}
                     <td className="py-1">
                       <button onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} className="text-red-500 hover:text-red-600 px-2">✕</button>
                     </td>

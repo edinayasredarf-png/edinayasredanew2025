@@ -67,6 +67,8 @@ export interface CalcRow {
   name: string;
   cadastral: string;
   areaSqm: string;
+  quantity?: string;
+  distanceKm?: string;
 }
 
 export type PriceMode = 'direct' | 'tender';
@@ -75,6 +77,7 @@ export interface ServiceType {
   name: string;
   sortOrder: number;
   isActive: boolean;
+  rowFormula: string;
 }
 
 export interface HeaderLayout {

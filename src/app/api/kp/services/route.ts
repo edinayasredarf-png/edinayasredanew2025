@@ -5,8 +5,10 @@ import {
   dbDeleteServiceType,
   dbListServiceTypes,
   dbRenameServiceType,
+  dbSetServiceFormula,
   dbSetServiceTypeActive,
 } from "@/lib/server/kp/kpDb";
+import { validateFormula } from "@/lib/server/kp/kpFormula";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +50,13 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const denied = await guard(request);
   if (denied) return denied;
-  let body: { oldName?: string; newName?: string; name?: string; isActive?: boolean };
+  let body: {
+    oldName?: string;
+    newName?: string;
+    name?: string;
+    isActive?: boolean;
+    rowFormula?: string;
+  };
   try {
     body = await request.json();
   } catch {
@@ -57,6 +65,16 @@ export async function PATCH(request: NextRequest) {
   if (body.oldName && body.newName) {
     await dbRenameServiceType(body.oldName, body.newName);
     return NextResponse.json({ ok: true });
+  }
+  if (body.name && typeof body.rowFormula === "string") {
+    // Проверяем формулу на тестовых значениях перед сохранением.
+    const check = validateFormula(body.rowFormula.trim() || "max(area_ha, min_ha) * price", {
+      area_ha: 5, area_sqm: 50000, quantity: 10, distance_km: 3,
+      min_ha: 1, price: 200000, price_direct: 200000, price_tender: 240000,
+    });
+    if (!check.ok) return NextResponse.json({ error: `Ошибка формулы: ${check.error}` }, { status: 400 });
+    await dbSetServiceFormula(body.name, body.rowFormula.trim());
+    return NextResponse.json({ ok: true, sample: check.result });
   }
   if (body.name && typeof body.isActive === "boolean") {
     await dbSetServiceTypeActive(body.name, body.isActive);

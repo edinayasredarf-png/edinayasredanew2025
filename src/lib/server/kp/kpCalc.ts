@@ -1,4 +1,8 @@
 import "server-only";
+import { evaluateFormulaSafe, type Scope } from "./kpFormula";
+
+/** Формула стоимости строки по умолчанию (минимум 1 га × цена за гектар). */
+export const DEFAULT_ROW_FORMULA = "max(area_ha, min_ha) * price";
 
 /*
  * Калькулятор КП. Формулы взяты из рабочего Excel «Расчёт по документам»:
@@ -37,6 +41,10 @@ export interface CalcRow {
   areaSqm?: number;
   /** Либо площадь сразу в гектарах (если задана — приоритетнее areaSqm). */
   areaHa?: number;
+  /** Количество (для формул «по штукам»). */
+  quantity?: number;
+  /** Расстояние, км (для формул «по км»). */
+  distanceKm?: number;
 }
 
 /** Что включаем в КП. */
@@ -89,13 +97,31 @@ export function rowHectares(row: CalcRow): number {
   return toNum(row.areaSqm) / HA_IN_SQM;
 }
 
-/** Стоимость одной строки: max(га, минимум) × цена за гектар выбранного режима. */
-export function rowCost(row: CalcRow, tier: PriceTier, mode: PriceMode): number {
+/** Переменные для формулы стоимости строки. */
+export function rowScope(row: CalcRow, tier: PriceTier, mode: PriceMode): Scope {
   const ha = rowHectares(row);
-  const min = tier.minHectares ?? 1;
-  const billed = Math.max(ha, min);
-  const perHa = mode === "tender" ? tier.pricePerHaTender : tier.pricePerHaDirect;
-  return billed * toNum(perHa);
+  const areaSqm = row.areaSqm != null ? toNum(row.areaSqm) : ha * HA_IN_SQM;
+  const active = mode === "tender" ? tier.pricePerHaTender : tier.pricePerHaDirect;
+  return {
+    area_ha: ha,
+    area_sqm: areaSqm,
+    quantity: toNum(row.quantity),
+    distance_km: toNum(row.distanceKm),
+    min_ha: tier.minHectares ?? 1,
+    price: toNum(active),
+    price_direct: toNum(tier.pricePerHaDirect),
+    price_tender: toNum(tier.pricePerHaTender),
+  };
+}
+
+/** Стоимость одной строки по формуле (по умолчанию — min 1 га × цена/га). */
+export function rowCost(
+  row: CalcRow,
+  tier: PriceTier,
+  mode: PriceMode,
+  formula?: string
+): number {
+  return evaluateFormulaSafe(formula?.trim() || DEFAULT_ROW_FORMULA, rowScope(row, tier, mode));
 }
 
 export function computeKp(input: {
@@ -105,6 +131,7 @@ export function computeKp(input: {
   includes: KpIncludes;
   ais?: AisParams;
   renewal?: RenewalParams;
+  rowFormula?: string;
 }): KpCalcResult {
   const { tier, mode, includes } = input;
   const min = tier.minHectares ?? 1;
@@ -117,7 +144,7 @@ export function computeKp(input: {
       index: i + 1,
       areaHaResolved: ha,
       billedHa,
-      cost: rowCost(r, tier, mode),
+      cost: rowCost(r, tier, mode, input.rowFormula),
     };
   });
 
