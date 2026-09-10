@@ -200,6 +200,24 @@ async function ensureTables(): Promise<void> {
   await pool.query(
     `create table if not exists kp_settings (key text primary key, value text not null default '{}')`
   );
+  // Миграция шапки: старый правый блок [org, fio_short] → [org, должность дат., фио дат.].
+  await pool
+    .query("select value from kp_settings where key='headerLayout'")
+    .then(async (r) => {
+      const raw = r.rows[0]?.value;
+      if (!raw) return;
+      try {
+        const v = JSON.parse(String(raw));
+        const right = Array.isArray(v.right) ? v.right : [];
+        if (right.length === 2 && right[0] === "{{client_org_full}}" && right[1] === "{{client_fio_short}}") {
+          v.right = ["{{client_org_full}}", "{{client_position_dative}}", "{{client_fio_short_dative}}"];
+          await pool.query("update kp_settings set value=$1 where key='headerLayout'", [JSON.stringify(v)]);
+        }
+      } catch {
+        /* игнорируем битый JSON */
+      }
+    })
+    .catch(() => {});
 
   // Алиасы: справочник встроенных (для UI) + пользовательские (со значением).
   await pool.query(`
@@ -324,7 +342,7 @@ export interface KpHeaderLayout {
 export const DEFAULT_HEADER_LAYOUT: KpHeaderLayout = {
   left: ["№ {{kp_number}}", "от {{kp_date}}"],
   center: [],
-  right: ["{{client_org_full}}", "{{client_fio_short}}"],
+  right: ["{{client_org_full}}", "{{client_position_dative}}", "{{client_fio_short_dative}}"],
 };
 
 export async function dbGetHeaderLayout(): Promise<KpHeaderLayout> {
@@ -377,6 +395,9 @@ const BUILTIN_ALIASES: Array<[string, string]> = [
   ["client_org_short", "Организация клиента (кратк.)"],
   ["client_fio_full", "ФИО клиента (полн.)"],
   ["client_fio_short", "ФИО клиента (Иванов И.И.)"],
+  ["client_fio_short_dative", "ФИО клиента дат. (Иванову И.И.)"],
+  ["client_position", "Должность клиента"],
+  ["client_position_dative", "Должность дат. (Главе …)"],
   ["client_salutation", "Обращение (Уважаемый/-ая)"],
   ["client_request_reference", "Ссылка на запрос (№ … от …)"],
   ["sender_org", "Компания-отправитель"],

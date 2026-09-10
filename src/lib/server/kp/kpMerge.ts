@@ -1,5 +1,5 @@
 import "server-only";
-import { parseFio, initials as fioInitials, detectGender } from "../nameTransforms";
+import { parseFio, initials as fioInitials, detectGender, declineLast } from "../nameTransforms";
 import {
   formatHa,
   formatInt,
@@ -21,6 +21,7 @@ export interface KpFormPayload {
     orgFull: string;
     orgShort?: string;
     fioFull: string;
+    position?: string; // должность клиента (адресата)
     salutation?: string; // Уважаемый / Уважаемая — если пусто, определяется по ФИО
     requestNumber?: string;
     requestDate?: string;
@@ -105,6 +106,36 @@ export function fioShortLastFirst(fio: string): string {
   return `${last} ${ini}`.trim();
 }
 
+/** «Иванову И.И.» — фамилия в дательном падеже + инициалы. */
+export function fioShortDative(fio: string): string {
+  const { last, first, middle } = parseFio(fio);
+  const gender = detectGender(first, middle);
+  const lastDat = declineLast(last, first, middle, gender, "dative");
+  const ini = fioInitials(first, middle);
+  return `${lastDat} ${ini}`.trim();
+}
+
+/**
+ * Должность в дательном падеже. Склоняем только первое (главное) слово по
+ * простым правилам мужского/женского рода, остальное («администрации …»)
+ * остаётся как есть: «Глава администрации X» → «Главе администрации X».
+ */
+export function positionDative(position: string): string {
+  const s = (position || "").trim();
+  if (!s) return "";
+  const parts = s.split(/\s+/);
+  parts[0] = declineHeadWord(parts[0]);
+  return parts.join(" ");
+}
+
+function declineHeadWord(w: string): string {
+  if (!w) return w;
+  if (/[ая]$/i.test(w)) return w.slice(0, -1) + "е"; // Глава→Главе, Судья→Судье
+  if (/[ьй]$/i.test(w)) return w.slice(0, -1) + "ю"; // Руководитель→Руководителю
+  if (/[бвгдзклмнпрстфхцчшщ]$/i.test(w)) return w + "у"; // Директор→Директору, Мэр→Мэру
+  return w;
+}
+
 /** Строит контекст для одной организации (тир + исполнитель заданы). */
 export function buildKpContext(input: {
   payload: KpFormPayload;
@@ -182,7 +213,10 @@ export function buildKpContext(input: {
     client_org_short: payload.client.orgShort?.trim() || payload.client.orgFull.trim(),
     client_fio_full: payload.client.fioFull.trim(),
     client_fio_short: fioShortLastFirst(payload.client.fioFull),
+    client_fio_short_dative: fioShortDative(payload.client.fioFull),
     client_fio_initials: fioShortLastFirst(payload.client.fioFull),
+    client_position: payload.client.position?.trim() || "",
+    client_position_dative: positionDative(payload.client.position || ""),
     client_salutation: salutation,
     client_request_number: payload.client.requestNumber?.trim() || "",
     client_request_date: shortDateRu(payload.client.requestDate),

@@ -67,6 +67,7 @@ export default function KpGenerator() {
   const [clientOrgFull, setClientOrgFull] = useState('');
   const [clientOrgShort, setClientOrgShort] = useState('');
   const [clientFio, setClientFio] = useState('');
+  const [clientPosition, setClientPosition] = useState('');
   const [salutation, setSalutation] = useState('');
 
   const [kpDate, setKpDate] = useState('');
@@ -194,6 +195,7 @@ export default function KpGenerator() {
         orgFull: clientOrgFull,
         orgShort: clientOrgShort,
         fioFull: clientFio,
+        position: clientPosition || undefined,
         salutation: salutation || undefined,
         requestNumber: requestNumber || undefined,
         requestDate: requestDate || undefined,
@@ -300,7 +302,7 @@ export default function KpGenerator() {
             selectedOrgs, toggleOrg, tierFor, mode, setMode,
             incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
             clientOrgFull, setClientOrgFull, clientOrgShort, setClientOrgShort,
-            clientFio, setClientFio, salutation, setSalutation,
+            clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
@@ -351,7 +353,7 @@ function CreateTab(p: CreateProps) {
     selectedOrgs, toggleOrg, tierFor, mode, setMode,
     incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
     clientOrgFull, setClientOrgFull, clientOrgShort, setClientOrgShort,
-    clientFio, setClientFio, salutation, setSalutation,
+    clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
@@ -366,7 +368,7 @@ function CreateTab(p: CreateProps) {
     incService: boolean; setIncService: (v: boolean) => void; incAis: boolean; setIncAis: (v: boolean) => void;
     incRenewal: boolean; setIncRenewal: (v: boolean) => void;
     clientOrgFull: string; setClientOrgFull: (v: string) => void; clientOrgShort: string; setClientOrgShort: (v: string) => void;
-    clientFio: string; setClientFio: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
+    clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
     kpDate: string; setKpDate: (v: string) => void; kpNumber: string; setKpNumber: (v: string) => void;
     requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
     validityPeriod: string; setValidityPeriod: (v: string) => void;
@@ -472,7 +474,12 @@ function CreateTab(p: CreateProps) {
           <div>
             <div className={label}>Полное ФИО клиента *</div>
             <input value={clientFio} onChange={(e) => setClientFio(e.target.value)} className={input} placeholder="Иванов Иван Иванович" />
-            <div className="text-xs text-gray-400 mt-1">Система сама сделает «Иванов И.И.» и подберёт обращение по роду.</div>
+            <div className="text-xs text-gray-400 mt-1">Система сама сделает «Иванов И.И.» / «Иванову И.И.» (дат.) и подберёт обращение по роду.</div>
+          </div>
+          <div>
+            <div className={label}>Должность клиента (для адресата в шапке)</div>
+            <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={input} placeholder="Глава администрации" />
+            <div className="text-xs text-gray-400 mt-1">В шапке справа ставится в дательном падеже: «Главе администрации».</div>
           </div>
         </div>
 
