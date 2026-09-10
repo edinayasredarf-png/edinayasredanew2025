@@ -258,28 +258,77 @@ export interface KpCalcTable {
 }
 
 async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Promise<void> {
-  const { rows } = await pool.query("select count(*)::int as n from kp_calc_tables");
-  if ((rows[0]?.n ?? 0) > 0) return;
-  const columns = [
-    { key: "idx", label: "№", kind: "index", align: "center" },
-    { key: "name", label: "Наименование территории", kind: "text", align: "left" },
-    { key: "cadastral", label: "Кадастровый номер", kind: "text", align: "center" },
-    { key: "area_sqm", label: "Площадь, м²", kind: "number", align: "center", sum: true },
+  // Набор готовых таблиц под услуги. Каждая добавляется, если её ещё нет
+  // (не затирает пользовательские правки).
+  const idx = { key: "idx", label: "№", kind: "index", align: "center" };
+  const money = { isCost: true, sum: true, money: true };
+
+  const defaults: Array<{ key: string; name: string; sort: number; columns: unknown[] }> = [
     {
-      key: "cost",
-      label: "Стоимость, руб.",
-      kind: "formula",
-      formula: "max(area_sqm/10000, min_ha) * price",
-      align: "center",
-      isCost: true,
-      sum: true,
-      money: true,
+      key: "raschet",
+      name: "Кладбища / территории (авто-цена из тарифа)",
+      sort: 1,
+      columns: [
+        idx,
+        { key: "name", label: "Наименование территории", kind: "text", align: "left" },
+        { key: "cadastral", label: "Кадастровый номер", kind: "text", align: "center" },
+        { key: "area_sqm", label: "Площадь, м²", kind: "number", align: "center", sum: true },
+        { key: "cost", label: "Стоимость, руб.", kind: "formula", formula: "max(area_sqm/10000, min_ha) * price", align: "center", ...money },
+      ],
+    },
+    {
+      key: "izn",
+      name: "ИЗН (площадь/протяжённость, цена за единицу)",
+      sort: 2,
+      columns: [
+        idx,
+        { key: "name", label: "Наименование услуги", kind: "text", align: "left" },
+        { key: "qty", label: "Кол-во (Га/км)", kind: "number", align: "center", sum: true },
+        { key: "unit", label: "Ед. изм.", kind: "text", align: "center" },
+        { key: "unit_price", label: "Цена за ед., руб.", kind: "number", align: "center" },
+        { key: "cost", label: "Стоимость, руб.", kind: "formula", formula: "qty * unit_price", align: "center", ...money },
+      ],
+    },
+    {
+      key: "containers",
+      name: "Контейнерные площадки (по штукам)",
+      sort: 3,
+      columns: [
+        idx,
+        { key: "name", label: "Наименование", kind: "text", align: "left" },
+        { key: "qty", label: "Количество, шт.", kind: "number", align: "center", sum: true },
+        { key: "unit_price", label: "Цена за ед., руб.", kind: "number", align: "center" },
+        { key: "cost", label: "Стоимость, руб.", kind: "formula", formula: "qty * unit_price", align: "center", ...money },
+      ],
+    },
+    {
+      key: "uslugi",
+      name: "Список услуг (стоимость вручную)",
+      sort: 4,
+      columns: [
+        idx,
+        { key: "name", label: "Наименование услуги", kind: "text", align: "left" },
+        { key: "area_txt", label: "Площадь", kind: "text", align: "center" },
+        { key: "cost", label: "Стоимость, руб.", kind: "number", align: "center", ...money },
+      ],
+    },
+    {
+      key: "flat",
+      name: "Фикс-цена (одна строка)",
+      sort: 5,
+      columns: [
+        { key: "name", label: "Наименование работ", kind: "text", align: "left" },
+        { key: "cost", label: "Стоимость, руб.", kind: "number", align: "center", ...money },
+      ],
     },
   ];
-  await pool.query(
-    "insert into kp_calc_tables (key, name, columns, sort_order) values ('raschet','Расчёт по территориям',$1,1)",
-    [JSON.stringify(columns)]
-  );
+
+  for (const t of defaults) {
+    await pool.query(
+      "insert into kp_calc_tables (key, name, columns, sort_order) values ($1,$2,$3,$4) on conflict (key) do nothing",
+      [t.key, t.name, JSON.stringify(t.columns), t.sort]
+    );
+  }
 }
 
 function mapCalcTable(r: Record<string, unknown>): KpCalcTable {
