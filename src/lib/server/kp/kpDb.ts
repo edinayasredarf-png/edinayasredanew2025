@@ -1,5 +1,6 @@
 import "server-only";
 import { getTimewebPool } from "@/lib/timewebPg";
+import { seedKpTemplates } from "./kpSeedTemplates";
 
 /*
  * Хранилище генератора КП (отдел продаж). Таблицы создаются и мигрируются
@@ -11,10 +12,18 @@ import { getTimewebPool } from "@/lib/timewebPg";
 /** Типы услуг (справочник). Совпадает с выпадающим списком в текущем сервисе. */
 export const KP_SERVICE_TYPES = [
   "ИМЗ",
-  "ЕС",
   "ИЗН",
+  "ЕС",
+  "ИМЗ + ЕС",
+  "ИЗН + ЕС",
+  "ИЗН + ИМЗ + ЕС",
+  "Контейнерные площадки",
   "Лесохозяйственный регламент",
   "Лесоустройство",
+  "Лес + ЛХР",
+  "Проект освоения лесов",
+  "Пролонгация ЕС",
+  "ФГИС ЛК",
 ] as const;
 export type KpServiceType = string;
 
@@ -151,6 +160,11 @@ async function ensureTables(): Promise<void> {
   );
   // Для HTML-шаблонов .docx-байтов нет — делаем колонку необязательной.
   await pool.query(`alter table kp_templates alter column data drop not null`).catch(() => {});
+  // Ключ сид-шаблона (чтобы засеять готовые из кода без дублей).
+  await pool.query(`alter table kp_templates add column if not exists seed_key text`);
+  await pool.query(
+    `create unique index if not exists kp_templates_seed_key_idx on kp_templates (seed_key)`
+  );
   await pool.query(
     `create index if not exists kp_templates_lookup_idx on kp_templates (service_type, org_key)`
   );
@@ -185,15 +199,13 @@ async function ensureTables(): Promise<void> {
   await pool.query(
     `alter table kp_service_types add column if not exists row_formula text not null default ''`
   );
-  const { rows: stCount } = await pool.query("select count(*)::int as n from kp_service_types");
-  if ((stCount[0]?.n ?? 0) === 0) {
-    let i = 1;
-    for (const name of KP_SERVICE_TYPES) {
-      await pool.query(
-        "insert into kp_service_types (name, sort_order) values ($1,$2) on conflict (name) do nothing",
-        [name, i++]
-      );
-    }
+  // Добавляем недостающие услуги (не затирая пользовательские).
+  let stI = 1;
+  for (const name of KP_SERVICE_TYPES) {
+    await pool.query(
+      "insert into kp_service_types (name, sort_order) values ($1,$2) on conflict (name) do nothing",
+      [name, stI++]
+    );
   }
 
   // Настройки (key/value JSON): например, расположение шапки документа.
@@ -242,6 +254,7 @@ async function ensureTables(): Promise<void> {
     )
   `);
   await seedDefaultCalcTable(pool);
+  await seedKpTemplates(pool);
 
   await seedDefaults(pool);
   ensured = true;
@@ -447,6 +460,7 @@ const BUILTIN_ALIASES: Array<[string, string]> = [
   ["client_fio_short_dative", "ФИО клиента дат. (Иванову И.И.)"],
   ["client_io", "Имя Отчество клиента"],
   ["client_greeting", "Обращение целиком (Уважаемый Иван Иванович!)"],
+  ["territory", "Территория/объект (города Луганск, площадь…)"],
   ["client_position", "Должность клиента"],
   ["client_position_dative", "Должность дат. (Главе …)"],
   ["client_salutation", "Обращение (Уважаемый/-ая)"],

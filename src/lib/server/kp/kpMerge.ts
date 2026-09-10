@@ -22,6 +22,7 @@ export interface KpFormPayload {
     orgShort?: string;
     fioFull: string;
     position?: string; // должность клиента (адресата)
+    territory?: string; // территория/объект («города Луганск», «… общей площадью 6 Га»)
     salutation?: string; // Уважаемый / Уважаемая — если пусто, определяется по ФИО
     requestNumber?: string;
     requestDate?: string;
@@ -243,6 +244,7 @@ export function buildKpContext(input: {
     client_fio_initials: fioShortLastFirst(payload.client.fioFull),
     client_io: [first, middle].filter(Boolean).join(" "), // Имя Отчество
     client_greeting: `${salutation} ${[first, middle].filter(Boolean).join(" ")}!`, // «Уважаемый Иван Иванович!»
+    territory: payload.client.territory?.trim() || "",
     client_position: payload.client.position?.trim() || "",
     client_position_dative: positionDative(payload.client.position || ""),
     client_salutation: salutation,

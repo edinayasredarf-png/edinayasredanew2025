@@ -69,6 +69,7 @@ export default function KpGenerator() {
   const [clientOrgFull, setClientOrgFull] = useState('');
   const [clientFio, setClientFio] = useState('');
   const [clientPosition, setClientPosition] = useState('');
+  const [clientTerritory, setClientTerritory] = useState('');
   const [salutation, setSalutation] = useState('');
 
   // Bitrix: компания → сделки → загрузка КП в сделку
@@ -219,6 +220,7 @@ export default function KpGenerator() {
         orgFull: clientOrgFull,
         fioFull: clientFio,
         position: clientPosition || undefined,
+        territory: clientTerritory || undefined,
         salutation: salutation || undefined,
         requestNumber: requestNumber || undefined,
         requestDate: requestDate || undefined,
@@ -329,7 +331,7 @@ export default function KpGenerator() {
             selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
             incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
             clientOrgFull, setClientOrgFull,
-            clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
+            clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -381,7 +383,7 @@ function CreateTab(p: CreateProps) {
     selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
     incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
     clientOrgFull, setClientOrgFull,
-    clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
+    clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -397,7 +399,8 @@ function CreateTab(p: CreateProps) {
     incService: boolean; setIncService: (v: boolean) => void; incAis: boolean; setIncAis: (v: boolean) => void;
     incRenewal: boolean; setIncRenewal: (v: boolean) => void;
     clientOrgFull: string; setClientOrgFull: (v: string) => void;
-    clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
+    clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
+    clientTerritory: string; setClientTerritory: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
     onPickCompany: (it: { id?: string; title: string }) => void;
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
@@ -528,6 +531,11 @@ function CreateTab(p: CreateProps) {
             <div className={label}>Должность клиента (для адресата в шапке)</div>
             <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={input} placeholder="Глава администрации" />
             <div className="text-xs text-gray-400 mt-1">В шапке справа ставится в дательном падеже: «Главе администрации».</div>
+          </div>
+          <div>
+            <div className={label}>Территория / объект (алиас {'{{territory}}'})</div>
+            <input value={clientTerritory} onChange={(e) => setClientTerritory(e.target.value)} className={input} placeholder="города Луганск / … общей площадью 6 Га" />
+            <div className="text-xs text-gray-400 mt-1">Подставляется в тексте шаблона: «…на территории {'{{territory}}'}».</div>
           </div>
         </div>
 
