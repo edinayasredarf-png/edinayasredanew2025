@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
  */
 
 interface Item {
+  id?: string;
   title: string;
   position?: string;
 }
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
       });
       const items: Item[] = (result || []).slice(0, 15).map((r) => {
         const title = [r.LAST_NAME, r.NAME, r.SECOND_NAME].map((x) => String(x || "").trim()).filter(Boolean).join(" ");
-        return { title, position: String(r.POST || "").trim() || undefined };
+        return { id: String(r.ID || ""), title, position: String(r.POST || "").trim() || undefined };
       }).filter((i) => i.title);
       return NextResponse.json({ items });
     }
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
     });
     const items: Item[] = (result || [])
       .slice(0, 15)
-      .map((r) => ({ title: String(r.TITLE || "").trim() }))
+      .map((r) => ({ id: String(r.ID || ""), title: String(r.TITLE || "").trim() }))
       .filter((i) => i.title);
     return NextResponse.json({ items });
   } catch {

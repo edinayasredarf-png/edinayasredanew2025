@@ -70,6 +70,27 @@ export default function KpGenerator() {
   const [clientPosition, setClientPosition] = useState('');
   const [salutation, setSalutation] = useState('');
 
+  // Bitrix: компания → сделки → загрузка КП в сделку
+  const [deals, setDeals] = useState<Array<{ id: string; title: string; stage?: string }>>([]);
+  const [dealId, setDealId] = useState('');
+  const [uploadToBitrix, setUploadToBitrix] = useState(false);
+
+  const loadDeals = async (companyId: string) => {
+    try {
+      const res = await fetch(`/api/kp/bitrix/deals?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
+      const d = await res.json();
+      setDeals(d.deals || []);
+      setDealId((d.deals || [])[0]?.id || '');
+    } catch {
+      setDeals([]);
+    }
+  };
+  const onPickCompany = (it: { id?: string; title: string }) => {
+    setClientOrgFull(it.title);
+    if (it.id) loadDeals(it.id);
+    else { setDeals([]); setDealId(''); }
+  };
+
   const [kpDate, setKpDate] = useState('');
   const [kpNumber, setKpNumber] = useState('');
   const [requestNumber, setRequestNumber] = useState('');
@@ -207,6 +228,7 @@ export default function KpGenerator() {
         ? { years: toNum(renewalYears), pricePerYear: toNum(renewalPrice) }
         : undefined,
     },
+    bitrix: uploadToBitrix && dealId ? { dealId, upload: true } : undefined,
     orgKeys: selectedOrgs,
     executorId: executorId || undefined,
   });
@@ -250,8 +272,11 @@ export default function KpGenerator() {
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      setStatus(`Готово: ${selectedOrgs.length} КП`);
-      if (tab === 'create') void 0;
+      let msg = `Готово: ${selectedOrgs.length} КП`;
+      const bx = decodeURIComponent(res.headers.get('X-Kp-Bitrix') || '');
+      if (bx.startsWith('ok:')) msg += ` · загружено в сделку Bitrix (${bx.slice(3)} файлов)`;
+      else if (bx.startsWith('error:')) msg += ` · ⚠️ в Bitrix не загрузилось: ${bx.slice(6)}`;
+      setStatus(msg);
     } catch (e) {
       setStatus((e as Error).message);
     } finally {
@@ -302,6 +327,7 @@ export default function KpGenerator() {
             incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
             clientOrgFull, setClientOrgFull,
             clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
+            onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
@@ -353,6 +379,7 @@ function CreateTab(p: CreateProps) {
     incService, setIncService, incAis, setIncAis, incRenewal, setIncRenewal,
     clientOrgFull, setClientOrgFull,
     clientFio, setClientFio, clientPosition, setClientPosition, salutation, setSalutation,
+    onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
@@ -368,6 +395,9 @@ function CreateTab(p: CreateProps) {
     incRenewal: boolean; setIncRenewal: (v: boolean) => void;
     clientOrgFull: string; setClientOrgFull: (v: string) => void;
     clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
+    onPickCompany: (it: { id?: string; title: string }) => void;
+    deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
+    uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
     kpDate: string; setKpDate: (v: string) => void; kpNumber: string; setKpNumber: (v: string) => void;
     requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
     validityPeriod: string; setValidityPeriod: (v: string) => void;
@@ -454,9 +484,26 @@ function CreateTab(p: CreateProps) {
           <div className="text-sm font-semibold text-[#313131]">👤 Данные клиента</div>
           <div>
             <div className={label}>Полное наименование организации клиента *</div>
-            <KpAutocomplete value={clientOrgFull} onChange={setClientOrgFull} type="company" onPick={(it) => setClientOrgFull(it.title)} className={input} placeholder='Администрация Николаевского муниципального района' />
+            <KpAutocomplete value={clientOrgFull} onChange={setClientOrgFull} type="company" onPick={onPickCompany} className={input} placeholder='Администрация Николаевского муниципального района' />
             <div className="text-xs text-gray-400 mt-1">Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.</div>
           </div>
+          {deals.length > 0 && (
+            <div className="bg-white border border-[#cbe8f5] rounded-xl p-3 space-y-2">
+              <div className="text-sm font-semibold text-[#0b5c7d]">🤝 Сделка Bitrix24</div>
+              <div>
+                <div className={label}>Сделка компании</div>
+                <select value={dealId} onChange={(e) => setDealId(e.target.value)} className={input}>
+                  <option value="">— не выбрано —</option>
+                  {deals.map((d) => <option key={d.id} value={d.id}>{d.title} (#{d.id})</option>)}
+                </select>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+                <input type="checkbox" checked={uploadToBitrix} onChange={(e) => setUploadToBitrix(e.target.checked)} disabled={!dealId} />
+                Загружать готовые КП в сделку (поле «Файл КП»)
+              </label>
+              <div className="text-[11px] text-gray-400">Файлы (docx/pdf по всем выбранным компаниям) добавятся в сделку при генерации. Внимание: поле перезаписывается новым набором.</div>
+            </div>
+          )}
           <div>
             <div className={label}>Полное ФИО клиента *</div>
             <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); }} className={input} placeholder="Иванов Иван Иванович" />

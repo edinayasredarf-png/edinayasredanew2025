@@ -5,6 +5,7 @@ import { getEditorFromRequest } from "@/lib/server/editorSession";
 import { buildKpDocuments, type KpGenerateRequest } from "@/lib/server/kp/kpBuild";
 import { dbInsertHistory } from "@/lib/server/kp/kpDb";
 import { convertDocxToPdf, isPdfConfigured } from "@/lib/server/kp/kpPdf";
+import { uploadKpToDeal } from "@/lib/server/kp/kpBitrix";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,9 +29,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Нет доступа" }, { status });
   }
 
-  let body: KpGenerateRequest & { format?: KpFormat };
+  let body: KpGenerateRequest & { format?: KpFormat; bitrix?: { dealId?: string; upload?: boolean } };
   try {
-    body = (await request.json()) as KpGenerateRequest & { format?: KpFormat };
+    body = (await request.json()) as KpGenerateRequest & {
+      format?: KpFormat;
+      bitrix?: { dealId?: string; upload?: boolean };
+    };
   } catch {
     return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
   }
@@ -94,7 +98,24 @@ export async function POST(request: NextRequest) {
     )
   );
 
-  const errHeader = { "X-Kp-Errors": encodeURIComponent(JSON.stringify(errors)) };
+  // Загрузка КП в сделку Bitrix24 (если попросили и указана сделка).
+  let bitrixStatus = "";
+  if (body.bitrix?.upload && body.bitrix.dealId) {
+    const kpFiles: Array<{ filename: string; buffer: Buffer }> = [];
+    docs.forEach((d, i) => {
+      if (format !== "pdf") kpFiles.push({ filename: `${d.filename}.docx`, buffer: d.docx });
+      if (wantPdf && pdfs[i]) kpFiles.push({ filename: `${d.filename}.pdf`, buffer: pdfs[i] as Buffer });
+    });
+    try {
+      await uploadKpToDeal(String(body.bitrix.dealId), kpFiles);
+      bitrixStatus = `ok:${kpFiles.length}`;
+    } catch (e) {
+      bitrixStatus = `error:${(e as Error).message}`;
+    }
+  }
+
+  const errHeader: Record<string, string> = { "X-Kp-Errors": encodeURIComponent(JSON.stringify(errors)) };
+  if (bitrixStatus) errHeader["X-Kp-Bitrix"] = encodeURIComponent(bitrixStatus);
 
   // Один документ, один формат → отдаём файл напрямую.
   if (docs.length === 1 && format !== "both") {
