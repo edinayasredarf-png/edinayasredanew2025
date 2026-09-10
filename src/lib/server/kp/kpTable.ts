@@ -34,9 +34,18 @@ export interface CalcTableDef {
 export interface KpTableData {
   headers: string[];
   align: ColAlign[];
+  weights: number[]; // относительная ширина колонок (для растяжки на всю страницу)
   rows: string[][];
   footers: string[][]; // строки ИТОГО (жирные), совпадают по числу колонок
 }
+
+const KIND_WEIGHT: Record<ColKind, number> = {
+  index: 0.5,
+  number: 1.4,
+  formula: 1.6,
+  const: 1,
+  text: 2.6,
+};
 
 export interface PriceVars {
   price: number;
@@ -79,6 +88,7 @@ export function computeTable(
 ): ComputedTable {
   const headers = columns.map((c) => c.label);
   const align: ColAlign[] = columns.map((c) => c.align || (c.kind === "text" ? "left" : "center"));
+  const weights = columns.map((c) => KIND_WEIGHT[c.kind] ?? 1.5);
   const colSums = columns.map(() => 0);
   const costColIndex = columns.findIndex((c) => c.isCost);
 
@@ -134,7 +144,7 @@ export function computeTable(
   });
 
   return {
-    data: { headers, align, rows: body, footers: [footerRow] },
+    data: { headers, align, weights, rows: body, footers: [footerRow] },
     serviceTotal,
     costColIndex,
     colSums,

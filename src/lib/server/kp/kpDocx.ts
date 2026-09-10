@@ -70,34 +70,44 @@ function paragraphOpenTag(pXml: string): string {
 
 /* ─────────────── Таблица ─────────────── */
 
+const PCT_TOTAL = 5000; // 100% ширины текстовой области (в 1/50 %)
+const GRID_TOTAL = 9638; // ширина текстовой области A4 при полях 1701/850 (twips)
+
 function tableXml(table: KpTableData): string {
   const n = table.headers.length || 1;
-  const widths = Array(n).fill(Math.floor(9600 / n));
+  const weights = (table.weights && table.weights.length === n ? table.weights : Array(n).fill(1)).map(
+    (w) => (w > 0 ? w : 1)
+  );
+  const sumW = weights.reduce((s, w) => s + w, 0) || 1;
+  const pct = weights.map((w) => Math.max(1, Math.round((w / sumW) * PCT_TOTAL)));
+  const gridW = weights.map((w) => Math.max(1, Math.round((w / sumW) * GRID_TOTAL)));
+
   const sideBorder = (name: string) =>
     `<w:${name} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`;
   const borders =
     `<w:tblBorders>` +
     ["top", "left", "bottom", "right", "insideH", "insideV"].map(sideBorder).join("") +
     `</w:tblBorders>`;
-  const grid = `<w:tblGrid>${widths.map((w) => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>`;
-  const cell = (text: string, align: ColAlign, bold: boolean) => {
+  const grid = `<w:tblGrid>${gridW.map((w) => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>`;
+
+  const cell = (text: string, align: ColAlign, bold: boolean, colPct: number) => {
     const rpr = bold ? "<w:rPr><w:b/></w:rPr>" : "";
-    const tcPr = `<w:tcPr><w:tcW w:w="0" w:type="auto"/><w:vAlign w:val="center"/></w:tcPr>`;
+    const tcPr = `<w:tcPr><w:tcW w:w="${colPct}" w:type="pct"/><w:vAlign w:val="center"/></w:tcPr>`;
     return `<w:tc>${tcPr}<w:p><w:pPr><w:jc w:val="${align}"/></w:pPr><w:r>${rpr}${valueToTextRuns(text)}</w:r></w:p></w:tc>`;
   };
   const al = (i: number): ColAlign => table.align[i] || "center";
   const headerRow =
     `<w:tr><w:trPr><w:tblHeader/></w:trPr>` +
-    table.headers.map((h) => cell(h, "center", true)).join("") +
+    table.headers.map((h, ci) => cell(h, "center", true, pct[ci])).join("") +
     `</w:tr>`;
   const bodyRows = table.rows
-    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, al(ci), false)).join("") + `</w:tr>`)
+    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, al(ci), false, pct[ci])).join("") + `</w:tr>`)
     .join("");
   const footerRows = table.footers
-    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, ci === 0 ? "left" : al(ci), true)).join("") + `</w:tr>`)
+    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, ci === 0 ? "left" : al(ci), true, pct[ci])).join("") + `</w:tr>`)
     .join("");
   return (
-    `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}` +
+    `<w:tbl><w:tblPr><w:tblW w:w="${PCT_TOTAL}" w:type="pct"/><w:jc w:val="center"/>${borders}` +
     `<w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>` +
     `</w:tblPr>${grid}${headerRow}${bodyRows}${footerRows}</w:tbl>`
   );
