@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import KpSettings from './KpSettings';
 
 /* ─────────────── Типы (зеркало серверных) ─────────────── */
-import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, CalcRow, PriceMode, ServiceType } from './types';
+import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, CalcRow, PriceMode, ServiceType, HeaderLayout, Alias } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
 function toNum(v: string | number): number {
@@ -33,6 +33,8 @@ export default function KpGenerator() {
   const [templates, setTemplates] = useState<TemplateMeta[]>([]);
   const [serviceTypes, setServiceTypes] = useState<string[]>([]);
   const [services, setServices] = useState<ServiceType[]>([]);
+  const [headerLayout, setHeaderLayout] = useState<HeaderLayout>({ left: [], center: [], right: [] });
+  const [aliases, setAliases] = useState<Alias[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
 
@@ -78,6 +80,8 @@ export default function KpGenerator() {
       setTemplates(d.templates || []);
       setServiceTypes(d.serviceTypes || []);
       setServices(d.services || []);
+      if (d.headerLayout) setHeaderLayout(d.headerLayout);
+      setAliases(d.aliases || []);
     } catch (e) {
       setStatus((e as Error).message);
     } finally {
@@ -291,6 +295,8 @@ export default function KpGenerator() {
           executors={executors}
           serviceTypes={serviceTypes}
           services={services}
+          headerLayout={headerLayout}
+          aliases={aliases}
           onChanged={loadMeta}
           setStatus={setStatus}
         />

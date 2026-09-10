@@ -234,6 +234,50 @@ function ensureRootNamespaces(xml: string): string {
 
 /* ─────────────── Авто-блоки шапки/подписанта ─────────────── */
 
+export interface HeaderLayout {
+  left: string[];
+  center: string[];
+  right: string[];
+}
+
+/** Подставляет теги в строку шапки; возвращает пусто, если строка пустая. */
+function resolveHeaderLine(line: string, tags: Record<string, string>): string {
+  const s = line.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (m, k: string) => (k in tags ? tags[k] : ""));
+  return s.trim() ? s : "";
+}
+
+/**
+ * Шапка документа: центрированные строки сверху, затем два столбца
+ * (левый блок — реквизиты КП, правый — адресат). Настраивается в админке.
+ */
+function buildDocHeader(header: HeaderLayout, tags: Record<string, string>): string {
+  const center = (header.center || []).map((l) => resolveHeaderLine(l, tags)).filter(Boolean);
+  const left = (header.left || []).map((l) => resolveHeaderLine(l, tags)).filter(Boolean);
+  const right = (header.right || []).map((l) => resolveHeaderLine(l, tags)).filter(Boolean);
+  if (!center.length && !left.length && !right.length) return "";
+
+  let xml = "";
+  for (const c of center) {
+    xml += `<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r>${valueToTextRuns(c)}</w:r></w:p>`;
+  }
+
+  if (left.length || right.length) {
+    const nilBorders =
+      `<w:tblBorders>` +
+      ["top", "left", "bottom", "right", "insideH", "insideV"].map((n) => `<w:${n} w:val="nil"/>`).join("") +
+      `</w:tblBorders>`;
+    const lines = (arr: string[]) =>
+      arr.map((l) => `<w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r>${valueToTextRuns(l)}</w:r></w:p>`).join("") ||
+      "<w:p/>";
+    const cell = (inner: string) => `<w:tc><w:tcPr><w:tcW w:w="4800" w:type="dxa"/></w:tcPr>${inner}</w:tc>`;
+    xml +=
+      `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${nilBorders}<w:tblLook w:val="0000"/></w:tblPr>` +
+      `<w:tblGrid><w:gridCol w:w="4800"/><w:gridCol w:w="4800"/></w:tblGrid>` +
+      `<w:tr>${cell(lines(left))}${cell(lines(right))}</w:tr></w:tbl>`;
+  }
+  return xml + "<w:p/>";
+}
+
 function drawingPara(drawing: string, center = true): string {
   const jc = center ? '<w:jc w:val="center"/>' : "";
   return `<w:p><w:pPr>${jc}</w:pPr><w:r>${drawing}</w:r></w:p>`;
@@ -296,7 +340,8 @@ export async function fillDocxTemplate(
   tags: Record<string, string>,
   table: KpTableData,
   images: KpImage[] = [],
-  autoBlocks = true
+  autoBlocks = true,
+  header: HeaderLayout | null = null
 ): Promise<Buffer> {
   const zip = await JSZip.loadAsync(templateBuffer);
   const docFile = zip.file("word/document.xml");
@@ -352,9 +397,11 @@ export async function fillDocxTemplate(
   const headerAlias = /\{\{(company_header|company_header_image)\}\}/.test(xml);
   const signerAlias = /\{\{(signature|stamp|signer_name|signer_role|sender_director)\}\}/.test(xml);
 
-  if (autoBlocks && !headerAlias) {
-    const block = autoHeaderBlock(allDrawings["company_header_image"], tags.company_header);
-    if (block) filled = filled.replace(/(<w:body[^>]*>)/, `$1${block}`);
+  if (autoBlocks) {
+    let top = "";
+    if (!headerAlias) top += autoHeaderBlock(allDrawings["company_header_image"], tags.company_header);
+    if (header) top += buildDocHeader(header, tags);
+    if (top) filled = filled.replace(/(<w:body[^>]*>)/, `$1${top}`);
   }
   if (autoBlocks && !signerAlias) {
     const block = autoSignerBlock(

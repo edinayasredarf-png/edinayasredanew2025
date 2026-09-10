@@ -1,6 +1,8 @@
 import "server-only";
 import {
+  dbGetCustomAliasValues,
   dbGetExecutor,
+  dbGetHeaderLayout,
   dbGetOrganization,
   dbGetTier,
   dbResolveTemplate,
@@ -86,6 +88,10 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
 
   const executor = req.executorId ? await dbGetExecutor(req.executorId) : null;
   const serviceType = req.form.serviceType;
+  const [headerLayout, customAliases] = await Promise.all([
+    dbGetHeaderLayout(),
+    dbGetCustomAliasValues(),
+  ]);
 
   for (const orgKey of req.orgKeys) {
     try {
@@ -118,6 +124,8 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       };
 
       const ctx = buildKpContext({ payload: form, org, executor, tier });
+      // Пользовательские алиасы дополняют теги (встроенные имеют приоритет).
+      const mergedTags = { ...customAliases, ...ctx.tags };
 
       const template = await dbResolveTemplate(serviceType, orgKey);
       if (!template) {
@@ -131,10 +139,11 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       const images = await orgImages(org);
       const docx = await fillDocxTemplate(
         template.data,
-        ctx.tags,
+        mergedTags,
         ctx.table,
         images,
-        !template.skipAutoBlocks // авто-шапка/подписант, если шаблон их не содержит
+        !template.skipAutoBlocks, // авто-шапка/подписант, если шаблон их не содержит
+        headerLayout // расположение реквизитов/адресата (лево/центр/право)
       );
       docs.push({
         orgKey,

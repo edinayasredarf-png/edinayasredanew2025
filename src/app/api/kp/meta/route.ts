@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import {
+  dbGetHeaderLayout,
+  dbListAliases,
   dbListExecutors,
   dbListOrganizations,
   dbListServiceTypes,
@@ -21,13 +23,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [organizations, tiers, executors, templates, services] = await Promise.all([
-      dbListOrganizations(),
-      dbListTiers(),
-      dbListExecutors(),
-      dbListTemplates(),
-      dbListServiceTypes(),
-    ]);
+    const [organizations, tiers, executors, templates, services, headerLayout, aliases] =
+      await Promise.all([
+        dbListOrganizations(),
+        dbListTiers(),
+        dbListExecutors(),
+        dbListTemplates(),
+        dbListServiceTypes(),
+        dbGetHeaderLayout(),
+        dbListAliases(),
+      ]);
     return NextResponse.json({
       organizations,
       tiers,
@@ -35,6 +40,8 @@ export async function GET(request: NextRequest) {
       templates,
       services, // полный список услуг (name/sortOrder/isActive)
       serviceTypes: services.filter((s) => s.isActive).map((s) => s.name),
+      headerLayout,
+      aliases,
     });
   } catch (e) {
     return NextResponse.json(

@@ -76,3 +76,17 @@ export interface ServiceType {
   sortOrder: number;
   isActive: boolean;
 }
+
+export interface HeaderLayout {
+  left: string[];
+  center: string[];
+  right: string[];
+}
+
+export interface Alias {
+  key: string;
+  label: string;
+  value: string;
+  isCustom: boolean;
+  sortOrder: number;
+}

@@ -183,8 +183,161 @@ async function ensureTables(): Promise<void> {
     }
   }
 
+  // Настройки (key/value JSON): например, расположение шапки документа.
+  await pool.query(
+    `create table if not exists kp_settings (key text primary key, value text not null default '{}')`
+  );
+
+  // Алиасы: справочник встроенных (для UI) + пользовательские (со значением).
+  await pool.query(`
+    create table if not exists kp_aliases (
+      key text primary key,
+      label text not null default '',
+      value text not null default '',
+      is_custom boolean not null default true,
+      sort_order integer not null default 0
+    )
+  `);
+  await seedBuiltinAliases(pool);
+
   await seedDefaults(pool);
   ensured = true;
+}
+
+/* ─────────────── Шапка документа (расположение) ─────────────── */
+
+export interface KpHeaderLayout {
+  left: string[];
+  center: string[];
+  right: string[];
+}
+
+export const DEFAULT_HEADER_LAYOUT: KpHeaderLayout = {
+  left: ["№ {{kp_number}}", "от {{kp_date}}"],
+  center: [],
+  right: ["{{client_org_full}}", "{{client_fio_short}}"],
+};
+
+export async function dbGetHeaderLayout(): Promise<KpHeaderLayout> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select value from kp_settings where key='headerLayout'");
+  if (!rows[0]) return DEFAULT_HEADER_LAYOUT;
+  try {
+    const v = JSON.parse(String(rows[0].value)) as Partial<KpHeaderLayout>;
+    return {
+      left: Array.isArray(v.left) ? v.left : [],
+      center: Array.isArray(v.center) ? v.center : [],
+      right: Array.isArray(v.right) ? v.right : [],
+    };
+  } catch {
+    return DEFAULT_HEADER_LAYOUT;
+  }
+}
+
+export async function dbSetHeaderLayout(layout: KpHeaderLayout): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const clean: KpHeaderLayout = {
+    left: (layout.left || []).map((s) => String(s).slice(0, 500)),
+    center: (layout.center || []).map((s) => String(s).slice(0, 500)),
+    right: (layout.right || []).map((s) => String(s).slice(0, 500)),
+  };
+  await pool.query(
+    `insert into kp_settings (key, value) values ('headerLayout', $1)
+     on conflict (key) do update set value=excluded.value`,
+    [JSON.stringify(clean)]
+  );
+}
+
+/* ─────────────── Алиасы ─────────────── */
+
+export interface KpAlias {
+  key: string;
+  label: string;
+  value: string;
+  isCustom: boolean;
+  sortOrder: number;
+}
+
+const BUILTIN_ALIASES: Array<[string, string]> = [
+  ["kp_number", "Номер КП (или «б/н»)"],
+  ["kp_date", "Дата КП"],
+  ["kp_validity_period", "Срок действия КП"],
+  ["client_org_full", "Организация клиента (полн.)"],
+  ["client_org_short", "Организация клиента (кратк.)"],
+  ["client_fio_full", "ФИО клиента (полн.)"],
+  ["client_fio_short", "ФИО клиента (Иванов И.И.)"],
+  ["client_salutation", "Обращение (Уважаемый/-ая)"],
+  ["client_request_reference", "Ссылка на запрос (№ … от …)"],
+  ["sender_org", "Компания-отправитель"],
+  ["sender_org_short", "Компания (кратко)"],
+  ["company_header", "Текстовая шапка компании"],
+  ["signer_role", "Должность подписанта"],
+  ["signer_name", "ФИО подписанта (полн.)"],
+  ["signer_display_name", "Подписант (И.О. Фамилия)"],
+  ["executor_fio", "Исполнитель (ФИО)"],
+  ["executor_phone", "Телефон исполнителя"],
+  ["area_ha", "Площадь, га"],
+  ["location", "Местоположение"],
+  ["total_cost", "Итоговая стоимость"],
+  ["total_cost_in_words", "Стоимость прописью"],
+  ["ais_total", "Стоимость АИС"],
+  ["renewal_total", "Стоимость пролонгации"],
+];
+
+async function seedBuiltinAliases(pool: ReturnType<typeof getTimewebPool>): Promise<void> {
+  let i = 1;
+  for (const [key, label] of BUILTIN_ALIASES) {
+    await pool.query(
+      `insert into kp_aliases (key, label, is_custom, sort_order) values ($1,$2,false,$3)
+       on conflict (key) do update set label=excluded.label, is_custom=false`,
+      [key, label, i++]
+    );
+  }
+}
+
+export async function dbListAliases(): Promise<KpAlias[]> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "select key, label, value, is_custom, sort_order from kp_aliases order by is_custom, sort_order, key"
+  );
+  return rows.map((r) => ({
+    key: String(r.key),
+    label: String(r.label ?? ""),
+    value: String(r.value ?? ""),
+    isCustom: Boolean(r.is_custom),
+    sortOrder: Number(r.sort_order ?? 0),
+  }));
+}
+
+/** Значения пользовательских алиасов — вливаются в теги при генерации. */
+export async function dbGetCustomAliasValues(): Promise<Record<string, string>> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select key, value from kp_aliases where is_custom");
+  const out: Record<string, string> = {};
+  for (const r of rows) out[String(r.key)] = String(r.value ?? "");
+  return out;
+}
+
+export async function dbUpsertCustomAlias(key: string, label: string, value: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const k = key.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+  if (!k) throw new Error("Ключ алиаса: латиница/цифры/подчёркивание");
+  await pool.query(
+    `insert into kp_aliases (key, label, value, is_custom, sort_order) values ($1,$2,$3,true,999)
+     on conflict (key) do update set label=excluded.label, value=excluded.value`,
+    [k, label.slice(0, 200), value.slice(0, 2000)]
+  );
+}
+
+export async function dbDeleteCustomAlias(key: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("delete from kp_aliases where key=$1 and is_custom", [key]);
 }
 
 export interface KpServiceTypeRow {

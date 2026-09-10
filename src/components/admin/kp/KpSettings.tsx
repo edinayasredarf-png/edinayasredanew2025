@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Organization, Tier, Executor, ServiceType } from './types';
+import type { Organization, Tier, Executor, ServiceType, HeaderLayout, Alias } from './types';
 
 const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
 const label = 'block text-xs font-medium text-gray-500 mb-1';
@@ -26,13 +26,15 @@ function emptyOrg(sort: number): Organization {
 }
 
 export default function KpSettings({
-  orgs, tiers, executors, serviceTypes, services, onChanged, setStatus,
+  orgs, tiers, executors, serviceTypes, services, headerLayout, aliases, onChanged, setStatus,
 }: {
   orgs: Organization[];
   tiers: Tier[];
   executors: Executor[];
   serviceTypes: string[];
   services: ServiceType[];
+  headerLayout: HeaderLayout;
+  aliases: Alias[];
   onChanged: () => void;
   setStatus: (s: string) => void;
 }) {
@@ -41,6 +43,12 @@ export default function KpSettings({
 
   return (
     <div className="space-y-6">
+      {/* Шапка документа */}
+      <HeaderLayoutEditor layout={headerLayout} onChanged={onChanged} setStatus={setStatus} />
+
+      {/* Алиасы */}
+      <AliasesManager aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
+
       {/* Услуги */}
       <ServicesManager services={services} onChanged={onChanged} setStatus={setStatus} />
       {/* Компании */}
@@ -291,6 +299,148 @@ function OrgEditor({
         </button>
         <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
         {!isNew && <button onClick={del} className="ml-auto px-4 py-2 text-sm rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Шапка документа ─────────── */
+function HeaderLayoutEditor({
+  layout, onChanged, setStatus,
+}: {
+  layout: HeaderLayout;
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [left, setLeft] = useState((layout.left || []).join('\n'));
+  const [center, setCenter] = useState((layout.center || []).join('\n'));
+  const [right, setRight] = useState((layout.right || []).join('\n'));
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const toLines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
+      const res = await fetch('/api/kp/header', {
+        method: 'PUT', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ layout: { left: toLines(left), center: toLines(center), right: toLines(right) } }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'Ошибка');
+      setStatus('Шапка сохранена');
+      onChanged();
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const ta = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda] h-24 font-mono';
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">🧷 Шапка документа (общая для всех шаблонов)</h3>
+      <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+        <div className="text-xs text-gray-500">
+          По одной строке — один элемент. Можно использовать алиасы, напр. <code>{'№ {{kp_number}}'}</code>.
+          Левый блок печатается слева, правый — справа, по центру — над ними.
+          Добавляется автоматически ко всем шаблонам (кроме отмеченных «уже содержит шапку»).
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <div className={label}>Слева</div>
+            <textarea value={left} onChange={(e) => setLeft(e.target.value)} className={ta} placeholder={'№ {{kp_number}}\nот {{kp_date}}'} />
+          </div>
+          <div>
+            <div className={label}>По центру</div>
+            <textarea value={center} onChange={(e) => setCenter(e.target.value)} className={ta} placeholder={'(например, {{company_header}})'} />
+          </div>
+          <div>
+            <div className={label}>Справа</div>
+            <textarea value={right} onChange={(e) => setRight(e.target.value)} className={ta} placeholder={'{{client_org_full}}\n{{client_fio_short}}'} />
+          </div>
+        </div>
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">
+          {busy ? 'Сохранение…' : 'Сохранить шапку'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Алиасы ─────────── */
+function AliasesManager({
+  aliases, onChanged, setStatus,
+}: {
+  aliases: Alias[];
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [key, setKey] = useState('');
+  const [label, setLabelText] = useState('');
+  const [value, setValue] = useState('');
+
+  const builtins = aliases.filter((a) => !a.isCustom);
+  const customs = aliases.filter((a) => a.isCustom);
+
+  const add = async () => {
+    if (!key.trim()) return setStatus('Укажите ключ алиаса');
+    const res = await fetch('/api/kp/aliases', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, label, value }),
+    });
+    const j = await res.json();
+    if (!res.ok) return setStatus(j.error || 'Ошибка');
+    setKey(''); setLabelText(''); setValue('');
+    setStatus('Алиас сохранён');
+    onChanged();
+  };
+
+  const del = async (k: string) => {
+    await fetch(`/api/kp/aliases?key=${encodeURIComponent(k)}`, { method: 'DELETE', credentials: 'include' });
+    onChanged();
+  };
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">🏷 Алиасы (плейсхолдеры)</h3>
+      <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input className={input} placeholder="ключ (латиница): my_note" value={key} onChange={(e) => setKey(e.target.value)} />
+          <input className={input} placeholder="описание" value={label} onChange={(e) => setLabelText(e.target.value)} />
+          <input className={input} placeholder="значение (текст)" value={value} onChange={(e) => setValue(e.target.value)} />
+        </div>
+        <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Создать алиас</button>
+
+        {customs.length > 0 && (
+          <div className="space-y-1">
+            <div className="text-xs font-medium text-gray-500">Свои алиасы</div>
+            {customs.map((a) => (
+              <div key={a.key} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2">
+                <div className="text-sm text-[#313131]"><code className="font-mono">{`{{${a.key}}}`}</code> — {a.label || '—'} <span className="text-gray-400">= «{a.value}»</span></div>
+                <button onClick={() => del(a.key)} className="text-sm text-red-500">Удалить</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button onClick={() => setOpen((v) => !v)} className="text-sm text-[#029cda]">
+          {open ? 'Скрыть' : 'Показать'} встроенные алиасы ({builtins.length})
+        </button>
+        {open && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
+            {builtins.map((a) => (
+              <div key={a.key} className="flex justify-between gap-2">
+                <code className="font-mono">{`{{${a.key}}}`}</code>
+                <span className="text-gray-400 text-right">{a.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
