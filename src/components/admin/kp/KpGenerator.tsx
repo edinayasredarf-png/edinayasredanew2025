@@ -439,10 +439,11 @@ function CreateTab(p: CreateProps) {
             <div>
               <div className={label}>Что включаем в КП</div>
               <div className="flex flex-wrap gap-2 pt-1">
-                <Chk checked={incService} onChange={setIncService} text="Услуга" />
-                <Chk checked={incAis} onChange={setIncAis} text='АИС «Единая среда»' />
-                <Chk checked={incRenewal} onChange={setIncRenewal} text="Пролонгация" />
+                <Chk checked={incService} onChange={setIncService} text="Услуга" desc="Основная услуга по таблице расчёта" />
+                <Chk checked={incAis} onChange={setIncAis} text='АИС «Единая среда»' desc="Продажа системы: лицензии + обучение и внедрение" />
+                <Chk checked={incRenewal} onChange={setIncRenewal} text="Пролонгация" desc="Продление, поддержка и обновления по годам" />
               </div>
+              <div className="text-[11px] text-gray-400 mt-1">Итоговая стоимость = сумма отмеченных блоков. Отмечайте нужные продукты для этого КП.</div>
             </div>
           </div>
         </div>
@@ -607,14 +608,15 @@ function CreateTab(p: CreateProps) {
   );
 }
 
-function Chk({ checked, onChange, text }: { checked: boolean; onChange: (v: boolean) => void; text: string }) {
+function Chk({ checked, onChange, text, desc }: { checked: boolean; onChange: (v: boolean) => void; text: string; desc?: string }) {
   return (
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`px-3 py-1.5 rounded-lg text-sm border ${checked ? 'border-[#029cda] bg-[#EAF6FC] text-[#0b5c7d]' : 'border-gray-200 bg-white text-gray-600'}`}
+      className={`text-left px-3 py-2 rounded-lg text-sm border ${checked ? 'border-[#029cda] bg-[#EAF6FC] text-[#0b5c7d]' : 'border-gray-200 bg-white text-gray-600'}`}
     >
-      {checked ? '✓ ' : ''}{text}
+      <div className="font-medium">{checked ? '✓ ' : ''}{text}</div>
+      {desc && <div className="text-[11px] text-gray-400 leading-tight mt-0.5">{desc}</div>}
     </button>
   );
 }
