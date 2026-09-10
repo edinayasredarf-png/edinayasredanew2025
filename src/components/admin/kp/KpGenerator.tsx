@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import KpSettings from './KpSettings';
 
 /* ─────────────── Типы (зеркало серверных) ─────────────── */
-import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, CalcRow, PriceMode } from './types';
+import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, CalcRow, PriceMode, ServiceType } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
 function toNum(v: string | number): number {
@@ -32,6 +32,7 @@ export default function KpGenerator() {
   const [executors, setExecutors] = useState<Executor[]>([]);
   const [templates, setTemplates] = useState<TemplateMeta[]>([]);
   const [serviceTypes, setServiceTypes] = useState<string[]>([]);
+  const [services, setServices] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
 
@@ -76,6 +77,7 @@ export default function KpGenerator() {
       setExecutors(d.executors || []);
       setTemplates(d.templates || []);
       setServiceTypes(d.serviceTypes || []);
+      setServices(d.services || []);
     } catch (e) {
       setStatus((e as Error).message);
     } finally {
@@ -288,6 +290,7 @@ export default function KpGenerator() {
           tiers={tiers}
           executors={executors}
           serviceTypes={serviceTypes}
+          services={services}
           onChanged={loadMeta}
           setStatus={setStatus}
         />

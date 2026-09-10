@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Organization, Tier, Executor } from './types';
+import type { Organization, Tier, Executor, ServiceType } from './types';
 
 const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
 const label = 'block text-xs font-medium text-gray-500 mb-1';
@@ -26,12 +26,13 @@ function emptyOrg(sort: number): Organization {
 }
 
 export default function KpSettings({
-  orgs, tiers, executors, serviceTypes, onChanged, setStatus,
+  orgs, tiers, executors, serviceTypes, services, onChanged, setStatus,
 }: {
   orgs: Organization[];
   tiers: Tier[];
   executors: Executor[];
   serviceTypes: string[];
+  services: ServiceType[];
   onChanged: () => void;
   setStatus: (s: string) => void;
 }) {
@@ -40,6 +41,8 @@ export default function KpSettings({
 
   return (
     <div className="space-y-6">
+      {/* Услуги */}
+      <ServicesManager services={services} onChanged={onChanged} setStatus={setStatus} />
       {/* Компании */}
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -288,6 +291,94 @@ function OrgEditor({
         </button>
         <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
         {!isNew && <button onClick={del} className="ml-auto px-4 py-2 text-sm rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Услуги ─────────── */
+function ServicesManager({
+  services, onChanged, setStatus,
+}: {
+  services: ServiceType[];
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [newName, setNewName] = useState('');
+  const [edits, setEdits] = useState<Record<string, string>>({});
+
+  const add = async () => {
+    if (!newName.trim()) return;
+    const res = await fetch('/api/kp/services', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName.trim() }),
+    });
+    const j = await res.json();
+    if (!res.ok) return setStatus(j.error || 'Ошибка');
+    setNewName('');
+    setStatus('Услуга добавлена');
+    onChanged();
+  };
+
+  const rename = async (oldName: string) => {
+    const nn = (edits[oldName] ?? '').trim();
+    if (!nn || nn === oldName) return;
+    await fetch('/api/kp/services', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldName, newName: nn }),
+    });
+    setEdits((m) => { const c = { ...m }; delete c[oldName]; return c; });
+    setStatus('Услуга переименована');
+    onChanged();
+  };
+
+  const toggle = async (name: string, isActive: boolean) => {
+    await fetch('/api/kp/services', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, isActive }),
+    });
+    onChanged();
+  };
+
+  const del = async (name: string) => {
+    if (!confirm(`Удалить услугу «${name}»? Цены компаний по ней останутся, но услуга скроется.`)) return;
+    await fetch(`/api/kp/services?name=${encodeURIComponent(name)}`, { method: 'DELETE', credentials: 'include' });
+    setStatus('Услуга удалена');
+    onChanged();
+  };
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">🧾 Услуги</h3>
+      <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+        <div className="flex gap-2">
+          <input className={input} placeholder="Новая услуга (например, ОКС)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
+          <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
+        </div>
+        <div className="space-y-1">
+          {services.map((s) => (
+            <div key={s.name} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <input
+                className={`${input} flex-1`}
+                value={edits[s.name] ?? s.name}
+                onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
+              />
+              {(edits[s.name] ?? s.name) !== s.name && (
+                <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
+              )}
+              <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
+                <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
+                активна
+              </label>
+              <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
+            </div>
+          ))}
+          {services.length === 0 && <div className="text-sm text-gray-400">Услуг пока нет.</div>}
+        </div>
+        <div className="text-xs text-gray-400">Список услуг общий; цены по каждой услуге задаются отдельно в карточке компании ниже.</div>
       </div>
     </div>
   );

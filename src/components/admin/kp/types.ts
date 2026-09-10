@@ -70,3 +70,9 @@ export interface CalcRow {
 }
 
 export type PriceMode = 'direct' | 'tender';
+
+export interface ServiceType {
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+}

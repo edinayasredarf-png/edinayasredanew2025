@@ -156,8 +156,8 @@ export function buildKpContext(input: {
     ? `${fioInitials(signerParsed.first, signerParsed.middle)} ${signerParsed.last}`.trim()
     : "";
 
-  // Номер КП пишем только если у компании включён флаг «писать номер».
-  const kpNumber = org.writeKpNumber ? payload.kp.number?.trim() || autoKpNumber() : "";
+  // Номер КП: включён флаг — номер (или авто), выключен — «б/н».
+  const kpNumber = org.writeKpNumber ? payload.kp.number?.trim() || autoKpNumber() : "б/н";
 
   const tags: Record<string, string> = {
     // КП

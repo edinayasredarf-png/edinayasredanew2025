@@ -3,9 +3,9 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import {
   dbListExecutors,
   dbListOrganizations,
+  dbListServiceTypes,
   dbListTemplates,
   dbListTiers,
-  KP_SERVICE_TYPES,
 } from "@/lib/server/kp/kpDb";
 
 export const runtime = "nodejs";
@@ -21,18 +21,20 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [organizations, tiers, executors, templates] = await Promise.all([
+    const [organizations, tiers, executors, templates, services] = await Promise.all([
       dbListOrganizations(),
       dbListTiers(),
       dbListExecutors(),
       dbListTemplates(),
+      dbListServiceTypes(),
     ]);
     return NextResponse.json({
       organizations,
       tiers,
       executors,
       templates,
-      serviceTypes: KP_SERVICE_TYPES,
+      services, // полный список услуг (name/sortOrder/isActive)
+      serviceTypes: services.filter((s) => s.isActive).map((s) => s.name),
     });
   } catch (e) {
     return NextResponse.json(

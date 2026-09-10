@@ -164,8 +164,83 @@ async function ensureTables(): Promise<void> {
     `create index if not exists kp_history_created_idx on kp_history (created_at desc)`
   );
 
+  // Справочник услуг (редактируемый). Сид — из константы KP_SERVICE_TYPES.
+  await pool.query(`
+    create table if not exists kp_service_types (
+      name text primary key,
+      sort_order integer not null default 0,
+      is_active boolean not null default true
+    )
+  `);
+  const { rows: stCount } = await pool.query("select count(*)::int as n from kp_service_types");
+  if ((stCount[0]?.n ?? 0) === 0) {
+    let i = 1;
+    for (const name of KP_SERVICE_TYPES) {
+      await pool.query(
+        "insert into kp_service_types (name, sort_order) values ($1,$2) on conflict (name) do nothing",
+        [name, i++]
+      );
+    }
+  }
+
   await seedDefaults(pool);
   ensured = true;
+}
+
+export interface KpServiceTypeRow {
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export async function dbListServiceTypes(activeOnly = false): Promise<KpServiceTypeRow[]> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    `select name, sort_order, is_active from kp_service_types ${activeOnly ? "where is_active" : ""} order by sort_order, name`
+  );
+  return rows.map((r) => ({
+    name: String(r.name),
+    sortOrder: Number(r.sort_order ?? 0),
+    isActive: Boolean(r.is_active),
+  }));
+}
+
+export async function dbAddServiceType(name: string, sortOrder = 0): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query(
+    "insert into kp_service_types (name, sort_order) values ($1,$2) on conflict (name) do nothing",
+    [name.trim().slice(0, 200), sortOrder]
+  );
+}
+
+/** Переименование с каскадом на тиры/шаблоны/историю (услуга хранится строкой). */
+export async function dbRenameServiceType(oldName: string, newName: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const nn = newName.trim().slice(0, 200);
+  if (!nn || nn === oldName) return;
+  await pool.query(
+    "insert into kp_service_types (name, sort_order, is_active) select $2, sort_order, is_active from kp_service_types where name=$1 on conflict (name) do nothing",
+    [oldName, nn]
+  );
+  await pool.query("update kp_org_services set service_type=$2 where service_type=$1", [oldName, nn]);
+  await pool.query("update kp_templates set service_type=$2 where service_type=$1", [oldName, nn]);
+  await pool.query("update kp_history set service_type=$2 where service_type=$1", [oldName, nn]);
+  await pool.query("delete from kp_service_types where name=$1", [oldName]);
+}
+
+export async function dbSetServiceTypeActive(name: string, isActive: boolean): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("update kp_service_types set is_active=$2 where name=$1", [name, isActive]);
+}
+
+export async function dbDeleteServiceType(name: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("delete from kp_service_types where name=$1", [name]);
 }
 
 async function seedDefaults(pool: ReturnType<typeof getTimewebPool>): Promise<void> {
