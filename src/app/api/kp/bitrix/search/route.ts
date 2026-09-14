@@ -28,13 +28,20 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const type = url.searchParams.get("type") || "company";
   const q = (url.searchParams.get("q") || "").trim();
-  if (q.length < 2 || !bitrixConfigured()) return NextResponse.json({ items: [] });
+  const companyId = (url.searchParams.get("companyId") || "").trim();
+  // Со scope компании достаточно 1 символа; иначе — от 2.
+  const minChars = type === "contact" && companyId ? 1 : 2;
+  if (q.length < minChars || !bitrixConfigured()) return NextResponse.json({ items: [] });
 
   try {
     if (type === "contact") {
       const first = q.split(/\s+/)[0];
+      // Если выбрана компания — только её контакты (кто в её сделках/карточке).
+      const filter: Record<string, unknown> = companyId
+        ? { COMPANY_ID: companyId, "%LAST_NAME": first }
+        : { "%LAST_NAME": first };
       const { result } = await bitrixCall<Array<Record<string, unknown>>>("crm.contact.list", {
-        filter: { "%LAST_NAME": first },
+        filter,
         select: ["ID", "NAME", "LAST_NAME", "SECOND_NAME", "POST"],
         order: { LAST_NAME: "ASC" },
         start: 0,

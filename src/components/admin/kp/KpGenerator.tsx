@@ -82,6 +82,7 @@ export default function KpGenerator() {
   const [deals, setDeals] = useState<Array<{ id: string; title: string; stage?: string }>>([]);
   const [dealId, setDealId] = useState('');
   const [uploadToBitrix, setUploadToBitrix] = useState(false);
+  const [clientCompanyId, setClientCompanyId] = useState(''); // выбранная компания Bitrix (для контактов)
 
   const loadDeals = async (companyId: string) => {
     try {
@@ -95,8 +96,14 @@ export default function KpGenerator() {
   };
   const onPickCompany = (it: { id?: string; title: string }) => {
     setClientOrgFull(it.title);
+    setClientCompanyId(it.id || '');
     if (it.id) loadDeals(it.id);
     else { setDeals([]); setDealId(''); }
+  };
+  // Ручное изменение названия компании сбрасывает привязку к компании Bitrix.
+  const onChangeCompany = (v: string) => {
+    setClientOrgFull(v);
+    if (clientCompanyId) { setClientCompanyId(''); setDeals([]); setDealId(''); }
   };
 
   const [kpDate, setKpDate] = useState('');
@@ -333,7 +340,7 @@ export default function KpGenerator() {
           {...{
             orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
-            clientOrgFull, setClientOrgFull,
+            clientOrgFull, onChangeCompany, clientCompanyId,
             clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
@@ -382,7 +389,7 @@ function CreateTab(p: CreateProps) {
   const {
     orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
-    clientOrgFull, setClientOrgFull,
+    clientOrgFull, onChangeCompany, clientCompanyId,
     clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
@@ -395,7 +402,7 @@ function CreateTab(p: CreateProps) {
     inc: { service: boolean; ais: boolean; renewal: boolean };
     selectedOrgs: string[]; toggleOrg: (k: string) => void; tierFor: (k: string) => Tier | undefined;
     mode: PriceMode; setMode: (v: PriceMode) => void; ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
-    clientOrgFull: string; setClientOrgFull: (v: string) => void;
+    clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string;
     clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
     onPickCompany: (it: { id?: string; title: string }) => void;
@@ -489,7 +496,7 @@ function CreateTab(p: CreateProps) {
           <div className="text-sm font-semibold text-[#313131]">👤 Данные клиента</div>
           <div>
             <div className={label}>Полное наименование организации клиента *</div>
-            <KpAutocomplete value={clientOrgFull} onChange={setClientOrgFull} type="company" onPick={onPickCompany} className={input} placeholder='Администрация Николаевского муниципального района' />
+            <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={input} placeholder='Администрация Николаевского муниципального района' />
             <div className="text-xs text-gray-400 mt-1">Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.</div>
           </div>
           {deals.length > 0 && (
@@ -511,8 +518,8 @@ function CreateTab(p: CreateProps) {
           )}
           <div>
             <div className={label}>Полное ФИО клиента *</div>
-            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); }} className={input} placeholder="Иванов Иван Иванович" />
-            <div className="text-xs text-gray-400 mt-1">Подсказки из Bitrix24 (контакты). «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.</div>
+            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); }} className={input} placeholder="Иванов Иван Иванович" />
+            <div className="text-xs text-gray-400 mt-1">{clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.</div>
           </div>
           <div>
             <div className={label}>Обращение</div>

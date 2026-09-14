@@ -12,7 +12,7 @@ interface Item {
  * обычный input: если Bitrix недоступен — просто нет подсказок.
  */
 export default function KpAutocomplete({
-  value, onChange, type, onPick, placeholder, className,
+  value, onChange, type, onPick, placeholder, className, companyId,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -20,6 +20,7 @@ export default function KpAutocomplete({
   onPick: (item: Item) => void;
   placeholder?: string;
   className?: string;
+  companyId?: string; // для контактов: сузить до контактов этой компании
 }) {
   const [items, setItems] = useState<Item[]>([]);
   const [open, setOpen] = useState(false);
@@ -28,17 +29,21 @@ export default function KpAutocomplete({
   const boxRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Со scope компании достаточно 1 символа (контактов у компании немного).
+  const minChars = type === 'contact' && companyId ? 1 : 2;
+
   useEffect(() => {
     if (justPicked) { setJustPicked(false); return; }
     const q = value.trim();
-    if (q.length < 2) { setItems([]); setOpen(false); return; }
+    if (q.length < minChars) { setItems([]); setOpen(false); return; }
     const t = setTimeout(async () => {
       abortRef.current?.abort();
       const ctrl = new AbortController();
       abortRef.current = ctrl;
       setLoading(true);
       try {
-        const res = await fetch(`/api/kp/bitrix/search?type=${type}&q=${encodeURIComponent(q)}`, {
+        const cid = type === 'contact' && companyId ? `&companyId=${encodeURIComponent(companyId)}` : '';
+        const res = await fetch(`/api/kp/bitrix/search?type=${type}&q=${encodeURIComponent(q)}${cid}`, {
           credentials: 'include', signal: ctrl.signal,
         });
         const d = await res.json();
@@ -52,7 +57,7 @@ export default function KpAutocomplete({
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, type]);
+  }, [value, type, companyId]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
