@@ -278,6 +278,7 @@ async function ensureTables(): Promise<void> {
       sort_order integer not null default 0
     )
   `);
+  await pool.query(`alter table kp_calc_tables add column if not exists default_rows text not null default '[]'`);
   await seedDefaultCalcTable(pool);
   await seedKpTemplates(pool);
 
@@ -291,6 +292,7 @@ export interface KpCalcTable {
   key: string;
   name: string;
   columns: unknown[];
+  defaultRows: Array<Record<string, string>>; // строки по умолчанию (фиксированные)
   isActive: boolean;
   sortOrder: number;
 }
@@ -303,7 +305,7 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
   const costD = { isCost: true, sum: true, money: true }; // колонка «прямой» — идёт в итог
   const costT = { sum: true, money: true }; // колонка «торги» — только показ/сумма
 
-  const defaults: Array<{ key: string; name: string; sort: number; columns: unknown[] }> = [
+  const defaults: Array<{ key: string; name: string; sort: number; columns: unknown[]; rows?: Array<Record<string, string>> }> = [
     {
       key: "raschet",
       name: "Кладбища / территории (прямой + торги, авто-цена)",
@@ -326,6 +328,10 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
         { key: "area", label: "Площадь", kind: "text", align: "center" },
         { key: "cost_direct", label: "Стоимость, руб. (для прямого контракта)", kind: "number", align: "center", ...costD },
         { key: "cost_tender", label: "Стоимость, руб. (для торгового контракта)", kind: "number", align: "center", ...costT },
+      ],
+      rows: [
+        { name: "Инвентаризация зелёных насаждений (площадные объекты)", area: "1 Га" },
+        { name: "Инвентаризация зелёных насаждений (протяжённость)", area: "1 км" },
       ],
     },
     {
@@ -364,8 +370,8 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
 
   for (const t of defaults) {
     await pool.query(
-      "insert into kp_calc_tables (key, name, columns, sort_order) values ($1,$2,$3,$4) on conflict (key) do nothing",
-      [t.key, t.name, JSON.stringify(t.columns), t.sort]
+      "insert into kp_calc_tables (key, name, columns, default_rows, sort_order) values ($1,$2,$3,$4,$5) on conflict (key) do nothing",
+      [t.key, t.name, JSON.stringify(t.columns), JSON.stringify(t.rows || []), t.sort]
     );
   }
 
@@ -374,7 +380,7 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
   for (const key of ["raschet", "izn"]) {
     const def = defaults.find((d) => d.key === key);
     if (!def) continue;
-    const { rows } = await pool.query("select columns from kp_calc_tables where key=$1", [key]);
+    const { rows } = await pool.query("select columns, default_rows from kp_calc_tables where key=$1", [key]);
     if (!rows[0]) continue;
     let cols: Array<{ key?: string }> = [];
     try {
@@ -384,10 +390,13 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
     }
     const hasDirect = cols.some((c) => c.key === "cost_direct");
     if (!hasDirect) {
-      await pool.query("update kp_calc_tables set name=$2, columns=$3 where key=$1", [
+      const curRows = String(rows[0].default_rows ?? "[]");
+      const noRows = curRows === "[]" || curRows === "";
+      await pool.query("update kp_calc_tables set name=$2, columns=$3, default_rows=$4 where key=$1", [
         key,
         def.name,
         JSON.stringify(def.columns),
+        noRows ? JSON.stringify(def.rows || []) : curRows,
       ]);
     }
   }
@@ -400,10 +409,17 @@ function mapCalcTable(r: Record<string, unknown>): KpCalcTable {
   } catch {
     cols = [];
   }
+  let drows: Array<Record<string, string>> = [];
+  try {
+    drows = JSON.parse(String(r.default_rows ?? "[]"));
+  } catch {
+    drows = [];
+  }
   return {
     key: String(r.key),
     name: String(r.name ?? ""),
     columns: cols,
+    defaultRows: Array.isArray(drows) ? drows : [],
     isActive: Boolean(r.is_active),
     sortOrder: Number(r.sort_order ?? 0),
   };
@@ -420,6 +436,7 @@ export async function dbUpsertCalcTable(t: {
   key: string;
   name: string;
   columns: unknown[];
+  defaultRows?: Array<Record<string, string>>;
   isActive?: boolean;
   sortOrder?: number;
 }): Promise<void> {
@@ -428,11 +445,11 @@ export async function dbUpsertCalcTable(t: {
   const key = t.key.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
   if (!key) throw new Error("Ключ таблицы: латиница/цифры/подчёркивание");
   await pool.query(
-    `insert into kp_calc_tables (key, name, columns, is_active, sort_order)
-     values ($1,$2,$3,$4,$5)
+    `insert into kp_calc_tables (key, name, columns, default_rows, is_active, sort_order)
+     values ($1,$2,$3,$4,$5,$6)
      on conflict (key) do update set name=excluded.name, columns=excluded.columns,
-       is_active=excluded.is_active, sort_order=excluded.sort_order`,
-    [key, t.name.slice(0, 300), JSON.stringify(t.columns || []), t.isActive ?? true, t.sortOrder ?? 0]
+       default_rows=excluded.default_rows, is_active=excluded.is_active, sort_order=excluded.sort_order`,
+    [key, t.name.slice(0, 300), JSON.stringify(t.columns || []), JSON.stringify(t.defaultRows || []), t.isActive ?? true, t.sortOrder ?? 0]
   );
 }
 

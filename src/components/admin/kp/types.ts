@@ -85,6 +85,7 @@ export interface CalcTableDef {
   key: string;
   name: string;
   columns: CalcColumn[];
+  defaultRows?: RowData[];
   isActive: boolean;
   sortOrder: number;
 }

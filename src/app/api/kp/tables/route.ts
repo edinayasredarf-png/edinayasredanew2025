@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const denied = await guard(request);
   if (denied) return denied;
-  let body: { key?: string; name?: string; columns?: unknown[]; isActive?: boolean; sortOrder?: number };
+  let body: { key?: string; name?: string; columns?: unknown[]; defaultRows?: Array<Record<string, string>>; isActive?: boolean; sortOrder?: number };
   try {
     body = await request.json();
   } catch {
@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       key: body.key,
       name: body.name,
       columns: body.columns,
+      defaultRows: Array.isArray(body.defaultRows) ? body.defaultRows : [],
       isActive: body.isActive,
       sortOrder: body.sortOrder,
     });

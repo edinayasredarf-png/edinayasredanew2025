@@ -156,7 +156,7 @@ export default function KpGenerator() {
       const t = calcTables[0];
       setSelectedTableKey(t.key);
       setColumns(t.columns);
-      setRows([{}]);
+      setRows(t.defaultRows?.length ? t.defaultRows.map((r) => ({ ...r })) : [{}]);
     }
   }, [calcTables, selectedTableKey]);
 

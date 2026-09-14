@@ -533,7 +533,13 @@ function TableEditor({
   const [name, setName] = useState(table.name);
   const [key, setKey] = useState(table.key);
   const [cols, setCols] = useState<CalcColumn[]>(table.columns);
+  const [defRows, setDefRows] = useState<Array<Record<string, string>>>(table.defaultRows || []);
   const [busy, setBusy] = useState(false);
+
+  // Колонки, которые заполняются вручную (для строк по умолчанию).
+  const inputCols = cols.filter((c) => c.kind === 'text' || c.kind === 'number' || c.kind === 'const');
+  const setDefCell = (ri: number, key: string, v: string) =>
+    setDefRows((rs) => rs.map((r, j) => (j === ri ? { ...r, [key]: v } : r)));
 
   const upd = (i: number, patch: Partial<CalcColumn>) => setCols((cs) => cs.map((c, j) => (j === i ? { ...c, ...patch } : c)));
   const move = (i: number, dir: -1 | 1) => {
@@ -560,7 +566,7 @@ function TableEditor({
       const res = await fetch('/api/kp/tables', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: k, name, columns: finalCols }),
+        body: JSON.stringify({ key: k, name, columns: finalCols, defaultRows: defRows }),
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || 'Ошибка');
@@ -640,6 +646,37 @@ function TableEditor({
         </table>
       </div>
       <button onClick={addCol} className="text-sm text-[#029cda]">+ Колонка</button>
+
+      {/* Строки по умолчанию (зашитые) */}
+      <div className="border-t border-gray-100 pt-3">
+        <div className="text-sm font-semibold text-[#313131] mb-1">Строки по умолчанию (подставляются в КП сразу)</div>
+        <div className="text-xs text-gray-400 mb-2">Зафиксируйте неизменные строки (названия услуг, единицы). Менеджеру останется вписать только цены/значения.</div>
+        {defRows.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500">
+                  {inputCols.map((c) => <th key={c.key} className="pb-1 pr-2">{c.label || c.key}</th>)}
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {defRows.map((r, ri) => (
+                  <tr key={ri}>
+                    {inputCols.map((c) => (
+                      <td key={c.key} className="py-0.5 pr-2">
+                        <input value={r[c.key] ?? ''} onChange={(e) => setDefCell(ri, c.key, e.target.value)} className={`${input} min-w-[140px]`} />
+                      </td>
+                    ))}
+                    <td><button onClick={() => setDefRows((rs) => rs.filter((_, j) => j !== ri))} className="text-red-500 px-1">✕</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <button onClick={() => setDefRows((rs) => [...rs, {}])} className="text-sm text-[#029cda] mt-1">+ Строка по умолчанию</button>
+      </div>
 
       <div className="flex items-center gap-2">
         <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
