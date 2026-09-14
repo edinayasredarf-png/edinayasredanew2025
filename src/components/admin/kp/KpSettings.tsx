@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Organization, Tier, Executor, ServiceType, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
+import { Spinner } from '@/components/admin/ui/Spinner';
+import type { Organization, Executor, ServiceType, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
 const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
 const label = 'block text-xs font-medium text-gray-500 mb-1';
-const num = 'w-full px-2 py-1.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
 
 async function uploadImage(file: File): Promise<string> {
   const fd = new FormData();
@@ -26,12 +26,10 @@ function emptyOrg(sort: number): Organization {
 }
 
 export default function KpSettings({
-  orgs, tiers, executors, serviceTypes, services, headerLayout, aliases, calcTables, onChanged, setStatus,
+  orgs, executors, services, headerLayout, aliases, calcTables, onChanged, setStatus,
 }: {
   orgs: Organization[];
-  tiers: Tier[];
   executors: Executor[];
-  serviceTypes: string[];
   services: ServiceType[];
   headerLayout: HeaderLayout;
   aliases: Alias[];
@@ -70,8 +68,6 @@ export default function KpSettings({
         {creating && (
           <OrgEditor
             org={emptyOrg(orgs.length + 1)}
-            tiers={[]}
-            serviceTypes={serviceTypes}
             isNew
             onClose={() => setCreating(false)}
             onSaved={() => { setCreating(false); onChanged(); }}
@@ -102,8 +98,6 @@ export default function KpSettings({
                 <div className="border-t border-gray-100 p-4">
                   <OrgEditor
                     org={o}
-                    tiers={tiers.filter((t) => t.orgKey === o.key)}
-                    serviceTypes={serviceTypes}
                     onClose={() => setEditKey(null)}
                     onSaved={() => { setEditKey(null); onChanged(); }}
                     setStatus={setStatus}
@@ -123,29 +117,17 @@ export default function KpSettings({
 
 /* ─────────── Редактор компании ─────────── */
 function OrgEditor({
-  org, tiers, serviceTypes, isNew, onClose, onSaved, setStatus,
+  org, isNew, onClose, onSaved, setStatus,
 }: {
   org: Organization;
-  tiers: Tier[];
-  serviceTypes: string[];
   isNew?: boolean;
   onClose: () => void;
   onSaved: () => void;
   setStatus: (s: string) => void;
 }) {
   const [d, setD] = useState<Organization>(org);
-  const [priceMap, setPriceMap] = useState<Record<string, Tier>>(() => {
-    const m: Record<string, Tier> = {};
-    for (const s of serviceTypes) {
-      const t = tiers.find((x) => x.serviceType === s);
-      m[s] = t || { orgKey: org.key, serviceType: s, pricePerHaDirect: 0, pricePerHaTender: 0, aisPrice: 0, renewalPerYear: 0, minHectares: 1 };
-    }
-    return m;
-  });
   const [busy, setBusy] = useState(false);
   const set = (patch: Partial<Organization>) => setD((x) => ({ ...x, ...patch }));
-  const setPrice = (svc: string, patch: Partial<Tier>) =>
-    setPriceMap((m) => ({ ...m, [svc]: { ...m[svc], ...patch } }));
 
   const pickImage = async (field: 'headerImage' | 'signatureImage' | 'stampImage', file?: File) => {
     if (!file) return;
@@ -161,13 +143,11 @@ function OrgEditor({
     if (!d.key.trim() || !d.name.trim()) return setStatus('Укажите ключ и название компании');
     setBusy(true);
     try {
-      const tiersArr = serviceTypes
-        .map((s) => priceMap[s])
-        .filter((t) => t.pricePerHaDirect || t.pricePerHaTender || t.aisPrice || t.renewalPerYear);
+      // Цены редактируются в отдельной вкладке «Цены»; здесь их не трогаем.
       const res = await fetch('/api/kp/organizations', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org: d, tiers: tiersArr }),
+        body: JSON.stringify({ org: d, tiers: [] }),
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || 'Ошибка сохранения');
@@ -268,37 +248,14 @@ function OrgEditor({
         Активна (показывать в выборе)
       </label>
 
-      {/* Цены по услугам */}
-      <div>
-        <div className="text-sm font-semibold text-[#313131] mb-2">💰 Цены по услугам</div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-gray-500">
-                <th className="pb-1">Услуга</th>
-                <th className="pb-1">₽/га прямой</th>
-                <th className="pb-1">₽/га торги</th>
-                <th className="pb-1">АИС, ₽</th>
-                <th className="pb-1">Пролонг./год, ₽</th>
-              </tr>
-            </thead>
-            <tbody>
-              {serviceTypes.map((s) => (
-                <tr key={s}>
-                  <td className="py-1 pr-2 text-[#313131]">{s}</td>
-                  <td className="py-1 pr-1"><input className={num} inputMode="decimal" value={priceMap[s]?.pricePerHaDirect || ''} onChange={(e) => setPrice(s, { pricePerHaDirect: Number(e.target.value) || 0 })} /></td>
-                  <td className="py-1 pr-1"><input className={num} inputMode="decimal" value={priceMap[s]?.pricePerHaTender || ''} onChange={(e) => setPrice(s, { pricePerHaTender: Number(e.target.value) || 0 })} /></td>
-                  <td className="py-1 pr-1"><input className={num} inputMode="decimal" value={priceMap[s]?.aisPrice || ''} onChange={(e) => setPrice(s, { aisPrice: Number(e.target.value) || 0 })} /></td>
-                  <td className="py-1 pr-1"><input className={num} inputMode="decimal" value={priceMap[s]?.renewalPerYear || ''} onChange={(e) => setPrice(s, { renewalPerYear: Number(e.target.value) || 0 })} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Цены вынесены в отдельную вкладку «Цены» */}
+      <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-lg px-3 py-2">
+        💰 Цены по услугам теперь задаются в отдельной вкладке <span className="font-medium text-[#0b5c7d]">«Цены»</span> (сводная таблица по всем компаниям).
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">
+          {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить компанию'}
         </button>
         <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
@@ -366,7 +323,8 @@ function HeaderLayoutEditor({
             <textarea value={right} onChange={(e) => setRight(e.target.value)} className={ta} placeholder={'{{client_org_full}}\n{{client_fio_short}}'} />
           </div>
         </div>
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">
+          {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить шапку'}
         </button>
       </div>
@@ -679,7 +637,7 @@ function TableEditor({
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
         <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
         {!isNew && <button onClick={remove} className="ml-auto px-4 py-2 text-sm rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
       </div>

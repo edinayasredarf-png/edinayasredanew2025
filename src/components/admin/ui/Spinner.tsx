@@ -4,13 +4,22 @@
  * Единый спиннер админки в фирменном цвете #029cda.
  * Стиль совпадает с загрузчиками в других разделах (animate-spin + border-b-2).
  */
-export function Spinner({ size = 24, className = "" }: { size?: number; className?: string }) {
+export function Spinner({
+  size = 24,
+  color = "#029cda",
+  className = "",
+}: {
+  size?: number;
+  /** Цвет вращающейся дуги (для кнопок с заливкой удобно "#fff"). */
+  color?: string;
+  className?: string;
+}) {
   return (
     <div
       role="status"
       aria-label="Загрузка"
-      className={`animate-spin rounded-full border-b-2 border-[#029cda] ${className}`}
-      style={{ width: size, height: size }}
+      className={`animate-spin rounded-full border-b-2 ${className}`}
+      style={{ width: size, height: size, borderBottomColor: color }}
     />
   );
 }

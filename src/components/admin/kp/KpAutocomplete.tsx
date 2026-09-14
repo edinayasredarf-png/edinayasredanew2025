@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { Spinner } from '@/components/admin/ui/Spinner';
 
 interface Item {
   title: string;
@@ -84,7 +85,7 @@ export default function KpAutocomplete({
         placeholder={placeholder}
         autoComplete="off"
       />
-      {loading && <div className="absolute right-3 top-2.5 text-xs text-gray-400">…</div>}
+      {loading && <div className="absolute right-3 top-2.5"><Spinner size={14} /></div>}
       {open && items.length > 0 && (
         <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
           {items.map((it, i) => (
