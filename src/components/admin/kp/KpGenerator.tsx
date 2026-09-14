@@ -77,6 +77,7 @@ export default function KpGenerator() {
   const [clientPosition, setClientPosition] = useState('');
   const [clientTerritory, setClientTerritory] = useState('');
   const [clientAreaTotal, setClientAreaTotal] = useState('');
+  const [clientQuantity, setClientQuantity] = useState('');
   const [salutation, setSalutation] = useState('');
 
   // Bitrix: компания → сделки → загрузка КП в сделку
@@ -241,6 +242,7 @@ export default function KpGenerator() {
         requestDate: requestDate || undefined,
       },
       kp: { date: kpDate || undefined, number: kpNumber || undefined, validityPeriod },
+      object: clientQuantity ? { quantityUnits: toNum(clientQuantity) } : undefined,
       table: { key: selectedTableKey, name: calcTables.find((t) => t.key === selectedTableKey)?.name, columns },
       rows: rows.filter((r) => Object.values(r).some((v) => (v || '').trim())),
       ais: inc.ais ? { licenses: 1 } : undefined,
@@ -343,7 +345,7 @@ export default function KpGenerator() {
             orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, clientCompanyId,
-            clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, salutation, setSalutation,
+            clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -392,7 +394,7 @@ function CreateTab(p: CreateProps) {
     orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, clientCompanyId,
-    clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, salutation, setSalutation,
+    clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -407,7 +409,8 @@ function CreateTab(p: CreateProps) {
     clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string;
     clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void;
-    clientAreaTotal: string; setClientAreaTotal: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
+    clientAreaTotal: string; setClientAreaTotal: (v: string) => void;
+    clientQuantity: string; setClientQuantity: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
     onPickCompany: (it: { id?: string; title: string }) => void;
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
@@ -545,6 +548,10 @@ function CreateTab(p: CreateProps) {
             <div>
               <div className={label}>Общая площадь (алиас {'{{area_total}}'})</div>
               <input value={clientAreaTotal} onChange={(e) => setClientAreaTotal(e.target.value)} className={input} placeholder="6 Га / 156 507 м²" />
+            </div>
+            <div>
+              <div className={label}>Количество объектов (алиас {'{{quantity_units}}'})</div>
+              <input value={clientQuantity} onChange={(e) => setClientQuantity(e.target.value)} className={input} inputMode="numeric" placeholder="200" />
             </div>
           </div>
         </div>
