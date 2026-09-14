@@ -123,12 +123,23 @@ export function getTimewebPool(): Pool {
 
   const connectionStringForPool = stripSslFromConnectionString(connectionString);
 
+  // Serverless (Vercel) поднимает много инстансов — держим маленький пул на инстанс,
+  // чтобы не упираться в лимит соединений Timeweb. connectionTimeoutMillis — чтобы
+  // не «висеть» при недоступной БД, а падать с понятной ошибкой. keepAlive — против
+  // обрыва простаивающих соединений на пути к managed-БД.
+  const poolMax = Number(process.env.DATABASE_POOL_MAX || 3);
   pool = new Pool({
     connectionString: connectionStringForPool,
-    max: 10,
+    max: Number.isFinite(poolMax) && poolMax > 0 ? poolMax : 3,
     idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: Number(process.env.DATABASE_CONNECT_TIMEOUT_MS || 10_000),
+    keepAlive: true,
     ssl,
     options: `-c search_path=${searchPath}`,
+  });
+  // Не роняем процесс из-за фоновой ошибки простаивающего клиента пула.
+  pool.on("error", (err) => {
+    console.error("[timewebPg] pool error:", err.message);
   });
 
   return pool;
