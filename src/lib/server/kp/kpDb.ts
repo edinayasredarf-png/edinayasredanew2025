@@ -1,6 +1,5 @@
 import "server-only";
 import { getTimewebPool } from "@/lib/timewebPg";
-import { seedKpTemplates } from "./kpSeedTemplates";
 
 /*
  * Хранилище генератора КП (отдел продаж). Таблицы создаются и мигрируются
@@ -280,7 +279,8 @@ async function ensureTables(): Promise<void> {
   `);
   await pool.query(`alter table kp_calc_tables add column if not exists default_rows text not null default '[]'`);
   await seedDefaultCalcTable(pool);
-  await seedKpTemplates(pool);
+  // Вшитые шаблоны больше не используются — удаляем ранее засеянные (seed_key не null).
+  await pool.query(`delete from kp_templates where seed_key is not null`);
 
   await seedDefaults(pool);
   ensured = true;
