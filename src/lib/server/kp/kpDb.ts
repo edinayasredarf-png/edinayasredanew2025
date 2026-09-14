@@ -203,6 +203,7 @@ async function ensureTables(): Promise<void> {
     `alter table kp_service_types add column if not exists default_table text not null default ''`
   );
   // Добавляем недостающие услуги (не затирая пользовательские) + таблица по умолчанию.
+  // Таблица по умолчанию. Фикс-услуги можно перевести в «— без таблицы —» в настройках.
   const svcDefaultTable: Record<string, string> = {
     "ИМЗ": "raschet",
     "ИМЗ + ЕС": "raschet",
@@ -220,17 +221,16 @@ async function ensureTables(): Promise<void> {
   };
   let stI = 1;
   for (const name of KP_SERVICE_TYPES) {
+    const dt = svcDefaultTable[name] ?? "";
     await pool.query(
       "insert into kp_service_types (name, sort_order, default_table) values ($1,$2,$3) on conflict (name) do nothing",
-      [name, stI++, svcDefaultTable[name] || ""]
+      [name, stI++, dt]
     );
-    // Проставить таблицу по умолчанию, если ещё пусто (миграция существующих).
-    if (svcDefaultTable[name]) {
-      await pool.query(
-        "update kp_service_types set default_table=$2 where name=$1 and coalesce(default_table,'')=''",
-        [name, svcDefaultTable[name]]
-      );
-    }
+    // Проставляем маппинг только если ещё пусто (не трогаем выбор пользователя).
+    await pool.query(
+      "update kp_service_types set default_table=$2 where name=$1 and coalesce(default_table,'')=''",
+      [name, dt]
+    );
   }
 
   // Настройки (key/value JSON): например, расположение шапки документа.
@@ -509,7 +509,12 @@ const BUILTIN_ALIASES: Array<[string, string]> = [
   ["client_fio_short_dative", "ФИО клиента дат. (Иванову И.И.)"],
   ["client_io", "Имя Отчество клиента"],
   ["client_greeting", "Обращение целиком (Уважаемый Иван Иванович!)"],
-  ["territory", "Территория/объект (города Луганск, площадь…)"],
+  ["territory", "Территория/объект (города Луганск, Липецкой области)"],
+  ["area_total", "Общая площадь текстом (6 Га, 156 507 м²)"],
+  ["cost_direct", "Цена прямой контракт (из тарифа)"],
+  ["cost_tender", "Цена торги (из тарифа)"],
+  ["cost_direct_in_words", "Цена прямой прописью"],
+  ["cost_tender_in_words", "Цена торги прописью"],
   ["client_position", "Должность клиента"],
   ["client_position_dative", "Должность дат. (Главе …)"],
   ["client_salutation", "Обращение (Уважаемый/-ая)"],

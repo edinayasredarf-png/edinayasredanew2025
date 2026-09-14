@@ -22,7 +22,8 @@ export interface KpFormPayload {
     orgShort?: string;
     fioFull: string;
     position?: string; // должность клиента (адресата)
-    territory?: string; // территория/объект («города Луганск», «… общей площадью 6 Га»)
+    territory?: string; // территория/объект («города Луганск», «Липецкой области»)
+    areaTotal?: string; // общая площадь текстом («6 Га», «156 507 м²»)
     salutation?: string; // Уважаемый / Уважаемая — если пусто, определяется по ФИО
     requestNumber?: string;
     requestDate?: string;
@@ -203,7 +204,13 @@ export function buildKpContext(input: {
   const renewalYears = payload.renewal?.years ?? 0;
   const renewalPerYear = payload.renewal?.pricePerYear ?? tier.renewalPerYear;
 
-  const serviceTotal = payload.includes.service ? ct.serviceTotal : 0;
+  // Если в таблице нет колонки стоимости (фикс-услуга без таблицы) — берём цену
+  // из тарифа компании по выбранному режиму; иначе — сумма колонки стоимости.
+  const serviceTotal = payload.includes.service
+    ? ct.costColIndex >= 0
+      ? ct.serviceTotal
+      : toNum(activePrice)
+    : 0;
   const aisTotal = payload.includes.ais ? toNum(aisLicenses) * toNum(aisPrice) : 0;
   const renewalTotal = payload.includes.renewal ? toNum(renewalYears) * toNum(renewalPerYear) : 0;
   const grandTotal = serviceTotal + aisTotal + renewalTotal;
@@ -245,6 +252,7 @@ export function buildKpContext(input: {
     client_io: [first, middle].filter(Boolean).join(" "), // Имя Отчество
     client_greeting: `${salutation} ${[first, middle].filter(Boolean).join(" ")}!`, // «Уважаемый Иван Иванович!»
     territory: payload.client.territory?.trim() || "",
+    area_total: payload.client.areaTotal?.trim() || "",
     client_position: payload.client.position?.trim() || "",
     client_position_dative: positionDative(payload.client.position || ""),
     client_salutation: salutation,
@@ -295,6 +303,13 @@ export function buildKpContext(input: {
     renewal_total: formatMoney(renewalTotal),
     renewal_price_per_year_in_words: rublesInWords(renewalPerYear),
     renewal_total_in_words: rublesInWords(renewalTotal),
+    // Цены по режимам (для фикс-услуг: цена по прямому/торгам из тарифа компании)
+    cost_direct: formatMoney(toNum(tier.pricePerHaDirect)),
+    cost_tender: formatMoney(toNum(tier.pricePerHaTender)),
+    cost_direct_int: formatInt(toNum(tier.pricePerHaDirect)),
+    cost_tender_int: formatInt(toNum(tier.pricePerHaTender)),
+    cost_direct_in_words: rublesInWords(toNum(tier.pricePerHaDirect)),
+    cost_tender_in_words: rublesInWords(toNum(tier.pricePerHaTender)),
     // Итоги
     total_cost: formatMoney(grandTotal),
     total_cost_kopecks: String(Math.round((grandTotal % 1) * 100)).padStart(2, "0"),

@@ -27,7 +27,7 @@ function fmtMoney(n: number): string {
 function deriveIncludes(svc: string): { service: boolean; ais: boolean; renewal: boolean } {
   const prolong = svc.includes('Пролонгац');
   const es = svc.includes('ЕС') || svc.includes('Единая');
-  return { service: !prolong, ais: es && !prolong, renewal: prolong };
+  return { service: !prolong && svc !== 'ЕС', ais: es && !prolong, renewal: prolong };
 }
 
 /** Стоимость услуги по строкам через колонку-стоимость таблицы (для превью). */
@@ -76,6 +76,7 @@ export default function KpGenerator() {
   const [clientFio, setClientFio] = useState('');
   const [clientPosition, setClientPosition] = useState('');
   const [clientTerritory, setClientTerritory] = useState('');
+  const [clientAreaTotal, setClientAreaTotal] = useState('');
   const [salutation, setSalutation] = useState('');
 
   // Bitrix: компания → сделки → загрузка КП в сделку
@@ -234,6 +235,7 @@ export default function KpGenerator() {
         fioFull: clientFio,
         position: clientPosition || undefined,
         territory: clientTerritory || undefined,
+        areaTotal: clientAreaTotal || undefined,
         salutation: salutation || undefined,
         requestNumber: requestNumber || undefined,
         requestDate: requestDate || undefined,
@@ -341,7 +343,7 @@ export default function KpGenerator() {
             orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, clientCompanyId,
-            clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
+            clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, salutation, setSalutation,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -390,7 +392,7 @@ function CreateTab(p: CreateProps) {
     orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, clientCompanyId,
-    clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, salutation, setSalutation,
+    clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, salutation, setSalutation,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -404,7 +406,8 @@ function CreateTab(p: CreateProps) {
     mode: PriceMode; setMode: (v: PriceMode) => void; ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
     clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string;
     clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
-    clientTerritory: string; setClientTerritory: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
+    clientTerritory: string; setClientTerritory: (v: string) => void;
+    clientAreaTotal: string; setClientAreaTotal: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
     onPickCompany: (it: { id?: string; title: string }) => void;
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
@@ -534,10 +537,15 @@ function CreateTab(p: CreateProps) {
             <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={input} placeholder="Глава администрации" />
             <div className="text-xs text-gray-400 mt-1">В шапке справа ставится в дательном падеже: «Главе администрации».</div>
           </div>
-          <div>
-            <div className={label}>Территория / объект (алиас {'{{territory}}'})</div>
-            <input value={clientTerritory} onChange={(e) => setClientTerritory(e.target.value)} className={input} placeholder="города Луганск / … общей площадью 6 Га" />
-            <div className="text-xs text-gray-400 mt-1">Подставляется в тексте шаблона: «…на территории {'{{territory}}'}».</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <div className={label}>Территория / объект (алиас {'{{territory}}'})</div>
+              <input value={clientTerritory} onChange={(e) => setClientTerritory(e.target.value)} className={input} placeholder="города Луганск / Липецкой области" />
+            </div>
+            <div>
+              <div className={label}>Общая площадь (алиас {'{{area_total}}'})</div>
+              <input value={clientAreaTotal} onChange={(e) => setClientAreaTotal(e.target.value)} className={input} placeholder="6 Га / 156 507 м²" />
+            </div>
           </div>
         </div>
 
