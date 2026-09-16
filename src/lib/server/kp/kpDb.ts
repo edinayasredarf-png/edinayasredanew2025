@@ -221,10 +221,10 @@ async function ensureTables(): Promise<void> {
   // Таблица по умолчанию. Фикс-услуги можно перевести в «— без таблицы —» в настройках.
   const svcDefaultTable: Record<string, string> = {
     "ИМЗ": "raschet",
-    "ИМЗ + ЕС": "raschet",
+    "ИМЗ + ЕС": "izn",
     "ИЗН": "izn",
-    "ИЗН + ЕС": "uslugi",
-    "ИЗН + ИМЗ + ЕС": "uslugi",
+    "ИЗН + ЕС": "izn",
+    "ИЗН + ИМЗ + ЕС": "izn",
     "Контейнерные площадки": "containers",
     "ЕС": "flat",
     "Лесохозяйственный регламент": "flat",
@@ -357,13 +357,13 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
     },
     {
       key: "izn",
-      name: "ИЗН (прямой + торги, цена вручную)",
+      name: "Услуги (прямой + торги, цена × площадь)",
       sort: 2,
       columns: [
         { key: "name", label: "Услуга", kind: "text", align: "left" },
         { key: "area", label: "Площадь", kind: "text", align: "center" },
-        { key: "cost_direct", label: "Стоимость, руб. (для прямого контракта)", kind: "number", align: "center", ...costD },
-        { key: "cost_tender", label: "Стоимость, руб. (для торгового контракта)", kind: "number", align: "center", ...costT },
+        { key: "cost_direct", label: "Стоимость, руб. (для прямого контракта)", kind: "formula", formula: "area * price_direct", align: "center", ...costD },
+        { key: "cost_tender", label: "Стоимость, руб. (для торгового контракта)", kind: "formula", formula: "area * price_tender", align: "center", ...costT },
       ],
       rows: [
         { name: "Инвентаризация зелёных насаждений (площадные объекты)", area: "1 Га" },
@@ -436,6 +436,30 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
       ]);
     }
   }
+
+  // Миграция izn: ручные колонки стоимости → формула (цена × площадь) из раздела «Цены».
+  // Меняем только если колонки ещё «number» без формулы (пользовательские правки не трогаем).
+  {
+    const { rows } = await pool.query("select columns from kp_calc_tables where key='izn'");
+    if (rows[0]) {
+      let cols: Array<{ key?: string; kind?: string; formula?: string }> = [];
+      try { cols = JSON.parse(String(rows[0].columns)); } catch { cols = []; }
+      let changed = false;
+      const patched = cols.map((c) => {
+        if (c.key === "cost_direct" && c.kind === "number" && !c.formula) { changed = true; return { ...c, kind: "formula", formula: "area * price_direct" }; }
+        if (c.key === "cost_tender" && c.kind === "number" && !c.formula) { changed = true; return { ...c, kind: "formula", formula: "area * price_tender" }; }
+        return c;
+      });
+      if (changed) {
+        await pool.query("update kp_calc_tables set name='Услуги (прямой + торги, цена × площадь)', columns=$1 where key='izn'", [JSON.stringify(patched)]);
+      }
+    }
+  }
+
+  // Комбинированные с ЕС → таблица «izn» (услуги, цена×площадь), если ещё старый сид.
+  await pool.query(
+    "update kp_service_types set default_table='izn' where name in ('ИМЗ + ЕС','ИЗН + ЕС','ИЗН + ИМЗ + ЕС') and default_table in ('uslugi','raschet')"
+  );
 }
 
 function mapCalcTable(r: Record<string, unknown>): KpCalcTable {

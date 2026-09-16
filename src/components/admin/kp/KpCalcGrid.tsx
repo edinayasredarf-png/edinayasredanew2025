@@ -31,7 +31,12 @@ function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: Calc
   for (const c of cols) {
     if (c.kind === 'number') s[c.key] = num(row[c.key]);
     else if (c.kind === 'const') s[c.key] = num(c.constValue);
+    else if (c.kind === 'text') s[c.key] = num(row[c.key]); // «5 Га» → 5
   }
+  // Пер-строчная цена из раздела «Цены» (по первой выбранной компании).
+  if (row.__pd) s.price_direct = num(row.__pd);
+  if (row.__pt) s.price_tender = num(row.__pt);
+  if (row.__p) s.price = num(row.__p);
   // формулы слева направо
   let val = 0;
   for (const c of cols) {

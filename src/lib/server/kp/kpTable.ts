@@ -94,12 +94,17 @@ export function computeTable(
   const costColIndex = columns.findIndex((c) => c.isCost);
 
   const body: string[][] = rows.map((row, ri) => {
-    // scope: числовые/константные колонки + цены
+    // scope: числовые/константные/текстовые колонки + цены
     const scope: Record<string, number> = { ...priceVars, row_index: ri + 1 };
     for (const c of columns) {
       if (c.kind === "number") scope[c.key] = toNum(row[c.key]);
       else if (c.kind === "const") scope[c.key] = toNum(c.constValue);
+      else if (c.kind === "text") scope[c.key] = toNum(row[c.key]); // «5 Га» → 5 для формул площади
     }
+    // Пер-строчная цена из раздела «Цены» (по выбранной компании), если задана.
+    if (row.__pd !== undefined && row.__pd !== "") scope.price_direct = toNum(row.__pd);
+    if (row.__pt !== undefined && row.__pt !== "") scope.price_tender = toNum(row.__pt);
+    if (row.__p !== undefined && row.__p !== "") scope.price = toNum(row.__p);
     // формулы слева направо (следующая может ссылаться на предыдущую)
     const numericByCol: number[] = [];
     const cells = columns.map((c, ci) => {

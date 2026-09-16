@@ -127,8 +127,14 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         if (!svc || !line) return r;
         const lp = compTiers.get(svc)?.linePrices?.[line];
         if (!lp) return r;
+        // __pd/__pt — цена за единицу для формул (цена × площадь) по этой компании.
+        // Плюс заполняем не-формульные ячейки стоимости напрямую (формулы их игнорируют).
         return {
           ...r,
+          __pd: String(lp.direct || 0),
+          __pt: String(lp.tender || 0),
+          __p: String(lp.direct || 0),
+          unit_price: String(lp.direct || 0),
           cost_direct: String(lp.direct || 0),
           cost_tender: String(lp.tender || 0),
           cost: String(lp.direct || 0),
