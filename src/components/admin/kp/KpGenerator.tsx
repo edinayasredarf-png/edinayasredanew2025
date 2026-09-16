@@ -170,6 +170,13 @@ export default function KpGenerator() {
     setRows([{}]);
   };
 
+  // Импорт таблицы из Excel «как есть» → применяем как выбранную.
+  const onImportedTable = useCallback((key: string, cols: CalcColumn[], newRows: RowData[]) => {
+    setSelectedTableKey(key);
+    setColumns(cols);
+    setRows(newRows.length ? newRows : [{}]);
+  }, []);
+
   // Строки-услуги выбранной услуги (для комбинированной — объединение компонентов),
   // разложенные по колонкам таблицы, с ценой из тарифа компании (превью — первая).
   const buildRowsForService = useCallback(
@@ -413,6 +420,7 @@ export default function KpGenerator() {
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
+            onTablesChanged: loadMeta, onImportedTable, setStatus,
             perOrgTotals, generate, busy,
           }}
         />
@@ -470,6 +478,7 @@ function CreateTab(p: CreateProps) {
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
+    onTablesChanged, onImportedTable, setStatus,
     perOrgTotals, generate, busy,
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
@@ -492,6 +501,7 @@ function CreateTab(p: CreateProps) {
     columns: CalcColumn[]; setColumns: React.Dispatch<React.SetStateAction<CalcColumn[]>>;
     rows: RowData[]; setRows: React.Dispatch<React.SetStateAction<RowData[]>>;
     previewScope: { price: number; price_direct: number; price_tender: number; min_ha: number };
+    onTablesChanged: () => void; onImportedTable: (key: string, columns: CalcColumn[], rows: RowData[]) => void; setStatus: (s: string) => void;
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
   };
@@ -674,6 +684,9 @@ function CreateTab(p: CreateProps) {
             rows={rows}
             setRows={setRows}
             previewScope={previewScope}
+            onTablesChanged={onTablesChanged}
+            onImportedTable={onImportedTable}
+            setStatus={setStatus}
           />
         </div>
 
