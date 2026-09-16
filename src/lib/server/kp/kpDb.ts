@@ -54,6 +54,15 @@ export interface KpTier {
   aisPrice: number;
   renewalPerYear: number;
   minHectares: number;
+  /** Цены строк-услуг по ключу строки: { lineKey: { direct, tender } }. */
+  linePrices: Record<string, { direct: number; tender: number }>;
+}
+
+/** Строка-услуга (позиция) в таблице расчёта конкретной услуги. */
+export interface KpServiceLineItem {
+  key: string; // стабильный ключ позиции (для цен по компаниям)
+  name: string; // наименование услуги/работы
+  unit: string; // ед. изм. / площадь: «1 Га», «1 км», «1 шт»
 }
 
 export interface KpExecutor {
@@ -123,6 +132,8 @@ async function ensureTables(): Promise<void> {
       unique (org_key, service_type)
     )
   `);
+  // Цены строк-услуг (позиций) по компаниям: JSON { lineKey: { direct, tender } }.
+  await pool.query(`alter table kp_org_services add column if not exists line_prices text not null default '{}'`);
 
   await pool.query(`
     create table if not exists kp_executors (
@@ -202,6 +213,10 @@ async function ensureTables(): Promise<void> {
   await pool.query(
     `alter table kp_service_types add column if not exists default_table text not null default ''`
   );
+  // Строки-услуги (позиции) для авто-наполнения таблицы: JSON [{ key, name, unit }].
+  await pool.query(
+    `alter table kp_service_types add column if not exists line_items text not null default '[]'`
+  );
   // Добавляем недостающие услуги (не затирая пользовательские) + таблица по умолчанию.
   // Таблица по умолчанию. Фикс-услуги можно перевести в «— без таблицы —» в настройках.
   const svcDefaultTable: Record<string, string> = {
@@ -230,6 +245,26 @@ async function ensureTables(): Promise<void> {
     await pool.query(
       "update kp_service_types set default_table=$2 where name=$1 and coalesce(default_table,'')=''",
       [name, dt]
+    );
+  }
+
+  // Сид строк-услуг (позиций) для атомарных услуг — только если ещё пусто.
+  const svcLineItems: Record<string, KpServiceLineItem[]> = {
+    "ИЗН": [
+      { key: "izn_area", name: "Инвентаризация зелёных насаждений (площадной объект)", unit: "1 Га" },
+      { key: "izn_length", name: "Инвентаризация зелёных насаждений (протяжённость)", unit: "1 км" },
+    ],
+    "ИМЗ": [
+      { key: "imz", name: "Инвентаризация мест захоронений", unit: "1 Га" },
+    ],
+    "Контейнерные площадки": [
+      { key: "containers", name: "Инвентаризация и подготовка предложений для включения в реестр мест (площадок) накопления ТКО", unit: "1 шт" },
+    ],
+  };
+  for (const [name, items] of Object.entries(svcLineItems)) {
+    await pool.query(
+      "update kp_service_types set line_items=$2 where name=$1 and coalesce(line_items,'[]') in ('[]','')",
+      [name, JSON.stringify(items)]
     );
   }
 
@@ -615,13 +650,33 @@ export interface KpServiceTypeRow {
   isActive: boolean;
   rowFormula: string;
   defaultTable: string; // ключ таблицы расчёта по умолчанию для этой услуги
+  lineItems: KpServiceLineItem[]; // строки-услуги (позиции) для авто-наполнения
+}
+
+function parseLineItems(raw: unknown): KpServiceLineItem[] {
+  try {
+    const arr = JSON.parse(String(raw ?? "[]"));
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .map((x, i) => {
+        const o = (x ?? {}) as { key?: unknown; name?: unknown; unit?: unknown };
+        return {
+          key: String(o.key ?? `line_${i}`),
+          name: String(o.name ?? ""),
+          unit: String(o.unit ?? ""),
+        };
+      })
+      .filter((x) => x.name.trim());
+  } catch {
+    return [];
+  }
 }
 
 export async function dbListServiceTypes(activeOnly = false): Promise<KpServiceTypeRow[]> {
   await ensureTables();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    `select name, sort_order, is_active, row_formula, default_table from kp_service_types ${activeOnly ? "where is_active" : ""} order by sort_order, name`
+    `select name, sort_order, is_active, row_formula, default_table, line_items from kp_service_types ${activeOnly ? "where is_active" : ""} order by sort_order, name`
   );
   return rows.map((r) => ({
     name: String(r.name),
@@ -629,7 +684,21 @@ export async function dbListServiceTypes(activeOnly = false): Promise<KpServiceT
     isActive: Boolean(r.is_active),
     rowFormula: String(r.row_formula ?? ""),
     defaultTable: String(r.default_table ?? ""),
+    lineItems: parseLineItems(r.line_items),
   }));
+}
+
+export async function dbSetServiceLineItems(name: string, items: KpServiceLineItem[]): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const clean = (items || [])
+    .map((x, i) => ({
+      key: String(x.key || `line_${i}`).slice(0, 60),
+      name: String(x.name || "").slice(0, 300),
+      unit: String(x.unit || "").slice(0, 60),
+    }))
+    .filter((x) => x.name.trim());
+  await pool.query("update kp_service_types set line_items=$2 where name=$1", [name, JSON.stringify(clean)]);
 }
 
 export async function dbGetServiceFormula(name: string): Promise<string> {
@@ -814,6 +883,18 @@ export async function dbDeleteOrganization(key: string): Promise<void> {
 /* ─────────────── Ценовые тиры ─────────────── */
 
 function mapTier(r: Record<string, unknown>): KpTier {
+  let linePrices: Record<string, { direct: number; tender: number }> = {};
+  try {
+    const parsed = JSON.parse(String(r.line_prices ?? "{}"));
+    if (parsed && typeof parsed === "object") {
+      for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+        const o = (v ?? {}) as { direct?: unknown; tender?: unknown };
+        linePrices[k] = { direct: Number(o.direct) || 0, tender: Number(o.tender) || 0 };
+      }
+    }
+  } catch {
+    linePrices = {};
+  }
   return {
     orgKey: String(r.org_key),
     serviceType: String(r.service_type),
@@ -822,6 +903,7 @@ function mapTier(r: Record<string, unknown>): KpTier {
     aisPrice: Number(r.ais_price ?? 0),
     renewalPerYear: Number(r.renewal_per_year ?? 0),
     minHectares: Number(r.min_hectares ?? 1),
+    linePrices,
   };
 }
 
@@ -852,7 +934,9 @@ export async function dbResolveComposedTier(orgKey: string, serviceType: string)
   const found = await Promise.all(comps.map((s) => dbGetTier(orgKey, s)));
   const byName = new Map(comps.map((s, i) => [s, found[i] || undefined]));
   const t = composeTier(orgKey, serviceType, (s) => byName.get(s));
-  return t ? { ...t } : null;
+  // Построчные цены комбинированной услуги берутся из тарифов компонентов при
+  // генерации (kpBuild), поэтому здесь line_prices не нужны.
+  return t ? { ...t, linePrices: {} } : null;
 }
 
 export async function dbUpsertTier(t: KpTier): Promise<void> {
@@ -860,14 +944,14 @@ export async function dbUpsertTier(t: KpTier): Promise<void> {
   const pool = getTimewebPool();
   await pool.query(
     `insert into kp_org_services
-       (org_key, service_type, price_per_ha_direct, price_per_ha_tender, ais_price, renewal_per_year, min_hectares)
-     values ($1,$2,$3,$4,$5,$6,$7)
+       (org_key, service_type, price_per_ha_direct, price_per_ha_tender, ais_price, renewal_per_year, min_hectares, line_prices)
+     values ($1,$2,$3,$4,$5,$6,$7,$8)
      on conflict (org_key, service_type) do update set
        price_per_ha_direct=excluded.price_per_ha_direct,
        price_per_ha_tender=excluded.price_per_ha_tender,
        ais_price=excluded.ais_price, renewal_per_year=excluded.renewal_per_year,
-       min_hectares=excluded.min_hectares`,
-    [t.orgKey, t.serviceType, t.pricePerHaDirect, t.pricePerHaTender, t.aisPrice, t.renewalPerYear, t.minHectares]
+       min_hectares=excluded.min_hectares, line_prices=excluded.line_prices`,
+    [t.orgKey, t.serviceType, t.pricePerHaDirect, t.pricePerHaTender, t.aisPrice, t.renewalPerYear, t.minHectares, JSON.stringify(t.linePrices || {})]
   );
 }
 

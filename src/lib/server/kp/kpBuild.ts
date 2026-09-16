@@ -4,9 +4,11 @@ import {
   dbGetExecutor,
   dbGetHeaderLayout,
   dbGetOrganization,
+  dbGetTier,
   dbResolveComposedTier,
   dbResolveTemplate,
 } from "./kpDb";
+import { serviceComponents } from "@/lib/kp/serviceComposition";
 import { buildKpContext, type KpFormPayload } from "./kpMerge";
 import { fillDocxTemplate, type KpImage } from "./kpDocx";
 import { buildDocxFromHtml } from "./kpHtmlDocx";
@@ -113,9 +115,30 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
           }
         : { pricePerHaDirect: 0, pricePerHaTender: 0, aisPrice: 0, renewalPerYear: 0, minHectares: 1 };
 
+      // Стоимость строк-услуг зависит от компании: перезаписываем cost в строках
+      // с ключами __svc/__line ценами из тарифа этой компании (line_prices).
+      const compTiers = new Map<string, Awaited<ReturnType<typeof dbGetTier>>>();
+      for (const svc of serviceComponents(serviceType)) {
+        compTiers.set(svc, await dbGetTier(orgKey, svc));
+      }
+      const pricedRows = (req.form.rows || []).map((r) => {
+        const svc = (r as Record<string, string>).__svc;
+        const line = (r as Record<string, string>).__line;
+        if (!svc || !line) return r;
+        const lp = compTiers.get(svc)?.linePrices?.[line];
+        if (!lp) return r;
+        return {
+          ...r,
+          cost_direct: String(lp.direct || 0),
+          cost_tender: String(lp.tender || 0),
+          cost: String(lp.direct || 0),
+        };
+      });
+
       // Если пользователь не задал цены АИС/пролонгации явно — берём из тира.
       const form: KpFormPayload = {
         ...req.form,
+        rows: pricedRows,
         ais: req.form.ais?.pricePerLicense
           ? req.form.ais
           : { licenses: req.form.ais?.licenses ?? 1, pricePerLicense: tier.aisPrice },

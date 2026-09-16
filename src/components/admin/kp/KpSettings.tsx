@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Spinner } from '@/components/admin/ui/Spinner';
-import type { Organization, Executor, ServiceType, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
+import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
 const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
 const label = 'block text-xs font-medium text-gray-500 mb-1';
@@ -657,6 +657,29 @@ function ServicesManager({
 }) {
   const [newName, setNewName] = useState('');
   const [edits, setEdits] = useState<Record<string, string>>({});
+  const [itemsFor, setItemsFor] = useState<string | null>(null);
+  const [itemsDraft, setItemsDraft] = useState<ServiceLineItem[]>([]);
+
+  const openItems = (s: ServiceType) => {
+    setItemsFor(s.name);
+    setItemsDraft((s.lineItems ?? []).map((it) => ({ ...it })));
+  };
+  const slug = (name: string) =>
+    name.toLowerCase().replace(/[^a-zа-я0-9]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 40) || `line_${Date.now()}`;
+  const saveItems = async () => {
+    if (!itemsFor) return;
+    const clean = itemsDraft
+      .filter((it) => it.name.trim())
+      .map((it, i) => ({ key: (it.key || slug(it.name) || `line_${i}`), name: it.name.trim(), unit: it.unit.trim() }));
+    await fetch('/api/kp/services', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: itemsFor, lineItems: clean }),
+    });
+    setItemsFor(null);
+    setStatus('Строки услуги сохранены');
+    onChanged();
+  };
 
   const setDefaultTable = async (name: string, defaultTable: string) => {
     await fetch('/api/kp/services', {
@@ -720,37 +743,79 @@ function ServicesManager({
           <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
         </div>
         <div className="space-y-1">
-          {services.map((s) => (
-            <div key={s.name} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
-              <input
-                className={`${input} flex-1`}
-                value={edits[s.name] ?? s.name}
-                onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
-              />
-              {(edits[s.name] ?? s.name) !== s.name && (
-                <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
+          {services.map((s) => {
+            const combined = s.name.includes('+');
+            return (
+            <div key={s.name} className="bg-white border border-gray-200 rounded-lg">
+              <div className="flex items-center gap-2 px-3 py-2">
+                <input
+                  className={`${input} flex-1`}
+                  value={edits[s.name] ?? s.name}
+                  onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
+                />
+                {(edits[s.name] ?? s.name) !== s.name && (
+                  <button onClick={() => rename(s.name)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>
+                )}
+                {!combined && (
+                  <button
+                    onClick={() => (itemsFor === s.name ? setItemsFor(null) : openItems(s))}
+                    className="text-xs text-[#029cda] whitespace-nowrap"
+                    title="Строки-услуги для авто-наполнения таблицы"
+                  >
+                    строки ({s.lineItems?.length ?? 0})
+                  </button>
+                )}
+                <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                  таблица:
+                  <select
+                    value={s.defaultTable}
+                    onChange={(e) => setDefaultTable(s.name, e.target.value)}
+                    className="px-2 py-1 rounded border border-gray-200 text-xs bg-white"
+                  >
+                    <option value="">— без таблицы —</option>
+                    {calcTables.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
+                  </select>
+                </label>
+                <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
+                  <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
+                  активна
+                </label>
+                <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
+              </div>
+
+              {itemsFor === s.name && (
+                <div className="border-t border-gray-100 p-3 space-y-2 bg-[#FAFBFC]">
+                  <div className="text-xs text-gray-500">Строки-услуги — позиции, которые попадают в таблицу при выборе этой услуги. Цена по каждой позиции задаётся во вкладке «Цены».</div>
+                  {itemsDraft.map((it, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        className={`${input} flex-1`}
+                        placeholder="Наименование позиции"
+                        value={it.name}
+                        onChange={(e) => setItemsDraft((arr) => arr.map((x, i) => i === idx ? { ...x, name: e.target.value } : x))}
+                      />
+                      <input
+                        className={`${input} w-28`}
+                        placeholder="1 Га / 1 км / 1 шт"
+                        value={it.unit}
+                        onChange={(e) => setItemsDraft((arr) => arr.map((x, i) => i === idx ? { ...x, unit: e.target.value } : x))}
+                      />
+                      <button onClick={() => setItemsDraft((arr) => arr.filter((_, i) => i !== idx))} className="text-red-500 text-sm px-1">✕</button>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setItemsDraft((arr) => [...arr, { key: '', name: '', unit: '' }])} className="text-sm text-[#029cda]">+ Позиция</button>
+                    <button onClick={saveItems} className="ml-auto px-3 py-1.5 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d]">Сохранить строки</button>
+                    <button onClick={() => setItemsFor(null)} className="px-3 py-1.5 text-sm rounded-lg border border-gray-200">Отмена</button>
+                  </div>
+                </div>
               )}
-              <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-                таблица:
-                <select
-                  value={s.defaultTable}
-                  onChange={(e) => setDefaultTable(s.name, e.target.value)}
-                  className="px-2 py-1 rounded border border-gray-200 text-xs bg-white"
-                >
-                  <option value="">— без таблицы —</option>
-                  {calcTables.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
-                </select>
-              </label>
-              <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
-                <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
-                активна
-              </label>
-              <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
             </div>
-          ))}
+            );
+          })}
           {services.length === 0 && <div className="text-sm text-gray-400">Услуг пока нет.</div>}
         </div>
-        <div className="text-xs text-gray-400">Список услуг общий; цены по каждой услуге — в карточке компании; формула стоимости — в колонке таблицы расчёта (см. «Таблицы расчёта» выше).</div>
+        <div className="text-xs text-gray-400">Список услуг общий. «Строки» — позиции услуги, попадающие в таблицу при её выборе; цены позиций — во вкладке «Цены». Комбинированные услуги (с «+») собирают строки из компонентов.</div>
       </div>
     </div>
   );

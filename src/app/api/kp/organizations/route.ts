@@ -71,6 +71,13 @@ export async function POST(request: NextRequest) {
 
   for (const t of body.tiers || []) {
     if (!t?.serviceType) continue;
+    const linePrices: Record<string, { direct: number; tender: number }> = {};
+    if (t.linePrices && typeof t.linePrices === "object") {
+      for (const [k, v] of Object.entries(t.linePrices)) {
+        const o = (v ?? {}) as { direct?: unknown; tender?: unknown };
+        linePrices[k] = { direct: Number(o.direct) || 0, tender: Number(o.tender) || 0 };
+      }
+    }
     await dbUpsertTier({
       orgKey: key,
       serviceType: t.serviceType,
@@ -79,6 +86,7 @@ export async function POST(request: NextRequest) {
       aisPrice: Number(t.aisPrice) || 0,
       renewalPerYear: Number(t.renewalPerYear) || 0,
       minHectares: Number(t.minHectares) || 1,
+      linePrices,
     });
   }
 

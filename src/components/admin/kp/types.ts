@@ -27,6 +27,15 @@ export interface Tier {
   aisPrice: number;
   renewalPerYear: number;
   minHectares: number;
+  /** Цены строк-услуг: { lineKey: { direct, tender } }. */
+  linePrices?: Record<string, { direct: number; tender: number }>;
+}
+
+/** Строка-услуга (позиция) услуги для авто-наполнения таблицы. */
+export interface ServiceLineItem {
+  key: string;
+  name: string;
+  unit: string;
 }
 
 export interface Executor {
@@ -99,6 +108,7 @@ export interface ServiceType {
   isActive: boolean;
   rowFormula: string;
   defaultTable: string;
+  lineItems: ServiceLineItem[];
 }
 
 export interface HeaderLayout {

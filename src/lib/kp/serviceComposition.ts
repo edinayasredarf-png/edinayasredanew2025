@@ -42,6 +42,50 @@ export interface TierLike {
   minHectares: number;
 }
 
+/** Позиция (строка-услуга) в таблице расчёта. */
+export interface ServiceLineItem {
+  key: string;
+  name: string;
+  unit: string;
+}
+
+/** Позиция с ценой конкретной компании. */
+export interface PricedLine {
+  svc: string; // атомарная услуга-владелец позиции
+  key: string; // ключ позиции внутри услуги
+  name: string;
+  unit: string;
+  direct: number;
+  tender: number;
+}
+
+/**
+ * Строки таблицы для услуги (для комбинированной — объединение строк компонентов),
+ * с ценами из тарифа компании. `lineItemsOf`/`priceOf` дают доступ к данным
+ * атомарных услуг (одинаково на клиенте и сервере).
+ */
+export function composeLines(
+  serviceType: string,
+  lineItemsOf: (svc: string) => ServiceLineItem[],
+  priceOf: (svc: string, key: string) => { direct: number; tender: number } | undefined,
+): PricedLine[] {
+  const out: PricedLine[] = [];
+  for (const svc of serviceComponents(serviceType)) {
+    for (const it of lineItemsOf(svc)) {
+      const p = priceOf(svc, it.key);
+      out.push({
+        svc,
+        key: it.key,
+        name: it.name,
+        unit: it.unit,
+        direct: p?.direct ?? 0,
+        tender: p?.tender ?? 0,
+      });
+    }
+  }
+  return out;
+}
+
 const AREA_PRIORITY = ["ИМЗ", "ИЗН"];
 
 /**

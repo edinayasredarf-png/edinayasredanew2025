@@ -7,7 +7,7 @@ import KpSettings from './KpSettings';
 const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
-import { composeTier, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
+import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { evalFormulaSafe } from './formulaClient';
 import KpCalcGrid from './KpCalcGrid';
 import KpAutocomplete from './KpAutocomplete';
@@ -170,12 +170,69 @@ export default function KpGenerator() {
     setRows([{}]);
   };
 
-  // Смена услуги → автоматически подставляем её таблицу расчёта.
+  // Строки-услуги выбранной услуги (для комбинированной — объединение компонентов),
+  // разложенные по колонкам таблицы, с ценой из тарифа компании (превью — первая).
+  const buildRowsForService = useCallback(
+    (name: string, tableCols: CalcColumn[], orgKey: string): RowData[] => {
+      const lineItemsOf = (svc: string) => services.find((s) => s.name === svc)?.lineItems ?? [];
+      const priceOf = (svc: string, key: string) =>
+        tiers.find((x) => x.orgKey === orgKey && x.serviceType === svc)?.linePrices?.[key];
+      const lines = composeLines(name, lineItemsOf, priceOf);
+      if (!lines.length) return [];
+      const nameCol = tableCols.find((c) => c.key === 'name') || tableCols.find((c) => c.kind === 'text');
+      const unitCol = tableCols.find((c) => ['area', 'area_txt', 'unit', 'qty'].includes(c.key));
+      const hasCD = tableCols.some((c) => c.key === 'cost_direct');
+      const hasCT = tableCols.some((c) => c.key === 'cost_tender');
+      const hasC = tableCols.some((c) => c.key === 'cost');
+      return lines.map((l) => {
+        const r: RowData = { __svc: l.svc, __line: l.key };
+        if (nameCol) r[nameCol.key] = l.name;
+        if (unitCol) r[unitCol.key] = l.unit;
+        if (hasCD) r.cost_direct = l.direct ? String(l.direct) : '';
+        if (hasCT) r.cost_tender = l.tender ? String(l.tender) : '';
+        if (hasC && !hasCD) r.cost = l.direct ? String(l.direct) : '';
+        return r;
+      });
+    },
+    [services, tiers]
+  );
+
+  // Смена услуги → таблица по умолчанию + авто-строки услуги (если заданы).
   const onSelectService = (name: string) => {
     setServiceType(name);
-    const def = services.find((s) => s.name === name)?.defaultTable;
-    if (def && calcTables.some((t) => t.key === def)) onSelectTable(def);
+    const svc = services.find((s) => s.name === name);
+    const def = svc?.defaultTable;
+    const orgKey = selectedOrgs[0] || orgs[0]?.key || '';
+    if (def && calcTables.some((t) => t.key === def)) {
+      const t = calcTables.find((x) => x.key === def)!;
+      setSelectedTableKey(def);
+      setColumns(t.columns);
+      const built = buildRowsForService(name, t.columns, orgKey);
+      setRows(built.length ? built : (t.defaultRows?.length ? t.defaultRows.map((r) => ({ ...r })) : [{}]));
+      return;
+    }
+    const built = buildRowsForService(name, columns, orgKey);
+    if (built.length) setRows(built);
   };
+
+  // Обновляем цены авто-строк под первую выбранную компанию (превью).
+  useEffect(() => {
+    const orgKey = selectedOrgs[0] || orgs[0]?.key || '';
+    if (!orgKey) return;
+    setRows((prev) => {
+      if (!prev.length || !prev.every((r) => r.__line)) return prev; // только авто-строки
+      return prev.map((r) => {
+        const lp = tiers.find((x) => x.orgKey === orgKey && x.serviceType === r.__svc)?.linePrices?.[r.__line as string];
+        if (!lp) return r;
+        const out: RowData = { ...r };
+        if ('cost_direct' in out) out.cost_direct = lp.direct ? String(lp.direct) : '';
+        if ('cost_tender' in out) out.cost_tender = lp.tender ? String(lp.tender) : '';
+        if ('cost' in out && !('cost_direct' in out)) out.cost = lp.direct ? String(lp.direct) : '';
+        return out;
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedOrgs, tiers]);
 
   // Тариф услуги: для комбинированных (ИЗН + ЕС и т.п.) собирается из атомарных.
   const tierFor = useCallback(
@@ -376,7 +433,7 @@ export default function KpGenerator() {
         <PricesTab
           orgs={orgs}
           tiers={tiers}
-          serviceTypes={serviceTypes}
+          services={services}
           onChanged={loadMeta}
           setStatus={setStatus}
         />
@@ -1119,42 +1176,54 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
 }
 
 /* ═══════════════ Вкладка «Цены» ═══════════════ */
-const PRICE_FIELDS = [
-  { key: 'pricePerHaDirect', label: '₽/га прямой' },
-  { key: 'pricePerHaTender', label: '₽/га торги' },
-  { key: 'aisPrice', label: 'АИС, ₽' },
-  { key: 'renewalPerYear', label: 'Пролонг./год, ₽' },
+const PRICE_TABS = [
+  { key: 'direct', label: '₽ прямой' },
+  { key: 'tender', label: '₽ торги' },
+  { key: 'ais', label: 'АИС и пролонгация' },
 ] as const;
-type PriceField = (typeof PRICE_FIELDS)[number]['key'];
+type PriceTab = (typeof PRICE_TABS)[number]['key'];
+type ScalarField = 'pricePerHaDirect' | 'pricePerHaTender' | 'aisPrice' | 'renewalPerYear';
 
-/** Сводная матрица цен: услуги (строки) × компании (столбцы) по выбранному полю. */
+const isAisPurchase = (name: string) => name.trim() === 'ЕС';
+const isRenewalService = (name: string) => /пролонгац/i.test(name);
+
+/** Строка матрицы цен: либо позиция услуги (line), либо скалярная цена услуги. */
+type PriceRow =
+  | { kind: 'line'; svc: string; lineKey: string; label: string }
+  | { kind: 'scalar'; svc: string; scalarField: ScalarField; label: string };
+
+/** Сводная матрица цен: услуги/позиции (строки) × компании (столбцы) по виду цены. */
 function PricesTab({
-  orgs, tiers, serviceTypes, onChanged, setStatus,
+  orgs, tiers, services, onChanged, setStatus,
 }: {
   orgs: Organization[];
   tiers: Tier[];
-  serviceTypes: string[];
+  services: ServiceType[];
   onChanged: () => void;
   setStatus: (s: string) => void;
 }) {
-  const [field, setField] = useState<PriceField>('pricePerHaDirect');
+  const [tab, setTab] = useState<PriceTab>('direct');
   const [busy, setBusy] = useState(false);
 
   // Цены задаются только для атомарных услуг. Комбинированные (ИЗН + ЕС и т.п.)
   // берут цены компонентов автоматически — собственной цены у них нет.
-  const atomicServices = useMemo(() => serviceTypes.filter((s) => !isCombinedService(s)), [serviceTypes]);
-  const combinedServices = useMemo(() => serviceTypes.filter((s) => isCombinedService(s)), [serviceTypes]);
+  const atomicServices = useMemo(() => services.filter((s) => !isCombinedService(s.name)), [services]);
+  const combinedServices = useMemo(() => services.filter((s) => isCombinedService(s.name)).map((s) => s.name), [services]);
+  const lineItemsOf = React.useCallback(
+    (svc: string) => services.find((s) => s.name === svc)?.lineItems ?? [],
+    [services],
+  );
 
-  // Локальное редактируемое состояние: orgKey → serviceType → Tier.
+  // Локальное редактируемое состояние: orgKey → serviceType → Tier (со строковыми ценами).
   const buildMap = React.useCallback((): Record<string, Record<string, Tier>> => {
     const m: Record<string, Record<string, Tier>> = {};
     for (const o of orgs) {
       m[o.key] = {};
       for (const s of atomicServices) {
-        const t = tiers.find((x) => x.orgKey === o.key && x.serviceType === s);
-        m[o.key][s] = t
-          ? { ...t }
-          : { orgKey: o.key, serviceType: s, pricePerHaDirect: 0, pricePerHaTender: 0, aisPrice: 0, renewalPerYear: 0, minHectares: 1 };
+        const t = tiers.find((x) => x.orgKey === o.key && x.serviceType === s.name);
+        m[o.key][s.name] = t
+          ? { ...t, linePrices: { ...(t.linePrices || {}) } }
+          : { orgKey: o.key, serviceType: s.name, pricePerHaDirect: 0, pricePerHaTender: 0, aisPrice: 0, renewalPerYear: 0, minHectares: 1, linePrices: {} };
       }
     }
     return m;
@@ -1162,18 +1231,63 @@ function PricesTab({
 
   const [map, setMap] = useState<Record<string, Record<string, Tier>>>(buildMap);
 
-  const setCell = (orgKey: string, svc: string, val: number) =>
-    setMap((prev) => ({
-      ...prev,
-      [orgKey]: { ...prev[orgKey], [svc]: { ...prev[orgKey][svc], [field]: val } },
-    }));
+  const lineDir: 'direct' | 'tender' = tab === 'tender' ? 'tender' : 'direct';
+
+  // Матрица строк под выбранную вкладку.
+  const priceRows = useMemo<PriceRow[]>(() => {
+    const rows: PriceRow[] = [];
+    if (tab === 'ais') {
+      // Только АИС «Единая среда» (покупка) и пролонгация.
+      for (const s of atomicServices) {
+        if (isAisPurchase(s.name)) rows.push({ kind: 'scalar', svc: s.name, scalarField: 'aisPrice', label: `${s.name} — АИС «Единая среда» (покупка)` });
+      }
+      for (const s of atomicServices) {
+        if (isRenewalService(s.name)) rows.push({ kind: 'scalar', svc: s.name, scalarField: 'renewalPerYear', label: `${s.name} — пролонгация (за год)` });
+      }
+      return rows;
+    }
+    // Прямой/торги: только услуги-работы; АИС и пролонгацию не показываем.
+    const scalarField: ScalarField = tab === 'tender' ? 'pricePerHaTender' : 'pricePerHaDirect';
+    for (const s of atomicServices) {
+      if (isAisPurchase(s.name) || isRenewalService(s.name)) continue;
+      const items = lineItemsOf(s.name);
+      if (items.length > 0) {
+        for (const it of items) rows.push({ kind: 'line', svc: s.name, lineKey: it.key, label: `${s.name} — ${it.name}` });
+      } else {
+        rows.push({ kind: 'scalar', svc: s.name, scalarField, label: s.name });
+      }
+    }
+    return rows;
+  }, [atomicServices, lineItemsOf, tab]);
+
+  const getVal = (orgKey: string, row: PriceRow): number => {
+    const t = map[orgKey]?.[row.svc];
+    if (!t) return 0;
+    if (row.kind === 'line') return t.linePrices?.[row.lineKey]?.[lineDir] ?? 0;
+    return (t[row.scalarField] as number) ?? 0;
+  };
+
+  const setVal = (orgKey: string, row: PriceRow, val: number) =>
+    setMap((prev) => {
+      const t = prev[orgKey][row.svc];
+      let nt: Tier;
+      if (row.kind === 'line') {
+        const lp = { ...(t.linePrices || {}) };
+        const cur = lp[row.lineKey] || { direct: 0, tender: 0 };
+        lp[row.lineKey] = { ...cur, [lineDir]: val };
+        nt = { ...t, linePrices: lp };
+      } else {
+        nt = { ...t, [row.scalarField]: val };
+      }
+      return { ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: nt } };
+    });
 
   const save = async () => {
     setBusy(true);
     let ok = 0;
     try {
       for (const o of orgs) {
-        const orgTiers = atomicServices.map((s) => map[o.key][s]);
+        const orgTiers = atomicServices.map((s) => map[o.key][s.name]);
         const res = await fetch('/api/kp/organizations', {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -1201,14 +1315,14 @@ function PricesTab({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-[#313131]">💰 Цены по услугам</h3>
-          <p className="text-xs text-gray-500">Услуги — строки, компании — столбцы. Выберите вид цены и заполните ячейки.</p>
+          <p className="text-xs text-gray-500">Услуги/позиции — строки, компании — столбцы. Выберите вид цены и заполните ячейки.</p>
         </div>
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
-          {PRICE_FIELDS.map((f) => (
+          {PRICE_TABS.map((f) => (
             <button
               key={f.key}
-              onClick={() => setField(f.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs ${field === f.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}
+              onClick={() => setTab(f.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs ${tab === f.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}
             >
               {f.label}
             </button>
@@ -1220,23 +1334,30 @@ function PricesTab({
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
-              <th className="px-3 py-2 sticky left-0 bg-white">Услуга</th>
+              <th className="px-3 py-2 sticky left-0 bg-white">Услуга / позиция</th>
               {orgs.map((o) => (
                 <th key={o.key} className="px-3 py-2 min-w-[120px] text-right" title={o.name}>{o.shortName || o.name}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {atomicServices.map((s, i) => (
-              <tr key={s} className={i % 2 ? 'bg-[#FAFBFC]' : ''}>
-                <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{s}</td>
+            {priceRows.length === 0 && (
+              <tr>
+                <td colSpan={orgs.length + 1} className="px-3 py-4 text-xs text-gray-400 text-center">
+                  {tab === 'ais' ? 'Нет услуг АИС/пролонгации (ЕС, «Пролонгация ЕС»).' : 'Нет услуг для этой вкладки.'}
+                </td>
+              </tr>
+            )}
+            {priceRows.map((row, i) => (
+              <tr key={`${row.svc}#${row.kind === 'line' ? row.lineKey : 'scalar'}`} className={i % 2 ? 'bg-[#FAFBFC]' : ''}>
+                <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{row.label}</td>
                 {orgs.map((o) => (
                   <td key={o.key} className="px-2 py-1">
                     <input
                       className={numCell}
                       inputMode="decimal"
-                      value={(map[o.key]?.[s]?.[field] as number) || ''}
-                      onChange={(e) => setCell(o.key, s, Number(e.target.value) || 0)}
+                      value={getVal(o.key, row) || ''}
+                      onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
                       placeholder="0"
                     />
                   </td>
@@ -1249,7 +1370,7 @@ function PricesTab({
 
       {combinedServices.length > 0 && (
         <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-lg px-3 py-2 space-y-1">
-          <div className="font-medium text-[#0b5c7d]">Комбинированные услуги отдельной цены не имеют — цены берутся из компонентов:</div>
+          <div className="font-medium text-[#0b5c7d]">Комбинированные услуги отдельной цены не имеют — строки и цены берутся из компонентов:</div>
           {combinedServices.map((s) => (
             <div key={s}>• <span className="text-[#313131]">{s}</span> = {serviceComponents(s).join(' + ')}</div>
           ))}
@@ -1261,7 +1382,7 @@ function PricesTab({
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить цены'}
         </button>
-        <span className="text-xs text-gray-400">Значения общие для всех видов цен сохраняются вместе — переключение «прямой/торги/АИС» не сбрасывает введённое.</span>
+        <span className="text-xs text-gray-400">Для услуг со строками цена задаётся по каждой позиции (прямой/торги). Значения сохраняются вместе.</span>
       </div>
     </div>
   );

@@ -7,7 +7,9 @@ import {
   dbRenameServiceType,
   dbSetServiceDefaultTable,
   dbSetServiceFormula,
+  dbSetServiceLineItems,
   dbSetServiceTypeActive,
+  type KpServiceLineItem,
 } from "@/lib/server/kp/kpDb";
 import { validateFormula } from "@/lib/server/kp/kpFormula";
 
@@ -58,6 +60,7 @@ export async function PATCH(request: NextRequest) {
     isActive?: boolean;
     rowFormula?: string;
     defaultTable?: string;
+    lineItems?: KpServiceLineItem[];
   };
   try {
     body = await request.json();
@@ -66,6 +69,10 @@ export async function PATCH(request: NextRequest) {
   }
   if (body.oldName && body.newName) {
     await dbRenameServiceType(body.oldName, body.newName);
+    return NextResponse.json({ ok: true });
+  }
+  if (body.name && Array.isArray(body.lineItems)) {
+    await dbSetServiceLineItems(body.name, body.lineItems);
     return NextResponse.json({ ok: true });
   }
   if (body.name && typeof body.defaultTable === "string") {
