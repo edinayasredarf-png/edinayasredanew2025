@@ -7,6 +7,7 @@ import KpSettings from './KpSettings';
 const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
+import { composeTier, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { evalFormulaSafe } from './formulaClient';
 import KpCalcGrid from './KpCalcGrid';
 import KpAutocomplete from './KpAutocomplete';
@@ -176,9 +177,12 @@ export default function KpGenerator() {
     if (def && calcTables.some((t) => t.key === def)) onSelectTable(def);
   };
 
+  // Тариф услуги: для комбинированных (ИЗН + ЕС и т.п.) собирается из атомарных.
   const tierFor = useCallback(
     (orgKey: string): Tier | undefined =>
-      tiers.find((t) => t.orgKey === orgKey && t.serviceType === serviceType),
+      composeTier(orgKey, serviceType, (svc) =>
+        tiers.find((t) => t.orgKey === orgKey && t.serviceType === svc),
+      ) as Tier | undefined,
     [tiers, serviceType]
   );
 
@@ -1136,12 +1140,17 @@ function PricesTab({
   const [field, setField] = useState<PriceField>('pricePerHaDirect');
   const [busy, setBusy] = useState(false);
 
+  // Цены задаются только для атомарных услуг. Комбинированные (ИЗН + ЕС и т.п.)
+  // берут цены компонентов автоматически — собственной цены у них нет.
+  const atomicServices = useMemo(() => serviceTypes.filter((s) => !isCombinedService(s)), [serviceTypes]);
+  const combinedServices = useMemo(() => serviceTypes.filter((s) => isCombinedService(s)), [serviceTypes]);
+
   // Локальное редактируемое состояние: orgKey → serviceType → Tier.
   const buildMap = React.useCallback((): Record<string, Record<string, Tier>> => {
     const m: Record<string, Record<string, Tier>> = {};
     for (const o of orgs) {
       m[o.key] = {};
-      for (const s of serviceTypes) {
+      for (const s of atomicServices) {
         const t = tiers.find((x) => x.orgKey === o.key && x.serviceType === s);
         m[o.key][s] = t
           ? { ...t }
@@ -1149,7 +1158,7 @@ function PricesTab({
       }
     }
     return m;
-  }, [orgs, serviceTypes, tiers]);
+  }, [orgs, atomicServices, tiers]);
 
   const [map, setMap] = useState<Record<string, Record<string, Tier>>>(buildMap);
 
@@ -1164,7 +1173,7 @@ function PricesTab({
     let ok = 0;
     try {
       for (const o of orgs) {
-        const orgTiers = serviceTypes.map((s) => map[o.key][s]);
+        const orgTiers = atomicServices.map((s) => map[o.key][s]);
         const res = await fetch('/api/kp/organizations', {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -1218,7 +1227,7 @@ function PricesTab({
             </tr>
           </thead>
           <tbody>
-            {serviceTypes.map((s, i) => (
+            {atomicServices.map((s, i) => (
               <tr key={s} className={i % 2 ? 'bg-[#FAFBFC]' : ''}>
                 <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{s}</td>
                 {orgs.map((o) => (
@@ -1237,6 +1246,15 @@ function PricesTab({
           </tbody>
         </table>
       </div>
+
+      {combinedServices.length > 0 && (
+        <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-lg px-3 py-2 space-y-1">
+          <div className="font-medium text-[#0b5c7d]">Комбинированные услуги отдельной цены не имеют — цены берутся из компонентов:</div>
+          {combinedServices.map((s) => (
+            <div key={s}>• <span className="text-[#313131]">{s}</span> = {serviceComponents(s).join(' + ')}</div>
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">

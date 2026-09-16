@@ -1,5 +1,6 @@
 import "server-only";
 import { getTimewebPool } from "@/lib/timewebPg";
+import { composeTier, serviceComponents } from "@/lib/kp/serviceComposition";
 
 /*
  * Хранилище генератора КП (отдел продаж). Таблицы создаются и мигрируются
@@ -839,6 +840,19 @@ export async function dbGetTier(orgKey: string, serviceType: string): Promise<Kp
     [orgKey, serviceType]
   );
   return rows[0] ? mapTier(rows[0]) : null;
+}
+
+/**
+ * Тариф услуги с учётом комбинированных: у ИЗН + ЕС и т.п. нет собственной цены —
+ * она собирается из атомарных тарифов компании (см. serviceComposition).
+ */
+export async function dbResolveComposedTier(orgKey: string, serviceType: string): Promise<KpTier | null> {
+  const comps = serviceComponents(serviceType);
+  if (comps.length <= 1) return dbGetTier(orgKey, serviceType);
+  const found = await Promise.all(comps.map((s) => dbGetTier(orgKey, s)));
+  const byName = new Map(comps.map((s, i) => [s, found[i] || undefined]));
+  const t = composeTier(orgKey, serviceType, (s) => byName.get(s));
+  return t ? { ...t } : null;
 }
 
 export async function dbUpsertTier(t: KpTier): Promise<void> {

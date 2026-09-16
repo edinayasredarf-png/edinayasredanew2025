@@ -4,7 +4,7 @@ import {
   dbGetExecutor,
   dbGetHeaderLayout,
   dbGetOrganization,
-  dbGetTier,
+  dbResolveComposedTier,
   dbResolveTemplate,
 } from "./kpDb";
 import { buildKpContext, type KpFormPayload } from "./kpMerge";
@@ -102,7 +102,7 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         continue;
       }
 
-      const tierRow = await dbGetTier(orgKey, serviceType);
+      const tierRow = await dbResolveComposedTier(orgKey, serviceType);
       const tier: PriceTier = tierRow
         ? {
             pricePerHaDirect: tierRow.pricePerHaDirect,
