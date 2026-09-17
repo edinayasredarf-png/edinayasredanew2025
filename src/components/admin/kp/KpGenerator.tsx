@@ -101,7 +101,7 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
 }
 
 export default function KpGenerator() {
-  const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history' | 'sends'>('create');
+  const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history' | 'sends' | 'registry'>('create');
 
   // Справочники
   const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -183,6 +183,7 @@ export default function KpGenerator() {
 
   const [kpDate, setKpDate] = useState('');
   const [kpNumber, setKpNumber] = useState('');
+  const [recordRegistry, setRecordRegistry] = useState(false);
   const [requestNumber, setRequestNumber] = useState('');
   const [requestDate, setRequestDate] = useState('');
   const [validityPeriod, setValidityPeriod] = useState('30 дней');
@@ -473,6 +474,7 @@ export default function KpGenerator() {
     bitrix: uploadToBitrix && dealId ? { dealId, upload: true } : undefined,
     orgKeys: selectedOrgs,
     executorId: executorId || undefined,
+    recordRegistry,
   });
 
   const validate = (): string | null => {
@@ -606,7 +608,7 @@ export default function KpGenerator() {
           </p>
         </div>
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
-          {(['create', 'templates', 'prices', 'settings', 'history', 'sends'] as const).map((t) => (
+          {(['create', 'templates', 'prices', 'registry', 'settings', 'history', 'sends'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -614,7 +616,7 @@ export default function KpGenerator() {
                 tab === t ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'
               }`}
             >
-              {t === 'create' ? '📝 Создать КП' : t === 'templates' ? '📁 Шаблоны' : t === 'prices' ? '💰 Цены' : t === 'settings' ? '⚙️ Настройки' : t === 'history' ? '🗄 История' : '✉️ Рассылки'}
+              {t === 'create' ? '📝 Создать КП' : t === 'templates' ? '📁 Шаблоны' : t === 'prices' ? '💰 Цены' : t === 'registry' ? '📋 Реестр КП' : t === 'settings' ? '⚙️ Настройки' : t === 'history' ? '🗄 История' : '✉️ Рассылки'}
             </button>
           ))}
         </div>
@@ -635,7 +637,7 @@ export default function KpGenerator() {
             clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
-            kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
+            kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
@@ -683,6 +685,8 @@ export default function KpGenerator() {
       {tab === 'history' && <HistoryTab setStatus={setStatus} />}
 
       {tab === 'sends' && <SendsTab setStatus={setStatus} />}
+
+      {tab === 'registry' && <RegistryTab orgs={orgs} setStatus={setStatus} />}
     </div>
   );
 }
@@ -697,7 +701,7 @@ function CreateTab(p: CreateProps) {
     clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
-    kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
+    kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
@@ -718,6 +722,7 @@ function CreateTab(p: CreateProps) {
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
     kpDate: string; setKpDate: (v: string) => void; kpNumber: string; setKpNumber: (v: string) => void;
+    recordRegistry: boolean; setRecordRegistry: (v: boolean) => void;
     requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
     validityPeriod: string; setValidityPeriod: (v: string) => void;
     executors: Executor[]; executorId: number | ''; setExecutorId: (v: number | '') => void;
@@ -905,7 +910,11 @@ function CreateTab(p: CreateProps) {
             </div>
             <div>
               <div className={label}>Номер КП (пусто = авто)</div>
-              <input value={kpNumber} onChange={(e) => setKpNumber(e.target.value)} className={input} placeholder="КП-…" />
+              <input value={kpNumber} onChange={(e) => setKpNumber(e.target.value)} className={input} placeholder="КП-…" disabled={recordRegistry} />
+              <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer mt-1">
+                <input type="checkbox" checked={recordRegistry} onChange={(e) => setRecordRegistry(e.target.checked)} />
+                Записать в реестр (№ по каждой компании)
+              </label>
             </div>
             <div>
               <div className={label}>Срок действия</div>
@@ -2002,6 +2011,104 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
         </div>
       )}
       <div className="text-[11px] text-gray-400">Открытие фиксируется по картинке-пикселю: сигнал косвенный (почтовые клиенты могут блокировать картинки или подгружать их сами).</div>
+    </div>
+  );
+}
+
+/* ═══════════════ Вкладка «Реестр КП» ═══════════════ */
+interface RegistryRow {
+  id: number; number: number; letterDate: string; addressee: string; subject: string;
+  executor: string; incomingNo: string; incomingDate: string; note: string; replyTo: string;
+}
+
+function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s: string) => void }) {
+  const [orgKey, setOrgKey] = useState('');
+  const [rows, setRows] = useState<RegistryRow[]>([]);
+  const [nextNumber, setNextNumber] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => { if (!orgKey && orgs[0]) setOrgKey(orgs[0].key); }, [orgs, orgKey]);
+
+  const load = useCallback(async (key: string) => {
+    if (!key) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/kp/registry?orgKey=${encodeURIComponent(key)}`, { credentials: 'include' });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка');
+      setRows(d.rows || []);
+      setNextNumber(d.nextNumber || 1);
+    } catch (e) { setStatus((e as Error).message); } finally { setLoading(false); }
+  }, [setStatus]);
+
+  useEffect(() => { if (orgKey) load(orgKey); }, [orgKey, load]);
+
+  const patchLocal = (id: number, p: Partial<RegistryRow>) => setRows((rs) => rs.map((r) => r.id === id ? { ...r, ...p } : r));
+  const saveField = async (id: number, patch: Record<string, unknown>) => {
+    await fetch('/api/kp/registry', { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, patch }) });
+  };
+  const addRow = async () => {
+    const res = await fetch('/api/kp/registry', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orgKey }) });
+    const d = await res.json();
+    if (!res.ok) return setStatus(d.error || 'Ошибка');
+    load(orgKey);
+  };
+  const delRow = async (id: number) => {
+    if (!confirm('Удалить строку реестра?')) return;
+    await fetch(`/api/kp/registry?id=${id}`, { method: 'DELETE', credentials: 'include' });
+    load(orgKey);
+  };
+
+  const cell = 'w-full px-1.5 py-1 rounded border border-transparent hover:border-gray-200 focus:border-[#029cda] text-sm outline-none bg-transparent';
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-sm text-gray-500">Компания-отправитель:</span>
+        <select value={orgKey} onChange={(e) => setOrgKey(e.target.value)} className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]">
+          {orgs.map((o) => <option key={o.key} value={o.key}>{o.shortName || o.name}</option>)}
+        </select>
+        <span className="text-xs text-gray-400">Следующий №: <b className="text-[#313131]">{nextNumber}</b></span>
+        <button onClick={addRow} className="ml-auto text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Строка</button>
+      </div>
+
+      {loading ? <LoadingBlock /> : rows.length === 0 ? (
+        <div className="text-sm text-gray-400">Реестр пуст. Записи добавляются автоматически при генерации КП (галочка «Записать в реестр») или вручную.</div>
+      ) : (
+        <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
+                <th className="px-2 py-2 w-12">№</th>
+                <th className="px-2 py-2 w-28">Дата</th>
+                <th className="px-2 py-2 min-w-[240px]">Организация (адресат)</th>
+                <th className="px-2 py-2 min-w-[160px]">Краткое содержание</th>
+                <th className="px-2 py-2 w-32">Исполнитель</th>
+                <th className="px-2 py-2 w-24">вх. №</th>
+                <th className="px-2 py-2 w-28">вх. дата</th>
+                <th className="px-2 py-2 min-w-[140px]">Примечание</th>
+                <th className="px-2 py-1 w-8"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-b border-gray-50 align-top">
+                  <td className="px-2 py-1"><input className={`${cell} w-10 text-center`} value={r.number} onChange={(e) => patchLocal(r.id, { number: Number(e.target.value) || 0 })} onBlur={() => saveField(r.id, { number: r.number })} /></td>
+                  <td className="px-2 py-1"><input className={cell} value={r.letterDate} onChange={(e) => patchLocal(r.id, { letterDate: e.target.value })} onBlur={() => saveField(r.id, { letterDate: r.letterDate })} /></td>
+                  <td className="px-2 py-1"><textarea rows={2} className={`${cell} resize-y`} value={r.addressee} onChange={(e) => patchLocal(r.id, { addressee: e.target.value })} onBlur={() => saveField(r.id, { addressee: r.addressee })} /></td>
+                  <td className="px-2 py-1"><input className={cell} value={r.subject} onChange={(e) => patchLocal(r.id, { subject: e.target.value })} onBlur={() => saveField(r.id, { subject: r.subject })} /></td>
+                  <td className="px-2 py-1"><input className={cell} value={r.executor} onChange={(e) => patchLocal(r.id, { executor: e.target.value })} onBlur={() => saveField(r.id, { executor: r.executor })} /></td>
+                  <td className="px-2 py-1"><input className={cell} value={r.incomingNo} onChange={(e) => patchLocal(r.id, { incomingNo: e.target.value })} onBlur={() => saveField(r.id, { incomingNo: r.incomingNo })} /></td>
+                  <td className="px-2 py-1"><input className={cell} value={r.incomingDate} onChange={(e) => patchLocal(r.id, { incomingDate: e.target.value })} onBlur={() => saveField(r.id, { incomingDate: r.incomingDate })} /></td>
+                  <td className="px-2 py-1"><input className={cell} value={r.note} onChange={(e) => patchLocal(r.id, { note: e.target.value })} onBlur={() => saveField(r.id, { note: r.note })} /></td>
+                  <td className="px-1 py-1"><button onClick={() => delRow(r.id)} className="text-red-500 hover:text-red-600">✕</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="text-[11px] text-gray-400">Правки сохраняются при выходе из поля. № письма присваивается поочерёдно по этой компании; при генерации КП с галочкой «Записать в реестр» строка создаётся автоматически.</div>
     </div>
   );
 }

@@ -201,6 +201,25 @@ async function ensureTables(): Promise<void> {
     `create index if not exists kp_history_created_idx on kp_history (created_at desc)`
   );
 
+  // Реестр исходящих КП по каждой компании-отправителю (нумерация поочерёдно).
+  await pool.query(`
+    create table if not exists kp_registry (
+      id bigserial primary key,
+      org_key text not null,
+      number integer not null default 0,
+      letter_date text not null default '',
+      addressee text not null default '',
+      subject text not null default '',
+      executor text not null default '',
+      incoming_no text not null default '',
+      incoming_date text not null default '',
+      note text not null default '',
+      reply_to text not null default '',
+      created_at timestamptz not null default now()
+    )
+  `);
+  await pool.query(`create index if not exists kp_registry_org_idx on kp_registry (org_key, number)`);
+
   // Справочник должностей клиента (редактируемый).
   await pool.query(`
     create table if not exists kp_positions (
@@ -1316,6 +1335,92 @@ export async function dbListHistory(limit = 100): Promise<KpHistoryRow[]> {
     createdBy: String(r.created_by ?? ""),
     createdAt: r.created_at ? new Date(r.created_at as string).toISOString() : "",
   }));
+}
+
+/* ─────────── Реестр КП (исходящие письма по компаниям) ─────────── */
+export interface KpRegistryRow {
+  id: number;
+  orgKey: string;
+  number: number;
+  letterDate: string;
+  addressee: string;
+  subject: string;
+  executor: string;
+  incomingNo: string;
+  incomingDate: string;
+  note: string;
+  replyTo: string;
+  createdAt: string;
+}
+
+function mapRegistry(r: Record<string, unknown>): KpRegistryRow {
+  return {
+    id: Number(r.id),
+    orgKey: String(r.org_key ?? ""),
+    number: Number(r.number ?? 0),
+    letterDate: String(r.letter_date ?? ""),
+    addressee: String(r.addressee ?? ""),
+    subject: String(r.subject ?? ""),
+    executor: String(r.executor ?? ""),
+    incomingNo: String(r.incoming_no ?? ""),
+    incomingDate: String(r.incoming_date ?? ""),
+    note: String(r.note ?? ""),
+    replyTo: String(r.reply_to ?? ""),
+    createdAt: r.created_at ? new Date(r.created_at as string).toISOString() : "",
+  };
+}
+
+export async function dbListRegistry(orgKey: string): Promise<KpRegistryRow[]> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from kp_registry where org_key=$1 order by number, id", [orgKey]);
+  return rows.map(mapRegistry);
+}
+
+export async function dbNextRegistryNumber(orgKey: string): Promise<number> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select coalesce(max(number),0)+1 as n from kp_registry where org_key=$1", [orgKey]);
+  return Number(rows[0]?.n ?? 1);
+}
+
+export async function dbAddRegistryRow(input: {
+  orgKey: string; number?: number; letterDate?: string; addressee?: string;
+  subject?: string; executor?: string; incomingNo?: string; incomingDate?: string; note?: string; replyTo?: string;
+}): Promise<{ id: number; number: number }> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const number = input.number && input.number > 0 ? input.number : await dbNextRegistryNumber(input.orgKey);
+  const { rows } = await pool.query(
+    `insert into kp_registry (org_key, number, letter_date, addressee, subject, executor, incoming_no, incoming_date, note, reply_to)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning id`,
+    [input.orgKey, number, input.letterDate ?? "", input.addressee ?? "", input.subject ?? "", input.executor ?? "",
+     input.incomingNo ?? "", input.incomingDate ?? "", input.note ?? "", input.replyTo ?? ""]
+  );
+  return { id: Number(rows[0]?.id), number };
+}
+
+export async function dbUpdateRegistryRow(id: number, patch: Partial<Omit<KpRegistryRow, "id" | "orgKey" | "createdAt">>): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const cols: Record<string, string> = {
+    number: "number", letterDate: "letter_date", addressee: "addressee", subject: "subject",
+    executor: "executor", incomingNo: "incoming_no", incomingDate: "incoming_date", note: "note", replyTo: "reply_to",
+  };
+  const sets: string[] = [];
+  const vals: unknown[] = [];
+  for (const [k, col] of Object.entries(cols)) {
+    if (k in patch) { vals.push((patch as Record<string, unknown>)[k]); sets.push(`${col}=$${vals.length}`); }
+  }
+  if (!sets.length) return;
+  vals.push(id);
+  await pool.query(`update kp_registry set ${sets.join(", ")} where id=$${vals.length}`, vals);
+}
+
+export async function dbDeleteRegistryRow(id: number): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("delete from kp_registry where id=$1", [id]);
 }
 
 export async function dbInsertHistory(input: {

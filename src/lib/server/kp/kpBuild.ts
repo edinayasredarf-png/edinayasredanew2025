@@ -3,8 +3,10 @@ import {
   dbGetCustomAliasValues,
   dbGetExecutor,
   dbGetHeaderLayout,
+  dbAddRegistryRow,
   dbGetOrganization,
   dbGetTier,
+  dbNextRegistryNumber,
   dbResolveComposedTier,
   dbResolveTemplate,
 } from "./kpDb";
@@ -54,6 +56,13 @@ export interface KpGenerateRequest {
   form: KpFormPayload;
   orgKeys: string[];
   executorId?: number;
+  /** Записать в реестр КП и присвоить № по каждой компании. */
+  recordRegistry?: boolean;
+}
+
+function todayYmd(): string {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
 }
 
 export interface KpBuiltDoc {
@@ -144,10 +153,17 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         };
       });
 
+      // Реестр КП: присваиваем № по компании (если попросили и номер пишется).
+      let assignedNumber: number | undefined;
+      if (req.recordRegistry && org.writeKpNumber) {
+        assignedNumber = await dbNextRegistryNumber(orgKey);
+      }
+
       // Если пользователь не задал цены АИС/пролонгации явно — берём из тира.
       const form: KpFormPayload = {
         ...req.form,
         rows: pricedRows,
+        kp: { ...req.form.kp, number: assignedNumber ? String(assignedNumber) : req.form.kp?.number },
         ais: req.form.ais?.pricePerLicense
           ? req.form.ais
           : { licenses: req.form.ais?.licenses ?? 1, pricePerLicense: tier.aisPrice },
@@ -193,6 +209,20 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         docx,
         totalCost: ctx.totalCost,
       });
+
+      // Авто-запись строки реестра с данными формы.
+      if (req.recordRegistry && assignedNumber) {
+        const cl = req.form.client as { position?: string; fioFull?: string };
+        const addressee = [cl.position, cl.fioFull].map((s) => (s || "").trim()).filter(Boolean).join(" ");
+        await dbAddRegistryRow({
+          orgKey,
+          number: assignedNumber,
+          letterDate: (req.form.kp?.date || "").trim() || todayYmd(),
+          addressee,
+          subject: `КП ${serviceType}`,
+          executor: executor?.fio || "",
+        }).catch(() => {});
+      }
     } catch (e) {
       errors.push({ orgKey, message: (e as Error).message || "Ошибка генерации" });
     }
