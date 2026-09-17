@@ -975,9 +975,9 @@ function ServicesManager({
             const combined = s.name.includes('+');
             return (
             <div key={s.name} className="bg-white border border-gray-200 rounded-lg">
-              <div className="flex items-center gap-2 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2 px-3 py-2">
                 <input
-                  className={`${input} flex-1`}
+                  className={`${input} flex-1 min-w-[160px]`}
                   value={edits[s.name] ?? s.name}
                   onChange={(e) => setEdits((m) => ({ ...m, [s.name]: e.target.value }))}
                 />

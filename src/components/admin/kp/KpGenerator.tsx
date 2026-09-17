@@ -652,25 +652,34 @@ export default function KpGenerator() {
     return <LoadingBlock label="Загрузка генератора КП…" />;
   }
 
+  const TABS = [
+    { k: 'create', icon: '📝', label: 'Создать КП' },
+    { k: 'templates', icon: '📁', label: 'Шаблоны' },
+    { k: 'prices', icon: '💰', label: 'Цены' },
+    { k: 'registry', icon: '📋', label: 'Реестр КП' },
+    { k: 'settings', icon: '⚙️', label: 'Настройки' },
+    { k: 'history', icon: '🗄', label: 'История' },
+    { k: 'sends', icon: '✉️', label: 'Рассылки' },
+  ] as const;
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-[#313131]">Генератор коммерческих предложений</h2>
-          <p className="text-sm text-gray-500">
-            Одна форма → несколько организаций сразу. Формулы из Excel «Расчёт по документам».
-          </p>
+      {/* Шапка: заголовок + вкладки. На узких экранах вкладки прокручиваются по горизонтали. */}
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-base sm:text-lg font-semibold text-[#313131] leading-tight">Генератор коммерческих предложений</h2>
+          <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Одна форма → несколько организаций сразу. Формулы из Excel «Расчёт по документам».</p>
         </div>
-        <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
-          {(['create', 'templates', 'prices', 'registry', 'settings', 'history', 'sends'] as const).map((t) => (
+        <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          {TABS.map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-3 py-1.5 rounded-lg text-sm ${
-                tab === t ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'
+              key={t.k}
+              onClick={() => setTab(t.k)}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                tab === t.k ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500 hover:text-[#313131]'
               }`}
             >
-              {t === 'create' ? '📝 Создать КП' : t === 'templates' ? '📁 Шаблоны' : t === 'prices' ? '💰 Цены' : t === 'registry' ? '📋 Реестр КП' : t === 'settings' ? '⚙️ Настройки' : t === 'history' ? '🗄 История' : '✉️ Рассылки'}
+              <span aria-hidden>{t.icon}</span> <span className="align-middle">{t.label}</span>
             </button>
           ))}
         </div>
@@ -1302,19 +1311,21 @@ function CreateTab(p: CreateProps) {
               Услуга <b>{serviceType}</b>, организаций: <b>{selectedOrgs.length}</b>, таблица/цены — из текущей формы. На каждого клиента будет свой комплект КП (по одному на организацию), всё одним ZIP (папка на клиента).
             </div>
 
-            <div className="space-y-2">
-              <div className="grid grid-cols-[1fr_1fr_90px_90px_28px] gap-2 text-[11px] text-gray-500 px-1">
-                <span>Организация клиента *</span><span>ФИО (кому)</span><span>Площадь</span><span>Кол-во</span><span></span>
-              </div>
-              {batchClients.map((c, i) => (
-                <div key={i} className="grid grid-cols-[1fr_1fr_90px_90px_28px] gap-2 items-center">
-                  <input value={c.orgFull} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, orgFull: e.target.value } : x))} className={input} placeholder='ООО "Ромашка"' />
-                  <input value={c.fio || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, fio: e.target.value } : x))} className={input} placeholder="Иванов И.И." />
-                  <input value={c.areaTotal || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, areaTotal: e.target.value } : x))} className={input} placeholder="—" />
-                  <input value={c.quantity || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, quantity: e.target.value } : x))} className={input} placeholder="—" />
-                  <button onClick={() => setBatchClients((a) => a.filter((_, j) => j !== i))} className="text-red-500 hover:text-red-600 text-sm">✕</button>
+            <div className="space-y-2 overflow-x-auto">
+              <div className="min-w-[520px] space-y-2">
+                <div className="grid grid-cols-[1fr_1fr_84px_84px_28px] gap-2 text-[11px] text-gray-500 px-1">
+                  <span>Организация клиента *</span><span>ФИО (кому)</span><span>Площадь</span><span>Кол-во</span><span></span>
                 </div>
-              ))}
+                {batchClients.map((c, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_1fr_84px_84px_28px] gap-2 items-center">
+                    <input value={c.orgFull} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, orgFull: e.target.value } : x))} className={input} placeholder='ООО "Ромашка"' />
+                    <input value={c.fio || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, fio: e.target.value } : x))} className={input} placeholder="Иванов И.И." />
+                    <input value={c.areaTotal || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, areaTotal: e.target.value } : x))} className={input} placeholder="—" />
+                    <input value={c.quantity || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, quantity: e.target.value } : x))} className={input} placeholder="—" />
+                    <button onClick={() => setBatchClients((a) => a.filter((_, j) => j !== i))} className="text-red-500 hover:text-red-600 text-sm">✕</button>
+                  </div>
+                ))}
+              </div>
               <button onClick={() => setBatchClients((a) => [...a, { orgFull: '', fio: '' }])} className="text-sm text-[#029cda] hover:text-[#0280b5]">+ Клиент</button>
             </div>
 
