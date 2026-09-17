@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
+import { Select } from '@/components/admin/ui/Select';
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -493,35 +494,14 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
         <div className="flex gap-2 flex-wrap">
-          <select value={department} onChange={(e) => setDepartment(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-300 text-sm max-w-[180px]">
-            <option value="">Все отделы</option>
-            {departmentOptions.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
-          <select value={manager} onChange={(e) => setManager(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-300 text-sm max-w-[180px]">
-            <option value="">Все менеджеры</option>
-            {managerOptions.map((m) => (
-              <option key={m.bitrixUserId} value={m.bitrixUserId}>{m.name || `ID ${m.bitrixUserId}`}</option>
-            ))}
-          </select>
-          <select value={temp} onChange={(e) => setTemp(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
-            <option value="">Все температуры</option>
-            <option value="HOT">🔥 Горячие</option>
-            <option value="WARM">Тёплые</option>
-            <option value="COLD">Холодные</option>
-          </select>
-          <select value={status} onChange={(e) => setStatus(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
-            <option value="">Все статусы</option>
-            <option value="COMPLETED">Готово</option>
-            <option value="TRANSCRIBING">Транскрибация</option>
-            <option value="FAILED">Ошибка</option>
-            <option value="NO_RECORDING">Нет записи</option>
-          </select>
+          <Select value={department} onChange={setDepartment} className="w-full sm:w-[180px]" ariaLabel="Отдел"
+            options={[{ value: '', label: 'Все отделы' }, ...departmentOptions.map((d) => ({ value: d.id, label: d.name }))]} />
+          <Select value={manager} onChange={setManager} searchable className="w-full sm:w-[180px]" ariaLabel="Менеджер"
+            options={[{ value: '', label: 'Все менеджеры' }, ...managerOptions.map((m) => ({ value: m.bitrixUserId, label: m.name || `ID ${m.bitrixUserId}` }))]} />
+          <Select value={temp} onChange={setTemp} className="w-full sm:w-[160px]" ariaLabel="Температура"
+            options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
+          <Select value={status} onChange={setStatus} className="w-full sm:w-[170px]" ariaLabel="Статус"
+            options={[{ value: '', label: 'Все статусы' }, { value: 'COMPLETED', label: 'Готово' }, { value: 'TRANSCRIBING', label: 'Транскрибация' }, { value: 'FAILED', label: 'Ошибка' }, { value: 'NO_RECORDING', label: 'Нет записи' }]} />
         </div>
       </div>
 
@@ -1058,12 +1038,8 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900">Сделки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
-        <select value={temp} onChange={(e) => setTemp(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
-          <option value="">Все температуры</option>
-          <option value="HOT">🔥 Горячие</option>
-          <option value="WARM">Тёплые</option>
-          <option value="COLD">Холодные</option>
-        </select>
+        <Select value={temp} onChange={setTemp} className="w-full sm:w-[180px]" ariaLabel="Температура"
+          options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
       </div>
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
@@ -1457,11 +1433,8 @@ function FollowUps() {
         <h2 className="text-xl font-bold text-gray-900">
           Follow-up <span className="text-gray-400 text-base font-normal">· активных {openCount}{overdueCount ? <span className="text-red-500">, просрочено {overdueCount}</span> : null}</span>
         </h2>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
-          <option value="active">Активные</option>
-          <option value="overdue">Просроченные</option>
-          <option value="done">Выполненные</option>
-        </select>
+        <Select value={status} onChange={setStatus} className="w-full sm:w-[180px]" ariaLabel="Статус"
+          options={[{ value: 'active', label: 'Активные' }, { value: 'overdue', label: 'Просроченные' }, { value: 'done', label: 'Выполненные' }]} />
       </div>
       <p className="text-sm text-gray-500 mb-4">Обещания менеджеров из звонков («отправить КП», «перезвонить»). Отметьте выполненные.</p>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
@@ -1623,27 +1596,24 @@ function Settings() {
 
       <div className="bg-white rounded-xl border border-gray-100 px-5">
         <Field label="Провайдер транскрибации" hint="yandex_v3 — облако Yandex со спикерами (моно); selfhosted — свой сервер faster-whisper + pyannote (диаризация как у Voicee); yandex — SpeechKit v2 без диаризации; whisper — свой Whisper-endpoint. Меняется на лету, применится к следующим звонкам.">
-          <select value={str('transcription.provider', 'yandex_v3')} onChange={(e) => set('transcription.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
-            <option value="yandex_v3">Yandex SpeechKit v3 (спикеры, облако)</option>
-            <option value="selfhosted">Свой сервер — Whisper (faster-whisper + pyannote)</option>
-            <option value="gigaam">Свой сервер — GigaAM (Sber, русский) + pyannote</option>
-            <option value="gigastt">Свой сервер — GigaSTT (быстрый, Rust) + pyannote</option>
-            <option value="gigastt_native">Свой сервер — GigaSTT со своей диаризацией (без pyannote, самый быстрый)</option>
-            <option value="yandex">Yandex SpeechKit v2 (без диаризации)</option>
-            <option value="whisper">Whisper-endpoint</option>
-          </select>
+          <Select value={str('transcription.provider', 'yandex_v3')} onChange={(v) => set('transcription.provider', v)} className="w-full" ariaLabel="Провайдер транскрибации"
+            options={[
+              { value: 'yandex_v3', label: 'Yandex SpeechKit v3 (спикеры, облако)' },
+              { value: 'selfhosted', label: 'Свой сервер — Whisper (faster-whisper + pyannote)' },
+              { value: 'gigaam', label: 'Свой сервер — GigaAM (Sber, русский) + pyannote' },
+              { value: 'gigastt', label: 'Свой сервер — GigaSTT (быстрый, Rust) + pyannote' },
+              { value: 'gigastt_native', label: 'Свой сервер — GigaSTT со своей диаризацией (без pyannote, самый быстрый)' },
+              { value: 'yandex', label: 'Yandex SpeechKit v2 (без диаризации)' },
+              { value: 'whisper', label: 'Whisper-endpoint' },
+            ]} />
         </Field>
         <Field label="Диаризация (разделение спикеров)" hint="yandex — метки говорящих от самого SpeechKit (слабее на моно); pyannote — свой сервер точно режет по говорящим поверх текста Yandex (как Voicee). Для pyannote нужен SELFHOSTED_STT_URL.">
-          <select value={str('diarization.provider', 'yandex')} onChange={(e) => set('diarization.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
-            <option value="yandex">Yandex (встроенная)</option>
-            <option value="pyannote">pyannote (свой сервер, точнее)</option>
-          </select>
+          <Select value={str('diarization.provider', 'yandex')} onChange={(v) => set('diarization.provider', v)} className="w-full" ariaLabel="Диаризация"
+            options={[{ value: 'yandex', label: 'Yandex (встроенная)' }, { value: 'pyannote', label: 'pyannote (свой сервер, точнее)' }]} />
         </Field>
         <Field label="AI-провайдер анализа" hint="anthropic (Claude) или yandex (YandexGPT)">
-          <select value={str('ai.provider', 'yandex')} onChange={(e) => set('ai.provider', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full">
-            <option value="yandex">YandexGPT</option>
-            <option value="anthropic">Anthropic Claude</option>
-          </select>
+          <Select value={str('ai.provider', 'yandex')} onChange={(v) => set('ai.provider', v)} className="w-full" ariaLabel="AI-провайдер"
+            options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }]} />
         </Field>
         <Field label="Модель анализа (для Claude)" hint="напр. claude-opus-5. Для YandexGPT задаётся в env YANDEX_GPT_MODEL.">
           <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full" />
@@ -2007,11 +1977,8 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
         <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') run(); }}
           placeholder="Например: дорого, отправьте КП, конкурент…"
           className="flex-1 min-w-[220px] px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
-        <select value={department} onChange={(e) => setDepartment(e.target.value)}
-          className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
-          <option value="">Все отделы</option>
-          {departmentOptions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-        </select>
+        <Select value={department} onChange={setDepartment} className="w-full sm:w-[180px]" ariaLabel="Отдел"
+          options={[{ value: '', label: 'Все отделы' }, ...departmentOptions.map((d) => ({ value: d.id, label: d.name }))]} />
         <button onClick={run} disabled={loading || !q.trim()}
           className="px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Искать</button>
       </div>
@@ -2297,11 +2264,8 @@ function KnowledgeBase() {
           <div className="flex gap-2 mb-3">
             <input value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
               placeholder="Заголовок" className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
-            <select value={draft.category} onChange={(e) => setDraft((d) => ({ ...d, category: e.target.value }))}
-              className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
-              <option value="">Категория…</option>
-              {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
+            <Select value={draft.category} onChange={(v) => setDraft((d) => ({ ...d, category: v }))} placeholder="Категория…" className="w-full sm:w-[200px]" ariaLabel="Категория"
+              options={categories.map((c) => ({ value: c.value, label: c.label }))} />
           </div>
           <textarea value={draft.content} onChange={(e) => setDraft((d) => ({ ...d, content: e.target.value }))}
             rows={10} placeholder="Текст материала…"
@@ -2434,11 +2398,8 @@ function Departments() {
                   <tr key={m.bitrixUserId} className="border-t border-gray-100">
                     <td className="px-3 py-2">{m.name || `ID ${m.bitrixUserId}`}{!m.active && <span className="text-xs text-gray-400"> (неактивен)</span>}</td>
                     <td className="px-3 py-2">
-                      <select value={m.departmentId || ''} onChange={(e) => assign(m.bitrixUserId, e.target.value)}
-                        className="px-2 py-1 rounded-lg border border-gray-300 text-sm">
-                        <option value="">— без отдела —</option>
-                        {depts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-                      </select>
+                      <Select value={m.departmentId || ''} onChange={(v) => assign(m.bitrixUserId, v)} placeholder="— без отдела —" className="w-full sm:w-[200px]" ariaLabel="Отдел сотрудника"
+                        options={[{ value: '', label: '— без отдела —' }, ...depts.map((d) => ({ value: d.id, label: d.name }))]} />
                     </td>
                   </tr>
                 ))}
@@ -2594,11 +2555,8 @@ function Scripts() {
 
       {missingScopes.length > 0 && (
         <div className="flex gap-2 mb-5">
-          <select value={newScope} onChange={(e) => setNewScope(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
-            <option value="">Добавить скрипт для…</option>
-            {missingScopes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+          <Select value={newScope} onChange={setNewScope} placeholder="Добавить скрипт для…" className="w-full sm:w-[240px]" ariaLabel="Скрипт для отдела"
+            options={[{ value: '', label: 'Добавить скрипт для…' }, ...missingScopes.map((s) => ({ value: s.id, label: s.name }))]} />
           <button onClick={createFor} disabled={!newScope}
             className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Создать</button>
         </div>

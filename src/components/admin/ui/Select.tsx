@@ -42,7 +42,7 @@ export function Select({
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`w-full flex items-center justify-between gap-2 pl-3 pr-3 py-2.5 rounded-xl border text-sm text-left bg-white outline-none transition-colors ${open ? "border-[#029cda] ring-2 ring-[#029cda]/15" : "border-gray-200 hover:border-gray-300"} disabled:opacity-50`}
+        className={`w-full flex items-center justify-between gap-2 pl-3 pr-3 py-2.5 rounded-xl border text-sm text-left bg-white outline-none transition-colors focus-visible:border-[#029cda] focus-visible:ring-2 focus-visible:ring-[#029cda]/25 ${open ? "border-[#029cda] ring-2 ring-[#029cda]/15" : "border-gray-200 hover:border-gray-300"} disabled:opacity-50`}
       >
         <span className={`truncate ${selected ? "text-[#1b2a4a]" : "text-gray-400"}`}>{selected?.label || placeholder}</span>
         <svg className={`w-4 h-4 shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="none" aria-hidden>

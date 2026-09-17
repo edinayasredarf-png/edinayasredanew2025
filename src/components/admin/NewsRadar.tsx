@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Select } from '@/components/admin/ui/Select';
 import {
   deleteItem,
   deleteTrigger,
@@ -518,26 +519,19 @@ function TriggersView(props: {
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Тема</label>
-            <select
+            <Select
               value={draft.category ?? 'other'}
-              onChange={(e) => setDraft((d) => ({ ...d, category: e.target.value as RadarCategory }))}
-              className="w-full h-9 px-2 rounded-lg border border-[#e8eaed] text-sm bg-white focus:outline-none focus:border-[#029cda]"
-            >
-              {RADAR_CATEGORIES.map((c) => (
-                <option key={c.key} value={c.key}>{c.label}</option>
-              ))}
-            </select>
+              onChange={(v) => setDraft((d) => ({ ...d, category: v as RadarCategory }))}
+              options={RADAR_CATEGORIES.map((c) => ({ value: c.key, label: c.label }))}
+            />
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Тип</label>
-            <select
+            <Select
               value={draft.kind ?? 'keyword'}
-              onChange={(e) => setDraft((d) => ({ ...d, kind: e.target.value as 'keyword' | 'rss' }))}
-              className="w-full h-9 px-2 rounded-lg border border-[#e8eaed] text-sm bg-white focus:outline-none focus:border-[#029cda]"
-            >
-              <option value="keyword">Ключевые слова (Google News)</option>
-              <option value="rss">RSS-лента (URL)</option>
-            </select>
+              onChange={(v) => setDraft((d) => ({ ...d, kind: v as 'keyword' | 'rss' }))}
+              options={[{ value: 'keyword', label: 'Ключевые слова (Google News)' }, { value: 'rss', label: 'RSS-лента (URL)' }]}
+            />
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">

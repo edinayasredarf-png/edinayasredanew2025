@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import nextDynamic from 'next/dynamic';
 import LetterNotifications from './LetterNotifications';
+import { Select } from '@/components/admin/ui/Select';
 
 const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
@@ -558,18 +559,14 @@ export default function LettersAdmin() {
         <div className="pt-2 border-t border-gray-100">
           <label className="block text-sm text-[#7C8A9A] mb-1">Отправить с ящика</label>
           <div className="flex flex-wrap items-center gap-2">
-            <select
+            <Select
               value={selectedAccountId}
-              onChange={(e) => setSelectedAccountId(e.target.value)}
-              className={`${inputCls} max-w-md`}
-            >
-              {senderOptions.length === 0 && <option value="default">Основной ящик</option>}
-              {senderOptions.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.from_email || 'ящик'}{a.label ? ` — ${a.label}` : ''}{a.env ? ' (основной)' : ''}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedAccountId}
+              className="max-w-md w-full sm:w-auto sm:min-w-[280px]"
+              options={senderOptions.length === 0
+                ? [{ value: 'default', label: 'Основной ящик' }]
+                : senderOptions.map((a) => ({ value: a.id, label: `${a.from_email || 'ящик'}${a.label ? ` — ${a.label}` : ''}${a.env ? ' (основной)' : ''}` }))}
+            />
             <button onClick={() => setTab('accounts')} className="text-sm text-[#029cda] hover:text-[#0280b5]">
               + Настроить ящики
             </button>
