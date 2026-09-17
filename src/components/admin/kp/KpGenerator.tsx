@@ -609,6 +609,28 @@ export default function KpGenerator() {
     }
   };
 
+  const fetchDocPreview = async (): Promise<Array<{ orgName: string; html: string }> | null> => {
+    const err = validate();
+    if (err) { setStatus(err); return null; }
+    setBusy(true);
+    setStatus('Готовим предпросмотр документа…');
+    try {
+      const res = await fetch('/api/kp/preview', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload('docx')),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Не удалось собрать предпросмотр');
+      setStatus('');
+      return d.previews || [];
+    } catch (e) {
+      setStatus((e as Error).message);
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  };
+
   /* ─────────────── Рендер ─────────────── */
   if (loading) {
     return <LoadingBlock label="Загрузка генератора КП…" />;
@@ -658,7 +680,7 @@ export default function KpGenerator() {
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
-            perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, generateBatch, busy,
+            perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, generateBatch, busy,
           }}
         />
       )}
@@ -722,7 +744,7 @@ function CreateTab(p: CreateProps) {
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
-    perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, generateBatch, busy,
+    perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, generateBatch, busy,
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
@@ -752,6 +774,7 @@ function CreateTab(p: CreateProps) {
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
     priceWarnings: string[];
     computePreview: () => Array<{ key: string; name: string; table: PreviewTable | null; ais: number; renewal: number; grand: number }>;
+    fetchDocPreview: () => Promise<Array<{ orgName: string; html: string }> | null>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void;
     sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean }) => Promise<boolean>;
     mailAccounts: Array<{ id: string; label: string; from_email: string }>;
@@ -764,6 +787,8 @@ function CreateTab(p: CreateProps) {
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
 
   const [preview, setPreview] = React.useState<ReturnType<typeof computePreview> | null>(null);
+  const [docPreview, setDocPreview] = React.useState<Array<{ orgName: string; html: string }> | null>(null);
+  const [docPreviewIdx, setDocPreviewIdx] = React.useState(0);
   const [mailOpen, setMailOpen] = React.useState(false);
   const [mailTo, setMailTo] = React.useState('');
   const [mailSubject, setMailSubject] = React.useState('Коммерческое предложение');
@@ -1033,16 +1058,23 @@ function CreateTab(p: CreateProps) {
               disabled={perOrgTotals.length === 0}
               className="px-3 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
             >
-              👁 Предпросмотр
+              👁 Таблица
             </button>
             <button
-              onClick={() => setBatchOpen(true)}
-              disabled={perOrgTotals.length === 0}
-              className="px-3 py-2 rounded-lg text-sm font-medium border border-[#d97706] text-[#b45309] hover:bg-[#fff7ed] disabled:opacity-50"
+              onClick={async () => { const p = await fetchDocPreview(); if (p) { setDocPreview(p); setDocPreviewIdx(0); } }}
+              disabled={busy || perOrgTotals.length === 0}
+              className="px-3 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
             >
-              📦 Пакет
+              📄 Документ
             </button>
           </div>
+          <button
+            onClick={() => setBatchOpen(true)}
+            disabled={perOrgTotals.length === 0}
+            className="w-full px-3 py-2 rounded-lg text-sm font-medium border border-[#d97706] text-[#b45309] hover:bg-[#fff7ed] disabled:opacity-50"
+          >
+            📦 Пакет по клиентам
+          </button>
 
           <button
             onClick={() => generate('docx')}
@@ -1168,6 +1200,33 @@ function CreateTab(p: CreateProps) {
             <div className="flex justify-end gap-2">
               <button onClick={() => setPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
               <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">Всё верно — скачать</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {docPreview && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setDocPreview(null)}>
+          <div className="bg-white rounded-2xl max-w-3xl w-full my-8 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-[#313131]">Предпросмотр документа</h3>
+              <button onClick={() => setDocPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+            </div>
+            {docPreview.length > 1 && (
+              <div className="flex gap-1 flex-wrap bg-[#F6F7F9] rounded-xl p-1">
+                {docPreview.map((p, i) => (
+                  <button key={i} onClick={() => setDocPreviewIdx(i)} className={`px-3 py-1.5 rounded-lg text-xs ${docPreviewIdx === i ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>{p.orgName}</button>
+                ))}
+              </div>
+            )}
+            <style>{`.kp-doc-preview table{border-collapse:collapse;width:100%;margin:8px 0}.kp-doc-preview td,.kp-doc-preview th{border:1px solid #d1d5db;padding:4px 6px;vertical-align:top}.kp-doc-preview img{max-width:100%}.kp-doc-preview p{margin:6px 0}`}</style>
+            <div className="border border-gray-200 rounded-xl p-6 bg-white max-h-[70vh] overflow-y-auto text-sm leading-relaxed kp-doc-preview overflow-x-auto">
+              <div dangerouslySetInnerHTML={{ __html: docPreview[docPreviewIdx]?.html || '' }} />
+            </div>
+            <div className="text-[11px] text-gray-400">Это черновой рендер (без точного оформления Word: шрифты/отступы могут отличаться). Финальный вид — в скачанном .docx / PDF.</div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setDocPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
+              <button onClick={() => { setDocPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">Скачать DOCX</button>
             </div>
           </div>
         </div>
