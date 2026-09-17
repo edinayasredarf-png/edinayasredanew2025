@@ -949,13 +949,10 @@ function CreateTab(p: CreateProps) {
           </div>
           {deals.length > 0 && (
             <div className="bg-white border border-[#cbe8f5] rounded-xl p-3 space-y-2">
-              <div className="text-sm font-semibold text-[#0b5c7d]">🤝 Сделка Bitrix24</div>
+              <div className="text-sm font-semibold text-[#0b5c7d]">Сделка Bitrix24</div>
               <div>
                 <div className={label}>Сделка компании</div>
-                <select value={dealId} onChange={(e) => setDealId(e.target.value)} className={input}>
-                  <option value="">— не выбрано —</option>
-                  {deals.map((d) => <option key={d.id} value={d.id}>{d.title} (#{d.id})</option>)}
-                </select>
+                <Select value={dealId} onChange={setDealId} placeholder="— не выбрано —" options={[{ value: '', label: '— не выбрано —' }, ...deals.map((d) => ({ value: d.id, label: `${d.title} (#${d.id})` }))]} />
               </div>
               <ToggleRow checked={uploadToBitrix} onChange={setUploadToBitrix} disabled={!dealId}>
                 Загружать готовые КП в сделку (поле «Файл КП»)
@@ -971,11 +968,7 @@ function CreateTab(p: CreateProps) {
           </div>
           <div>
             <div className={label}>Обращение</div>
-            <select value={salutation} onChange={(e) => setSalutation(e.target.value)} className={`${input} sm:max-w-xs`}>
-              <option value="">Авто (по ФИО)</option>
-              <option value="Уважаемый">Уважаемый</option>
-              <option value="Уважаемая">Уважаемая</option>
-            </select>
+            <Select value={salutation} onChange={setSalutation} className="sm:max-w-xs" placeholder="Авто (по ФИО)" options={[{ value: '', label: 'Авто (по ФИО)' }, { value: 'Уважаемый', label: 'Уважаемый' }, { value: 'Уважаемая', label: 'Уважаемая' }]} />
           </div>
           <div>
             <div className={label}>Должность клиента (для адресата в шапке)</div>
@@ -1444,7 +1437,7 @@ function TemplatesTab({
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-3">
-          <div className="text-sm font-semibold text-[#1b2a4a]">{draft.id ? '✏️ Редактирование шаблона' : 'Новый шаблон'}</div>
+          <div className="text-sm font-semibold text-[#1b2a4a]">{draft.id ? 'Редактирование шаблона' : 'Новый шаблон'}</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <div className={label}>Название</div>
@@ -1452,16 +1445,11 @@ function TemplatesTab({
             </div>
             <div>
               <div className={label}>Тип услуги *</div>
-              <select value={draft.serviceType} onChange={(e) => setDraft({ ...draft, serviceType: e.target.value })} className={input}>
-                {serviceTypes.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <Select value={draft.serviceType} onChange={(v) => setDraft({ ...draft, serviceType: v })} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
             </div>
             <div>
               <div className={label}>Компания (пусто = общий)</div>
-              <select value={draft.orgKey} onChange={(e) => setDraft({ ...draft, orgKey: e.target.value })} className={input}>
-                <option value="">Для всех компаний</option>
-                {orgs.map((o) => <option key={o.key} value={o.key}>{o.name}</option>)}
-              </select>
+              <Select value={draft.orgKey} onChange={(v) => setDraft({ ...draft, orgKey: v })} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
             </div>
           </div>
           <div>
@@ -1694,16 +1682,11 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <div className={label}>Услуга по умолчанию</div>
-          <select value={defSvc} onChange={(e) => setDefSvc(e.target.value)} className={input}>
-            {serviceTypes.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <Select value={defSvc} onChange={setDefSvc} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
         </div>
         <div>
           <div className={label}>Компания по умолчанию</div>
-          <select value={defOrg} onChange={(e) => setDefOrg(e.target.value)} className={input}>
-            <option value="">Для всех компаний</option>
-            {orgs.map((o) => <option key={o.key} value={o.key}>{o.name}</option>)}
-          </select>
+          <Select value={defOrg} onChange={setDefOrg} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
         </div>
         <div className="flex items-end gap-2">
           <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer flex-1">
@@ -1751,16 +1734,11 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
                 </div>
                 <div>
                   <div className={label}>Услуга *</div>
-                  <select value={it.serviceType} onChange={(e) => patch(it.uid, { serviceType: e.target.value })} className={input}>
-                    {serviceTypes.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <Select value={it.serviceType} onChange={(v) => patch(it.uid, { serviceType: v })} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
                 </div>
                 <div>
                   <div className={label}>Компания</div>
-                  <select value={it.orgKey} onChange={(e) => patch(it.uid, { orgKey: e.target.value })} className={input}>
-                    <option value="">Для всех компаний</option>
-                    {orgs.map((o) => <option key={o.key} value={o.key}>{o.name}</option>)}
-                  </select>
+                  <Select value={it.orgKey} onChange={(v) => patch(it.uid, { orgKey: v })} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
                 </div>
               </div>
               <div className="flex items-center gap-3 justify-between sm:justify-end">
@@ -2250,10 +2228,8 @@ function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s:
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm text-gray-500">Компания-отправитель:</span>
-        <select value={orgKey} onChange={(e) => setOrgKey(e.target.value)} className="px-3 py-1.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15">
-          {orgs.map((o) => <option key={o.key} value={o.key}>{o.shortName || o.name}</option>)}
-        </select>
+        <span className="text-sm text-gray-500 shrink-0">Компания-отправитель:</span>
+        <Select value={orgKey} onChange={setOrgKey} className="min-w-[200px]" options={orgs.map((o) => ({ value: o.key, label: o.shortName || o.name }))} />
         <span className="text-xs text-gray-400">Следующий №: <b className="text-[#313131]">{nextNumber}</b></span>
         <button onClick={addRow} className="ml-auto text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Строка</button>
       </div>

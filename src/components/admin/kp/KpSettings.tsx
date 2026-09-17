@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Spinner } from '@/components/admin/ui/Spinner';
+import { Select } from '@/components/admin/ui/Select';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
 import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
@@ -455,10 +456,7 @@ function OrgEditor({
 
       <div>
         <div className={label}>Ящик для рассылки (от этой организации)</div>
-        <select value={d.mailAccountKey || ''} onChange={(e) => set({ mailAccountKey: e.target.value })} className={input}>
-          <option value="">Основной (по умолчанию)</option>
-          {accounts.map((a) => <option key={a.id} value={a.id}>{a.label} ({a.from_email})</option>)}
-        </select>
+        <Select value={d.mailAccountKey || ''} onChange={(v) => set({ mailAccountKey: v })} placeholder="Основной (по умолчанию)" options={[{ value: '', label: 'Основной (по умолчанию)' }, ...accounts.map((a) => ({ value: a.id, label: `${a.label} (${a.from_email})` }))]} />
         <div className="text-[11px] text-gray-400 mt-1">Используется при рассылке «от каждой организации отдельно».</div>
       </div>
 
@@ -529,7 +527,7 @@ function HeaderLayoutEditor({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">🧷 Шапка документа (общая для всех шаблонов)</h3>
+      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">Шапка документа (общая для всех шаблонов)</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="text-xs text-gray-500">
           По одной строке — один элемент. Можно использовать алиасы, напр. <code>{'№ {{kp_number}}'}</code>.
@@ -804,9 +802,7 @@ function TableEditor({
               <tr key={i}>
                 <td className="py-0.5 pr-2"><input value={c.label} onChange={(e) => upd(i, { label: e.target.value })} className={`${inp} w-40`} /></td>
                 <td className="py-0.5 pr-2">
-                  <select value={c.kind} onChange={(e) => upd(i, { kind: e.target.value as ColKind })} className={inp}>
-                    {(Object.keys(KIND_LABELS) as ColKind[]).map((k) => <option key={k} value={k}>{KIND_LABELS[k]}</option>)}
-                  </select>
+                  <Select value={c.kind} onChange={(v) => upd(i, { kind: v as ColKind })} className="min-w-[130px]" options={(Object.keys(KIND_LABELS) as ColKind[]).map((k) => ({ value: k, label: KIND_LABELS[k] }))} />
                 </td>
                 <td className="py-0.5 pr-2"><input value={c.key} onChange={(e) => upd(i, { key: e.target.value })} className={`${inp} w-28 font-mono text-xs`} placeholder="auto" /></td>
                 <td className="py-0.5 pr-2">
@@ -992,17 +988,10 @@ function ServicesManager({
                     строки ({s.lineItems?.length ?? 0})
                   </button>
                 )}
-                <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
                   таблица:
-                  <select
-                    value={s.defaultTable}
-                    onChange={(e) => setDefaultTable(s.name, e.target.value)}
-                    className="px-2 py-1 rounded border border-gray-200 text-xs bg-white"
-                  >
-                    <option value="">— без таблицы —</option>
-                    {calcTables.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
-                  </select>
-                </label>
+                  <Select value={s.defaultTable} onChange={(v) => setDefaultTable(s.name, v)} className="min-w-[170px]" placeholder="— без таблицы —" options={[{ value: '', label: '— без таблицы —' }, ...calcTables.map((t) => ({ value: t.key, label: t.name }))]} />
+                </div>
                 <ToggleRow checked={s.isActive} onChange={(v) => toggle(s.name, v)} className="text-xs text-gray-500 whitespace-nowrap">
                   активна
                 </ToggleRow>

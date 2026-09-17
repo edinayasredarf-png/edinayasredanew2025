@@ -242,14 +242,9 @@ export default function KpCalcGrid({
                         <th key={i} className="border border-gray-200 bg-[#eef2f6] px-2 py-1 text-left font-semibold text-[#313131] min-w-[110px]">
                           <div className="truncate" title={h}>{h || `Колонка ${i + 1}`}</div>
                           {importMode === 'map' && (
-                            <select
-                              value={mapping[i] ?? ''}
-                              onChange={(e) => setMapping((m) => ({ ...m, [i]: e.target.value }))}
-                              className="mt-1 w-full px-1 py-0.5 rounded border border-gray-200 text-[11px] font-normal bg-white"
-                            >
-                              <option value="">— пропустить —</option>
-                              {inputCols.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
-                            </select>
+                            <div className="mt-1 font-normal">
+                              <Select value={mapping[i] ?? ''} onChange={(v) => setMapping((m) => ({ ...m, [i]: v }))} placeholder="— пропустить —" options={[{ value: '', label: '— пропустить —' }, ...inputCols.map((c) => ({ value: c.key, label: c.label }))]} />
+                            </div>
                           )}
                         </th>
                       ))}
