@@ -59,7 +59,7 @@ export default function KpSettings({
       {/* Компании */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-[#313131]">🏢 Компании (от кого КП)</h3>
+          <h3 className="text-sm font-semibold text-[#313131]">Компании (от кого КП)</h3>
           <button
             onClick={() => { setCreating(true); setEditKey(null); }}
             className="text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]"
@@ -170,7 +170,7 @@ function MailAttachmentsManager({ setStatus }: { setStatus: (s: string) => void 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-[#313131]">📎 Библиотека вложений</h3>
+        <h3 className="text-sm font-semibold text-[#313131]">Библиотека вложений</h3>
         <button onClick={() => setOpen((v) => !v)} className="text-sm text-[#029cda]">{open ? 'Свернуть' : 'Показать'}</button>
       </div>
       {open && (
@@ -263,7 +263,7 @@ function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-[#313131]">📮 Ящики для рассылки</h3>
+        <h3 className="text-sm font-semibold text-[#313131]">Ящики для рассылки</h3>
         <button onClick={() => setOpen((v) => !v)} className="text-sm text-[#029cda]">{open ? 'Свернуть' : 'Показать'}</button>
       </div>
       {open && (
@@ -478,7 +478,7 @@ function OrgEditor({
 
       {/* Цены вынесены в отдельную вкладку «Цены» */}
       <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-lg px-3 py-2">
-        💰 Цены по услугам теперь задаются в отдельной вкладке <span className="font-medium text-[#0b5c7d]">«Цены»</span> (сводная таблица по всем компаниям).
+        Цены по услугам теперь задаются в отдельной вкладке <span className="font-medium text-[#0b5c7d]">«Цены»</span> (сводная таблица по всем компаниям).
       </div>
 
       <div className="flex items-center gap-2">
@@ -597,7 +597,7 @@ function AliasesManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">🏷 Алиасы (плейсхолдеры)</h3>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">Алиасы (плейсхолдеры)</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input className={input} placeholder="ключ (латиница): my_note" value={key} onChange={(e) => setKey(e.target.value)} />
@@ -672,7 +672,7 @@ function TablesManager({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-[#313131]">📊 Таблицы расчёта (шаблоны)</h3>
+        <h3 className="text-sm font-semibold text-[#313131]">Таблицы расчёта (шаблоны)</h3>
         <button onClick={() => { setCreating(true); setEditKey(null); }} className="text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Новая таблица</button>
       </div>
 
@@ -964,7 +964,7 @@ function ServicesManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">🧾 Услуги</h3>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">Услуги</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="flex gap-2">
           <input className={input} placeholder="Новая услуга (например, ОКС)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
@@ -1095,7 +1095,7 @@ function PositionsManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">🧑‍💼 Должности клиента</h3>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">Должности клиента</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="flex gap-2">
           <input className={input} placeholder="Новая должность (например, Мэр)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
@@ -1151,7 +1151,7 @@ function ExecutorsManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">👥 Исполнители (менеджеры)</h3>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">Исполнители (менеджеры)</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input className={input} placeholder="ФИО *" value={draft.fio || ''} onChange={(e) => setDraft({ ...draft, fio: e.target.value })} />

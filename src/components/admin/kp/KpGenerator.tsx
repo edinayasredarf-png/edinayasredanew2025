@@ -1009,7 +1009,7 @@ function CreateTab(p: CreateProps) {
 
         {/* Параметры КП */}
         <div className={panel}>
-          <div className="text-sm font-semibold text-[#313131]">📄 Параметры КП</div>
+          <div className="text-sm font-semibold text-[#313131]">Параметры КП</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <div className={label}>Дата КП (пусто = сегодня)</div>
@@ -1049,7 +1049,7 @@ function CreateTab(p: CreateProps) {
 
         {/* Таблица расчёта — конфигурируемая (Excel-стиль) */}
         <div className={panel}>
-          <div className="text-sm font-semibold text-[#313131]">📊 Таблица расчёта</div>
+          <div className="text-sm font-semibold text-[#313131]">Таблица расчёта</div>
           <KpCalcGrid
             calcTables={calcTables}
             selectedKey={selectedTableKey}
@@ -1077,7 +1077,7 @@ function CreateTab(p: CreateProps) {
       {/* Правая колонка: матрица итогов + действия */}
       <div className="space-y-4">
         <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3 sticky top-4">
-          <div className="text-sm font-semibold text-[#313131]">💰 Итоги по организациям</div>
+          <div className="text-sm font-semibold text-[#313131]">Итоги по организациям</div>
           {perOrgTotals.length === 0 && <div className="text-sm text-gray-400">Выберите организации слева.</div>}
           {perOrgTotals.map((t) => (
             <div key={t.key} className="border border-gray-100 rounded-xl p-3">
@@ -1108,14 +1108,14 @@ function CreateTab(p: CreateProps) {
               disabled={perOrgTotals.length === 0}
               className="px-3 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
             >
-              👁 Таблица
+              Таблица
             </button>
             <button
               onClick={async () => { const p = await fetchDocPreview(); if (p) { setDocPreview(p); setDocPreviewIdx(0); } }}
               disabled={busy || perOrgTotals.length === 0}
               className="px-3 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
             >
-              📄 Документ
+              Документ
             </button>
           </div>
           <button
@@ -1123,7 +1123,7 @@ function CreateTab(p: CreateProps) {
             disabled={perOrgTotals.length === 0}
             className="w-full px-3 py-2 rounded-lg text-sm font-medium border border-[#d97706] text-[#b45309] hover:bg-[#fff7ed] disabled:opacity-50"
           >
-            📦 Пакет по клиентам
+            Пакет по клиентам
           </button>
 
           <button
@@ -1132,7 +1132,7 @@ function CreateTab(p: CreateProps) {
             className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {busy && <Spinner size={16} color="#fff" />}
-            {busy ? 'Генерация…' : selectedOrgs.length > 1 ? `📦 Скачать ${selectedOrgs.length} DOCX (ZIP)` : '📄 Скачать DOCX'}
+            {busy ? 'Генерация…' : selectedOrgs.length > 1 ? `Скачать ${selectedOrgs.length} DOCX (ZIP)` : 'Скачать DOCX'}
           </button>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -1141,7 +1141,7 @@ function CreateTab(p: CreateProps) {
               className="px-3 py-2 rounded-lg text-sm font-medium bg-[#2563eb] text-white hover:bg-[#1d4ed8] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {busy && <Spinner size={16} color="#fff" />}
-              📕 PDF
+              PDF
             </button>
             <button
               onClick={() => generate('both')}
@@ -1149,7 +1149,7 @@ function CreateTab(p: CreateProps) {
               className="px-3 py-2 rounded-lg text-sm font-medium bg-[#d97706] text-white hover:bg-[#b45309] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {busy && <Spinner size={16} color="#fff" />}
-              📄+📕 DOCX+PDF
+              DOCX+PDF
             </button>
           </div>
           <div className="text-[11px] text-gray-400 text-center">PDF — через сервис pdf-service (LibreOffice).</div>
@@ -1159,7 +1159,7 @@ function CreateTab(p: CreateProps) {
             disabled={perOrgTotals.length === 0}
             className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-[#7c3aed] text-[#7c3aed] hover:bg-[#f5f3ff] disabled:opacity-50"
           >
-            ✉️ {mailOpen ? 'Скрыть отправку' : 'Отправить клиенту на почту'}
+            {mailOpen ? 'Скрыть отправку' : 'Отправить клиенту на почту'}
           </button>
 
           {mailOpen && (
@@ -1226,7 +1226,7 @@ function CreateTab(p: CreateProps) {
                 className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >
                 {busy && <Spinner size={16} color="#fff" />}
-                {busy ? 'Отправка…' : '✉️ Отправить'}
+                {busy ? 'Отправка…' : 'Отправить'}
               </button>
             </div>
           )}
@@ -1308,7 +1308,7 @@ function CreateTab(p: CreateProps) {
         <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setBatchOpen(false)}>
           <div className="bg-white rounded-2xl max-w-3xl w-full my-8 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-[#313131]">📦 Пакет по клиентам</h3>
+              <h3 className="text-lg font-semibold text-[#313131]">Пакет по клиентам</h3>
               <button onClick={() => setBatchOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
             </div>
             <div className="text-xs text-gray-500">
@@ -1349,7 +1349,7 @@ function CreateTab(p: CreateProps) {
                   className="px-4 py-2 text-sm rounded-lg bg-[#d97706] text-white hover:bg-[#b45309] disabled:opacity-50 inline-flex items-center gap-2"
                 >
                   {busy && <Spinner size={16} color="#fff" />}
-                  {busy ? 'Генерация…' : '📦 Скачать ZIP'}
+                  {busy ? 'Генерация…' : 'Скачать ZIP'}
                 </button>
               </div>
             </div>
@@ -1452,7 +1452,7 @@ function TemplatesTab({
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-3">
-          <div className="text-sm font-semibold text-[#313131]">{draft.id ? '✏️ Редактирование шаблона' : '➕ Новый шаблон'}</div>
+          <div className="text-sm font-semibold text-[#313131]">{draft.id ? '✏️ Редактирование шаблона' : 'Новый шаблон'}</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <div className={label}>Название</div>
@@ -1497,8 +1497,8 @@ function TemplatesTab({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <button onClick={openNew} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">➕ Создать шаблон</button>
-        <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">⤴️ Загрузить .docx (можно несколько)</button>
+        <button onClick={openNew} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">Создать шаблон</button>
+        <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Загрузить .docx (можно несколько)</button>
       </div>
 
       {uploadOpen && <DocxUpload orgs={orgs} serviceTypes={serviceTypes} onChanged={onChanged} setStatus={setStatus} />}
@@ -1564,7 +1564,7 @@ function AliasPanel({ aliases, onChanged, setStatus }: { aliases: Alias[]; onCha
   );
   return (
     <div className="bg-[#EAF6FC] border border-[#cbe8f5] rounded-2xl p-4 space-y-3 sticky top-4">
-      <div className="text-sm font-semibold text-[#0b5c7d]">🏷 Алиасы (клик — копировать)</div>
+      <div className="text-sm font-semibold text-[#0b5c7d]">Алиасы (клик — копировать)</div>
       <div className="text-[11px] text-[#4a7d92]">Нажмите на алиас, чтобы скопировать, и вставьте в текст (Ctrl+V). Шапка/подписант/таблица подставляются автоматически.</div>
       {custom.length > 0 && (
         <>
@@ -1575,7 +1575,7 @@ function AliasPanel({ aliases, onChanged, setStatus }: { aliases: Alias[]; onCha
       <div className="text-xs font-medium text-[#0b5c7d]">Встроенные</div>
       <div className="grid grid-cols-2 gap-1 max-h-72 overflow-y-auto pr-1">{builtin.map(chip)}</div>
       <div className="border-t border-[#cbe8f5] pt-2 space-y-1">
-        <div className="text-xs font-medium text-[#0b5c7d]">➕ Новый алиас</div>
+        <div className="text-xs font-medium text-[#0b5c7d]">Новый алиас</div>
         <input value={k} onChange={(e) => setK(e.target.value)} placeholder="ключ (латиница)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
         <input value={lbl} onChange={(e) => setLbl(e.target.value)} placeholder="описание" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
         <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="значение (текст)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
@@ -1936,7 +1936,7 @@ function PricesTab({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-[#313131]">💰 Цены по услугам</h3>
+          <h3 className="text-sm font-semibold text-[#313131]">Цены по услугам</h3>
           <p className="text-xs text-gray-500">Услуги/позиции — строки, компании — столбцы. Выберите вид цены и заполните ячейки.</p>
         </div>
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
@@ -2128,7 +2128,7 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
             </button>
           ))}
           <button onClick={() => setOnlyFollowup((v) => !v)} className={`px-3 py-1.5 rounded-lg text-sm ${onlyFollowup ? 'bg-[#fff7ed] text-[#b45309] font-medium' : 'text-gray-500'}`} title={`Отправлено, но не открыто дольше ${FOLLOWUP_DAYS} дней`}>
-            ⏰ Требуют внимания{followupCount ? ` (${followupCount})` : ''}
+            Требуют внимания{followupCount ? ` (${followupCount})` : ''}
           </button>
         </div>
         <div className="text-xs text-gray-500">Всего: {rows.length} · доставлено: {sentOk} · открыто: {opened}</div>
@@ -2155,8 +2155,8 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
                     ? <span className="text-[#16a34a]">✓ отправлено{r.delivery_status === 'bounced' ? ' · возврат' : ''}</span>
                     : <span className="text-red-500">ошибка</span>}
                   {r.open_count > 0
-                    ? <span className="text-[#0b5c7d]">👁 {r.open_count}×</span>
-                    : fu ? <span className="text-[#b45309]">⏰ не открыто</span> : null}
+                    ? <span className="text-[#0b5c7d]">открыто {r.open_count}×</span>
+                    : fu ? <span className="text-[#b45309]">не открыто</span> : null}
                 </div>
               </div>
             );
@@ -2191,8 +2191,8 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     {r.open_count > 0
-                      ? <span className="text-[#0b5c7d]" title={r.last_opened_at ? new Date(r.last_opened_at).toLocaleString('ru-RU') : ''}>👁 {r.open_count}×</span>
-                      : fu ? <span className="text-[#b45309]" title={`Не открыто ${Math.floor(daysSince(r.created_at))} дн.`}>⏰ не открыто</span>
+                      ? <span className="text-[#0b5c7d]" title={r.last_opened_at ? new Date(r.last_opened_at).toLocaleString('ru-RU') : ''}>{r.open_count}×</span>
+                      : fu ? <span className="text-[#b45309]" title={`Не открыто ${Math.floor(daysSince(r.created_at))} дн.`}>не открыто</span>
                       : <span className="text-gray-300">—</span>}
                   </td>
                   <td className="px-3 py-2 text-gray-500 whitespace-nowrap">{new Date(r.created_at).toLocaleString('ru-RU')}</td>
