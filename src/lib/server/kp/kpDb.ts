@@ -262,6 +262,18 @@ async function ensureTables(): Promise<void> {
     "Контейнерные площадки": [
       { key: "containers", name: "Инвентаризация и подготовка предложений для включения в реестр мест (площадок) накопления ТКО", unit: "1 шт" },
     ],
+    "Лесохозяйственный регламент": [
+      { key: "lhr", name: "Разработка лесохозяйственного регламента", unit: "" },
+    ],
+    "Лесоустройство": [
+      { key: "lesovo", name: "Лесоустройство", unit: "" },
+    ],
+    "Проект освоения лесов": [
+      { key: "pol", name: "Разработка проекта освоения лесов", unit: "" },
+    ],
+    "ФГИС ЛК": [
+      { key: "fgislk", name: "Работы во ФГИС ЛесКонтроль", unit: "" },
+    ],
   };
   for (const [name, items] of Object.entries(svcLineItems)) {
     await pool.query(
@@ -397,11 +409,11 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
     },
     {
       key: "flat",
-      name: "Фикс-цена (одна строка)",
+      name: "Фикс-цена (услуга, авто-цена из «Цен»)",
       sort: 5,
       columns: [
         { key: "name", label: "Наименование работ", kind: "text", align: "left" },
-        { key: "cost", label: "Стоимость, руб.", kind: "number", align: "center", ...money },
+        { key: "cost", label: "Стоимость, руб.", kind: "formula", formula: "price_direct", align: "center", ...money },
       ],
     },
   ];
@@ -462,6 +474,23 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
   await pool.query(
     "update kp_service_types set default_table='izn' where name in ('ИМЗ + ЕС','ИЗН + ЕС','ИЗН + ИМЗ + ЕС') and default_table in ('uslugi','raschet')"
   );
+
+  // Миграция flat: ручная колонка стоимости → формула (цена из «Цен»).
+  {
+    const { rows } = await pool.query("select columns from kp_calc_tables where key='flat'");
+    if (rows[0]) {
+      let cols: Array<{ key?: string; kind?: string; formula?: string }> = [];
+      try { cols = JSON.parse(String(rows[0].columns)); } catch { cols = []; }
+      let changed = false;
+      const patched = cols.map((c) => {
+        if (c.key === "cost" && c.kind === "number" && !c.formula) { changed = true; return { ...c, kind: "formula", formula: "price_direct" }; }
+        return c;
+      });
+      if (changed) {
+        await pool.query("update kp_calc_tables set name='Фикс-цена (услуга, авто-цена из «Цен»)', columns=$1 where key='flat'", [JSON.stringify(patched)]);
+      }
+    }
+  }
 }
 
 function mapCalcTable(r: Record<string, unknown>): KpCalcTable {
