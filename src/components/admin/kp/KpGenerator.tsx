@@ -51,6 +51,8 @@ function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Reco
   return total;
 }
 
+interface BatchClient { orgFull: string; fio?: string; position?: string; areaTotal?: string; quantity?: string; }
+
 interface PreviewTable { headers: string[]; align: string[]; rows: string[][]; footers: string[][]; serviceTotal: number; }
 
 /** Клиентский расчёт таблицы для предпросмотра (зеркало серверного computeTable). */
@@ -506,6 +508,38 @@ export default function KpGenerator() {
     }
   };
 
+  const generateBatch = async (clients: BatchClient[], format: 'docx' | 'pdf' | 'both' = 'docx'): Promise<boolean> => {
+    if (selectedOrgs.length === 0) { setStatus('Выберите хотя бы одну организацию'); return false; }
+    const valid = clients.filter((c) => c.orgFull.trim());
+    if (!valid.length) { setStatus('Добавьте хотя бы одного клиента'); return false; }
+    const missing = perOrgTotals.filter((t) => !t.hasTemplate).map((t) => t.name);
+    if (missing.length) { setStatus(`Нет шаблона (${serviceType}) для: ${missing.join(', ')}`); return false; }
+    setBusy(true);
+    setStatus(`Пакетная генерация: ${valid.length} клиентов…`);
+    try {
+      const res = await fetch('/api/kp/generate-batch', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...buildPayload(format), clients: valid }),
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Ошибка пакетной генерации'); }
+      const blob = await res.blob();
+      const cdHeader = res.headers.get('Content-Disposition') || '';
+      const m = cdHeader.match(/filename\*=UTF-8''([^;]+)/);
+      const filename = m ? decodeURIComponent(m[1]) : 'КП пакет.zip';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+      setStatus(`Готово: пакет по ${valid.length} клиентам (${selectedOrgs.length} орг.)`);
+      return true;
+    } catch (e) {
+      setStatus((e as Error).message);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+
   /* ─────────────── Рендер ─────────────── */
   if (loading) {
     return <LoadingBlock label="Загрузка генератора КП…" />;
@@ -554,7 +588,7 @@ export default function KpGenerator() {
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
-            perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, busy,
+            perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, generateBatch, busy,
           }}
         />
       )}
@@ -612,7 +646,7 @@ function CreateTab(p: CreateProps) {
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
-    perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, busy,
+    perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, generateBatch, busy,
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
@@ -641,6 +675,7 @@ function CreateTab(p: CreateProps) {
     generate: (format?: 'docx' | 'pdf' | 'both') => void;
     sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean }) => Promise<boolean>;
     mailAccounts: Array<{ id: string; label: string; from_email: string }>;
+    generateBatch: (clients: BatchClient[], format?: 'docx' | 'pdf' | 'both') => Promise<boolean>;
     busy: boolean;
   };
 
@@ -655,6 +690,20 @@ function CreateTab(p: CreateProps) {
   const [mailMessage, setMailMessage] = React.useState('Здравствуйте!\n\nНаправляем коммерческое предложение во вложении. Будем рады сотрудничеству.');
   const [mailAccountId, setMailAccountId] = React.useState('default');
   const [mailAsPdf, setMailAsPdf] = React.useState(false);
+  const [batchOpen, setBatchOpen] = React.useState(false);
+  const [batchClients, setBatchClients] = React.useState<BatchClient[]>([{ orgFull: '', fio: '' }]);
+  const [batchPaste, setBatchPaste] = React.useState('');
+
+  const batchAddPaste = () => {
+    const lines = batchPaste.replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return;
+    const parsed: BatchClient[] = lines.map((l) => {
+      const [orgFull = '', fio = '', areaTotal = '', quantity = ''] = l.split('\t');
+      return { orgFull: orgFull.trim(), fio: fio.trim(), areaTotal: areaTotal.trim(), quantity: quantity.trim() };
+    });
+    setBatchClients((prev) => [...prev.filter((c) => c.orgFull.trim()), ...parsed]);
+    setBatchPaste('');
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -872,13 +921,22 @@ function CreateTab(p: CreateProps) {
             </div>
           )}
 
-          <button
-            onClick={() => setPreview(computePreview())}
-            disabled={perOrgTotals.length === 0}
-            className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
-          >
-            👁 Предпросмотр
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setPreview(computePreview())}
+              disabled={perOrgTotals.length === 0}
+              className="px-3 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
+            >
+              👁 Предпросмотр
+            </button>
+            <button
+              onClick={() => setBatchOpen(true)}
+              disabled={perOrgTotals.length === 0}
+              className="px-3 py-2 rounded-lg text-sm font-medium border border-[#d97706] text-[#b45309] hover:bg-[#fff7ed] disabled:opacity-50"
+            >
+              📦 Пакет
+            </button>
+          </div>
 
           <button
             onClick={() => generate('docx')}
@@ -994,6 +1052,57 @@ function CreateTab(p: CreateProps) {
             <div className="flex justify-end gap-2">
               <button onClick={() => setPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
               <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">Всё верно — скачать</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {batchOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setBatchOpen(false)}>
+          <div className="bg-white rounded-2xl max-w-3xl w-full my-8 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-[#313131]">📦 Пакет по клиентам</h3>
+              <button onClick={() => setBatchOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+            </div>
+            <div className="text-xs text-gray-500">
+              Услуга <b>{serviceType}</b>, организаций: <b>{selectedOrgs.length}</b>, таблица/цены — из текущей формы. На каждого клиента будет свой комплект КП (по одному на организацию), всё одним ZIP (папка на клиента).
+            </div>
+
+            <div className="space-y-2">
+              <div className="grid grid-cols-[1fr_1fr_90px_90px_28px] gap-2 text-[11px] text-gray-500 px-1">
+                <span>Организация клиента *</span><span>ФИО (кому)</span><span>Площадь</span><span>Кол-во</span><span></span>
+              </div>
+              {batchClients.map((c, i) => (
+                <div key={i} className="grid grid-cols-[1fr_1fr_90px_90px_28px] gap-2 items-center">
+                  <input value={c.orgFull} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, orgFull: e.target.value } : x))} className={input} placeholder='ООО "Ромашка"' />
+                  <input value={c.fio || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, fio: e.target.value } : x))} className={input} placeholder="Иванов И.И." />
+                  <input value={c.areaTotal || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, areaTotal: e.target.value } : x))} className={input} placeholder="—" />
+                  <input value={c.quantity || ''} onChange={(e) => setBatchClients((a) => a.map((x, j) => j === i ? { ...x, quantity: e.target.value } : x))} className={input} placeholder="—" />
+                  <button onClick={() => setBatchClients((a) => a.filter((_, j) => j !== i))} className="text-red-500 hover:text-red-600 text-sm">✕</button>
+                </div>
+              ))}
+              <button onClick={() => setBatchClients((a) => [...a, { orgFull: '', fio: '' }])} className="text-sm text-[#029cda] hover:text-[#0280b5]">+ Клиент</button>
+            </div>
+
+            <div>
+              <div className={label}>Вставка из Excel (столбцы: организация ⇥ ФИО ⇥ площадь ⇥ кол-во)</div>
+              <textarea value={batchPaste} onChange={(e) => setBatchPaste(e.target.value)} className={`${input} h-16 font-mono text-xs`} placeholder={'ООО "Ромашка"\tИванов И.И.\t5\t\nООО "Луч"\tПетров П.П.\t12\t'} />
+              <button onClick={batchAddPaste} disabled={!batchPaste.trim()} className="mt-1 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-gray-400">Клиентов: {batchClients.filter((c) => c.orgFull.trim()).length} · файлов будет ~{batchClients.filter((c) => c.orgFull.trim()).length * selectedOrgs.length}</span>
+              <div className="flex gap-2">
+                <button onClick={() => setBatchOpen(false)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+                <button
+                  onClick={async () => { const ok = await generateBatch(batchClients, 'docx'); if (ok) setBatchOpen(false); }}
+                  disabled={busy || batchClients.filter((c) => c.orgFull.trim()).length === 0}
+                  className="px-4 py-2 text-sm rounded-lg bg-[#d97706] text-white hover:bg-[#b45309] disabled:opacity-50 inline-flex items-center gap-2"
+                >
+                  {busy && <Spinner size={16} color="#fff" />}
+                  {busy ? 'Генерация…' : '📦 Скачать ZIP'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
