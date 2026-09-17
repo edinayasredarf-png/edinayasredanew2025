@@ -160,6 +160,14 @@ export default function KpGenerator() {
 
 
   const [busy, setBusy] = useState(false);
+  const [mailAccounts, setMailAccounts] = useState<Array<{ id: string; label: string; from_email: string }>>([]);
+
+  useEffect(() => {
+    fetch('/api/letters/accounts', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.accounts) setMailAccounts(d.accounts.filter((a: { enabled?: boolean }) => a.enabled)); })
+      .catch(() => {});
+  }, []);
 
   const loadMeta = useCallback(async () => {
     setLoading(true);
@@ -475,6 +483,29 @@ export default function KpGenerator() {
     }
   };
 
+  const sendEmail = async (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean }): Promise<boolean> => {
+    const err = validate();
+    if (err) { setStatus(err); return false; }
+    if (!opts.to.trim()) { setStatus('Укажите e-mail клиента'); return false; }
+    setBusy(true);
+    setStatus('Отправка на почту…');
+    try {
+      const res = await fetch('/api/kp/send', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...buildPayload(opts.asPdf ? 'pdf' : 'docx'), clientEmail: opts.to, subject: opts.subject, message: opts.message, accountId: opts.accountId, asPdf: opts.asPdf }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка отправки');
+      setStatus(d.ok ? `✅ Отправлено на ${d.to} (${d.count} КП)` : `⚠️ Не доставлено${d.rejected?.length ? ': ' + d.rejected.join(', ') : ''}`);
+      return Boolean(d.ok);
+    } catch (e) {
+      setStatus((e as Error).message);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+
   /* ─────────────── Рендер ─────────────── */
   if (loading) {
     return <LoadingBlock label="Загрузка генератора КП…" />;
@@ -523,7 +554,7 @@ export default function KpGenerator() {
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
-            perOrgTotals, priceWarnings, computePreview, generate, busy,
+            perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, busy,
           }}
         />
       )}
@@ -581,7 +612,7 @@ function CreateTab(p: CreateProps) {
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
-    perOrgTotals, priceWarnings, computePreview, generate, busy,
+    perOrgTotals, priceWarnings, computePreview, generate, sendEmail, mailAccounts, busy,
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
@@ -607,7 +638,10 @@ function CreateTab(p: CreateProps) {
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
     priceWarnings: string[];
     computePreview: () => Array<{ key: string; name: string; table: PreviewTable | null; ais: number; renewal: number; grand: number }>;
-    generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
+    generate: (format?: 'docx' | 'pdf' | 'both') => void;
+    sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean }) => Promise<boolean>;
+    mailAccounts: Array<{ id: string; label: string; from_email: string }>;
+    busy: boolean;
   };
 
   const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
@@ -615,6 +649,12 @@ function CreateTab(p: CreateProps) {
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
 
   const [preview, setPreview] = React.useState<ReturnType<typeof computePreview> | null>(null);
+  const [mailOpen, setMailOpen] = React.useState(false);
+  const [mailTo, setMailTo] = React.useState('');
+  const [mailSubject, setMailSubject] = React.useState('Коммерческое предложение');
+  const [mailMessage, setMailMessage] = React.useState('Здравствуйте!\n\nНаправляем коммерческое предложение во вложении. Будем рады сотрудничеству.');
+  const [mailAccountId, setMailAccountId] = React.useState('default');
+  const [mailAsPdf, setMailAsPdf] = React.useState(false);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -866,7 +906,52 @@ function CreateTab(p: CreateProps) {
               📄+📕 DOCX+PDF
             </button>
           </div>
-          <div className="text-[11px] text-gray-400 text-center">PDF — через сервис pdf-service (LibreOffice). Рассылка на почту — следующий этап.</div>
+          <div className="text-[11px] text-gray-400 text-center">PDF — через сервис pdf-service (LibreOffice).</div>
+
+          <button
+            onClick={() => setMailOpen((v) => !v)}
+            disabled={perOrgTotals.length === 0}
+            className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-[#7c3aed] text-[#7c3aed] hover:bg-[#f5f3ff] disabled:opacity-50"
+          >
+            ✉️ {mailOpen ? 'Скрыть отправку' : 'Отправить клиенту на почту'}
+          </button>
+
+          {mailOpen && (
+            <div className="border border-gray-200 rounded-xl p-3 space-y-2 bg-[#FAFBFC]">
+              <div>
+                <div className={label}>E-mail клиента *</div>
+                <input value={mailTo} onChange={(e) => setMailTo(e.target.value)} className={input} placeholder="client@example.ru" type="email" />
+              </div>
+              <div>
+                <div className={label}>Тема</div>
+                <input value={mailSubject} onChange={(e) => setMailSubject(e.target.value)} className={input} />
+              </div>
+              <div>
+                <div className={label}>Сообщение</div>
+                <textarea value={mailMessage} onChange={(e) => setMailMessage(e.target.value)} className={`${input} h-24`} />
+              </div>
+              <div>
+                <div className={label}>Ящик отправки</div>
+                <select value={mailAccountId} onChange={(e) => setMailAccountId(e.target.value)} className={input}>
+                  <option value="default">Основной (по умолчанию)</option>
+                  {mailAccounts.map((a) => <option key={a.id} value={a.id}>{a.label} ({a.from_email})</option>)}
+                </select>
+              </div>
+              <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer">
+                <input type="checkbox" checked={mailAsPdf} onChange={(e) => setMailAsPdf(e.target.checked)} />
+                Вложение в PDF (нужен pdf-service; иначе DOCX)
+              </label>
+              <div className="text-[11px] text-gray-400">Во вложении — {selectedOrgs.length} {selectedOrgs.length === 1 ? 'КП' : 'КП'} (по одному на организацию), одним письмом.</div>
+              <button
+                onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf })}
+                disabled={busy || !mailTo.trim() || perOrgTotals.length === 0}
+                className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 inline-flex items-center justify-center gap-2"
+              >
+                {busy && <Spinner size={16} color="#fff" />}
+                {busy ? 'Отправка…' : '✉️ Отправить'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
