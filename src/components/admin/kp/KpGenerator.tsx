@@ -7,6 +7,7 @@ import KpSettings from './KpSettings';
 const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
+import { ToggleRow } from '@/components/admin/ui/Toggle';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
@@ -923,10 +924,9 @@ function CreateTab(p: CreateProps) {
                   </button>
                 ))}
               </div>
-              <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer mt-2">
-                <input type="checkbox" checked={ruralSettlement} onChange={(e) => setRuralSettlement(e.target.checked)} />
+              <ToggleRow checked={ruralSettlement} onChange={setRuralSettlement} className="mt-2">
                 Сельское поселение <span className="text-xs text-gray-400">(цена АИС ÷ 1,6)</span>
-              </label>
+              </ToggleRow>
             </div>
             <div>
               <div className={label}>Входит в услугу</div>
@@ -942,7 +942,7 @@ function CreateTab(p: CreateProps) {
 
         {/* Данные клиента */}
         <div className={panel}>
-          <div className="text-sm font-semibold text-[#313131]">👤 Данные клиента</div>
+          <div className="text-sm font-semibold text-[#1b2a4a]">👤 Данные клиента</div>
           <div>
             <div className={label}>Полное наименование организации клиента *</div>
             <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={input} placeholder='Администрация Николаевского муниципального района' />
@@ -958,10 +958,9 @@ function CreateTab(p: CreateProps) {
                   {deals.map((d) => <option key={d.id} value={d.id}>{d.title} (#{d.id})</option>)}
                 </select>
               </div>
-              <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-                <input type="checkbox" checked={uploadToBitrix} onChange={(e) => setUploadToBitrix(e.target.checked)} disabled={!dealId} />
+              <ToggleRow checked={uploadToBitrix} onChange={setUploadToBitrix} disabled={!dealId}>
                 Загружать готовые КП в сделку (поле «Файл КП»)
-              </label>
+              </ToggleRow>
               <div className="text-[11px] text-gray-400">Файлы (docx/pdf по всем выбранным компаниям) добавятся в сделку при генерации. Внимание: поле перезаписывается новым набором.</div>
             </div>
           )}
@@ -1008,7 +1007,7 @@ function CreateTab(p: CreateProps) {
 
         {/* Параметры КП */}
         <div className={panel}>
-          <div className="text-sm font-semibold text-[#313131]">Параметры КП</div>
+          <div className="text-sm font-semibold text-[#1b2a4a]">Параметры КП</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <div className={label}>Дата КП (пусто = сегодня)</div>
@@ -1017,10 +1016,9 @@ function CreateTab(p: CreateProps) {
             <div>
               <div className={label}>Номер КП (пусто = авто)</div>
               <input value={kpNumber} onChange={(e) => setKpNumber(e.target.value)} className={input} placeholder="КП-…" disabled={recordRegistry} />
-              <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer mt-1">
-                <input type="checkbox" checked={recordRegistry} onChange={(e) => setRecordRegistry(e.target.checked)} />
+              <ToggleRow checked={recordRegistry} onChange={setRecordRegistry} className="mt-1.5 text-xs">
                 Записать в реестр (№ по каждой компании)
-              </label>
+              </ToggleRow>
             </div>
             <div>
               <div className={label}>Срок действия</div>
@@ -1048,7 +1046,7 @@ function CreateTab(p: CreateProps) {
 
         {/* Таблица расчёта — конфигурируемая (Excel-стиль) */}
         <div className={panel}>
-          <div className="text-sm font-semibold text-[#313131]">Таблица расчёта</div>
+          <div className="text-sm font-semibold text-[#1b2a4a]">Таблица расчёта</div>
           <KpCalcGrid
             calcTables={calcTables}
             selectedKey={selectedTableKey}
@@ -1076,7 +1074,7 @@ function CreateTab(p: CreateProps) {
       {/* Правая колонка: матрица итогов + действия */}
       <div className="space-y-4">
         <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3 sticky top-4">
-          <div className="text-sm font-semibold text-[#313131]">Итоги по организациям</div>
+          <div className="text-sm font-semibold text-[#1b2a4a]">Итоги по организациям</div>
           {perOrgTotals.length === 0 && <div className="text-sm text-gray-400">Выберите организации слева.</div>}
           {perOrgTotals.map((t) => (
             <div key={t.key} className="border border-gray-100 rounded-xl p-3">
@@ -1188,10 +1186,9 @@ function CreateTab(p: CreateProps) {
                   </div>
                 </div>
               )}
-              <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer">
-                <input type="checkbox" checked={mailPerOrg} onChange={(e) => setMailPerOrg(e.target.checked)} />
+              <ToggleRow checked={mailPerOrg} onChange={setMailPerOrg} className="text-xs">
                 От каждой организации отдельным письмом (из её ящика)
-              </label>
+              </ToggleRow>
               {!mailPerOrg && (
                 <div>
                   <div className={label}>Ящик отправки</div>
@@ -1201,10 +1198,9 @@ function CreateTab(p: CreateProps) {
                   </select>
                 </div>
               )}
-              <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer">
-                <input type="checkbox" checked={mailAsPdf} onChange={(e) => setMailAsPdf(e.target.checked)} />
+              <ToggleRow checked={mailAsPdf} onChange={setMailAsPdf} className="text-xs">
                 Вложение в PDF (нужен pdf-service; иначе DOCX)
-              </label>
+              </ToggleRow>
               <div>
                 <div className={label}>Доп. вложения (прайс, презентация…)</div>
                 <input type="file" multiple onChange={(e) => setMailFiles(Array.from(e.target.files || []))} className="text-xs" />
@@ -1236,7 +1232,7 @@ function CreateTab(p: CreateProps) {
         <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setPreview(null)}>
           <div className="bg-white rounded-2xl max-w-4xl w-full my-8 p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-[#313131]">Предпросмотр — {preview.length} КП</h3>
+              <h3 className="text-lg font-semibold text-[#1b2a4a]">Предпросмотр — {preview.length} КП</h3>
               <button onClick={() => setPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
             </div>
             <div className="text-xs text-gray-400">Черновой расчёт по каждой компании. Оформление (шапка, подписант, текст) — из её шаблона при генерации.</div>
@@ -1247,7 +1243,7 @@ function CreateTab(p: CreateProps) {
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs border-collapse">
                       <thead>
-                        <tr>{p.table.headers.map((h, i) => <th key={i} className="border border-gray-200 bg-[#eef2f6] px-2 py-1 font-semibold text-[#313131]">{h}</th>)}</tr>
+                        <tr>{p.table.headers.map((h, i) => <th key={i} className="border border-gray-200 bg-[#eef2f6] px-2 py-1 font-semibold text-[#1b2a4a]">{h}</th>)}</tr>
                       </thead>
                       <tbody>
                         {p.table.rows.map((r, ri) => (
@@ -1280,7 +1276,7 @@ function CreateTab(p: CreateProps) {
         <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setDocPreview(null)}>
           <div className="bg-white rounded-2xl max-w-3xl w-full my-8 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-[#313131]">Предпросмотр документа</h3>
+              <h3 className="text-lg font-semibold text-[#1b2a4a]">Предпросмотр документа</h3>
               <button onClick={() => setDocPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
             </div>
             {docPreview.length > 1 && (
@@ -1307,7 +1303,7 @@ function CreateTab(p: CreateProps) {
         <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setBatchOpen(false)}>
           <div className="bg-white rounded-2xl max-w-3xl w-full my-8 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-[#313131]">Пакет по клиентам</h3>
+              <h3 className="text-lg font-semibold text-[#1b2a4a]">Пакет по клиентам</h3>
               <button onClick={() => setBatchOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
             </div>
             <div className="text-xs text-gray-500">
@@ -1451,7 +1447,7 @@ function TemplatesTab({
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-3">
-          <div className="text-sm font-semibold text-[#313131]">{draft.id ? '✏️ Редактирование шаблона' : 'Новый шаблон'}</div>
+          <div className="text-sm font-semibold text-[#1b2a4a]">{draft.id ? '✏️ Редактирование шаблона' : 'Новый шаблон'}</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <div className={label}>Название</div>
@@ -1935,7 +1931,7 @@ function PricesTab({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-[#313131]">Цены по услугам</h3>
+          <h3 className="text-sm font-semibold text-[#1b2a4a]">Цены по услугам</h3>
           <p className="text-xs text-gray-500">Услуги/позиции — строки, компании — столбцы. Выберите вид цены и заполните ячейки.</p>
         </div>
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
@@ -2048,7 +2044,7 @@ function HistoryTab({ setStatus }: { setStatus: (s: string) => void }) {
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-sm font-semibold text-[#313131]">{fmtMoney(r.totalCost)} ₽</span>
+            <span className="text-sm font-semibold text-[#1b2a4a]">{fmtMoney(r.totalCost)} ₽</span>
             <a href={`/api/kp/history/${r.id}/download`} className="text-sm text-[#029cda] hover:text-[#0280b5]">Скачать</a>
             <button onClick={() => del(r.id)} className="text-red-500 hover:text-red-600 text-sm">Удалить</button>
           </div>

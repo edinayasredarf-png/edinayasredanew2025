@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Spinner } from '@/components/admin/ui/Spinner';
+import { ToggleRow } from '@/components/admin/ui/Toggle';
 import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
 const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
@@ -59,7 +60,7 @@ export default function KpSettings({
       {/* Компании */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-[#313131]">Компании (от кого КП)</h3>
+          <h3 className="text-sm font-semibold text-[#1b2a4a]">Компании (от кого КП)</h3>
           <button
             onClick={() => { setCreating(true); setEditKey(null); }}
             className="text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]"
@@ -170,7 +171,7 @@ function MailAttachmentsManager({ setStatus }: { setStatus: (s: string) => void 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-[#313131]">Библиотека вложений</h3>
+        <h3 className="text-sm font-semibold text-[#1b2a4a]">Библиотека вложений</h3>
         <button onClick={() => setOpen((v) => !v)} className="text-sm text-[#029cda]">{open ? 'Свернуть' : 'Показать'}</button>
       </div>
       {open && (
@@ -263,7 +264,7 @@ function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-[#313131]">Ящики для рассылки</h3>
+        <h3 className="text-sm font-semibold text-[#1b2a4a]">Ящики для рассылки</h3>
         <button onClick={() => setOpen((v) => !v)} className="text-sm text-[#029cda]">{open ? 'Свернуть' : 'Показать'}</button>
       </div>
       {open && (
@@ -446,10 +447,9 @@ function OrgEditor({
           <input value={d.email} onChange={(e) => set({ email: e.target.value })} className={input} />
         </div>
         <div className="flex items-end gap-4">
-          <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-            <input type="checkbox" checked={d.writeKpNumber} onChange={(e) => set({ writeKpNumber: e.target.checked })} />
+          <ToggleRow checked={d.writeKpNumber} onChange={(v) => set({ writeKpNumber: v })}>
             Писать номер КП/письма
-          </label>
+          </ToggleRow>
         </div>
       </div>
 
@@ -471,10 +471,9 @@ function OrgEditor({
         <textarea value={d.mailBody || ''} onChange={(e) => set({ mailBody: e.target.value })} className={`${input} h-24`} placeholder={'Здравствуйте!\n\nНаправляем коммерческое предложение во вложении…'} />
         <div className="text-[11px] text-gray-400 mt-1">Применяется при отправке «от каждой организации отдельно».</div>
       </div>
-      <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-        <input type="checkbox" checked={d.isActive} onChange={(e) => set({ isActive: e.target.checked })} />
+      <ToggleRow checked={d.isActive} onChange={(v) => set({ isActive: v })}>
         Активна (показывать в выборе)
-      </label>
+      </ToggleRow>
 
       {/* Цены вынесены в отдельную вкладку «Цены» */}
       <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-lg px-3 py-2">
@@ -530,7 +529,7 @@ function HeaderLayoutEditor({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">🧷 Шапка документа (общая для всех шаблонов)</h3>
+      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">🧷 Шапка документа (общая для всех шаблонов)</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="text-xs text-gray-500">
           По одной строке — один элемент. Можно использовать алиасы, напр. <code>{'№ {{kp_number}}'}</code>.
@@ -597,7 +596,7 @@ function AliasesManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">Алиасы (плейсхолдеры)</h3>
+      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">Алиасы (плейсхолдеры)</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input className={input} placeholder="ключ (латиница): my_note" value={key} onChange={(e) => setKey(e.target.value)} />
@@ -672,7 +671,7 @@ function TablesManager({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-[#313131]">Таблицы расчёта (шаблоны)</h3>
+        <h3 className="text-sm font-semibold text-[#1b2a4a]">Таблицы расчёта (шаблоны)</h3>
         <button onClick={() => { setCreating(true); setEditKey(null); }} className="text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Новая таблица</button>
       </div>
 
@@ -835,7 +834,7 @@ function TableEditor({
 
       {/* Строки по умолчанию (зашитые) */}
       <div className="border-t border-gray-100 pt-3">
-        <div className="text-sm font-semibold text-[#313131] mb-1">Строки по умолчанию (подставляются в КП сразу)</div>
+        <div className="text-sm font-semibold text-[#1b2a4a] mb-1">Строки по умолчанию (подставляются в КП сразу)</div>
         <div className="text-xs text-gray-400 mb-2">Зафиксируйте неизменные строки (названия услуг, единицы). Менеджеру останется вписать только цены/значения.</div>
         {defRows.length > 0 && (
           <div className="overflow-x-auto">
@@ -964,7 +963,7 @@ function ServicesManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">Услуги</h3>
+      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">Услуги</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="flex gap-2">
           <input className={input} placeholder="Новая услуга (например, ОКС)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
@@ -1004,10 +1003,9 @@ function ServicesManager({
                     {calcTables.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
                   </select>
                 </label>
-                <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
-                  <input type="checkbox" checked={s.isActive} onChange={(e) => toggle(s.name, e.target.checked)} />
+                <ToggleRow checked={s.isActive} onChange={(v) => toggle(s.name, v)} className="text-xs text-gray-500 whitespace-nowrap">
                   активна
-                </label>
+                </ToggleRow>
                 <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
               </div>
 
@@ -1095,7 +1093,7 @@ function PositionsManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">Должности клиента</h3>
+      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">Должности клиента</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="flex gap-2">
           <input className={input} placeholder="Новая должность (например, Мэр)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
@@ -1151,7 +1149,7 @@ function ExecutorsManager({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-[#313131] mb-2">Исполнители (менеджеры)</h3>
+      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">Исполнители (менеджеры)</h3>
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input className={input} placeholder="ФИО *" value={draft.fio || ''} onChange={(e) => setDraft({ ...draft, fio: e.target.value })} />
