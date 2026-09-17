@@ -544,16 +544,22 @@ export default function KpGenerator() {
     }
   };
 
-  const sendEmail = async (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean }): Promise<boolean> => {
+  const sendEmail = async (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean; extraFiles?: File[] }): Promise<boolean> => {
     const err = validate();
     if (err) { setStatus(err); return false; }
     if (!opts.to.trim()) { setStatus('Укажите e-mail клиента'); return false; }
     setBusy(true);
     setStatus('Отправка на почту…');
     try {
+      const extraAttachments = await Promise.all((opts.extraFiles || []).map((f) => new Promise<{ filename: string; content: string; contentType: string }>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve({ filename: f.name, content: String(r.result || ''), contentType: f.type || 'application/octet-stream' });
+        r.onerror = () => reject(new Error(`Не удалось прочитать ${f.name}`));
+        r.readAsDataURL(f);
+      })));
       const res = await fetch('/api/kp/send', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...buildPayload(opts.asPdf ? 'pdf' : 'docx'), clientEmail: opts.to, subject: opts.subject, message: opts.message, accountId: opts.accountId, asPdf: opts.asPdf, perOrg: opts.perOrg }),
+        body: JSON.stringify({ ...buildPayload(opts.asPdf ? 'pdf' : 'docx'), clientEmail: opts.to, subject: opts.subject, message: opts.message, accountId: opts.accountId, asPdf: opts.asPdf, perOrg: opts.perOrg, extraAttachments }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'Ошибка отправки');
@@ -776,7 +782,7 @@ function CreateTab(p: CreateProps) {
     computePreview: () => Array<{ key: string; name: string; table: PreviewTable | null; ais: number; renewal: number; grand: number }>;
     fetchDocPreview: () => Promise<Array<{ orgName: string; html: string }> | null>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void;
-    sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean }) => Promise<boolean>;
+    sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean; extraFiles?: File[] }) => Promise<boolean>;
     mailAccounts: Array<{ id: string; label: string; from_email: string }>;
     generateBatch: (clients: BatchClient[], format?: 'docx' | 'pdf' | 'both') => Promise<boolean>;
     busy: boolean;
@@ -796,6 +802,7 @@ function CreateTab(p: CreateProps) {
   const [mailAccountId, setMailAccountId] = React.useState('default');
   const [mailAsPdf, setMailAsPdf] = React.useState(false);
   const [mailPerOrg, setMailPerOrg] = React.useState(false);
+  const [mailFiles, setMailFiles] = React.useState<File[]>([]);
   const [batchOpen, setBatchOpen] = React.useState(false);
   const [batchClients, setBatchClients] = React.useState<BatchClient[]>([{ orgFull: '', fio: '' }]);
   const [batchPaste, setBatchPaste] = React.useState('');
@@ -1143,13 +1150,22 @@ function CreateTab(p: CreateProps) {
                 <input type="checkbox" checked={mailAsPdf} onChange={(e) => setMailAsPdf(e.target.checked)} />
                 Вложение в PDF (нужен pdf-service; иначе DOCX)
               </label>
+              <div>
+                <div className={label}>Доп. вложения (прайс, презентация…)</div>
+                <input type="file" multiple onChange={(e) => setMailFiles(Array.from(e.target.files || []))} className="text-xs" />
+                {mailFiles.length > 0 && (
+                  <div className="text-[11px] text-gray-500 mt-1">
+                    {mailFiles.map((f) => f.name).join(', ')} <button onClick={() => setMailFiles([])} className="text-red-500 ml-1">убрать</button>
+                  </div>
+                )}
+              </div>
               <div className="text-[11px] text-gray-400">
                 {mailPerOrg
                   ? `${selectedOrgs.length} писем клиенту — по одному от каждой организации из её ящика (задаётся в Настройках компании).`
                   : `Одно письмо, во вложении ${selectedOrgs.length} КП (по одному на организацию).`}
               </div>
               <button
-                onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf, perOrg: mailPerOrg })}
+                onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf, perOrg: mailPerOrg, extraFiles: mailFiles })}
                 disabled={busy || !mailTo.trim() || perOrgTotals.length === 0}
                 className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >
@@ -2002,10 +2018,16 @@ function ymd(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+const FOLLOWUP_DAYS = 3; // отправлено, но не открыто дольше — «требует внимания»
+function daysSince(iso: string): number {
+  return (Date.now() - new Date(iso).getTime()) / 86400000;
+}
+
 function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
   const [rows, setRows] = useState<SendRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<typeof SEND_PERIODS[number]['key']>('week');
+  const [onlyFollowup, setOnlyFollowup] = useState(false);
 
   const load = useCallback(async (p: typeof period) => {
     setLoading(true);
@@ -2034,22 +2056,28 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
 
   const opened = rows.filter((r) => r.open_count > 0).length;
   const sentOk = rows.filter((r) => r.status === 'ok').length;
+  const isFollowup = (r: SendRow) => r.status === 'ok' && r.open_count === 0 && r.delivery_status !== 'bounced' && daysSince(r.created_at) >= FOLLOWUP_DAYS;
+  const followupCount = rows.filter(isFollowup).length;
+  const shown = onlyFollowup ? rows.filter(isFollowup) : rows;
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
           {SEND_PERIODS.map((p) => (
-            <button key={p.key} onClick={() => setPeriod(p.key)} className={`px-3 py-1.5 rounded-lg text-sm ${period === p.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>
+            <button key={p.key} onClick={() => { setPeriod(p.key); setOnlyFollowup(false); }} className={`px-3 py-1.5 rounded-lg text-sm ${period === p.key && !onlyFollowup ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>
               {p.label}
             </button>
           ))}
+          <button onClick={() => setOnlyFollowup((v) => !v)} className={`px-3 py-1.5 rounded-lg text-sm ${onlyFollowup ? 'bg-[#fff7ed] text-[#b45309] font-medium' : 'text-gray-500'}`} title={`Отправлено, но не открыто дольше ${FOLLOWUP_DAYS} дней`}>
+            ⏰ Требуют внимания{followupCount ? ` (${followupCount})` : ''}
+          </button>
         </div>
         <div className="text-xs text-gray-500">Всего: {rows.length} · доставлено: {sentOk} · открыто: {opened}</div>
       </div>
 
-      {loading ? <LoadingBlock /> : rows.length === 0 ? (
-        <div className="text-sm text-gray-400">За период рассылок нет.</div>
+      {loading ? <LoadingBlock /> : shown.length === 0 ? (
+        <div className="text-sm text-gray-400">{onlyFollowup ? 'Нет писем, требующих внимания.' : 'За период рассылок нет.'}</div>
       ) : (
         <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
           <table className="w-full text-sm">
@@ -2064,8 +2092,10 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-b border-gray-50">
+              {shown.map((r) => {
+                const fu = isFollowup(r);
+                return (
+                <tr key={r.id} className={`border-b border-gray-50 ${fu ? 'bg-[#fff7ed]' : ''}`}>
                   <td className="px-3 py-2 text-[#313131] whitespace-nowrap">{r.email}</td>
                   <td className="px-3 py-2 text-gray-600">{r.subject}<div className="text-[11px] text-gray-400">{r.template_name}</div></td>
                   <td className="px-3 py-2 text-gray-500 whitespace-nowrap">{r.from_email || '—'}</td>
@@ -2077,11 +2107,13 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
                   <td className="px-3 py-2 whitespace-nowrap">
                     {r.open_count > 0
                       ? <span className="text-[#0b5c7d]" title={r.last_opened_at ? new Date(r.last_opened_at).toLocaleString('ru-RU') : ''}>👁 {r.open_count}×</span>
+                      : fu ? <span className="text-[#b45309]" title={`Не открыто ${Math.floor(daysSince(r.created_at))} дн.`}>⏰ не открыто</span>
                       : <span className="text-gray-300">—</span>}
                   </td>
                   <td className="px-3 py-2 text-gray-500 whitespace-nowrap">{new Date(r.created_at).toLocaleString('ru-RU')}</td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

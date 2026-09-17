@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
     accountId?: string;
     asPdf?: boolean;
     perOrg?: boolean; // отправлять от каждой организации из её ящика (отдельными письмами)
+    extraAttachments?: Array<{ filename?: string; content?: string; contentType?: string }>; // доп. файлы (base64)
   };
   try {
     body = await request.json();
@@ -111,6 +112,16 @@ export async function POST(request: NextRequest) {
     }
   } catch (e) {
     return NextResponse.json({ error: `Ошибка конвертации в PDF: ${(e as Error).message}` }, { status: 502 });
+  }
+
+  // Доп. вложения (прайс, презентация и т.п.) — приходят как base64.
+  const MAX_EXTRA = 15 * 1024 * 1024; // ~15 МБ на файл
+  for (const a of body.extraAttachments || []) {
+    const raw = (a.content || "").includes(",") ? (a.content || "").split(",").pop()! : (a.content || "");
+    if (!raw || !a.filename) continue;
+    const buf = Buffer.from(raw, "base64");
+    if (buf.length === 0 || buf.length > MAX_EXTRA) continue;
+    attachments.push({ filename: a.filename, content: buf, contentType: a.contentType || undefined });
   }
 
   const subject = (body.subject || "").trim() || "Коммерческое предложение";
