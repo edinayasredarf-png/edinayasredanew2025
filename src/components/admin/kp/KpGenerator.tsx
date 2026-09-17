@@ -296,7 +296,6 @@ export default function KpGenerator() {
         const r: RowData = {
           __svc: l.svc, __line: l.key,
           __pd: l.direct ? String(l.direct) : '', __pt: l.tender ? String(l.tender) : '', __p: l.direct ? String(l.direct) : '',
-          __pdMax: l.directMax ? String(l.directMax) : '', __ptMax: l.tenderMax ? String(l.tenderMax) : '', __pMax: l.directMax ? String(l.directMax) : '',
         };
         if (nameCol) r[nameCol.key] = l.name;
         if (unitCol) r[unitCol.key] = l.unit;
@@ -344,9 +343,6 @@ export default function KpGenerator() {
         out.__pd = lp.direct ? String(lp.direct) : '';
         out.__pt = lp.tender ? String(lp.tender) : '';
         out.__p = lp.direct ? String(lp.direct) : '';
-        out.__pdMax = lp.directMax ? String(lp.directMax) : '';
-        out.__ptMax = lp.tenderMax ? String(lp.tenderMax) : '';
-        out.__pMax = lp.directMax ? String(lp.directMax) : '';
         // Не-формульные ячейки стоимости заполняем напрямую (формулы считаются сами).
         if ('unit_price' in out) out.unit_price = lp.direct ? String(lp.direct) : '';
         if ('cost_direct' in out) out.cost_direct = lp.direct ? String(lp.direct) : '';
@@ -1753,34 +1749,26 @@ function PricesTab({
     return rows;
   }, [atomicServices, lineItemsOf, tab]);
 
-  const maxField: 'directMax' | 'tenderMax' = lineDir === 'tender' ? 'tenderMax' : 'directMax';
-
   const getVal = (orgKey: string, row: PriceRow): number => {
     const t = map[orgKey]?.[row.svc];
     if (!t) return 0;
     if (row.kind === 'line') return t.linePrices?.[row.lineKey]?.[lineDir] ?? 0;
     return (t[row.scalarField] as number) ?? 0;
   };
-  const getMax = (orgKey: string, row: PriceRow): number => {
-    if (row.kind !== 'line') return 0;
-    return map[orgKey]?.[row.svc]?.linePrices?.[row.lineKey]?.[maxField] ?? 0;
-  };
-
-  const setLine = (orgKey: string, row: Extract<PriceRow, { kind: 'line' }>, key: 'direct' | 'tender' | 'directMax' | 'tenderMax', val: number) =>
-    setMap((prev) => {
-      const t = prev[orgKey][row.svc];
-      const lp = { ...(t.linePrices || {}) };
-      const cur = lp[row.lineKey] || { direct: 0, tender: 0 };
-      lp[row.lineKey] = { ...cur, [key]: val };
-      return { ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...t, linePrices: lp } } };
-    });
 
   const setVal = (orgKey: string, row: PriceRow, val: number) => {
-    if (row.kind === 'line') { setLine(orgKey, row, lineDir, val); return; }
+    if (row.kind === 'line') {
+      setMap((prev) => {
+        const t = prev[orgKey][row.svc];
+        const lp = { ...(t.linePrices || {}) };
+        const cur = lp[row.lineKey] || { direct: 0, tender: 0 };
+        // Фиксированная цена: только direct/tender, без верхней границы.
+        lp[row.lineKey] = { ...cur, [lineDir]: val, directMax: 0, tenderMax: 0 };
+        return { ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...t, linePrices: lp } } };
+      });
+      return;
+    }
     setMap((prev) => ({ ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...prev[orgKey][row.svc], [row.scalarField]: val } } }));
-  };
-  const setMax = (orgKey: string, row: PriceRow, val: number) => {
-    if (row.kind === 'line') setLine(orgKey, row, maxField, val);
   };
 
   const save = async () => {
@@ -1854,21 +1842,13 @@ function PricesTab({
                 <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{row.label}</td>
                 {orgs.map((o) => (
                   <td key={o.key} className="px-2 py-1">
-                    {row.kind === 'line' && tab !== 'ais' ? (
-                      <div className="flex items-center gap-1">
-                        <input className={numCell} inputMode="decimal" value={getVal(o.key, row) || ''} onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)} placeholder="от" title="Цена за ед. (от)" />
-                        <span className="text-gray-300">–</span>
-                        <input className={numCell} inputMode="decimal" value={getMax(o.key, row) || ''} onChange={(e) => setMax(o.key, row, Number(e.target.value) || 0)} placeholder="до" title="Верх диапазона (необязательно)" />
-                      </div>
-                    ) : (
-                      <input
-                        className={numCell}
-                        inputMode="decimal"
-                        value={getVal(o.key, row) || ''}
-                        onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
-                        placeholder="0"
-                      />
-                    )}
+                    <input
+                      className={numCell}
+                      inputMode="decimal"
+                      value={getVal(o.key, row) || ''}
+                      onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
+                      placeholder="0"
+                    />
                   </td>
                 ))}
               </tr>
@@ -1891,7 +1871,7 @@ function PricesTab({
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить цены'}
         </button>
-        <span className="text-xs text-gray-400">Цена по позиции — за единицу. «до» задаёт диапазон (стоимость и итог станут «от–до»); пусто = одно число.</span>
+        <span className="text-xs text-gray-400">Цена по позиции — фиксированная (за единицу), по каждой компании.</span>
       </div>
     </div>
   );
