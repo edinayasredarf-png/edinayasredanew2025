@@ -9,6 +9,7 @@ const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { s
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
 import { Select } from '@/components/admin/ui/Select';
+import { DatePicker } from '@/components/admin/ui/DatePicker';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
@@ -1006,7 +1007,7 @@ function CreateTab(p: CreateProps) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <div className={label}>Дата КП (пусто = сегодня)</div>
-              <input type="date" value={kpDate} onChange={(e) => setKpDate(e.target.value)} className={input} />
+              <DatePicker value={kpDate} onChange={setKpDate} placeholder="Сегодня" />
             </div>
             <div>
               <div className={label}>Номер КП (пусто = авто)</div>
@@ -1025,7 +1026,7 @@ function CreateTab(p: CreateProps) {
             </div>
             <div>
               <div className={label}>Дата запроса заказчика</div>
-              <input type="date" value={requestDate} onChange={(e) => setRequestDate(e.target.value)} className={input} />
+              <DatePicker value={requestDate} onChange={setRequestDate} placeholder="Дата запроса" />
             </div>
             <div>
               <div className={label}>Исполнитель (менеджер) *</div>
