@@ -76,9 +76,17 @@ function fmtNum(n: number): string {
 export interface ComputedTable {
   data: KpTableData;
   serviceTotal: number;
+  serviceTotalMax: number; // верх диапазона стоимости услуги (= serviceTotal, если без «до»)
   costColIndex: number; // индекс колонки стоимости (для строки «+АИС»)
-  colSums: number[]; // суммы по колонкам (0, если не суммируется)
+  colSums: number[]; // суммы по колонкам, нижняя граница
+  colSumsMax: number[]; // суммы по колонкам, верхняя граница
   moneyCols: number[]; // индексы денежных суммируемых колонок
+}
+
+/** Формат диапазона «мин – макс» (или одно число, если max ≤ min). */
+export function fmtRange(min: number, max: number, money: boolean): string {
+  const f = money ? fmtMoney : fmtNum;
+  return max > min + 0.005 ? `${f(min)} – ${f(max)}` : f(min);
 }
 
 /** Вычисляет таблицу: подставляет формулы построчно, считает суммы и стоимость. */
@@ -91,28 +99,42 @@ export function computeTable(
   const align: ColAlign[] = columns.map((c) => c.align || (c.kind === "text" ? "left" : "center"));
   const weights = columns.map((c) => KIND_WEIGHT[c.kind] ?? 1.5);
   const colSums = columns.map(() => 0);
+  const colSumsMax = columns.map(() => 0);
   const costColIndex = columns.findIndex((c) => c.isCost);
 
   const body: string[][] = rows.map((row, ri) => {
-    // scope: числовые/константные/текстовые колонки + цены
+    // scope: числовые/константные/текстовые колонки + цены. Две границы — min и max.
     const scope: Record<string, number> = { ...priceVars, row_index: ri + 1 };
     for (const c of columns) {
       if (c.kind === "number") scope[c.key] = toNum(row[c.key]);
       else if (c.kind === "const") scope[c.key] = toNum(c.constValue);
       else if (c.kind === "text") scope[c.key] = toNum(row[c.key]); // «5 Га» → 5 для формул площади
     }
-    // Пер-строчная цена из раздела «Цены» (по выбранной компании), если задана.
-    if (row.__pd !== undefined && row.__pd !== "") scope.price_direct = toNum(row.__pd);
-    if (row.__pt !== undefined && row.__pt !== "") scope.price_tender = toNum(row.__pt);
-    if (row.__p !== undefined && row.__p !== "") scope.price = toNum(row.__p);
+    const scopeMax: Record<string, number> = { ...scope };
+    // Пер-строчная цена из раздела «Цены» (по компании), с верхней границей «до».
+    if (row.__pd !== undefined && row.__pd !== "") {
+      const pd = toNum(row.__pd);
+      scope.price_direct = pd;
+      scopeMax.price_direct = toNum(row.__pdMax) || pd;
+    }
+    if (row.__pt !== undefined && row.__pt !== "") {
+      const pt = toNum(row.__pt);
+      scope.price_tender = pt;
+      scopeMax.price_tender = toNum(row.__ptMax) || pt;
+    }
+    if (row.__p !== undefined && row.__p !== "") {
+      const p = toNum(row.__p);
+      scope.price = p;
+      scopeMax.price = toNum(row.__pMax) || p;
+    }
     // формулы слева направо (следующая может ссылаться на предыдущую)
-    const numericByCol: number[] = [];
     const cells = columns.map((c, ci) => {
       let text = "";
       let num = 0;
+      let numMax = 0;
       switch (c.kind) {
         case "index":
-          num = ri + 1;
+          num = numMax = ri + 1;
           text = String(ri + 1);
           break;
         case "text":
@@ -120,47 +142,50 @@ export function computeTable(
           break;
         case "const":
           text = c.constValue || "";
-          num = toNum(c.constValue);
+          num = numMax = toNum(c.constValue);
           break;
         case "number":
-          num = toNum(row[c.key]);
+          num = numMax = toNum(row[c.key]);
           text = row[c.key] ? (c.money ? fmtMoney(num) : fmtNum(num)) : "";
           break;
         case "formula": {
-          // Ручной override: если строка помечена «вручную» и ячейка заполнена — берём её.
           if (row.__manual === "1" && row[c.key] !== undefined && row[c.key] !== "") {
-            num = toNum(row[c.key]);
+            num = numMax = toNum(row[c.key]);
           } else {
             num = evaluateFormulaSafe(c.formula || "0", scope);
+            numMax = evaluateFormulaSafe(c.formula || "0", scopeMax);
           }
-          scope[c.key] = num; // доступно последующим формулам
-          text = c.money || c.isCost ? fmtMoney(num) : fmtNum(num);
+          scope[c.key] = num;
+          scopeMax[c.key] = numMax;
+          text = fmtRange(num, numMax, Boolean(c.money || c.isCost));
           break;
         }
       }
-      numericByCol[ci] = num;
-      if (c.sum || c.isCost) colSums[ci] += num;
+      if (c.sum || c.isCost) { colSums[ci] += num; colSumsMax[ci] += numMax; }
       return text;
     });
     return cells;
   });
 
   const serviceTotal = costColIndex >= 0 ? colSums[costColIndex] : 0;
+  const serviceTotalMax = costColIndex >= 0 ? colSumsMax[costColIndex] : 0;
   // Денежные суммируемые колонки (для строки «ВСЕГО с АИС» по обеим ценам).
   const moneyCols = columns
     .map((c, ci) => (c.isCost || (c.sum && c.money) ? ci : -1))
     .filter((i) => i >= 0);
 
-  // строка ИТОГО: «ВСЕГО» в первой колонке, суммы — под суммируемыми
+  // строка ИТОГО: «ВСЕГО» в первой колонке, суммы (диапазоном) — под суммируемыми
   const footerRow: string[] = columns.map((c, ci) => {
     if (ci === 0) return "ВСЕГО";
-    if (c.sum || c.isCost) return c.money || c.isCost ? fmtMoney(colSums[ci]) : fmtNum(colSums[ci]);
+    if (c.sum || c.isCost) return fmtRange(colSums[ci], colSumsMax[ci], Boolean(c.money || c.isCost));
     return "";
   });
 
   return {
     data: { headers, align, weights, rows: body, footers: [footerRow] },
     serviceTotal,
+    serviceTotalMax,
+    colSumsMax,
     costColIndex,
     colSums,
     moneyCols,

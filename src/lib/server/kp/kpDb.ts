@@ -55,8 +55,8 @@ export interface KpTier {
   aisPrice: number;
   renewalPerYear: number;
   minHectares: number;
-  /** Цены строк-услуг по ключу строки: { lineKey: { direct, tender } }. */
-  linePrices: Record<string, { direct: number; tender: number }>;
+  /** Цены строк-услуг по ключу строки: { lineKey: { direct, tender, directMax?, tenderMax? } }. */
+  linePrices: Record<string, { direct: number; tender: number; directMax?: number; tenderMax?: number }>;
 }
 
 /** Строка-услуга (позиция) в таблице расчёта конкретной услуги. */
@@ -911,13 +911,18 @@ export async function dbDeleteOrganization(key: string): Promise<void> {
 /* ─────────────── Ценовые тиры ─────────────── */
 
 function mapTier(r: Record<string, unknown>): KpTier {
-  let linePrices: Record<string, { direct: number; tender: number }> = {};
+  let linePrices: Record<string, { direct: number; tender: number; directMax?: number; tenderMax?: number }> = {};
   try {
     const parsed = JSON.parse(String(r.line_prices ?? "{}"));
     if (parsed && typeof parsed === "object") {
       for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
-        const o = (v ?? {}) as { direct?: unknown; tender?: unknown };
-        linePrices[k] = { direct: Number(o.direct) || 0, tender: Number(o.tender) || 0 };
+        const o = (v ?? {}) as { direct?: unknown; tender?: unknown; directMax?: unknown; tenderMax?: unknown };
+        linePrices[k] = {
+          direct: Number(o.direct) || 0,
+          tender: Number(o.tender) || 0,
+          directMax: Number(o.directMax) || 0,
+          tenderMax: Number(o.tenderMax) || 0,
+        };
       }
     }
   } catch {

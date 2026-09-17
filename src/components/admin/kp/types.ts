@@ -28,8 +28,8 @@ export interface Tier {
   aisPrice: number;
   renewalPerYear: number;
   minHectares: number;
-  /** Цены строк-услуг: { lineKey: { direct, tender } }. */
-  linePrices?: Record<string, { direct: number; tender: number }>;
+  /** Цены строк-услуг: { lineKey: { direct, tender, directMax?, tenderMax? } }. Max — верх диапазона. */
+  linePrices?: Record<string, { direct: number; tender: number; directMax?: number; tenderMax?: number }>;
 }
 
 /** Строка-услуга (позиция) услуги для авто-наполнения таблицы. */

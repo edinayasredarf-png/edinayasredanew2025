@@ -25,7 +25,12 @@ export interface PreviewScope {
   min_ha: number;
 }
 
-/** Вычисляет ячейку формулы/индекса для превью в гриде. */
+function fmtRange(min: number, max: number, money: boolean): string {
+  const f = money ? fmtMoney : fmtNum;
+  return max > min + 0.005 ? `${f(min)} – ${f(max)}` : f(min);
+}
+
+/** Вычисляет ячейку формулы/индекса для превью в гриде (с диапазоном «от–до»). */
 function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: CalcColumn[], scope: PreviewScope): string {
   const s: Record<string, number> = { ...scope, row_index: rowIndex + 1 };
   for (const c of cols) {
@@ -33,21 +38,21 @@ function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: Calc
     else if (c.kind === 'const') s[c.key] = num(c.constValue);
     else if (c.kind === 'text') s[c.key] = num(row[c.key]); // «5 Га» → 5
   }
-  // Пер-строчная цена из раздела «Цены» (по первой выбранной компании).
-  if (row.__pd) s.price_direct = num(row.__pd);
-  if (row.__pt) s.price_tender = num(row.__pt);
-  if (row.__p) s.price = num(row.__p);
-  // формулы слева направо
-  let val = 0;
+  const sMax: Record<string, number> = { ...s };
+  // Пер-строчная цена (по первой выбранной компании), с верхней границей «до».
+  if (row.__pd) { s.price_direct = num(row.__pd); sMax.price_direct = num(row.__pdMax) || num(row.__pd); }
+  if (row.__pt) { s.price_tender = num(row.__pt); sMax.price_tender = num(row.__ptMax) || num(row.__pt); }
+  if (row.__p) { s.price = num(row.__p); sMax.price = num(row.__pMax) || num(row.__p); }
+  let val = 0; let valMax = 0;
   for (const c of cols) {
     if (c.kind === 'formula') {
-      s[c.key] = (row.__manual === '1' && row[c.key] !== undefined && row[c.key] !== '')
-        ? num(row[c.key])
-        : evalFormulaSafe(c.formula || '0', s);
-      if (c.key === col.key) val = s[c.key];
+      const manual = row.__manual === '1' && row[c.key] !== undefined && row[c.key] !== '';
+      s[c.key] = manual ? num(row[c.key]) : evalFormulaSafe(c.formula || '0', s);
+      sMax[c.key] = manual ? s[c.key] : evalFormulaSafe(c.formula || '0', sMax);
+      if (c.key === col.key) { val = s[c.key]; valMax = sMax[c.key]; }
     }
   }
-  return col.money || col.isCost ? fmtMoney(val) : fmtNum(val);
+  return fmtRange(val, valMax, Boolean(col.money || col.isCost));
 }
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-zа-я0-9]+/gi, ' ').trim();

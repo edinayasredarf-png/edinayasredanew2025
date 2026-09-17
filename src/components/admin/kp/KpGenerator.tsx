@@ -55,12 +55,18 @@ interface BatchClient { orgFull: string; fio?: string; position?: string; areaTo
 
 interface PreviewTable { headers: string[]; align: string[]; rows: string[][]; footers: string[][]; serviceTotal: number; }
 
-/** Клиентский расчёт таблицы для предпросмотра (зеркало серверного computeTable). */
+function fmtRangeC(min: number, max: number, money: boolean): string {
+  const f = money ? fmtMoney : (n: number) => String(n);
+  return max > min + 0.005 ? `${f(min)} – ${f(max)}` : f(min);
+}
+
+/** Клиентский расчёт таблицы для предпросмотра (зеркало серверного computeTable, с диапазоном). */
 function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Record<string, number>): PreviewTable {
   const headers = columns.map((c) => c.label);
   const align = columns.map((c) => c.align || (c.kind === 'text' ? 'left' : 'center'));
   const costIdx = columns.findIndex((c) => c.isCost);
   const sums = columns.map(() => 0);
+  const sumsMax = columns.map(() => 0);
   const body = rows.map((row, ri) => {
     const s: Record<string, number> = { ...base, row_index: ri + 1 };
     for (const c of columns) {
@@ -68,24 +74,28 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
       else if (c.kind === 'const') s[c.key] = toNum(c.constValue);
       else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
     }
-    if (row.__pd) s.price_direct = toNum(row.__pd);
-    if (row.__pt) s.price_tender = toNum(row.__pt);
-    if (row.__p) s.price = toNum(row.__p);
+    const sMax: Record<string, number> = { ...s };
+    if (row.__pd) { s.price_direct = toNum(row.__pd); sMax.price_direct = toNum(row.__pdMax) || toNum(row.__pd); }
+    if (row.__pt) { s.price_tender = toNum(row.__pt); sMax.price_tender = toNum(row.__ptMax) || toNum(row.__pt); }
+    if (row.__p) { s.price = toNum(row.__p); sMax.price = toNum(row.__pMax) || toNum(row.__p); }
     return columns.map((c, ci) => {
-      let n = 0; let text = '';
-      if (c.kind === 'index') { n = ri + 1; text = String(ri + 1); }
+      let n = 0; let nMax = 0; let text = '';
+      if (c.kind === 'index') { n = nMax = ri + 1; text = String(ri + 1); }
       else if (c.kind === 'text') { text = (row[c.key] || '').toString(); }
-      else if (c.kind === 'const') { text = c.constValue || ''; n = toNum(c.constValue); }
-      else if (c.kind === 'number') { n = toNum(row[c.key]); text = row[c.key] ? (c.money ? fmtMoney(n) : String(n)) : ''; }
+      else if (c.kind === 'const') { text = c.constValue || ''; n = nMax = toNum(c.constValue); }
+      else if (c.kind === 'number') { n = nMax = toNum(row[c.key]); text = row[c.key] ? (c.money ? fmtMoney(n) : String(n)) : ''; }
       else if (c.kind === 'formula') {
-        n = (row.__manual === '1' && row[c.key]) ? toNum(row[c.key]) : evalFormulaSafe(c.formula || '0', s);
-        s[c.key] = n; text = (c.money || c.isCost) ? fmtMoney(n) : String(n);
+        const manual = row.__manual === '1' && row[c.key];
+        n = manual ? toNum(row[c.key]) : evalFormulaSafe(c.formula || '0', s);
+        nMax = manual ? n : evalFormulaSafe(c.formula || '0', sMax);
+        s[c.key] = n; sMax[c.key] = nMax;
+        text = fmtRangeC(n, nMax, Boolean(c.money || c.isCost));
       }
-      if (c.sum || c.isCost) sums[ci] += n;
+      if (c.sum || c.isCost) { sums[ci] += n; sumsMax[ci] += nMax; }
       return text;
     });
   });
-  const footer = columns.map((c, ci) => ci === 0 ? 'ВСЕГО' : ((c.sum || c.isCost) ? ((c.money || c.isCost) ? fmtMoney(sums[ci]) : String(sums[ci])) : ''));
+  const footer = columns.map((c, ci) => ci === 0 ? 'ВСЕГО' : ((c.sum || c.isCost) ? fmtRangeC(sums[ci], sumsMax[ci], Boolean(c.money || c.isCost)) : ''));
   return { headers, align, rows: body, footers: [footer], serviceTotal: costIdx >= 0 ? sums[costIdx] : 0 };
 }
 
@@ -238,7 +248,11 @@ export default function KpGenerator() {
       return lines.map((l) => {
         // __pd/__pt — цена за единицу из «Цен» (по компании); формулы стоимости
         // считают цена × площадь. Для не-формульных таблиц заполняем и cost напрямую.
-        const r: RowData = { __svc: l.svc, __line: l.key, __pd: l.direct ? String(l.direct) : '', __pt: l.tender ? String(l.tender) : '', __p: l.direct ? String(l.direct) : '' };
+        const r: RowData = {
+          __svc: l.svc, __line: l.key,
+          __pd: l.direct ? String(l.direct) : '', __pt: l.tender ? String(l.tender) : '', __p: l.direct ? String(l.direct) : '',
+          __pdMax: l.directMax ? String(l.directMax) : '', __ptMax: l.tenderMax ? String(l.tenderMax) : '', __pMax: l.directMax ? String(l.directMax) : '',
+        };
         if (nameCol) r[nameCol.key] = l.name;
         if (unitCol) r[unitCol.key] = l.unit;
         const cd = colByKey('cost_direct');
@@ -286,6 +300,9 @@ export default function KpGenerator() {
         out.__pd = lp.direct ? String(lp.direct) : '';
         out.__pt = lp.tender ? String(lp.tender) : '';
         out.__p = lp.direct ? String(lp.direct) : '';
+        out.__pdMax = lp.directMax ? String(lp.directMax) : '';
+        out.__ptMax = lp.tenderMax ? String(lp.tenderMax) : '';
+        out.__pMax = lp.directMax ? String(lp.directMax) : '';
         // Не-формульные ячейки стоимости заполняем напрямую (формулы считаются сами).
         if ('unit_price' in out) out.unit_price = lp.direct ? String(lp.direct) : '';
         if ('cost_direct' in out) out.cost_direct = lp.direct ? String(lp.direct) : '';
@@ -1654,27 +1671,35 @@ function PricesTab({
     return rows;
   }, [atomicServices, lineItemsOf, tab]);
 
+  const maxField: 'directMax' | 'tenderMax' = lineDir === 'tender' ? 'tenderMax' : 'directMax';
+
   const getVal = (orgKey: string, row: PriceRow): number => {
     const t = map[orgKey]?.[row.svc];
     if (!t) return 0;
     if (row.kind === 'line') return t.linePrices?.[row.lineKey]?.[lineDir] ?? 0;
     return (t[row.scalarField] as number) ?? 0;
   };
+  const getMax = (orgKey: string, row: PriceRow): number => {
+    if (row.kind !== 'line') return 0;
+    return map[orgKey]?.[row.svc]?.linePrices?.[row.lineKey]?.[maxField] ?? 0;
+  };
 
-  const setVal = (orgKey: string, row: PriceRow, val: number) =>
+  const setLine = (orgKey: string, row: Extract<PriceRow, { kind: 'line' }>, key: 'direct' | 'tender' | 'directMax' | 'tenderMax', val: number) =>
     setMap((prev) => {
       const t = prev[orgKey][row.svc];
-      let nt: Tier;
-      if (row.kind === 'line') {
-        const lp = { ...(t.linePrices || {}) };
-        const cur = lp[row.lineKey] || { direct: 0, tender: 0 };
-        lp[row.lineKey] = { ...cur, [lineDir]: val };
-        nt = { ...t, linePrices: lp };
-      } else {
-        nt = { ...t, [row.scalarField]: val };
-      }
-      return { ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: nt } };
+      const lp = { ...(t.linePrices || {}) };
+      const cur = lp[row.lineKey] || { direct: 0, tender: 0 };
+      lp[row.lineKey] = { ...cur, [key]: val };
+      return { ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...t, linePrices: lp } } };
     });
+
+  const setVal = (orgKey: string, row: PriceRow, val: number) => {
+    if (row.kind === 'line') { setLine(orgKey, row, lineDir, val); return; }
+    setMap((prev) => ({ ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...prev[orgKey][row.svc], [row.scalarField]: val } } }));
+  };
+  const setMax = (orgKey: string, row: PriceRow, val: number) => {
+    if (row.kind === 'line') setLine(orgKey, row, maxField, val);
+  };
 
   const save = async () => {
     setBusy(true);
@@ -1747,13 +1772,21 @@ function PricesTab({
                 <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{row.label}</td>
                 {orgs.map((o) => (
                   <td key={o.key} className="px-2 py-1">
-                    <input
-                      className={numCell}
-                      inputMode="decimal"
-                      value={getVal(o.key, row) || ''}
-                      onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
-                      placeholder="0"
-                    />
+                    {row.kind === 'line' && tab !== 'ais' ? (
+                      <div className="flex items-center gap-1">
+                        <input className={numCell} inputMode="decimal" value={getVal(o.key, row) || ''} onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)} placeholder="от" title="Цена за ед. (от)" />
+                        <span className="text-gray-300">–</span>
+                        <input className={numCell} inputMode="decimal" value={getMax(o.key, row) || ''} onChange={(e) => setMax(o.key, row, Number(e.target.value) || 0)} placeholder="до" title="Верх диапазона (необязательно)" />
+                      </div>
+                    ) : (
+                      <input
+                        className={numCell}
+                        inputMode="decimal"
+                        value={getVal(o.key, row) || ''}
+                        onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
+                        placeholder="0"
+                      />
+                    )}
                   </td>
                 ))}
               </tr>
@@ -1776,7 +1809,7 @@ function PricesTab({
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить цены'}
         </button>
-        <span className="text-xs text-gray-400">Для услуг со строками цена задаётся по каждой позиции (прямой/торги). Значения сохраняются вместе.</span>
+        <span className="text-xs text-gray-400">Цена по позиции — за единицу. «до» задаёт диапазон (стоимость и итог станут «от–до»); пусто = одно число.</span>
       </div>
     </div>
   );

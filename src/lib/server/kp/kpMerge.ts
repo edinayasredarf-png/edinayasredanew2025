@@ -9,7 +9,7 @@ import {
   type PriceTier,
 } from "./kpCalc";
 import { rublesInWords, countInWords } from "./kpNumberWords";
-import { computeTable, type CalcColumn, type KpTableData } from "./kpTable";
+import { computeTable, fmtRange, type CalcColumn, type KpTableData } from "./kpTable";
 import type { KpExecutor, KpOrganization } from "./kpDb";
 
 /** Полезная нагрузка формы «Создать КП» (одинаковая для всех организаций). */
@@ -335,7 +335,7 @@ export function buildKpContext(input: {
         ci === 0
           ? 'ВСЕГО с АИС «Единая среда»'
           : ct.moneyCols.includes(ci)
-            ? formatMoney(ct.colSums[ci] + aisTotal)
+            ? fmtRange(ct.colSums[ci] + aisTotal, ct.colSumsMax[ci] + aisTotal, true)
             : ""
       )
     );

@@ -72,11 +72,16 @@ export async function POST(request: NextRequest) {
 
   for (const t of body.tiers || []) {
     if (!t?.serviceType) continue;
-    const linePrices: Record<string, { direct: number; tender: number }> = {};
+    const linePrices: Record<string, { direct: number; tender: number; directMax?: number; tenderMax?: number }> = {};
     if (t.linePrices && typeof t.linePrices === "object") {
       for (const [k, v] of Object.entries(t.linePrices)) {
-        const o = (v ?? {}) as { direct?: unknown; tender?: unknown };
-        linePrices[k] = { direct: Number(o.direct) || 0, tender: Number(o.tender) || 0 };
+        const o = (v ?? {}) as { direct?: unknown; tender?: unknown; directMax?: unknown; tenderMax?: unknown };
+        linePrices[k] = {
+          direct: Number(o.direct) || 0,
+          tender: Number(o.tender) || 0,
+          directMax: Number(o.directMax) || 0,
+          tenderMax: Number(o.tenderMax) || 0,
+        };
       }
     }
     await dbUpsertTier({

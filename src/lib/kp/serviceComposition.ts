@@ -49,7 +49,7 @@ export interface ServiceLineItem {
   unit: string;
 }
 
-/** Позиция с ценой конкретной компании. */
+/** Позиция с ценой конкретной компании (max — верх диапазона «до», 0 = нет диапазона). */
 export interface PricedLine {
   svc: string; // атомарная услуга-владелец позиции
   key: string; // ключ позиции внутри услуги
@@ -57,6 +57,8 @@ export interface PricedLine {
   unit: string;
   direct: number;
   tender: number;
+  directMax: number;
+  tenderMax: number;
 }
 
 /**
@@ -67,7 +69,7 @@ export interface PricedLine {
 export function composeLines(
   serviceType: string,
   lineItemsOf: (svc: string) => ServiceLineItem[],
-  priceOf: (svc: string, key: string) => { direct: number; tender: number } | undefined,
+  priceOf: (svc: string, key: string) => { direct: number; tender: number; directMax?: number; tenderMax?: number } | undefined,
 ): PricedLine[] {
   const out: PricedLine[] = [];
   for (const svc of serviceComponents(serviceType)) {
@@ -80,6 +82,8 @@ export function composeLines(
         unit: it.unit,
         direct: p?.direct ?? 0,
         tender: p?.tender ?? 0,
+        directMax: p?.directMax ?? 0,
+        tenderMax: p?.tenderMax ?? 0,
       });
     }
   }
