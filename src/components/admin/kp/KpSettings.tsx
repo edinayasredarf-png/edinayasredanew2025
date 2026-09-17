@@ -114,6 +114,124 @@ export default function KpSettings({
 
       {/* Исполнители */}
       <ExecutorsManager executors={executors} onChanged={onChanged} setStatus={setStatus} />
+      {/* Ящики для рассылки */}
+      <MailAccountsManager setStatus={setStatus} />
+    </div>
+  );
+}
+
+/* ─────────── Почтовые ящики для рассылки (общие с модулем «Письма») ─────────── */
+interface MailAcc {
+  id: string; label: string; from_name: string; from_email: string;
+  smtp_host: string; smtp_port: number; smtp_secure: boolean; smtp_user: string;
+  enabled: boolean; has_password: boolean;
+}
+function emptyMailAcc(): Partial<MailAcc> & { password?: string } {
+  return { label: '', from_name: '', from_email: '', smtp_host: '', smtp_port: 465, smtp_secure: true, smtp_user: '', enabled: true, password: '' };
+}
+function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) {
+  const [accounts, setAccounts] = useState<MailAcc[]>([]);
+  const [secretOk, setSecretOk] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<(Partial<MailAcc> & { password?: string }) | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/letters/accounts', { credentials: 'include' });
+      const d = await res.json();
+      if (res.ok) { setAccounts(d.accounts || []); setSecretOk(Boolean(d.secretConfigured)); }
+    } catch { /* ignore */ }
+  }, []);
+  React.useEffect(() => { load(); }, [load]);
+
+  const test = async () => {
+    if (!draft) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/letters/accounts', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: true, ...draft }),
+      });
+      const d = await res.json();
+      setStatus(d.verified ? '✅ Подключение успешно' : `⚠️ ${d.error || 'Не удалось подключиться'}`);
+    } catch (e) { setStatus((e as Error).message); } finally { setBusy(false); }
+  };
+  const save = async () => {
+    if (!draft) return;
+    if (!draft.from_email?.trim() || !draft.smtp_host?.trim() || !draft.smtp_user?.trim()) return setStatus('Заполните адрес, хост и логин');
+    setBusy(true);
+    try {
+      const res = await fetch('/api/letters/accounts', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draft),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка');
+      setStatus('Ящик сохранён');
+      setDraft(null);
+      load();
+    } catch (e) { setStatus((e as Error).message); } finally { setBusy(false); }
+  };
+  const del = async (id: string) => {
+    if (!confirm('Удалить ящик?')) return;
+    await fetch(`/api/letters/accounts?id=${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
+    setStatus('Ящик удалён');
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold text-[#313131]">📮 Ящики для рассылки</h3>
+        <button onClick={() => setOpen((v) => !v)} className="text-sm text-[#029cda]">{open ? 'Свернуть' : 'Показать'}</button>
+      </div>
+      {open && (
+        <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+          {!secretOk && (
+            <div className="text-xs bg-[#FFF7ED] border border-[#fed7aa] text-[#9a3412] rounded-lg px-3 py-2">
+              Не задан ключ шифрования (MAIL_SECRET_KEY или AUTH_SESSION_SECRET) — сохранить пароль ящика не получится. Проверка соединения работает.
+            </div>
+          )}
+          <div className="space-y-1">
+            {accounts.map((a) => (
+              <div key={a.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2">
+                <div className="text-sm text-[#313131]">
+                  {a.label || a.from_email} <span className="text-xs text-gray-400">{a.from_email} · {a.smtp_host}:{a.smtp_port}{a.has_password ? '' : ' · без пароля'}{a.enabled ? '' : ' · выкл'}</span>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setDraft({ ...a, password: '' })} className="text-sm text-[#029cda]">Изменить</button>
+                  <button onClick={() => del(a.id)} className="text-sm text-red-500">Удалить</button>
+                </div>
+              </div>
+            ))}
+            {accounts.length === 0 && <div className="text-sm text-gray-400">Ящиков пока нет. Добавьте — и выбирайте в карточке компании и при рассылке.</div>}
+          </div>
+          {!draft ? (
+            <button onClick={() => setDraft(emptyMailAcc())} className="text-sm px-4 py-2 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Добавить ящик</button>
+          ) : (
+            <div className="bg-white rounded-xl border border-gray-200 p-3 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input className={input} placeholder="Название (напр. Экострой)" value={draft.label || ''} onChange={(e) => setDraft({ ...draft, label: e.target.value })} />
+                <input className={input} placeholder="Имя отправителя" value={draft.from_name || ''} onChange={(e) => setDraft({ ...draft, from_name: e.target.value })} />
+                <input className={input} placeholder="E-mail отправителя *" value={draft.from_email || ''} onChange={(e) => setDraft({ ...draft, from_email: e.target.value })} />
+                <input className={input} placeholder="SMTP-хост * (напр. smtp.timeweb.ru)" value={draft.smtp_host || ''} onChange={(e) => setDraft({ ...draft, smtp_host: e.target.value })} />
+                <input className={input} placeholder="Порт" inputMode="numeric" value={draft.smtp_port ?? 465} onChange={(e) => setDraft({ ...draft, smtp_port: Number(e.target.value) || 465 })} />
+                <input className={input} placeholder="SMTP-логин *" value={draft.smtp_user || ''} onChange={(e) => setDraft({ ...draft, smtp_user: e.target.value })} />
+                <input className={input} type="password" placeholder={draft.id && (draft as MailAcc).has_password ? 'Пароль (оставьте пустым — не менять)' : 'Пароль SMTP'} value={draft.password || ''} onChange={(e) => setDraft({ ...draft, password: e.target.value })} />
+                <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer"><input type="checkbox" checked={draft.smtp_secure ?? true} onChange={(e) => setDraft({ ...draft, smtp_secure: e.target.checked })} /> SSL/TLS (порт 465)</label>
+                <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer"><input type="checkbox" checked={draft.enabled ?? true} onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })} /> Включён</label>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}Сохранить</button>
+                <button onClick={test} disabled={busy} className="px-4 py-2 text-sm rounded-lg border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50">Проверить соединение</button>
+                <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200">Отмена</button>
+              </div>
+            </div>
+          )}
+          <div className="text-[11px] text-gray-400">Ящики общие с разделом «Письма». Выбираются в карточке компании (рассылка от организации) и при отправке КП.</div>
+        </div>
+      )}
     </div>
   );
 }

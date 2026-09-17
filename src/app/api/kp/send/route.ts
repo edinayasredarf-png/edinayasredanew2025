@@ -6,6 +6,8 @@ import { convertDocxToPdf, isPdfConfigured } from "@/lib/server/kp/kpPdf";
 import { sendLetterEmail, isMailerConfigured, type SmtpAccount } from "@/lib/server/mailer";
 import { dbGetMailAccountSecret } from "@/lib/server/mailAccountsDb";
 import { dbGetOrganization, dbInsertHistory } from "@/lib/server/kp/kpDb";
+import { dbLogLetterSend } from "@/lib/server/letterSendsDb";
+import { randomUUID } from "node:crypto";
 
 /** Резолвит ящик отправки по id (или основной ENV). */
 async function resolveAccount(accountId: string): Promise<{ account?: SmtpAccount; error?: string }> {
@@ -117,9 +119,16 @@ export async function POST(request: NextRequest) {
 
   const editor = getEditorFromRequest(request);
   const createdBy = editor?.email || "admin";
+  const clientTitle = body.form.client.orgShort || body.form.client.orgFull;
+  const clientFio = (body.form.client as { fioFull?: string }).fioFull || "";
+  const emailOf = (acc?: SmtpAccount): string => {
+    const from = acc?.from || process.env.SMTP_FROM || process.env.SMTP_USER || "";
+    const m = from.match(/<([^>]+)>/);
+    return (m ? m[1] : from).trim();
+  };
   const logHistory = (d: (typeof docs)[number]) =>
     dbInsertHistory({
-      title: body.form.client.orgShort || body.form.client.orgFull,
+      title: clientTitle,
       clientOrg: body.form.client.orgFull,
       serviceType: body.form.serviceType,
       orgKey: d.orgKey,
@@ -129,6 +138,20 @@ export async function POST(request: NextRequest) {
       createdBy,
       payload: { ...body, orgKeys: [d.orgKey], sentTo: to },
     }).catch(() => 0);
+  const logSend = (opts: { ok: boolean; error?: string; token: string; messageId?: string; acc?: SmtpAccount; orgName?: string }) =>
+    dbLogLetterSend({
+      template_key: "kp",
+      template_name: `КП ${clientTitle}${opts.orgName ? ` · ${opts.orgName}` : ""}`,
+      fio: clientFio,
+      email: to,
+      subject,
+      status: opts.ok ? "ok" : "error",
+      error: opts.error || "",
+      track_token: opts.token,
+      message_id: opts.messageId,
+      delivery_status: opts.ok ? "accepted" : "error",
+      from_email: emailOf(opts.acc),
+    }).catch(() => {});
 
   // Режим «от каждой организации отдельно»: письмо на клиента из ящика каждой организации.
   if (perOrg) {
@@ -138,12 +161,15 @@ export async function POST(request: NextRequest) {
       const org = await dbGetOrganization(d.orgKey);
       const acc = await resolveAccount((org?.mailAccountKey || accountId || "").trim());
       if (acc.error) { sent.push({ org: d.shortName, ok: false, error: `ящик: ${acc.error}` }); continue; }
+      const token = `kp_${randomUUID()}`;
       try {
-        const r = await sendLetterEmail({ to, subject, html, text: messageText, attachments: [attachments[i]], account: acc.account });
+        const r = await sendLetterEmail({ to, subject, html, text: messageText, attachments: [attachments[i]], account: acc.account, trackToken: token });
         sent.push({ org: d.shortName, ok: r.accepted, error: r.accepted ? undefined : (r.rejected.join(", ") || "не принято") });
+        await logSend({ ok: r.accepted, error: r.accepted ? "" : (r.rejected.join(", ") || "не принято"), token, messageId: r.messageId, acc: acc.account, orgName: d.shortName });
         await logHistory(d);
       } catch (e) {
         sent.push({ org: d.shortName, ok: false, error: (e as Error).message });
+        await logSend({ ok: false, error: (e as Error).message, token, acc: acc.account, orgName: d.shortName });
       }
     }
     const okCount = sent.filter((s) => s.ok).length;
@@ -151,12 +177,15 @@ export async function POST(request: NextRequest) {
   }
 
   // Одним письмом со всеми вложениями.
+  const token = `kp_${randomUUID()}`;
   let result;
   try {
-    result = await sendLetterEmail({ to, subject, html, text: messageText, attachments, account });
+    result = await sendLetterEmail({ to, subject, html, text: messageText, attachments, account, trackToken: token });
   } catch (e) {
+    await logSend({ ok: false, error: (e as Error).message, token, acc: account });
     return NextResponse.json({ error: `Ошибка отправки: ${(e as Error).message}` }, { status: 502 });
   }
+  await logSend({ ok: result.accepted, error: result.accepted ? "" : (result.rejected.join(", ") || "не принято"), token, messageId: result.messageId, acc: account });
   await Promise.all(docs.map(logHistory));
 
   return NextResponse.json({

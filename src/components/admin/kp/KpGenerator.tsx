@@ -101,7 +101,7 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
 }
 
 export default function KpGenerator() {
-  const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history'>('create');
+  const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history' | 'sends'>('create');
 
   // Справочники
   const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -606,7 +606,7 @@ export default function KpGenerator() {
           </p>
         </div>
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
-          {(['create', 'templates', 'prices', 'settings', 'history'] as const).map((t) => (
+          {(['create', 'templates', 'prices', 'settings', 'history', 'sends'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -614,7 +614,7 @@ export default function KpGenerator() {
                 tab === t ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'
               }`}
             >
-              {t === 'create' ? '📝 Создать КП' : t === 'templates' ? '📁 Шаблоны' : t === 'prices' ? '💰 Цены' : t === 'settings' ? '⚙️ Настройки' : '🗄 История'}
+              {t === 'create' ? '📝 Создать КП' : t === 'templates' ? '📁 Шаблоны' : t === 'prices' ? '💰 Цены' : t === 'settings' ? '⚙️ Настройки' : t === 'history' ? '🗄 История' : '✉️ Рассылки'}
             </button>
           ))}
         </div>
@@ -681,6 +681,8 @@ export default function KpGenerator() {
       )}
 
       {tab === 'history' && <HistoryTab setStatus={setStatus} />}
+
+      {tab === 'sends' && <SendsTab setStatus={setStatus} />}
     </div>
   );
 }
@@ -1894,6 +1896,112 @@ function HistoryTab({ setStatus }: { setStatus: (s: string) => void }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ═══════════════ Вкладка «Рассылки» (трекинг писем) ═══════════════ */
+interface SendRow {
+  id: string; email: string; from_email: string; subject: string; template_name: string;
+  status: 'ok' | 'error'; error: string; delivery_status: string;
+  opened_at: string | null; last_opened_at: string | null; open_count: number; created_at: string;
+}
+const SEND_PERIODS = [
+  { key: 'today', label: 'Сегодня', days: 0 },
+  { key: 'week', label: 'Неделя', days: 6 },
+  { key: 'month', label: 'Месяц', days: 29 },
+  { key: 'all', label: 'Всё', days: -1 },
+] as const;
+
+function ymd(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
+  const [rows, setRows] = useState<SendRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<typeof SEND_PERIODS[number]['key']>('week');
+
+  const load = useCallback(async (p: typeof period) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      const def = SEND_PERIODS.find((x) => x.key === p)!;
+      if (def.days >= 0) {
+        const to = new Date();
+        const from = new Date();
+        from.setDate(from.getDate() - def.days);
+        params.set('from', ymd(from));
+        params.set('to', ymd(to));
+      }
+      const res = await fetch(`/api/kp/sends?${params.toString()}`, { credentials: 'include' });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка');
+      setRows(d.rows || []);
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, [setStatus]);
+
+  useEffect(() => { load(period); }, [load, period]);
+
+  const opened = rows.filter((r) => r.open_count > 0).length;
+  const sentOk = rows.filter((r) => r.status === 'ok').length;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
+          {SEND_PERIODS.map((p) => (
+            <button key={p.key} onClick={() => setPeriod(p.key)} className={`px-3 py-1.5 rounded-lg text-sm ${period === p.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="text-xs text-gray-500">Всего: {rows.length} · доставлено: {sentOk} · открыто: {opened}</div>
+      </div>
+
+      {loading ? <LoadingBlock /> : rows.length === 0 ? (
+        <div className="text-sm text-gray-400">За период рассылок нет.</div>
+      ) : (
+        <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
+                <th className="px-3 py-2">Кому</th>
+                <th className="px-3 py-2">Тема / КП</th>
+                <th className="px-3 py-2">От кого</th>
+                <th className="px-3 py-2">Статус</th>
+                <th className="px-3 py-2">Открыто</th>
+                <th className="px-3 py-2">Когда</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-b border-gray-50">
+                  <td className="px-3 py-2 text-[#313131] whitespace-nowrap">{r.email}</td>
+                  <td className="px-3 py-2 text-gray-600">{r.subject}<div className="text-[11px] text-gray-400">{r.template_name}</div></td>
+                  <td className="px-3 py-2 text-gray-500 whitespace-nowrap">{r.from_email || '—'}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {r.status === 'ok'
+                      ? <span className="text-[#16a34a]">✓ отправлено{r.delivery_status === 'bounced' ? ' · возврат' : ''}</span>
+                      : <span className="text-red-500" title={r.error}>ошибка</span>}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {r.open_count > 0
+                      ? <span className="text-[#0b5c7d]" title={r.last_opened_at ? new Date(r.last_opened_at).toLocaleString('ru-RU') : ''}>👁 {r.open_count}×</span>
+                      : <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-3 py-2 text-gray-500 whitespace-nowrap">{new Date(r.created_at).toLocaleString('ru-RU')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="text-[11px] text-gray-400">Открытие фиксируется по картинке-пикселю: сигнал косвенный (почтовые клиенты могут блокировать картинки или подгружать их сами).</div>
     </div>
   );
 }

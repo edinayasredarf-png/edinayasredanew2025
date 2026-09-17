@@ -158,6 +158,8 @@ export interface ListSendsOptions {
   from?: string;
   to?: string;
   limit?: number;
+  /** Фильтр по template_key (например, 'kp' — только рассылки КП). */
+  templateKey?: string;
 }
 
 /**
@@ -182,6 +184,10 @@ export async function dbListLetterSends(
     // включительно: строго меньше начала следующего дня
     params.push(`${opts.to} 00:00:00+03`);
     where.push(`created_at < ($${params.length}::timestamptz + interval '1 day')`);
+  }
+  if (opts.templateKey) {
+    params.push(opts.templateKey);
+    where.push(`template_key = $${params.length}`);
   }
 
   params.push(limit);
