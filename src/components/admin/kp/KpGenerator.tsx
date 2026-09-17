@@ -139,6 +139,7 @@ export default function KpGenerator() {
 
   const [clientOrgFull, setClientOrgFull] = useState('');
   const [clientFio, setClientFio] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
   const [clientPosition, setClientPosition] = useState('');
   const [positions, setPositions] = useState<string[]>([]);
   const [posSel, setPosSel] = useState('');
@@ -687,7 +688,7 @@ export default function KpGenerator() {
             orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, clientCompanyId,
-            clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
+            clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
             kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
@@ -751,7 +752,7 @@ function CreateTab(p: CreateProps) {
     orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, clientCompanyId,
-    clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
+    clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
     kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
@@ -768,7 +769,7 @@ function CreateTab(p: CreateProps) {
     areaUnit: 'sqm' | 'ha'; setAreaUnit: (v: 'sqm' | 'ha') => void;
     ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
     clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string;
-    clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
+    clientFio: string; setClientFio: (v: string) => void; clientEmail: string; setClientEmail: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void;
     clientAreaTotal: string; setClientAreaTotal: (v: string) => void;
     clientQuantity: string; setClientQuantity: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
@@ -821,9 +822,12 @@ function CreateTab(p: CreateProps) {
   const openMail = () => {
     setMailOpen((v) => {
       const next = !v;
-      if (next && !mailEdited && primaryOrg) {
-        if (primaryOrg.mailSubject) setMailSubject(primaryOrg.mailSubject);
-        if (primaryOrg.mailBody) setMailMessage(primaryOrg.mailBody);
+      if (next) {
+        if (!mailTo.trim() && clientEmail) setMailTo(clientEmail);
+        if (!mailEdited && primaryOrg) {
+          if (primaryOrg.mailSubject) setMailSubject(primaryOrg.mailSubject);
+          if (primaryOrg.mailBody) setMailMessage(primaryOrg.mailBody);
+        }
       }
       return next;
     });
@@ -951,7 +955,8 @@ function CreateTab(p: CreateProps) {
           )}
           <div>
             <div className={label}>Полное ФИО клиента *</div>
-            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); }} className={input} placeholder="Иванов Иван Иванович" />
+            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); if (it.email) setClientEmail(it.email); }} className={input} placeholder="Иванов Иван Иванович" />
+            {clientEmail && <div className="text-[11px] text-gray-400 mt-0.5">e-mail из Bitrix: {clientEmail}</div>}
             <div className="text-xs text-gray-400 mt-1">{clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.</div>
           </div>
           <div>

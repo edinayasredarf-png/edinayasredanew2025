@@ -15,6 +15,18 @@ interface Item {
   id?: string;
   title: string;
   position?: string;
+  email?: string;
+}
+
+/** Достаёт первый e-mail из мультиполя Bitrix (EMAIL: [{ VALUE, ... }]). */
+function extractEmail(raw: unknown): string | undefined {
+  if (Array.isArray(raw)) {
+    for (const e of raw) {
+      const v = String((e as { VALUE?: unknown })?.VALUE || "").trim();
+      if (v) return v;
+    }
+  }
+  return undefined;
 }
 
 export async function GET(request: NextRequest) {
@@ -42,13 +54,13 @@ export async function GET(request: NextRequest) {
         : { "%LAST_NAME": first };
       const { result } = await bitrixCall<Array<Record<string, unknown>>>("crm.contact.list", {
         filter,
-        select: ["ID", "NAME", "LAST_NAME", "SECOND_NAME", "POST"],
+        select: ["ID", "NAME", "LAST_NAME", "SECOND_NAME", "POST", "EMAIL"],
         order: { LAST_NAME: "ASC" },
         start: 0,
       });
       const items: Item[] = (result || []).slice(0, 15).map((r) => {
         const title = [r.LAST_NAME, r.NAME, r.SECOND_NAME].map((x) => String(x || "").trim()).filter(Boolean).join(" ");
-        return { id: String(r.ID || ""), title, position: String(r.POST || "").trim() || undefined };
+        return { id: String(r.ID || ""), title, position: String(r.POST || "").trim() || undefined, email: extractEmail(r.EMAIL) };
       }).filter((i) => i.title);
       return NextResponse.json({ items });
     }

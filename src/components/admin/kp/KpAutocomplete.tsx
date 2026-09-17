@@ -4,8 +4,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@/components/admin/ui/Spinner';
 
 interface Item {
+  id?: string;
   title: string;
   position?: string;
+  email?: string;
 }
 
 /**
