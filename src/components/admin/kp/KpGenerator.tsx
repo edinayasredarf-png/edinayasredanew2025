@@ -667,20 +667,19 @@ export default function KpGenerator() {
       <style>{`
         .kp-app :where(button, a[href], select, [role="button"], [tabindex]):focus-visible { outline: 2px solid #029cda; outline-offset: 2px; border-radius: 8px; }
         .kp-app :where(input, textarea):focus-visible { outline: 2px solid rgba(2,156,218,.55); outline-offset: 1px; }
-        .kp-app :where(input[type="checkbox"]):focus-visible { outline-offset: 2px; }
+        .kp-app input[type="checkbox"], .kp-app input[type="radio"] { accent-color: #029cda; width: 15px; height: 15px; }
+        .kp-app input[type="checkbox"]:focus-visible { outline-offset: 2px; }
       `}</style>
-      {/* Шапка: заголовок + вкладки. На узких экранах вкладки прокручиваются по горизонтали. */}
-      <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0">
-          <h2 className="text-base sm:text-lg font-semibold text-[#313131] leading-tight">Генератор коммерческих предложений</h2>
-        </div>
-        <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      {/* Шапка: заголовок + подчёркнутые вкладки (стиль референса). Прокрутка на узких экранах. */}
+      <div className="space-y-3">
+        <h2 className="text-lg sm:text-xl font-bold text-[#1b2a4a] leading-tight tracking-tight">Генератор коммерческих предложений</h2>
+        <div className="flex gap-5 sm:gap-6 overflow-x-auto border-b border-gray-200 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
             <button
               key={t.k}
               onClick={() => setTab(t.k)}
-              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                tab === t.k ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500 hover:text-[#313131]'
+              className={`shrink-0 whitespace-nowrap pb-2.5 -mb-px border-b-2 text-sm transition-colors ${
+                tab === t.k ? 'border-[#029cda] text-[#029cda] font-semibold' : 'border-transparent text-gray-500 hover:text-[#1b2a4a]'
               }`}
             >
               {t.label}
@@ -812,7 +811,7 @@ function CreateTab(p: CreateProps) {
     busy: boolean;
   };
 
-  const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
+  const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
   const label = 'block text-xs font-medium text-gray-500 mb-1';
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
 
@@ -884,8 +883,8 @@ function CreateTab(p: CreateProps) {
                     key={o.key}
                     type="button"
                     onClick={() => toggleOrg(o.key)}
-                    className={`text-left px-3 py-2 rounded-xl border text-sm transition ${
-                      active ? 'border-[#029cda] bg-[#EAF6FC]' : 'border-gray-200 bg-white hover:border-gray-300'
+                    className={`text-left px-3 py-2.5 rounded-xl text-sm transition ${
+                      active ? 'border-2 border-[#029cda] bg-[#EAF6FC]' : 'border-2 border-transparent ring-1 ring-gray-200 bg-white hover:ring-gray-300'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -1129,7 +1128,7 @@ function CreateTab(p: CreateProps) {
           <button
             onClick={() => generate('docx')}
             disabled={busy || perOrgTotals.length === 0}
-            className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {busy && <Spinner size={16} color="#fff" />}
             {busy ? 'Генерация…' : selectedOrgs.length > 1 ? `Скачать ${selectedOrgs.length} DOCX (ZIP)` : 'Скачать DOCX'}
@@ -1138,17 +1137,17 @@ function CreateTab(p: CreateProps) {
             <button
               onClick={() => generate('pdf')}
               disabled={busy || perOrgTotals.length === 0}
-              className="px-3 py-2 rounded-lg text-sm font-medium bg-[#2563eb] text-white hover:bg-[#1d4ed8] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-white text-[#1b2a4a] hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {busy && <Spinner size={16} color="#fff" />}
+              {busy && <Spinner size={16} />}
               PDF
             </button>
             <button
               onClick={() => generate('both')}
               disabled={busy || perOrgTotals.length === 0}
-              className="px-3 py-2 rounded-lg text-sm font-medium bg-[#d97706] text-white hover:bg-[#b45309] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-white text-[#1b2a4a] hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {busy && <Spinner size={16} color="#fff" />}
+              {busy && <Spinner size={16} />}
               DOCX+PDF
             </button>
           </div>
@@ -1271,7 +1270,7 @@ function CreateTab(p: CreateProps) {
             ))}
             <div className="flex justify-end gap-2">
               <button onClick={() => setPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
-              <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">Всё верно — скачать</button>
+              <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">Всё верно — скачать</button>
             </div>
           </div>
         </div>
@@ -1298,7 +1297,7 @@ function CreateTab(p: CreateProps) {
             <div className="text-[11px] text-gray-400">Это черновой рендер (без точного оформления Word: шрифты/отступы могут отличаться). Финальный вид — в скачанном .docx / PDF.</div>
             <div className="flex justify-end gap-2">
               <button onClick={() => setDocPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
-              <button onClick={() => { setDocPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">Скачать DOCX</button>
+              <button onClick={() => { setDocPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">Скачать DOCX</button>
             </div>
           </div>
         </div>
@@ -1445,7 +1444,7 @@ function TemplatesTab({
     onChanged();
   };
 
-  const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
+  const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
   const label = 'block text-xs font-medium text-gray-500 mb-1';
 
   if (draft) {
@@ -1483,7 +1482,7 @@ function TemplatesTab({
             Шаблон уже содержит шапку/подписанта (не добавлять автоматически)
           </label>
           <div className="flex gap-2">
-            <button onClick={saveDraft} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить шаблон'}</button>
+            <button onClick={saveDraft} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить шаблон'}</button>
             <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
           </div>
         </div>
@@ -1497,7 +1496,7 @@ function TemplatesTab({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <button onClick={openNew} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">Создать шаблон</button>
+        <button onClick={openNew} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">Создать шаблон</button>
         <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Загрузить .docx (можно несколько)</button>
       </div>
 
@@ -1609,7 +1608,7 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
   const [busy, setBusy] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
+  const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
   const label = 'block text-xs font-medium text-gray-500 mb-1';
 
   const uid = () =>
@@ -1785,7 +1784,7 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
       )}
 
       <div className="flex items-center gap-2">
-        <button onClick={uploadAll} disabled={busy || pendingCount === 0} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
+        <button onClick={uploadAll} disabled={busy || pendingCount === 0} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Загрузка…' : pendingCount > 0 ? `Загрузить (${pendingCount})` : 'Загрузить'}
         </button>
@@ -2000,7 +1999,7 @@ function PricesTab({
       )}
 
       <div className="flex items-center gap-3">
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить цены'}
         </button>
@@ -2259,7 +2258,7 @@ function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s:
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm text-gray-500">Компания-отправитель:</span>
-        <select value={orgKey} onChange={(e) => setOrgKey(e.target.value)} className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]">
+        <select value={orgKey} onChange={(e) => setOrgKey(e.target.value)} className="px-3 py-1.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15">
           {orgs.map((o) => <option key={o.key} value={o.key}>{o.shortName || o.name}</option>)}
         </select>
         <span className="text-xs text-gray-400">Следующий №: <b className="text-[#313131]">{nextNumber}</b></span>

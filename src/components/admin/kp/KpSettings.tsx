@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Spinner } from '@/components/admin/ui/Spinner';
 import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
-const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
+const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
 const label = 'block text-xs font-medium text-gray-500 mb-1';
 
 async function uploadImage(file: File): Promise<string> {
@@ -303,7 +303,7 @@ function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) 
                 <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer"><input type="checkbox" checked={draft.enabled ?? true} onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })} /> Включён</label>
               </div>
               <div className="flex gap-2">
-                <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}Сохранить</button>
+                <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}Сохранить</button>
                 <button onClick={test} disabled={busy} className="px-4 py-2 text-sm rounded-lg border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50">Проверить соединение</button>
                 <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200">Отмена</button>
               </div>
@@ -482,7 +482,7 @@ function OrgEditor({
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить компанию'}
         </button>
@@ -526,7 +526,7 @@ function HeaderLayoutEditor({
     }
   };
 
-  const ta = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda] h-24 font-mono';
+  const ta = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15 h-24 font-mono';
 
   return (
     <div>
@@ -551,7 +551,7 @@ function HeaderLayoutEditor({
             <textarea value={right} onChange={(e) => setRight(e.target.value)} className={ta} placeholder={'{{client_org_full}}\n{{client_fio_short}}'} />
           </div>
         </div>
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить шапку'}
         </button>
@@ -604,7 +604,7 @@ function AliasesManager({
           <input className={input} placeholder="описание" value={label} onChange={(e) => setLabelText(e.target.value)} />
           <input className={input} placeholder="значение (текст)" value={value} onChange={(e) => setValue(e.target.value)} />
         </div>
-        <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Создать алиас</button>
+        <button onClick={add} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">+ Создать алиас</button>
 
         {customs.length > 0 && (
           <div className="space-y-1">
@@ -865,7 +865,7 @@ function TableEditor({
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
         <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
         {!isNew && <button onClick={remove} className="ml-auto px-4 py-2 text-sm rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
       </div>
@@ -968,7 +968,7 @@ function ServicesManager({
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="flex gap-2">
           <input className={input} placeholder="Новая услуга (например, ОКС)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
-          <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
+          <button onClick={add} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
         </div>
         <div className="space-y-1">
           {services.map((s) => {
@@ -1033,7 +1033,7 @@ function ServicesManager({
                   ))}
                   <div className="flex items-center gap-2">
                     <button onClick={() => setItemsDraft((arr) => [...arr, { key: '', name: '', unit: '' }])} className="text-sm text-[#029cda]">+ Позиция</button>
-                    <button onClick={saveItems} className="ml-auto px-3 py-1.5 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d]">Сохранить строки</button>
+                    <button onClick={saveItems} className="ml-auto px-3 py-1.5 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">Сохранить строки</button>
                     <button onClick={() => setItemsFor(null)} className="px-3 py-1.5 text-sm rounded-lg border border-gray-200">Отмена</button>
                   </div>
                 </div>
@@ -1099,7 +1099,7 @@ function PositionsManager({
       <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
         <div className="flex gap-2">
           <input className={input} placeholder="Новая должность (например, Мэр)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
-          <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
+          <button onClick={add} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
         </div>
         <div className="space-y-1">
           {positions.map((p) => (
@@ -1159,7 +1159,7 @@ function ExecutorsManager({
           <input className={input} placeholder="E-mail" value={draft.email || ''} onChange={(e) => setDraft({ ...draft, email: e.target.value })} />
         </div>
         <div className="flex gap-2">
-          <button onClick={save} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">{editId ? 'Сохранить' : 'Добавить'}</button>
+          <button onClick={save} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">{editId ? 'Сохранить' : 'Добавить'}</button>
           {editId && <button onClick={() => { setEditId(null); setDraft({ fio: '', phone: '', email: '' }); }} className="px-4 py-2 text-sm rounded-lg border border-gray-200">Отмена</button>}
         </div>
       </div>
