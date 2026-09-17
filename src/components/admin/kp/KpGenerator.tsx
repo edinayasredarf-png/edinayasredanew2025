@@ -8,6 +8,7 @@ const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { s
 
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
+import { Select } from '@/components/admin/ui/Select';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
@@ -670,6 +671,7 @@ export default function KpGenerator() {
         .kp-app :where(input, textarea):focus-visible { outline: 2px solid rgba(2,156,218,.55); outline-offset: 1px; }
         .kp-app input[type="checkbox"], .kp-app input[type="radio"] { accent-color: #029cda; width: 15px; height: 15px; }
         .kp-app input[type="checkbox"]:focus-visible { outline-offset: 2px; }
+        .kp-app select { -webkit-appearance: none; appearance: none; padding-right: 2.25rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M6 8l4 4 4-4' stroke='%239aa3b2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; }
       `}</style>
       {/* Шапка: заголовок + подчёркнутые вкладки (стиль референса). Прокрутка на узких экранах. */}
       <div className="space-y-3">
@@ -867,11 +869,7 @@ function CreateTab(p: CreateProps) {
         <div className={panel}>
           <div>
             <div className={label}>Тип услуги</div>
-            <select value={serviceType} onChange={(e) => onSelectService(e.target.value)} className={input}>
-              {serviceTypes.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+            <Select value={serviceType} onChange={onSelectService} searchable placeholder="Выберите услугу" options={serviceTypes.map((s) => ({ value: s, label: s }))} />
           </div>
           <div>
             <div className={label}>Организации (от кого КП) — отметьте все нужные, будет по одному КП на каждую</div>
@@ -917,9 +915,9 @@ function CreateTab(p: CreateProps) {
             </div>
             <div>
               <div className={label}>Единица площади</div>
-              <div className="flex gap-1 bg-white rounded-lg p-1 border border-gray-200">
+              <div className="inline-flex gap-1 bg-[#EEF1F4] rounded-xl p-1">
                 {(['sqm', 'ha'] as const).map((u) => (
-                  <button key={u} onClick={() => setAreaUnit(u)} className={`px-3 py-1.5 rounded-md text-sm ${areaUnit === u ? 'bg-[#029cda] text-white' : 'text-gray-600'}`}>
+                  <button key={u} onClick={() => setAreaUnit(u)} className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${areaUnit === u ? 'bg-white shadow-sm text-[#1b2a4a] font-medium' : 'text-gray-500 hover:text-[#1b2a4a]'}`}>
                     {u === 'sqm' ? 'кв. м' : 'гектары'}
                   </button>
                 ))}
@@ -942,7 +940,7 @@ function CreateTab(p: CreateProps) {
 
         {/* Данные клиента */}
         <div className={panel}>
-          <div className="text-sm font-semibold text-[#1b2a4a]">👤 Данные клиента</div>
+          <div className="text-sm font-semibold text-[#1b2a4a]">Данные клиента</div>
           <div>
             <div className={label}>Полное наименование организации клиента *</div>
             <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={input} placeholder='Администрация Николаевского муниципального района' />
@@ -980,11 +978,8 @@ function CreateTab(p: CreateProps) {
           </div>
           <div>
             <div className={label}>Должность клиента (для адресата в шапке)</div>
-            <div className="flex gap-2">
-              <select value={posSel} onChange={(e) => applyPosition(e.target.value)} className={`${input} sm:max-w-[220px]`}>
-                <option value="">Выбрать должность…</option>
-                {positions.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select value={posSel} onChange={applyPosition} className="sm:w-[220px] shrink-0" placeholder="Выбрать должность…" options={[{ value: '', label: 'Выбрать должность…' }, ...positions.map((p) => ({ value: p, label: p }))]} />
               <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={`${input} flex-1`} placeholder="Глава администрации района" />
             </div>
             <div className="text-xs text-gray-400 mt-1">Выбор должности подставит «должность + организация в род. падеже» (например, «Глава администрации района») — можно отредактировать. В шапке справа ставится в дательном падеже.</div>
@@ -1034,12 +1029,12 @@ function CreateTab(p: CreateProps) {
             </div>
             <div>
               <div className={label}>Исполнитель (менеджер) *</div>
-              <select value={executorId} onChange={(e) => setExecutorId(e.target.value ? Number(e.target.value) : '')} className={input}>
-                <option value="">Выберите…</option>
-                {executors.map((ex) => (
-                  <option key={ex.id} value={ex.id}>{ex.fio}</option>
-                ))}
-              </select>
+              <Select
+                value={executorId ? String(executorId) : ''}
+                onChange={(v) => setExecutorId(v ? Number(v) : '')}
+                placeholder="Выберите исполнителя…"
+                options={[{ value: '', label: 'Выберите…' }, ...executors.map((ex) => ({ value: String(ex.id), label: ex.fio }))]}
+              />
             </div>
           </div>
         </div>
@@ -1192,10 +1187,11 @@ function CreateTab(p: CreateProps) {
               {!mailPerOrg && (
                 <div>
                   <div className={label}>Ящик отправки</div>
-                  <select value={mailAccountId} onChange={(e) => setMailAccountId(e.target.value)} className={input}>
-                    <option value="default">Основной (по умолчанию)</option>
-                    {mailAccounts.map((a) => <option key={a.id} value={a.id}>{a.label} ({a.from_email})</option>)}
-                  </select>
+                  <Select
+                    value={mailAccountId}
+                    onChange={setMailAccountId}
+                    options={[{ value: 'default', label: 'Основной (по умолчанию)' }, ...mailAccounts.map((a) => ({ value: a.id, label: `${a.label} (${a.from_email})` }))]}
+                  />
                 </div>
               )}
               <ToggleRow checked={mailAsPdf} onChange={setMailAsPdf} className="text-xs">

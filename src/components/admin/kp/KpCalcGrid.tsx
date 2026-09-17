@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { evalFormulaSafe } from './formulaClient';
+import { Select } from '@/components/admin/ui/Select';
 import type { CalcColumn, CalcTableDef, RowData } from './types';
 
 function num(v: string | undefined): number {
@@ -200,21 +201,13 @@ export default function KpCalcGrid({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-gray-500">Таблица:</span>
-        <select
-          value={selectedKey}
-          onChange={(e) => onSelectTable(e.target.value)}
-          className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]"
-        >
-          {calcTables.map((t) => (
-            <option key={t.key} value={t.key}>{t.name}</option>
-          ))}
-        </select>
+        <span className="text-xs text-gray-500 shrink-0">Таблица:</span>
+        <Select value={selectedKey} onChange={onSelectTable} className="min-w-[200px]" options={calcTables.map((t) => ({ value: t.key, label: t.name }))} />
         {selectedKey && (
-          <span className="text-xs text-gray-400">алиас в шаблоне: <code className="font-mono">{`{{${selectedKey}}}`}</code></span>
+          <span className="text-xs text-gray-400 hidden sm:inline">алиас: <code className="font-mono">{`{{${selectedKey}}}`}</code></span>
         )}
-        <button onClick={() => { setPasteOpen((v) => !v); resetImport(); }} className="ml-auto text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">📋 Вставить из Excel</button>
-        <button onClick={addCol} className="text-sm text-[#029cda] hover:text-[#0280b5]">+ Колонка</button>
+        <button onClick={() => { setPasteOpen((v) => !v); resetImport(); }} className="ml-auto shrink-0 text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">Вставить из Excel</button>
+        <button onClick={addCol} className="text-sm text-[#029cda] hover:text-[#0280b5] shrink-0">+ Колонка</button>
       </div>
 
       {pasteOpen && (
