@@ -31,13 +31,14 @@ function fmtRange(min: number, max: number, money: boolean): string {
 }
 
 /** Вычисляет ячейку формулы/индекса для превью в гриде (с диапазоном «от–до»). */
-function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: CalcColumn[], scope: PreviewScope): string {
+function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: CalcColumn[], scope: PreviewScope, areaUnit: 'sqm' | 'ha' = 'sqm'): string {
   const s: Record<string, number> = { ...scope, row_index: rowIndex + 1 };
   for (const c of cols) {
     if (c.kind === 'number') s[c.key] = num(row[c.key]);
     else if (c.kind === 'const') s[c.key] = num(c.constValue);
     else if (c.kind === 'text') s[c.key] = num(row[c.key]); // «5 Га» → 5
   }
+  if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
   const sMax: Record<string, number> = { ...s };
   // Пер-строчная цена (по первой выбранной компании), с верхней границей «до».
   if (row.__pd) { s.price_direct = num(row.__pd); sMax.price_direct = num(row.__pdMax) || num(row.__pd); }
@@ -68,7 +69,7 @@ function parseClipboard(text: string): string[][] {
 
 export default function KpCalcGrid({
   calcTables, selectedKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
-  onTablesChanged, onImportedTable, setStatus,
+  areaUnit = 'sqm', onTablesChanged, onImportedTable, setStatus,
 }: {
   calcTables: CalcTableDef[];
   selectedKey: string;
@@ -78,6 +79,7 @@ export default function KpCalcGrid({
   rows: RowData[];
   setRows: React.Dispatch<React.SetStateAction<RowData[]>>;
   previewScope: PreviewScope;
+  areaUnit?: 'sqm' | 'ha';
   onTablesChanged?: () => void;
   onImportedTable?: (key: string, columns: CalcColumn[], rows: RowData[]) => void;
   setStatus?: (s: string) => void;
@@ -340,12 +342,12 @@ export default function KpCalcGrid({
                         onChange={(e) => setCell(ri, c.key, e.target.value)}
                         className={`${input} text-right`}
                         inputMode="decimal"
-                        placeholder={cellPreview(c, r, ri, columns, previewScope)}
+                        placeholder={cellPreview(c, r, ri, columns, previewScope, areaUnit)}
                         title="Своя сумма (формула отключена для этой строки)"
                       />
                     ) : (
                       <div className="px-2 py-1.5 text-gray-500 text-right">
-                        {c.kind === 'index' ? ri + 1 : c.kind === 'const' ? (c.constValue || '') : cellPreview(c, r, ri, columns, previewScope)}
+                        {c.kind === 'index' ? ri + 1 : c.kind === 'const' ? (c.constValue || '') : cellPreview(c, r, ri, columns, previewScope, areaUnit)}
                       </div>
                     )}
                   </td>

@@ -34,8 +34,8 @@ function deriveIncludes(svc: string): { service: boolean; ais: boolean; renewal:
 }
 
 /** Стоимость услуги по строкам через колонку-стоимость таблицы (для превью). */
-function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Record<string, number>): number {
-  const costCol = columns.find((c) => c.isCost);
+function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Record<string, number>, areaUnit: 'sqm' | 'ha' = 'sqm'): number {
+  const costCol = columns.find((c) => c.isCost) || columns.find((c) => c.key === 'cost_tender') || columns.find((c) => c.key === 'cost');
   if (!costCol) return 0;
   let total = 0;
   rows.forEach((row, ri) => {
@@ -43,9 +43,14 @@ function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Reco
     for (const c of columns) {
       if (c.kind === 'number') s[c.key] = toNum(row[c.key]);
       else if (c.kind === 'const') s[c.key] = toNum(c.constValue);
+      else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
     }
+    if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
+    if (row.__pd) s.price_direct = toNum(row.__pd);
+    if (row.__pt) s.price_tender = toNum(row.__pt);
+    if (row.__p) s.price = toNum(row.__p);
     for (const c of columns) {
-      if (c.kind === 'formula') s[c.key] = evalFormulaSafe(c.formula || '0', s);
+      if (c.kind === 'formula') s[c.key] = (row.__manual === '1' && row[c.key]) ? toNum(row[c.key]) : evalFormulaSafe(c.formula || '0', s);
     }
     total += s[costCol.key] || 0;
   });
@@ -62,7 +67,7 @@ function fmtRangeC(min: number, max: number, money: boolean): string {
 }
 
 /** Клиентский расчёт таблицы для предпросмотра (зеркало серверного computeTable, с диапазоном). */
-function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Record<string, number>): PreviewTable {
+function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Record<string, number>, areaUnit: 'sqm' | 'ha' = 'sqm'): PreviewTable {
   const headers = columns.map((c) => c.label);
   const align = columns.map((c) => c.align || (c.kind === 'text' ? 'left' : 'center'));
   const costIdx = columns.findIndex((c) => c.isCost);
@@ -75,6 +80,7 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
       else if (c.kind === 'const') s[c.key] = toNum(c.constValue);
       else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
     }
+    if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
     const sMax: Record<string, number> = { ...s };
     if (row.__pd) { s.price_direct = toNum(row.__pd); sMax.price_direct = toNum(row.__pdMax) || toNum(row.__pd); }
     if (row.__pt) { s.price_tender = toNum(row.__pt); sMax.price_tender = toNum(row.__ptMax) || toNum(row.__pt); }
@@ -118,7 +124,11 @@ export default function KpGenerator() {
   // Форма
   const [serviceType, setServiceType] = useState('ИМЗ');
   const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
-  const [mode, setMode] = useState<PriceMode>('direct');
+  const [modeDirect, setModeDirect] = useState(true);
+  const [modeTender, setModeTender] = useState(true);
+  const [areaUnit, setAreaUnit] = useState<'sqm' | 'ha'>('sqm');
+  // «Активный» режим (для одиночной цены `price` и итогов): прямой в приоритете.
+  const mode: PriceMode = modeTender && !modeDirect ? 'tender' : 'direct';
   const [ruralSettlement, setRuralSettlement] = useState(false);
   // Состав КП выводится из выбранной услуги (свой шаблон на услугу).
   const inc = deriveIncludes(serviceType);
@@ -238,16 +248,26 @@ export default function KpGenerator() {
     if (!selectedTableKey || !calcTables.some((t) => t.key === selectedTableKey)) {
       const t = calcTables[0];
       setSelectedTableKey(t.key);
-      setColumns(t.columns);
       setRows(t.defaultRows?.length ? t.defaultRows.map((r) => ({ ...r })) : [{}]);
     }
   }, [calcTables, selectedTableKey]);
+
+  // Колонки = из выбранной таблицы с учётом режима цены (прямой/торги) и единицы площади.
+  const deriveColumns = useCallback((cols: CalcColumn[]): CalcColumn[] => {
+    return cols
+      .filter((c) => !(c.key === 'cost_direct' && !modeDirect) && !(c.key === 'cost_tender' && !modeTender))
+      .map((c) => c.key === 'area_sqm' ? { ...c, label: areaUnit === 'ha' ? 'Площадь, га' : 'Площадь, кв.м' } : c);
+  }, [modeDirect, modeTender, areaUnit]);
+
+  useEffect(() => {
+    const def = calcTables.find((t) => t.key === selectedTableKey);
+    if (def) setColumns(deriveColumns(def.columns));
+  }, [selectedTableKey, deriveColumns, calcTables]);
 
   const onSelectTable = (key: string) => {
     const t = calcTables.find((x) => x.key === key);
     if (!t) return;
     setSelectedTableKey(key);
-    setColumns(t.columns);
     setRows([{}]);
   };
 
@@ -302,8 +322,7 @@ export default function KpGenerator() {
     const orgKey = selectedOrgs[0] || orgs[0]?.key || '';
     if (def && calcTables.some((t) => t.key === def)) {
       const t = calcTables.find((x) => x.key === def)!;
-      setSelectedTableKey(def);
-      setColumns(t.columns);
+      setSelectedTableKey(def); // колонки подставит эффект (с учётом режима цены/площади)
       const built = buildRowsForService(name, t.columns, orgKey);
       setRows(built.length ? built : (t.defaultRows?.length ? t.defaultRows.map((r) => ({ ...r })) : [{}]));
       return;
@@ -365,7 +384,7 @@ export default function KpGenerator() {
         price_tender: tier?.pricePerHaTender ?? 0,
         min_ha: tier?.minHectares ?? 1,
       };
-      const serviceTotal = inc.service ? computeServiceTotal(columns, rows, scope) : 0;
+      const serviceTotal = inc.service ? computeServiceTotal(columns, rows, scope, areaUnit) : 0;
       const ais = inc.ais ? toNum(tier?.aisPrice || 0) / (ruralSettlement ? 1.6 : 1) : 0;
       const renewal = inc.renewal ? toNum(tier?.renewalPerYear || 0) : 0;
       const hasTemplate = templates.some(
@@ -381,7 +400,7 @@ export default function KpGenerator() {
         hasTemplate,
       };
     });
-  }, [selectedOrgs, orgs, tierFor, mode, ruralSettlement, inc.service, inc.ais, inc.renewal, rows, columns, templates, serviceType]);
+  }, [selectedOrgs, orgs, tierFor, mode, areaUnit, ruralSettlement, inc.service, inc.ais, inc.renewal, rows, columns, templates, serviceType]);
 
   // Предупреждения о незаполненных ценах (не блокируют, но подсвечивают).
   const priceWarnings = useMemo(() => {
@@ -426,7 +445,7 @@ export default function KpGenerator() {
         if (!lp) return r;
         return { ...r, __pd: lp.direct ? String(lp.direct) : '', __pt: lp.tender ? String(lp.tender) : '', __p: lp.direct ? String(lp.direct) : '' };
       });
-      const table = inc.service ? computePreviewTable(columns, rowsForOrg, base) : null;
+      const table = inc.service ? computePreviewTable(columns, rowsForOrg, base, areaUnit) : null;
       const tot = perOrgTotals.find((t) => t.key === key);
       return {
         key,
@@ -437,7 +456,7 @@ export default function KpGenerator() {
         grand: tot?.grand ?? 0,
       };
     });
-  }, [selectedOrgs, tierFor, mode, rows, tiers, columns, perOrgTotals, orgs, inc.service]);
+  }, [selectedOrgs, tierFor, mode, areaUnit, rows, tiers, columns, perOrgTotals, orgs, inc.service]);
 
   const previewTier = tierFor(selectedOrgs[0] || '');
   const previewScope = {
@@ -452,6 +471,7 @@ export default function KpGenerator() {
     form: {
       serviceType,
       mode,
+      areaUnit,
       ruralSettlement,
       includes: inc,
       client: {
@@ -632,7 +652,7 @@ export default function KpGenerator() {
         <CreateTab
           {...{
             orgs, serviceTypes, serviceType, onSelectService, inc,
-            selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
+            selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, clientCompanyId,
             clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
@@ -696,7 +716,7 @@ type CreateProps = Record<string, unknown>;
 function CreateTab(p: CreateProps) {
   const {
     orgs, serviceTypes, serviceType, onSelectService, inc,
-    selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
+    selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, clientCompanyId,
     clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
@@ -711,7 +731,9 @@ function CreateTab(p: CreateProps) {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
     selectedOrgs: string[]; toggleOrg: (k: string) => void; tierFor: (k: string) => Tier | undefined;
-    mode: PriceMode; setMode: (v: PriceMode) => void; ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
+    mode: PriceMode; modeDirect: boolean; setModeDirect: (v: boolean) => void; modeTender: boolean; setModeTender: (v: boolean) => void;
+    areaUnit: 'sqm' | 'ha'; setAreaUnit: (v: 'sqm' | 'ha') => void;
+    ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
     clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string;
     clientFio: string; setClientFio: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void;
@@ -810,11 +832,25 @@ function CreateTab(p: CreateProps) {
           </div>
           <div className="flex flex-wrap gap-4">
             <div>
-              <div className={label}>Режим цены</div>
+              <div className={label}>Режим цены (можно оба)</div>
+              <div className="flex flex-col gap-1 pt-1">
+                <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+                  <input type="checkbox" checked={modeDirect} onChange={(e) => { const v = e.target.checked; if (!v && !modeTender) return; setModeDirect(v); }} />
+                  Прямой контракт
+                </label>
+                <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+                  <input type="checkbox" checked={modeTender} onChange={(e) => { const v = e.target.checked; if (!v && !modeDirect) return; setModeTender(v); }} />
+                  Торги
+                </label>
+              </div>
+              <div className="text-[11px] text-gray-400 mt-1">В таблице показываются выбранные колонки стоимости.</div>
+            </div>
+            <div>
+              <div className={label}>Единица площади</div>
               <div className="flex gap-1 bg-white rounded-lg p-1 border border-gray-200">
-                {(['direct', 'tender'] as const).map((m) => (
-                  <button key={m} onClick={() => setMode(m)} className={`px-3 py-1.5 rounded-md text-sm ${mode === m ? 'bg-[#029cda] text-white' : 'text-gray-600'}`}>
-                    {m === 'direct' ? 'Прямой контракт' : 'Торги'}
+                {(['sqm', 'ha'] as const).map((u) => (
+                  <button key={u} onClick={() => setAreaUnit(u)} className={`px-3 py-1.5 rounded-md text-sm ${areaUnit === u ? 'bg-[#029cda] text-white' : 'text-gray-600'}`}>
+                    {u === 'sqm' ? 'кв. м' : 'гектары'}
                   </button>
                 ))}
               </div>
@@ -952,6 +988,7 @@ function CreateTab(p: CreateProps) {
             rows={rows}
             setRows={setRows}
             previewScope={previewScope}
+            areaUnit={areaUnit}
             onTablesChanged={onTablesChanged}
             onImportedTable={onImportedTable}
             setStatus={setStatus}

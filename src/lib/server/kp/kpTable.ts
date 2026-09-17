@@ -93,8 +93,10 @@ export function fmtRange(min: number, max: number, money: boolean): string {
 export function computeTable(
   columns: CalcColumn[],
   rows: Array<Record<string, string>>,
-  priceVars: PriceVars
+  priceVars: PriceVars,
+  opts?: { areaUnit?: "sqm" | "ha" }
 ): ComputedTable {
+  const areaUnit = opts?.areaUnit || "sqm";
   const headers = columns.map((c) => c.label);
   const align: ColAlign[] = columns.map((c) => c.align || (c.kind === "text" ? "left" : "center"));
   const weights = columns.map((c) => KIND_WEIGHT[c.kind] ?? 1.5);
@@ -110,6 +112,9 @@ export function computeTable(
       else if (c.kind === "const") scope[c.key] = toNum(c.constValue);
       else if (c.kind === "text") scope[c.key] = toNum(row[c.key]); // «5 Га» → 5 для формул площади
     }
+    // Площадь в га: значение колонки area_sqm интерпретируем как гектары
+    // (для формул area_sqm/10000 переводим в кв.м, отображение — как введено).
+    if (areaUnit === "ha" && "area_sqm" in scope) scope.area_sqm *= 10000;
     const scopeMax: Record<string, number> = { ...scope };
     // Пер-строчная цена из раздела «Цены» (по компании), с верхней границей «до».
     if (row.__pd !== undefined && row.__pd !== "") {

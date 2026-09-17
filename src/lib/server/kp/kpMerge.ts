@@ -16,6 +16,7 @@ import type { KpExecutor, KpOrganization } from "./kpDb";
 export interface KpFormPayload {
   serviceType: string;
   mode: PriceMode;
+  areaUnit?: "sqm" | "ha"; // единица площади для колонки area_sqm
   includes: KpIncludes;
   client: {
     orgFull: string;
@@ -172,7 +173,7 @@ export function buildKpContext(input: {
     price_direct: toNum(tier.pricePerHaDirect),
     price_tender: toNum(tier.pricePerHaTender),
     min_ha: tier.minHectares ?? 1,
-  });
+  }, { areaUnit: payload.areaUnit === "ha" ? "ha" : "sqm" });
 
   const areaHaTotal = deriveAreaHa(payload);
   const location = payload.object?.location?.trim() || deriveLocation(payload);
