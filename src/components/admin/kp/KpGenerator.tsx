@@ -663,7 +663,12 @@ export default function KpGenerator() {
   ] as const;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 kp-app">
+      <style>{`
+        .kp-app :where(button, a[href], select, [role="button"], [tabindex]):focus-visible { outline: 2px solid #029cda; outline-offset: 2px; border-radius: 8px; }
+        .kp-app :where(input, textarea):focus-visible { outline: 2px solid rgba(2,156,218,.55); outline-offset: 1px; }
+        .kp-app :where(input[type="checkbox"]):focus-visible { outline-offset: 2px; }
+      `}</style>
       {/* Шапка: заголовок + вкладки. На узких экранах вкладки прокручиваются по горизонтали. */}
       <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
@@ -2133,7 +2138,34 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
       {loading ? <LoadingBlock /> : shown.length === 0 ? (
         <div className="text-sm text-gray-400">{onlyFollowup ? 'Нет писем, требующих внимания.' : 'За период рассылок нет.'}</div>
       ) : (
-        <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
+      <>
+        {/* Мобильные карточки */}
+        <div className="sm:hidden space-y-2">
+          {shown.map((r) => {
+            const fu = isFollowup(r);
+            return (
+              <div key={r.id} className={`border rounded-xl p-3 ${fu ? 'bg-[#fff7ed] border-[#fed7aa]' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="font-medium text-sm text-[#313131] break-all">{r.email}</div>
+                  <div className="text-[11px] text-gray-400 shrink-0">{new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
+                </div>
+                <div className="text-xs text-gray-600 mt-0.5">{r.subject}</div>
+                <div className="text-[11px] text-gray-400">{r.template_name}{r.from_email ? ` · от ${r.from_email}` : ''}</div>
+                <div className="flex items-center gap-3 mt-1.5 text-xs">
+                  {r.status === 'ok'
+                    ? <span className="text-[#16a34a]">✓ отправлено{r.delivery_status === 'bounced' ? ' · возврат' : ''}</span>
+                    : <span className="text-red-500">ошибка</span>}
+                  {r.open_count > 0
+                    ? <span className="text-[#0b5c7d]">👁 {r.open_count}×</span>
+                    : fu ? <span className="text-[#b45309]">⏰ не открыто</span> : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Таблица (планшет/десктоп) */}
+        <div className="hidden sm:block overflow-x-auto bg-white border border-gray-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
@@ -2171,6 +2203,7 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
             </tbody>
           </table>
         </div>
+      </>
       )}
       <div className="text-[11px] text-gray-400">Открытие фиксируется по картинке-пикселю: сигнал косвенный (почтовые клиенты могут блокировать картинки или подгружать их сами).</div>
     </div>
