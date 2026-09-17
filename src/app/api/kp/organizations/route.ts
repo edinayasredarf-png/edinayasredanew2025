@@ -65,6 +65,8 @@ export async function POST(request: NextRequest) {
     writeKpNumber: org.writeKpNumber ?? true,
     mailAccountId: org.mailAccountId ?? null,
     mailAccountKey: org.mailAccountKey ?? "",
+    mailSubject: org.mailSubject ?? "",
+    mailBody: org.mailBody ?? "",
     isActive: org.isActive ?? true,
     sortOrder: org.sortOrder ?? 0,
   };

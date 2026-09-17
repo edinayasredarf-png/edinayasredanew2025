@@ -5,7 +5,7 @@ import { buildKpDocuments, type KpGenerateRequest } from "@/lib/server/kp/kpBuil
 import { convertDocxToPdf, isPdfConfigured } from "@/lib/server/kp/kpPdf";
 import { sendLetterEmail, isMailerConfigured, type SmtpAccount } from "@/lib/server/mailer";
 import { dbGetMailAccountSecret } from "@/lib/server/mailAccountsDb";
-import { dbGetOrganization, dbInsertHistory } from "@/lib/server/kp/kpDb";
+import { dbGetAttachmentData, dbGetOrganization, dbInsertHistory } from "@/lib/server/kp/kpDb";
 import { dbLogLetterSend } from "@/lib/server/letterSendsDb";
 import { randomUUID } from "node:crypto";
 
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
     asPdf?: boolean;
     perOrg?: boolean; // отправлять от каждой организации из её ящика (отдельными письмами)
     extraAttachments?: Array<{ filename?: string; content?: string; contentType?: string }>; // доп. файлы (base64)
+    libraryAttachmentIds?: number[]; // файлы из библиотеки вложений
   };
   try {
     body = await request.json();
@@ -123,6 +124,11 @@ export async function POST(request: NextRequest) {
     if (buf.length === 0 || buf.length > MAX_EXTRA) continue;
     attachments.push({ filename: a.filename, content: buf, contentType: a.contentType || undefined });
   }
+  // Вложения из библиотеки (по id).
+  for (const id of body.libraryAttachmentIds || []) {
+    const f = await dbGetAttachmentData(Number(id));
+    if (f) attachments.push({ filename: f.filename, content: f.data, contentType: f.mime || undefined });
+  }
 
   const subject = (body.subject || "").trim() || "Коммерческое предложение";
   const messageText = (body.message || "").trim() || "Здравствуйте!\n\nНаправляем коммерческое предложение во вложении.";
@@ -172,9 +178,15 @@ export async function POST(request: NextRequest) {
       const org = await dbGetOrganization(d.orgKey);
       const acc = await resolveAccount((org?.mailAccountKey || accountId || "").trim());
       if (acc.error) { sent.push({ org: d.shortName, ok: false, error: `ящик: ${acc.error}` }); continue; }
+      // Тема/текст письма — из шаблона компании, если заданы (иначе общий из формы).
+      const orgSubject = (org?.mailSubject || "").trim() || subject;
+      const orgBody = (org?.mailBody || "").trim() || messageText;
+      const orgHtml = orgBody.split(/\n/).map((l) => escapeHtml(l)).join("<br>");
+      // Вложения этой организации: её КП + доп. файлы + библиотека.
+      const orgAttach = [attachments[i], ...attachments.slice(docs.length)];
       const token = `kp_${randomUUID()}`;
       try {
-        const r = await sendLetterEmail({ to, subject, html, text: messageText, attachments: [attachments[i]], account: acc.account, trackToken: token });
+        const r = await sendLetterEmail({ to, subject: orgSubject, html: orgHtml, text: orgBody, attachments: orgAttach, account: acc.account, trackToken: token });
         sent.push({ org: d.shortName, ok: r.accepted, error: r.accepted ? undefined : (r.rejected.join(", ") || "не принято") });
         await logSend({ ok: r.accepted, error: r.accepted ? "" : (r.rejected.join(", ") || "не принято"), token, messageId: r.messageId, acc: acc.account, orgName: d.shortName });
         await logHistory(d);

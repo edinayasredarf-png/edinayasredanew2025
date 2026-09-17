@@ -43,6 +43,8 @@ export interface KpOrganization {
   writeKpNumber: boolean; // писать ли номер КП/письма в документе
   mailAccountId: number | null;
   mailAccountKey: string; // id ящика для рассылки (mailAccountsDb), '' = основной
+  mailSubject: string; // тема письма при рассылке (пусто = общая)
+  mailBody: string; // текст письма при рассылке (пусто = общий)
   isActive: boolean;
   sortOrder: number;
 }
@@ -118,7 +120,23 @@ async function ensureTables(): Promise<void> {
       add column if not exists header_image text not null default '',
       add column if not exists header_text text not null default '',
       add column if not exists write_kp_number boolean not null default true,
-      add column if not exists mail_account_key text not null default ''
+      add column if not exists mail_account_key text not null default '',
+      add column if not exists mail_subject text not null default '',
+      add column if not exists mail_body text not null default ''
+  `);
+
+  // Библиотека вложений для рассылки (прайсы, презентации и т.п.).
+  await pool.query(`
+    create table if not exists kp_attachments (
+      id bigserial primary key,
+      name text not null default '',
+      filename text not null default '',
+      mime text not null default '',
+      size_bytes integer not null default 0,
+      org_key text not null default '',
+      data bytea,
+      created_at timestamptz not null default now()
+    )
   `);
 
   await pool.query(`
@@ -955,6 +973,8 @@ function mapOrg(r: Record<string, unknown>): KpOrganization {
     writeKpNumber: r.write_kp_number == null ? true : Boolean(r.write_kp_number),
     mailAccountId: r.mail_account_id == null ? null : Number(r.mail_account_id),
     mailAccountKey: String(r.mail_account_key ?? ""),
+    mailSubject: String(r.mail_subject ?? ""),
+    mailBody: String(r.mail_body ?? ""),
     isActive: Boolean(r.is_active),
     sortOrder: Number(r.sort_order ?? 0),
   };
@@ -983,22 +1003,74 @@ export async function dbUpsertOrganization(o: KpOrganization): Promise<void> {
     `insert into kp_organizations
        (key, name, short_name, director_role, director_fio, requisites, phone, email,
         header_image, header_text, stamp_image, signature_image, write_kp_number,
-        mail_account_id, mail_account_key, is_active, sort_order, updated_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, now())
+        mail_account_id, mail_account_key, mail_subject, mail_body, is_active, sort_order, updated_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, now())
      on conflict (key) do update set
        name=excluded.name, short_name=excluded.short_name, director_role=excluded.director_role,
        director_fio=excluded.director_fio, requisites=excluded.requisites, phone=excluded.phone,
        email=excluded.email, header_image=excluded.header_image, header_text=excluded.header_text,
        stamp_image=excluded.stamp_image, signature_image=excluded.signature_image,
        write_kp_number=excluded.write_kp_number, mail_account_id=excluded.mail_account_id,
-       mail_account_key=excluded.mail_account_key,
+       mail_account_key=excluded.mail_account_key, mail_subject=excluded.mail_subject, mail_body=excluded.mail_body,
        is_active=excluded.is_active, sort_order=excluded.sort_order, updated_at=now()`,
     [
       o.key, o.name, o.shortName, o.directorRole, o.directorFio, o.requisites, o.phone, o.email,
       o.headerImage, o.headerText, o.stampImage, o.signatureImage, o.writeKpNumber,
-      o.mailAccountId, o.mailAccountKey || "", o.isActive, o.sortOrder,
+      o.mailAccountId, o.mailAccountKey || "", o.mailSubject || "", o.mailBody || "", o.isActive, o.sortOrder,
     ]
   );
+}
+
+/* ─────────── Библиотека вложений для рассылки ─────────── */
+export interface KpAttachmentMeta {
+  id: number;
+  name: string;
+  filename: string;
+  mime: string;
+  sizeBytes: number;
+  orgKey: string;
+  createdAt: string;
+}
+
+export async function dbListAttachments(): Promise<KpAttachmentMeta[]> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "select id, name, filename, mime, size_bytes, org_key, created_at from kp_attachments order by created_at desc"
+  );
+  return rows.map((r) => ({
+    id: Number(r.id),
+    name: String(r.name ?? ""),
+    filename: String(r.filename ?? ""),
+    mime: String(r.mime ?? ""),
+    sizeBytes: Number(r.size_bytes ?? 0),
+    orgKey: String(r.org_key ?? ""),
+    createdAt: r.created_at ? new Date(r.created_at as string).toISOString() : "",
+  }));
+}
+
+export async function dbAddAttachment(input: { name: string; filename: string; mime: string; orgKey?: string; data: Buffer }): Promise<number> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "insert into kp_attachments (name, filename, mime, size_bytes, org_key, data) values ($1,$2,$3,$4,$5,$6) returning id",
+    [input.name || input.filename, input.filename, input.mime || "application/octet-stream", input.data.length, input.orgKey || "", input.data]
+  );
+  return Number(rows[0]?.id);
+}
+
+export async function dbGetAttachmentData(id: number): Promise<{ filename: string; mime: string; data: Buffer } | null> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select filename, mime, data from kp_attachments where id=$1", [id]);
+  if (!rows[0] || !rows[0].data) return null;
+  return { filename: String(rows[0].filename ?? "file"), mime: String(rows[0].mime ?? "application/octet-stream"), data: rows[0].data as Buffer };
+}
+
+export async function dbDeleteAttachment(id: number): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("delete from kp_attachments where id=$1", [id]);
 }
 
 export async function dbDeleteOrganization(key: string): Promise<void> {

@@ -16,6 +16,8 @@ export interface Organization {
   writeKpNumber: boolean;
   mailAccountId: number | null;
   mailAccountKey: string;
+  mailSubject: string;
+  mailBody: string;
   isActive: boolean;
   sortOrder: number;
 }

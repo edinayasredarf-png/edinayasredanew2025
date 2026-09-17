@@ -211,11 +211,16 @@ export default function KpGenerator() {
 
   const [busy, setBusy] = useState(false);
   const [mailAccounts, setMailAccounts] = useState<Array<{ id: string; label: string; from_email: string }>>([]);
+  const [libAttachments, setLibAttachments] = useState<Array<{ id: number; name: string; filename: string; sizeBytes: number }>>([]);
 
   useEffect(() => {
     fetch('/api/letters/accounts', { credentials: 'include' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (d?.accounts) setMailAccounts(d.accounts.filter((a: { enabled?: boolean }) => a.enabled)); })
+      .catch(() => {});
+    fetch('/api/kp/attachments', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.attachments) setLibAttachments(d.attachments); })
       .catch(() => {});
   }, []);
 
@@ -548,7 +553,7 @@ export default function KpGenerator() {
     }
   };
 
-  const sendEmail = async (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean; extraFiles?: File[] }): Promise<boolean> => {
+  const sendEmail = async (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean; extraFiles?: File[]; libraryAttachmentIds?: number[] }): Promise<boolean> => {
     const err = validate();
     if (err) { setStatus(err); return false; }
     if (!opts.to.trim()) { setStatus('Укажите e-mail клиента'); return false; }
@@ -563,7 +568,7 @@ export default function KpGenerator() {
       })));
       const res = await fetch('/api/kp/send', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...buildPayload(opts.asPdf ? 'pdf' : 'docx'), clientEmail: opts.to, subject: opts.subject, message: opts.message, accountId: opts.accountId, asPdf: opts.asPdf, perOrg: opts.perOrg, extraAttachments }),
+        body: JSON.stringify({ ...buildPayload(opts.asPdf ? 'pdf' : 'docx'), clientEmail: opts.to, subject: opts.subject, message: opts.message, accountId: opts.accountId, asPdf: opts.asPdf, perOrg: opts.perOrg, extraAttachments, libraryAttachmentIds: opts.libraryAttachmentIds || [] }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'Ошибка отправки');
@@ -690,7 +695,7 @@ export default function KpGenerator() {
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
-            perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, generateBatch, busy,
+            perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, libAttachments, generateBatch, busy,
           }}
         />
       )}
@@ -754,7 +759,7 @@ function CreateTab(p: CreateProps) {
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
-    perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, generateBatch, busy,
+    perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, libAttachments, generateBatch, busy,
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
@@ -786,8 +791,9 @@ function CreateTab(p: CreateProps) {
     computePreview: () => Array<{ key: string; name: string; table: PreviewTable | null; ais: number; renewal: number; grand: number }>;
     fetchDocPreview: () => Promise<Array<{ orgName: string; html: string }> | null>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void;
-    sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean; extraFiles?: File[] }) => Promise<boolean>;
+    sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean; extraFiles?: File[]; libraryAttachmentIds?: number[] }) => Promise<boolean>;
     mailAccounts: Array<{ id: string; label: string; from_email: string }>;
+    libAttachments: Array<{ id: number; name: string; filename: string; sizeBytes: number }>;
     generateBatch: (clients: BatchClient[], format?: 'docx' | 'pdf' | 'both') => Promise<boolean>;
     busy: boolean;
   };
@@ -807,6 +813,21 @@ function CreateTab(p: CreateProps) {
   const [mailAsPdf, setMailAsPdf] = React.useState(false);
   const [mailPerOrg, setMailPerOrg] = React.useState(false);
   const [mailFiles, setMailFiles] = React.useState<File[]>([]);
+  const [mailLibIds, setMailLibIds] = React.useState<number[]>([]);
+  const [mailEdited, setMailEdited] = React.useState(false);
+
+  // Префилл темы/текста из шаблона первой выбранной компании (пока не правили вручную).
+  const primaryOrg = orgs.find((o) => o.key === selectedOrgs[0]);
+  const openMail = () => {
+    setMailOpen((v) => {
+      const next = !v;
+      if (next && !mailEdited && primaryOrg) {
+        if (primaryOrg.mailSubject) setMailSubject(primaryOrg.mailSubject);
+        if (primaryOrg.mailBody) setMailMessage(primaryOrg.mailBody);
+      }
+      return next;
+    });
+  };
   const [batchOpen, setBatchOpen] = React.useState(false);
   const [batchClients, setBatchClients] = React.useState<BatchClient[]>([{ orgFull: '', fio: '' }]);
   const [batchPaste, setBatchPaste] = React.useState('');
@@ -1116,7 +1137,7 @@ function CreateTab(p: CreateProps) {
           <div className="text-[11px] text-gray-400 text-center">PDF — через сервис pdf-service (LibreOffice).</div>
 
           <button
-            onClick={() => setMailOpen((v) => !v)}
+            onClick={openMail}
             disabled={perOrgTotals.length === 0}
             className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-[#7c3aed] text-[#7c3aed] hover:bg-[#f5f3ff] disabled:opacity-50"
           >
@@ -1131,12 +1152,25 @@ function CreateTab(p: CreateProps) {
               </div>
               <div>
                 <div className={label}>Тема</div>
-                <input value={mailSubject} onChange={(e) => setMailSubject(e.target.value)} className={input} />
+                <input value={mailSubject} onChange={(e) => { setMailSubject(e.target.value); setMailEdited(true); }} className={input} />
               </div>
               <div>
-                <div className={label}>Сообщение</div>
-                <textarea value={mailMessage} onChange={(e) => setMailMessage(e.target.value)} className={`${input} h-24`} />
+                <div className={label}>Сообщение {primaryOrg?.mailBody ? <span className="text-[11px] text-gray-400">(шаблон «{primaryOrg.shortName || primaryOrg.name}»; при «от каждой» — свой у каждой)</span> : null}</div>
+                <textarea value={mailMessage} onChange={(e) => { setMailMessage(e.target.value); setMailEdited(true); }} className={`${input} h-24`} />
               </div>
+              {libAttachments.length > 0 && (
+                <div>
+                  <div className={label}>Доп. вложения из библиотеки</div>
+                  <div className="space-y-1">
+                    {libAttachments.map((a) => (
+                      <label key={a.id} className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer">
+                        <input type="checkbox" checked={mailLibIds.includes(a.id)} onChange={(e) => setMailLibIds((prev) => e.target.checked ? [...prev, a.id] : prev.filter((x) => x !== a.id))} />
+                        {a.name} <span className="text-gray-400">({a.filename})</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer">
                 <input type="checkbox" checked={mailPerOrg} onChange={(e) => setMailPerOrg(e.target.checked)} />
                 От каждой организации отдельным письмом (из её ящика)
@@ -1169,7 +1203,7 @@ function CreateTab(p: CreateProps) {
                   : `Одно письмо, во вложении ${selectedOrgs.length} КП (по одному на организацию).`}
               </div>
               <button
-                onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf, perOrg: mailPerOrg, extraFiles: mailFiles })}
+                onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf, perOrg: mailPerOrg, extraFiles: mailFiles, libraryAttachmentIds: mailLibIds })}
                 disabled={busy || !mailTo.trim() || perOrgTotals.length === 0}
                 className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >

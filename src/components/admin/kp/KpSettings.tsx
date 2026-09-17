@@ -21,7 +21,7 @@ function emptyOrg(sort: number): Organization {
     key: '', name: '', shortName: '', directorRole: 'Директор', directorFio: '',
     requisites: '', phone: '', email: '', headerImage: '', headerText: '',
     stampImage: '', signatureImage: '', writeKpNumber: true, mailAccountId: null,
-    mailAccountKey: '', isActive: true, sortOrder: sort,
+    mailAccountKey: '', mailSubject: '', mailBody: '', isActive: true, sortOrder: sort,
   };
 }
 
@@ -116,6 +116,86 @@ export default function KpSettings({
       <ExecutorsManager executors={executors} onChanged={onChanged} setStatus={setStatus} />
       {/* Ящики для рассылки */}
       <MailAccountsManager setStatus={setStatus} />
+      {/* Библиотека вложений */}
+      <MailAttachmentsManager setStatus={setStatus} />
+    </div>
+  );
+}
+
+/* ─────────── Библиотека вложений для рассылки ─────────── */
+interface AttachMeta { id: number; name: string; filename: string; mime: string; sizeBytes: number; createdAt: string }
+function fmtBytes(n: number): string {
+  if (n < 1024) return `${n} Б`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} КБ`;
+  return `${(n / 1024 / 1024).toFixed(1)} МБ`;
+}
+function MailAttachmentsManager({ setStatus }: { setStatus: (s: string) => void }) {
+  const [items, setItems] = useState<AttachMeta[]>([]);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  const load = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/kp/attachments', { credentials: 'include' });
+      const d = await res.json();
+      if (res.ok) setItems(d.attachments || []);
+    } catch { /* ignore */ }
+  }, []);
+  React.useEffect(() => { load(); }, [load]);
+
+  const upload = async (files: FileList | null) => {
+    if (!files || !files.length) return;
+    setBusy(true);
+    try {
+      for (const f of Array.from(files)) {
+        const fd = new FormData();
+        fd.append('file', f);
+        fd.append('name', f.name);
+        const res = await fetch('/api/kp/attachments', { method: 'POST', credentials: 'include', body: fd });
+        if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Ошибка загрузки'); }
+      }
+      setStatus('Файлы добавлены в библиотеку');
+      if (fileRef.current) fileRef.current.value = '';
+      load();
+    } catch (e) { setStatus((e as Error).message); } finally { setBusy(false); }
+  };
+  const del = async (id: number) => {
+    if (!confirm('Удалить файл из библиотеки?')) return;
+    await fetch(`/api/kp/attachments?id=${id}`, { method: 'DELETE', credentials: 'include' });
+    setStatus('Файл удалён');
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold text-[#313131]">📎 Библиотека вложений</h3>
+        <button onClick={() => setOpen((v) => !v)} className="text-sm text-[#029cda]">{open ? 'Свернуть' : 'Показать'}</button>
+      </div>
+      {open && (
+        <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <input ref={fileRef} type="file" multiple onChange={(e) => upload(e.target.files)} className="text-sm" />
+            {busy && <Spinner size={16} />}
+          </div>
+          <div className="space-y-1">
+            {items.map((a) => (
+              <div key={a.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2">
+                <div className="text-sm text-[#313131] min-w-0">
+                  <div className="truncate">{a.name}</div>
+                  <div className="text-xs text-gray-400">{a.filename} · {fmtBytes(a.sizeBytes)}</div>
+                </div>
+                <div className="flex gap-3 shrink-0">
+                  <a href={`/api/kp/attachments?id=${a.id}`} className="text-sm text-[#029cda]">Скачать</a>
+                  <button onClick={() => del(a.id)} className="text-sm text-red-500">Удалить</button>
+                </div>
+              </div>
+            ))}
+            {items.length === 0 && <div className="text-sm text-gray-400">Библиотека пуста. Загрузите прайсы, презентации — их можно приложить к письму галочкой при рассылке.</div>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -380,6 +460,16 @@ function OrgEditor({
           {accounts.map((a) => <option key={a.id} value={a.id}>{a.label} ({a.from_email})</option>)}
         </select>
         <div className="text-[11px] text-gray-400 mt-1">Используется при рассылке «от каждой организации отдельно».</div>
+      </div>
+
+      <div>
+        <div className={label}>Тема письма при рассылке (пусто = общая)</div>
+        <input value={d.mailSubject || ''} onChange={(e) => set({ mailSubject: e.target.value })} className={input} placeholder="Коммерческое предложение — АИС «Единая среда»" />
+      </div>
+      <div>
+        <div className={label}>Текст письма при рассылке (пусто = общий)</div>
+        <textarea value={d.mailBody || ''} onChange={(e) => set({ mailBody: e.target.value })} className={`${input} h-24`} placeholder={'Здравствуйте!\n\nНаправляем коммерческое предложение во вложении…'} />
+        <div className="text-[11px] text-gray-400 mt-1">Применяется при отправке «от каждой организации отдельно».</div>
       </div>
       <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
         <input type="checkbox" checked={d.isActive} onChange={(e) => set({ isActive: e.target.checked })} />
