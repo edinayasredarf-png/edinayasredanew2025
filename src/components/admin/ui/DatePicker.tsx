@@ -75,9 +75,9 @@ export function DatePicker({ value, onChange, placeholder = "Выберите д
       {open && (
         <div className="absolute z-40 left-0 mt-1 w-[280px] bg-white border border-gray-200 rounded-2xl shadow-xl p-3">
           <div className="flex items-center justify-between px-1 mb-2">
-            <button type="button" onClick={() => step(-1)} aria-label="Предыдущий месяц" className="w-7 h-7 grid place-items-center rounded-lg text-gray-500 hover:bg-gray-100">‹</button>
+            <button type="button" onClick={() => step(-1)} aria-label="Предыдущий месяц" className="w-7 h-7 grid place-items-center rounded-xl text-gray-500 hover:bg-gray-100">‹</button>
             <div className="text-sm font-semibold text-[#1b2a4a]">{MONTHS[view.m]} {view.y}</div>
-            <button type="button" onClick={() => step(1)} aria-label="Следующий месяц" className="w-7 h-7 grid place-items-center rounded-lg text-gray-500 hover:bg-gray-100">›</button>
+            <button type="button" onClick={() => step(1)} aria-label="Следующий месяц" className="w-7 h-7 grid place-items-center rounded-xl text-gray-500 hover:bg-gray-100">›</button>
           </div>
           <div className="grid grid-cols-7 gap-0.5 mb-1">
             {WEEKDAYS.map((w) => <div key={w} className="h-7 grid place-items-center text-[11px] text-gray-400">{w}</div>)}
@@ -88,7 +88,7 @@ export function DatePicker({ value, onChange, placeholder = "Выберите д
                 key={i}
                 type="button"
                 onClick={() => { onChange(toIso(view.y, view.m, c.d)); setOpen(false); }}
-                className={`h-8 grid place-items-center rounded-lg text-sm transition-colors ${
+                className={`h-8 grid place-items-center rounded-xl text-sm transition-colors ${
                   isSel(c.d) ? "bg-[#029cda] text-white font-medium"
                   : isToday(c.d) ? "text-[#029cda] font-medium hover:bg-[#EAF6FC]"
                   : "text-[#1b2a4a] hover:bg-gray-100"

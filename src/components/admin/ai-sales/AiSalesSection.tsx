@@ -129,20 +129,20 @@ function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) =
     <div className="flex flex-wrap items-center gap-2 mb-4">
       {presets.map(([key, label]) => (
         <button key={key} onClick={() => onChange(presetRange(key))}
-          className={`px-3 py-1.5 rounded-lg text-sm transition ${active === key ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+          className={`px-3 py-1.5 rounded-xl text-sm transition ${active === key ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
           {label}
         </button>
       ))}
       <span className="text-gray-300 mx-1">|</span>
       <input type="date" value={value.from || ''} max={value.to || undefined}
         onChange={(e) => onChange({ from: e.target.value || null, to: value.to })}
-        className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-700" />
+        className="px-2 py-1.5 rounded-xl border border-gray-300 text-sm text-gray-700" />
       <span className="text-gray-400 text-sm">—</span>
       <input type="date" value={value.to || ''} min={value.from || undefined}
         onChange={(e) => onChange({ from: value.from, to: e.target.value || null })}
-        className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-700" />
+        className="px-2 py-1.5 rounded-xl border border-gray-300 text-sm text-gray-700" />
       <button onClick={() => onChange(NO_PERIOD)}
-        className={`px-3 py-1.5 rounded-lg text-sm transition ${active === 'all' ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+        className={`px-3 py-1.5 rounded-xl text-sm transition ${active === 'all' ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
         Всё
       </button>
     </div>
@@ -203,7 +203,7 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
     } finally { setBusy(false); }
   };
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
   if (!data) return <LoadingBlock />;
 
   return (
@@ -212,16 +212,16 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
         <h2 className="text-xl font-bold text-gray-900">AI Продажи — дашборд</h2>
         <div className="flex gap-2">
           <button onClick={sync} disabled={busy}
-            className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">
+            className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">
             Синхронизировать Bitrix
           </button>
           <button onClick={drain} disabled={busy}
-            className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700 disabled:opacity-50">
+            className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700 disabled:opacity-50">
             Обработать очередь
           </button>
         </div>
       </div>
-      {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm">{msg}</div>}
+      {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
 
       <PeriodBar value={period} onChange={setPeriod} />
 
@@ -285,7 +285,7 @@ function StatChip({ label, value, tone }: { label: string; value: number; tone: 
       ? (value > 0 ? 'bg-[#029cda]/10 text-[#029cda] border-[#029cda]/20' : 'bg-white text-gray-400 border-gray-200')
       : (value > 0 ? 'bg-white text-gray-700 border-gray-200' : 'bg-white text-gray-400 border-gray-200');
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm ${cls}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm ${cls}`}>
       {label}: <b>{value}</b>
     </span>
   );
@@ -358,7 +358,7 @@ function QueuePanel({ refreshSignal }: { refreshSignal?: number }) {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {q.byType.map((t) => (
-                  <span key={t.type} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-sm text-gray-700">
+                  <span key={t.type} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-gray-200 text-sm text-gray-700">
                     {jobLabel(t.type)} <b className="text-[#029cda]">{t.count}</b>
                   </span>
                 ))}
@@ -374,7 +374,7 @@ function QueuePanel({ refreshSignal }: { refreshSignal?: number }) {
               {openErrors && (
                 <ul className="space-y-2">
                   {q.failed.map((j) => (
-                    <li key={j.id} className="text-sm bg-white border border-red-100 rounded-lg p-2.5">
+                    <li key={j.id} className="text-sm bg-white border border-red-100 rounded-xl p-2.5">
                       <div className="flex items-center gap-2 text-gray-700">
                         <span className="font-medium">{jobLabel(j.type)}</span>
                         {jobRef(j.payload) && <span className="text-gray-500">· {jobRef(j.payload)}</span>}
@@ -514,7 +514,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
         </div>
       )}
       <PeriodBar value={period} onChange={setPeriod} />
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
         <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
@@ -700,7 +700,7 @@ function ReviewWidget({ callId, llmDeal, llmManager }: { callId: string; llmDeal
           <label className="block text-xs text-gray-500 mb-1">Качество сделки (0–100)</label>
           <div className="flex items-center gap-2">
             <input type="number" min={0} max={100} value={deal} onChange={(e) => setDeal(e.target.value)}
-              className="w-24 px-2 py-1.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+              className="w-24 px-2 py-1.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
             <span className="text-xs text-gray-400">LLM: {llmDeal ?? '—'}{dDeal != null && <span className={Math.abs(dDeal) <= 10 ? 'text-emerald-600' : 'text-red-600'}> (Δ {dDeal > 0 ? '+' : ''}{dDeal})</span>}</span>
           </div>
         </div>
@@ -708,17 +708,17 @@ function ReviewWidget({ callId, llmDeal, llmManager }: { callId: string; llmDeal
           <label className="block text-xs text-gray-500 mb-1">Работа менеджера (0–10)</label>
           <div className="flex items-center gap-2">
             <input type="number" min={0} max={10} step={0.5} value={mgr} onChange={(e) => setMgr(e.target.value)}
-              className="w-20 px-2 py-1.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+              className="w-20 px-2 py-1.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
             <span className="text-xs text-gray-400">LLM: {llmManager ?? '—'}{dMgr != null && <span className={Math.abs(dMgr) <= 2 ? 'text-emerald-600' : 'text-red-600'}> (Δ {dMgr > 0 ? '+' : ''}{dMgr})</span>}</span>
           </div>
         </div>
         <div className="flex-1 min-w-[180px]">
           <label className="block text-xs text-gray-500 mb-1">Комментарий</label>
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="почему такая оценка…"
-            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+            className="w-full px-2 py-1.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
         </div>
         <button onClick={save} disabled={busy}
-          className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Сохранить</button>
+          className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Сохранить</button>
         {saved && <span className="text-sm text-green-600">✓</span>}
       </div>
     </div>
@@ -778,7 +778,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
     seek(initialSeekMs);
   }, [data, initialSeekMs, seek]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
   if (!data) return <LoadingBlock />;
 
   const a = data.analysis as null | {
@@ -801,21 +801,21 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
         <button onClick={onBack} className="text-sm text-[#029cda]">{backLabel}</button>
         <div className="flex gap-2 items-center">
           {data.call.dealUrl
-            ? <a href={data.call.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>
+            ? <a href={data.call.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>
             : data.call.leadUrl
-              ? <a href={data.call.leadUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Лид в Bitrix</a>
+              ? <a href={data.call.leadUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Лид в Bitrix</a>
               : null}
           <button onClick={retranscribe} disabled={busy} title="Перетранскрибировать — заново распознать запись (текущим провайдером)"
-            className="w-9 h-9 rounded-lg border border-gray-300 text-gray-600 hover:text-[#029cda] hover:border-[#029cda] flex items-center justify-center disabled:opacity-50">
+            className="w-9 h-9 rounded-xl border border-gray-300 text-gray-600 hover:text-[#029cda] hover:border-[#029cda] flex items-center justify-center disabled:opacity-50">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a4 4 0 00-4 4v4a4 4 0 008 0V7a4 4 0 00-4-4z M5 11a7 7 0 0014 0 M12 18v3" /></svg>
           </button>
           <button onClick={reanalyze} disabled={busy} title="Переанализировать — заново прогнать AI-разбор звонка"
-            className="w-9 h-9 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] flex items-center justify-center disabled:opacity-50">
+            className="w-9 h-9 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] flex items-center justify-center disabled:opacity-50">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3 M12 18v3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M3 12h3 M18 12h3 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1" /></svg>
           </button>
         </div>
       </div>
-      {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm">{msg}</div>}
+      {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
 
       <div className="bg-[#F6F7F9] rounded-xl p-5 mb-4">
         <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-700">
@@ -918,7 +918,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
           <p className="font-semibold text-gray-800 mb-3">AI-анализ</p>
           {!a ? <p className="text-gray-400 text-sm">Анализ ещё не выполнен.</p> : a.connected === false ? (
             <div className="text-sm">
-              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-gray-600 mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 text-gray-600 mb-3">
                 📵 Разговор не состоялся{a.noContactReason ? `: ${a.noContactReason}` : ''}
               </div>
               <p className="text-gray-500">Менеджер не оценивается — звонок не дошёл до собеседника (автоответчик / голосовой помощник / недозвон).</p>
@@ -974,7 +974,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Возражения</p>
                   <ul className="space-y-2">
                     {a.objections.filter((o) => (o.text || o.quote)?.trim()).map((o, i) => (
-                      <li key={i} className="rounded-lg bg-[#F6F7F9] p-2.5">
+                      <li key={i} className="rounded-xl bg-[#F6F7F9] p-2.5">
                         <div className="flex items-start gap-2">
                           {o.startMs != null ? (
                             <button onClick={() => seek(o.startMs ?? null)} title="Прослушать момент"
@@ -1042,7 +1042,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
           options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
       </div>
       <PeriodBar value={period} onChange={setPeriod} />
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
         <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
@@ -1116,7 +1116,7 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
     } finally { setBusy(false); }
   };
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
   if (!data) return <LoadingBlock />;
   const ins = data.insight;
 
@@ -1125,11 +1125,11 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="text-sm text-[#029cda]">← К сделкам</button>
         <div className="flex gap-2">
-          {data.deal.dealUrl && <a href={data.deal.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>}
-          <button onClick={reanalyze} disabled={busy} className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Пересчитать</button>
+          {data.deal.dealUrl && <a href={data.deal.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>}
+          <button onClick={reanalyze} disabled={busy} className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Пересчитать</button>
         </div>
       </div>
-      {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm">{msg}</div>}
+      {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
 
       <div className="bg-[#F6F7F9] rounded-xl p-5 mb-4 flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-700">
         <span>Клиент: <b>{data.deal.companyTitle || '—'}</b></span>
@@ -1256,13 +1256,13 @@ function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
   }, [period]);
   useEffect(() => { load(); }, [load]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-xl font-bold text-gray-900">AI рекомендует — кому звонить сегодня</h2>
-        <button onClick={load} className="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-700">Обновить</button>
+        <button onClick={load} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
       </div>
       <p className="text-sm text-gray-500 mb-4">Приоритетные сделки по данным разборов звонков. Клик — открыть карточку сделки.</p>
       <PeriodBar value={period} onChange={setPeriod} />
@@ -1354,7 +1354,7 @@ function Insights() {
   }, [period]);
   useEffect(() => { load(); }, [load]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
   const maxOf = (arr: Array<{ count: number }>) => arr.reduce((m, x) => Math.max(m, x.count), 0);
 
@@ -1437,7 +1437,7 @@ function FollowUps() {
           options={[{ value: 'active', label: 'Активные' }, { value: 'overdue', label: 'Просроченные' }, { value: 'done', label: 'Выполненные' }]} />
       </div>
       <p className="text-sm text-gray-500 mb-4">Обещания менеджеров из звонков («отправить КП», «перезвонить»). Отметьте выполненные.</p>
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
         <div className="space-y-2">
           {items.map((it) => (
@@ -1453,7 +1453,7 @@ function FollowUps() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {it.dealUrl && <a href={it.dealUrl} target="_blank" rel="noreferrer" className="text-xs text-gray-500 underline">Bitrix</a>}
-                {it.status !== 'DONE' && <button onClick={() => complete(it.id)} className="px-3 py-1.5 rounded-lg text-sm bg-[#029cda] text-white">Выполнено</button>}
+                {it.status !== 'DONE' && <button onClick={() => complete(it.id)} className="px-3 py-1.5 rounded-xl text-sm bg-[#029cda] text-white">Выполнено</button>}
               </div>
             </div>
           ))}
@@ -1490,7 +1490,7 @@ function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
   }, [period]);
   useEffect(() => { load(); }, [load]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
   const maxR = data ? data.reasons.reduce((m, r) => Math.max(m, r.count), 1) : 1;
   const deals = data ? (reasonFilter ? data.deals.filter((d) => d.reason === reasonFilter) : data.deals) : [];
 
@@ -1576,7 +1576,7 @@ function Settings() {
     } finally { setBusy(false); }
   };
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
   if (!s) return <LoadingBlock />;
   const str = (k: string, d = '') => (s[k] == null ? d : String(s[k]));
   const bool = (k: string) => s[k] === true;
@@ -1616,13 +1616,13 @@ function Settings() {
             options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }]} />
         </Field>
         <Field label="Модель анализа (для Claude)" hint="напр. claude-opus-5. Для YandexGPT задаётся в env YANDEX_GPT_MODEL.">
-          <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-full" />
+          <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" />
         </Field>
         <Field label="Анализ включён">
           <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>
         </Field>
         <Field label="Порог уверенности" hint="0..1 — ниже AI помечает «недостаточно данных»">
-          <input type="number" step="0.05" min="0" max="1" value={str('ai.confidence_threshold', '0.5')} onChange={(e) => set('ai.confidence_threshold', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-32" />
+          <input type="number" step="0.05" min="0" max="1" value={str('ai.confidence_threshold', '0.5')} onChange={(e) => set('ai.confidence_threshold', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-32" />
         </Field>
         <Field label="Автозапись в Bitrix" hint="Пока не активно — запись в CRM (задачи/комментарии) будет с подтверждением человеком.">
           <div className="flex flex-col gap-1 text-sm text-gray-700">
@@ -1631,12 +1631,12 @@ function Settings() {
           </div>
         </Field>
         <Field label="Хранение транскриптов, дней" hint="Retention (§56). Очистка — отдельным заданием (позже).">
-          <input type="number" min="0" value={str('retention.transcript_days', '365')} onChange={(e) => set('retention.transcript_days', e.target.value)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm w-32" />
+          <input type="number" min="0" value={str('retention.transcript_days', '365')} onChange={(e) => set('retention.transcript_days', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-32" />
         </Field>
       </div>
 
       <div className="flex items-center gap-3 mt-4">
-        <button onClick={save} disabled={busy} className="px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Сохранить</button>
+        <button onClick={save} disabled={busy} className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Сохранить</button>
         {msg && <span className="text-sm text-gray-600">{msg}</span>}
       </div>
     </div>
@@ -1669,7 +1669,7 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   }, [period]);
   useEffect(() => { load(); }, [load]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
   const maxCount = data ? data.groups.reduce((m, g) => Math.max(m, ...g.tags.map((t) => t.count)), 1) : 1;
 
@@ -1731,7 +1731,7 @@ function Rop({ onOpen }: { onOpen: (id: string) => void }) {
   }, [period]);
   useEffect(() => { load(); }, [load]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
   return (
     <div>
@@ -1807,7 +1807,7 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
   }, [period]);
   useEffect(() => { load(); }, [load]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
   return (
     <div>
@@ -1862,7 +1862,7 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
     })();
   }, [id]);
 
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err} <button onClick={onBack} className="underline ml-2">Назад</button></div>;
   if (!data) return <LoadingBlock />;
   const m = data.metrics;
 
@@ -1976,11 +1976,11 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
       <div className="flex gap-2 mb-3 flex-wrap">
         <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') run(); }}
           placeholder="Например: дорого, отправьте КП, конкурент…"
-          className="flex-1 min-w-[220px] px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+          className="flex-1 min-w-[220px] px-3 py-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
         <Select value={department} onChange={setDepartment} className="w-full sm:w-[180px]" ariaLabel="Отдел"
           options={[{ value: '', label: 'Все отделы' }, ...departmentOptions.map((d) => ({ value: d.id, label: d.name }))]} />
         <button onClick={run} disabled={loading || !q.trim()}
-          className="px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Искать</button>
+          className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Искать</button>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-3">
@@ -1991,7 +1991,7 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
       </div>
 
       <PeriodBar value={period} onChange={setPeriod} />
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       {loading ? <LoadingBlock /> : searched && (
         <div>
@@ -2050,7 +2050,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
   }, []);
 
   if (loading) return <LoadingBlock />;
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-lg">{err}</div>;
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
   if (!data) return null;
 
   const s = data.summary;
@@ -2085,7 +2085,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
               <p className="text-sm font-semibold text-gray-700 mb-2">По версиям промта (MAE — чем меньше, тем ближе к человеку)</p>
               <div className="flex flex-wrap gap-2">
                 {s.byVersion.map((v) => (
-                  <span key={v.promptVersion} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm text-gray-700">
+                  <span key={v.promptVersion} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-sm text-gray-700">
                     {v.promptVersion} <span className="text-gray-400">({v.count})</span>
                     <b>сделка {v.dealMae ?? '—'}</b> · <b>мен. {v.managerMae ?? '—'}</b>
                   </span>
@@ -2157,9 +2157,9 @@ function AssistantAsk({ callId, compact = false, placeholder }: { callId?: strin
       <div className="flex gap-2">
         <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') ask(); }}
           placeholder={placeholder || 'Задайте вопрос…'}
-          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+          className="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
         <button onClick={() => ask()} disabled={busy || !q.trim()}
-          className="px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-2">
+          className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-2">
           {busy && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}Спросить
         </button>
       </div>
@@ -2171,7 +2171,7 @@ function AssistantAsk({ callId, compact = false, placeholder }: { callId?: strin
           ))}
         </div>
       )}
-      {err && <div className="mt-3 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mt-3 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {busy && <LoadingBlock />}
       {answer && (
         <div className={`mt-3 ${compact ? '' : 'bg-[#F6F7F9] rounded-xl p-4'}`}>
@@ -2254,25 +2254,25 @@ function KnowledgeBase() {
     <div>
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-xl font-bold text-gray-900">База знаний</h2>
-        <button onClick={openNew} className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white">+ Документ</button>
+        <button onClick={openNew} className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white">+ Документ</button>
       </div>
       <p className="text-sm text-gray-500 mb-5">Материалы для ассистента: продукты, цены, FAQ, скрипты, регламенты, возражения, примеры звонков. При сохранении текст индексируется (эмбеддинги Yandex).</p>
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       {sel && (
         <div className="bg-[#F6F7F9] rounded-xl p-4 mb-5">
           <div className="flex gap-2 mb-3">
             <input value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-              placeholder="Заголовок" className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+              placeholder="Заголовок" className="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
             <Select value={draft.category} onChange={(v) => setDraft((d) => ({ ...d, category: v }))} placeholder="Категория…" className="w-full sm:w-[200px]" ariaLabel="Категория"
               options={categories.map((c) => ({ value: c.value, label: c.label }))} />
           </div>
           <textarea value={draft.content} onChange={(e) => setDraft((d) => ({ ...d, content: e.target.value }))}
             rows={10} placeholder="Текст материала…"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white outline-none focus:border-[#029cda]" />
+            className="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white outline-none focus:border-[#029cda]" />
           <div className="flex items-center gap-3 mt-2">
             <button onClick={save} disabled={busy}
-              className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-2">
+              className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-2">
               {busy && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}Сохранить и проиндексировать
             </button>
             <button onClick={() => setSel(null)} className="text-sm text-gray-500 hover:text-gray-800">Отмена</button>
@@ -2356,7 +2356,7 @@ function Departments() {
     <div>
       <h2 className="text-xl font-bold text-gray-900 mb-1">Отделы</h2>
       <p className="text-sm text-gray-500 mb-5">Структура компании для речевой аналитики: у каждого отдела свой промт анализа и свой состав сотрудников.</p>
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Отделы */}
@@ -2365,9 +2365,9 @@ function Departments() {
             <input value={newName} onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') create(); }}
               placeholder="Новый отдел…"
-              className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm" />
+              className="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-sm" />
             <button onClick={create} disabled={busy || !newName.trim()}
-              className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Добавить</button>
+              className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Добавить</button>
           </div>
           <ul className="space-y-2">
             {depts.map((d) => (
@@ -2448,14 +2448,14 @@ function Prompts() {
     <div>
       <h2 className="text-xl font-bold text-gray-900 mb-1">Промты анализа</h2>
       <p className="text-sm text-gray-500 mb-5">Свой системный промт для YandexGPT на каждый отдел — звонки разных отделов анализируются по-разному. Пусто — используется стандартный промт (отдел продаж).</p>
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       <div className="mb-4">
         <button onClick={() => setShowDefault((v) => !v)} className="text-sm text-[#029cda] hover:underline">
           {showDefault ? '▲ Скрыть' : '▼ Показать'} стандартный промт
         </button>
         {showDefault && (
-          <pre className="mt-2 p-3 bg-[#F6F7F9] rounded-lg text-xs text-gray-600 whitespace-pre-wrap max-h-64 overflow-y-auto">{defaultPrompt}</pre>
+          <pre className="mt-2 p-3 bg-[#F6F7F9] rounded-xl text-xs text-gray-600 whitespace-pre-wrap max-h-64 overflow-y-auto">{defaultPrompt}</pre>
         )}
       </div>
 
@@ -2479,10 +2479,10 @@ function Prompts() {
               </div>
               <textarea value={drafts[d.id] ?? ''} onChange={(e) => setDrafts((p) => ({ ...p, [d.id]: e.target.value }))}
                 rows={8} placeholder="Пусто — используется стандартный промт отдела продаж"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm font-mono bg-white outline-none focus:border-[#029cda]" />
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-mono bg-white outline-none focus:border-[#029cda]" />
               <div className="flex items-center gap-3 mt-2">
                 <button onClick={() => save(d.id)}
-                  className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white">Сохранить</button>
+                  className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white">Сохранить</button>
                 {savedId === d.id && <span className="text-sm text-green-600">✓ Сохранено</span>}
               </div>
             </div>
@@ -2551,14 +2551,14 @@ function Scripts() {
     <div>
       <h2 className="text-xl font-bold text-gray-900 mb-1">Скрипт продаж</h2>
       <p className="text-sm text-gray-500 mb-5">Чек-лист шагов, по которому LLM оценивает каждый звонок. Общий скрипт применяется, если у отдела нет своего. Изменение шагов повышает версию.</p>
-      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{err}</div>}
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       {missingScopes.length > 0 && (
         <div className="flex gap-2 mb-5">
           <Select value={newScope} onChange={setNewScope} placeholder="Добавить скрипт для…" className="w-full sm:w-[240px]" ariaLabel="Скрипт для отдела"
             options={[{ value: '', label: 'Добавить скрипт для…' }, ...missingScopes.map((s) => ({ value: s.id, label: s.name }))]} />
           <button onClick={createFor} disabled={!newScope}
-            className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white disabled:opacity-50">Создать</button>
+            className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Создать</button>
         </div>
       )}
 
@@ -2598,7 +2598,7 @@ function Scripts() {
                 <div className="flex-1" />
                 {savedId === s.id && <span className="text-sm text-green-600">✓ Сохранено</span>}
                 <button onClick={() => save(s.id)}
-                  className="px-3 py-2 rounded-lg text-sm bg-[#029cda] text-white">Сохранить</button>
+                  className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white">Сохранить</button>
               </div>
             </div>
           );

@@ -290,7 +290,7 @@ export default function LettersAdmin() {
     } finally { setSending(false); }
   };
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
+  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
 
   return (
     <div className="space-y-6 font-[Raleway]">
@@ -341,7 +341,7 @@ export default function LettersAdmin() {
           <button
             key={t.key}
             onClick={() => setActiveKey(t.key)}
-            className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
+            className={`px-4 py-2 text-sm rounded-xl border transition-colors ${
               activeKey === t.key ? 'bg-[#029cda] text-white border-[#029cda]' : 'bg-[#F6F7F9] text-[#313131] border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -358,7 +358,7 @@ export default function LettersAdmin() {
             <button
               onClick={saveTemplate}
               disabled={saving}
-              className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50"
+              className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50"
             >
               {saving ? 'Сохранение…' : 'Сохранить шаблон'}
             </button>
@@ -432,7 +432,7 @@ export default function LettersAdmin() {
 
           <div>
             <label className="block text-sm text-[#7C8A9A] mb-1">Тело письма</label>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
               <RichEditor
                 key={draft.key}
                 initialHtml={draft.body}
@@ -448,7 +448,7 @@ export default function LettersAdmin() {
               {draft.header_image
                 ? <img src={draft.header_image} alt="Шапка" className="h-12 object-contain border border-gray-200 rounded bg-[#F6F7F9]" />
                 : <span className="text-xs text-[#9AA6B2]">не загружено</span>}
-              <label className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
+              <label className="text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
                 {uploading === 'header_image' ? 'Загрузка…' : 'Загрузить'}
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage('header_image', e.target.files[0])} />
               </label>
@@ -475,7 +475,7 @@ export default function LettersAdmin() {
               {draft.signature_image
                 ? <img src={draft.signature_image} alt="Подпись" className="h-12 object-contain border border-gray-200 rounded bg-[#F6F7F9]" />
                 : <span className="text-xs text-[#9AA6B2]">не загружено</span>}
-              <label className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
+              <label className="text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
                 {uploading === 'signature_image' ? 'Загрузка…' : 'Загрузить'}
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage('signature_image', e.target.files[0])} />
               </label>
@@ -553,7 +553,7 @@ export default function LettersAdmin() {
         <div>
           <label className="block text-sm text-[#7C8A9A] mb-1">Вставить списком (из таблицы: ФИО ⇥ Должность ⇥ Номер ⇥ Дата ⇥ Email ⇥ Телефон, по строке на получателя)</label>
           <textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} rows={4} className={`${inputCls} font-mono text-[13px]`} placeholder={'Боровлёв Павел Михайлович\tГлаве … муниципального района …\t710\t21.05.2026\tglava@example.ru\t+7 900 000-00-00'} />
-          <button onClick={importPaste} disabled={!pasteText.trim()} className="mt-2 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
+          <button onClick={importPaste} disabled={!pasteText.trim()} className="mt-2 text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
         </div>
 
         <div className="pt-2 border-t border-gray-100">
@@ -577,14 +577,14 @@ export default function LettersAdmin() {
           <button
             onClick={generate}
             disabled={generating || sending}
-            className="px-6 py-2.5 rounded-lg bg-[#029cda] text-white font-medium hover:bg-[#0280b5] disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-[#029cda] text-white font-medium hover:bg-[#0280b5] disabled:opacity-50"
           >
             {generating ? 'Генерация…' : 'Сгенерировать PDF'}
           </button>
           <button
             onClick={sendLetters}
             disabled={sending || generating}
-            className="px-6 py-2.5 rounded-lg bg-[#16a34a] text-white font-medium hover:bg-[#128a3f] disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-[#16a34a] text-white font-medium hover:bg-[#128a3f] disabled:opacity-50"
           >
             {sending ? 'Отправка…' : 'Отправить письма'}
           </button>
@@ -605,7 +605,7 @@ export default function LettersAdmin() {
           <button
             onClick={sendTest}
             disabled={sending || generating || !testEmail.trim()}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40"
+            className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40"
           >
             Тест на себя
           </button>
@@ -670,7 +670,7 @@ function MailAccountsPanel({
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
+  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
 
   const startEdit = (a: MailAccount) => {
     setEditingId(a.id);
@@ -782,7 +782,7 @@ function MailAccountsPanel({
                 <input type="checkbox" className="sr-only peer" checked={a.enabled} onChange={() => toggle(a)} />
                 <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-[#029cda] relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
               </label>
-              <button onClick={() => startEdit(a)} className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Изменить</button>
+              <button onClick={() => startEdit(a)} className="text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Изменить</button>
               <button onClick={() => remove(a.id)} className="text-sm text-red-500 hover:underline">Удалить</button>
             </div>
           </div>
@@ -833,14 +833,14 @@ function MailAccountsPanel({
           </label>
         </div>
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          <button onClick={save} disabled={!!busy} className="px-5 py-2 rounded-lg bg-[#029cda] text-white font-medium hover:bg-[#0280b5] disabled:opacity-50">
+          <button onClick={save} disabled={!!busy} className="px-5 py-2 rounded-xl bg-[#029cda] text-white font-medium hover:bg-[#0280b5] disabled:opacity-50">
             {busy === 'save' ? 'Сохранение…' : editingId ? 'Сохранить' : 'Добавить ящик'}
           </button>
-          <button onClick={testConn} disabled={!!busy} className="px-4 py-2 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-50">
+          <button onClick={testConn} disabled={!!busy} className="px-4 py-2 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-50">
             {busy === 'test' ? 'Проверка…' : 'Проверить соединение'}
           </button>
           {editingId && (
-            <button onClick={reset} className="px-4 py-2 rounded-lg text-[#7C8A9A] hover:text-[#313131]">Отмена</button>
+            <button onClick={reset} className="px-4 py-2 rounded-xl text-[#7C8A9A] hover:text-[#313131]">Отмена</button>
           )}
         </div>
       </div>

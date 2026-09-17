@@ -203,7 +203,7 @@ export default function PressAdmin() {
                   type="button"
                   onClick={() => logoInputRef.current?.click()}
                   disabled={logoUploading}
-                  className="shrink-0 px-3 py-2 border border-[#e0e0e0] rounded-xl text-[13px] text-[#52555a] hover:bg-[#f5f6f8] transition-colors disabled:opacity-50 whitespace-nowrap"
+                  className="shrink-0 px-3 py-2 border border-[#e0e0e0] rounded-xl text-[13px] text-[#52555a] hover:bg-[#F6F7F9] transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
                   {logoUploading ? "Загрузка…" : "Загрузить"}
                 </button>
@@ -224,7 +224,7 @@ export default function PressAdmin() {
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-5 py-2 border border-[#e0e0e0] text-[#52555a] text-[14px] rounded-xl hover:bg-[#f5f6f8] transition-colors"
+              className="px-5 py-2 border border-[#e0e0e0] text-[#52555a] text-[14px] rounded-xl hover:bg-[#F6F7F9] transition-colors"
             >
               Отмена
             </button>
@@ -265,7 +265,7 @@ export default function PressAdmin() {
                   href={item.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8c9099] hover:bg-[#f5f6f8] hover:text-[#029cda] transition-colors"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#8c9099] hover:bg-[#F6F7F9] hover:text-[#029cda] transition-colors"
                   title="Открыть статью"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -275,7 +275,7 @@ export default function PressAdmin() {
                 </a>
                 <button
                   onClick={() => openEdit(item)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8c9099] hover:bg-[#f5f6f8] hover:text-[#313131] transition-colors"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#8c9099] hover:bg-[#F6F7F9] hover:text-[#313131] transition-colors"
                   title="Редактировать"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -286,7 +286,7 @@ export default function PressAdmin() {
                 <button
                   onClick={() => handleDelete(item.id)}
                   disabled={deleting === item.id}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8c9099] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-[#8c9099] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
                   title="Удалить"
                 >
                   {deleting === item.id ? (

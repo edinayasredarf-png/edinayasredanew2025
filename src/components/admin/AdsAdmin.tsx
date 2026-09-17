@@ -184,7 +184,7 @@ export default function AdsAdmin() {
                     type="button"
                     onClick={() => imageInputRef.current?.click()}
                     disabled={imageUploading}
-                    className="mt-2 px-3 py-2 border border-[#e0e0e0] rounded-xl text-[13px] text-[#52555a] hover:bg-[#f5f6f8] transition-colors disabled:opacity-50 whitespace-nowrap"
+                    className="mt-2 px-3 py-2 border border-[#e0e0e0] rounded-xl text-[13px] text-[#52555a] hover:bg-[#F6F7F9] transition-colors disabled:opacity-50 whitespace-nowrap"
                   >
                     {imageUploading ? "Загрузка…" : "Загрузить изображение"}
                   </button>
@@ -224,7 +224,7 @@ export default function AdsAdmin() {
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-5 py-2 border border-[#e0e0e0] text-[#52555a] text-[14px] rounded-xl hover:bg-[#f5f6f8] transition-colors"
+              className="px-5 py-2 border border-[#e0e0e0] text-[#52555a] text-[14px] rounded-xl hover:bg-[#F6F7F9] transition-colors"
             >
               Отмена
             </button>
@@ -251,7 +251,7 @@ export default function AdsAdmin() {
               <div className="relative aspect-[260/424] bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={item.image} alt={item.alt || "Баннер"} className="w-full h-full object-cover" />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/55 text-white text-[11px]">
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded-xl bg-black/55 text-white text-[11px]">
                   #{index + 1}
                 </span>
               </div>
@@ -263,7 +263,7 @@ export default function AdsAdmin() {
                   <button
                     onClick={() => move(index, -1)}
                     disabled={index === 0 || reordering}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8c9099] hover:bg-[#f5f6f8] hover:text-[#313131] transition-colors disabled:opacity-30"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-[#8c9099] hover:bg-[#F6F7F9] hover:text-[#313131] transition-colors disabled:opacity-30"
                     title="Выше"
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
@@ -271,7 +271,7 @@ export default function AdsAdmin() {
                   <button
                     onClick={() => move(index, 1)}
                     disabled={index === items.length - 1 || reordering}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8c9099] hover:bg-[#f5f6f8] hover:text-[#313131] transition-colors disabled:opacity-30"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-[#8c9099] hover:bg-[#F6F7F9] hover:text-[#313131] transition-colors disabled:opacity-30"
                     title="Ниже"
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -279,7 +279,7 @@ export default function AdsAdmin() {
                   <div className="flex-1" />
                   <button
                     onClick={() => openEdit(item)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8c9099] hover:bg-[#f5f6f8] hover:text-[#313131] transition-colors"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-[#8c9099] hover:bg-[#F6F7F9] hover:text-[#313131] transition-colors"
                     title="Редактировать"
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -290,7 +290,7 @@ export default function AdsAdmin() {
                   <button
                     onClick={() => handleDelete(item.id)}
                     disabled={deleting === item.id}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8c9099] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-[#8c9099] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
                     title="Удалить"
                   >
                     {deleting === item.id ? (

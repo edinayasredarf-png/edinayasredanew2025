@@ -83,18 +83,18 @@ export default function AdminDashboard() {
       <div className="flex flex-wrap items-center gap-2 mb-5">
         {([['today', 'Сегодня'], ['week', 'Неделя'], ['month', 'Месяц']] as const).map(([k, l]) => (
           <button key={k} onClick={() => setMode(k)}
-            className={`px-3 py-1.5 rounded-lg text-sm transition ${mode === k ? 'bg-[#029cda] text-white' : 'bg-[#F6F7F9] text-gray-600 hover:text-gray-900'}`}>
+            className={`px-3 py-1.5 rounded-xl text-sm transition ${mode === k ? 'bg-[#029cda] text-white' : 'bg-[#F6F7F9] text-gray-600 hover:text-gray-900'}`}>
             {l}
           </button>
         ))}
         <span className="text-gray-300 mx-1">|</span>
         <input type="date" value={mode === 'custom' ? from : range.from} max={to}
           onChange={(e) => { setMode('custom'); setFrom(e.target.value); }}
-          className="px-2 py-1.5 rounded-lg bg-[#F6F7F9] text-sm text-gray-700" />
+          className="px-2 py-1.5 rounded-xl bg-[#F6F7F9] text-sm text-gray-700" />
         <span className="text-gray-400 text-sm">—</span>
         <input type="date" value={mode === 'custom' ? to : range.to} min={from}
           onChange={(e) => { setMode('custom'); setTo(e.target.value); }}
-          className="px-2 py-1.5 rounded-lg bg-[#F6F7F9] text-sm text-gray-700" />
+          className="px-2 py-1.5 rounded-xl bg-[#F6F7F9] text-sm text-gray-700" />
       </div>
 
       {/* Виджеты-KPI */}

@@ -74,20 +74,20 @@ function AdminLogin() {
         <h1 className="text-lg font-bold text-gray-900 text-center mb-1">Вход в админ-панель</h1>
         <p className="text-sm text-gray-500 text-center mb-6">Войдите под учётной записью администратора</p>
 
-        {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
+        {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{error}</div>}
 
         <label className="block text-sm text-gray-600 mb-1">Email</label>
         <input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]"
+          className="w-full mb-4 px-3 py-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]"
           placeholder="you@example.com" required />
 
         <label className="block text-sm text-gray-600 mb-1">Пароль</label>
         <input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-5 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none focus:border-[#029cda]"
+          className="w-full mb-5 px-3 py-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]"
           placeholder="••••••••" required />
 
         <button type="submit" disabled={submitting || !email.trim() || !password}
-          className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-[#029cda] text-white disabled:opacity-50 flex items-center justify-center gap-2">
+          className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-[#029cda] text-white disabled:opacity-50 flex items-center justify-center gap-2">
           {submitting && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
           {submitting ? 'Вход…' : 'Войти'}
         </button>
@@ -192,7 +192,7 @@ export default function AdminPanel() {
           <h2 className="text-xl font-bold text-gray-900 mb-2">Доступ запрещён</h2>
           <p className="text-sm text-gray-600">У этого аккаунта нет прав администратора.</p>
           <button onClick={() => authStore.signOut()}
-            className="mt-5 px-4 py-2 rounded-lg text-sm bg-[#029cda] text-white">
+            className="mt-5 px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white">
             Войти под другим аккаунтом
           </button>
         </div>
@@ -278,11 +278,11 @@ export default function AdminPanel() {
             </button>
             {showProfileMenu && (
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl border border-gray-200 py-1 z-40">
-                <a href="/profile" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-gray-800 text-sm">
+                <a href="/profile" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#F6F7F9] text-gray-800 text-sm">
                   <Image src="/icons/profile.svg" alt="" width={16} height={16} /> Профиль
                 </a>
                 <button type="button" onClick={async () => { await authStore.signOut(); window.location.reload(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f6f8] text-red-500 text-sm">
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#F6F7F9] text-red-500 text-sm">
                   <Image src="/icons/sign_out.svg" alt="" width={16} height={16} /> Выход
                 </button>
               </div>
@@ -297,7 +297,7 @@ export default function AdminPanel() {
             <div className="flex gap-2 min-w-max">
               {NAV_FLAT.map((item) => (
                 <button key={item.id} type="button" onClick={() => setActiveTab(item.id)}
-                  className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition ${activeTab === item.id ? 'bg-[#029cda] text-white' : 'bg-[#F6F7F9] text-gray-600'}`}>
+                  className={`px-3 py-1.5 rounded-xl text-sm whitespace-nowrap transition ${activeTab === item.id ? 'bg-[#029cda] text-white' : 'bg-[#F6F7F9] text-gray-600'}`}>
                   {item.label}
                 </button>
               ))}
@@ -305,7 +305,7 @@ export default function AdminPanel() {
           </div>
 
           {status && (
-            <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+            <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-xl">
               <p className="text-blue-800">{status}</p>
             </div>
           )}

@@ -693,7 +693,7 @@ export default function KpGenerator() {
       </div>
 
       {status && (
-        <div className="text-sm px-4 py-2 rounded-lg bg-[#EAF6FC] text-[#0b5c7d] border border-[#cbe8f5]">
+        <div className="text-sm px-4 py-2 rounded-xl bg-[#EAF6FC] text-[#0b5c7d] border border-[#cbe8f5]">
           {status}
         </div>
       )}
@@ -918,7 +918,7 @@ function CreateTab(p: CreateProps) {
               <div className={label}>Единица площади</div>
               <div className="inline-flex gap-1 bg-[#EEF1F4] rounded-xl p-1">
                 {(['sqm', 'ha'] as const).map((u) => (
-                  <button key={u} onClick={() => setAreaUnit(u)} className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${areaUnit === u ? 'bg-white shadow-sm text-[#1b2a4a] font-medium' : 'text-gray-500 hover:text-[#1b2a4a]'}`}>
+                  <button key={u} onClick={() => setAreaUnit(u)} className={`px-4 py-1.5 rounded-xl text-sm transition-colors ${areaUnit === u ? 'bg-white shadow-sm text-[#1b2a4a] font-medium' : 'text-gray-500 hover:text-[#1b2a4a]'}`}>
                     {u === 'sqm' ? 'кв. м' : 'гектары'}
                   </button>
                 ))}
@@ -930,9 +930,9 @@ function CreateTab(p: CreateProps) {
             <div>
               <div className={label}>Входит в услугу</div>
               <div className="flex flex-wrap gap-1 pt-1 text-xs">
-                {inc.service && <span className="px-2 py-1 rounded-lg bg-[#EAF6FC] text-[#0b5c7d]">Услуга</span>}
-                {inc.ais && <span className="px-2 py-1 rounded-lg bg-[#EAF6FC] text-[#0b5c7d]">АИС «Единая среда»</span>}
-                {inc.renewal && <span className="px-2 py-1 rounded-lg bg-[#EAF6FC] text-[#0b5c7d]">Пролонгация</span>}
+                {inc.service && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">Услуга</span>}
+                {inc.ais && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">АИС «Единая среда»</span>}
+                {inc.renewal && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">Пролонгация</span>}
               </div>
               <div className="text-[11px] text-gray-400 mt-1">Состав определяется выбранной услугой (у каждой свой шаблон и таблица).</div>
             </div>
@@ -1081,7 +1081,7 @@ function CreateTab(p: CreateProps) {
           ))}
 
           {priceWarnings.length > 0 && (
-            <div className="text-xs bg-[#FFF7ED] border border-[#fed7aa] text-[#9a3412] rounded-lg px-3 py-2 space-y-0.5">
+            <div className="text-xs bg-[#FFF7ED] border border-[#fed7aa] text-[#9a3412] rounded-xl px-3 py-2 space-y-0.5">
               <div className="font-medium">⚠️ Проверьте цены (можно продолжить):</div>
               {priceWarnings.slice(0, 8).map((w, i) => <div key={i}>• {w}</div>)}
               {priceWarnings.length > 8 && <div>…и ещё {priceWarnings.length - 8}</div>}
@@ -1092,14 +1092,14 @@ function CreateTab(p: CreateProps) {
             <button
               onClick={() => setPreview(computePreview())}
               disabled={perOrgTotals.length === 0}
-              className="px-3 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
+              className="px-3 py-2 rounded-xl text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
             >
               Таблица
             </button>
             <button
               onClick={async () => { const p = await fetchDocPreview(); if (p) { setDocPreview(p); setDocPreviewIdx(0); } }}
               disabled={busy || perOrgTotals.length === 0}
-              className="px-3 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
+              className="px-3 py-2 rounded-xl text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
             >
               Документ
             </button>
@@ -1107,7 +1107,7 @@ function CreateTab(p: CreateProps) {
           <button
             onClick={() => setBatchOpen(true)}
             disabled={perOrgTotals.length === 0}
-            className="w-full px-3 py-2 rounded-lg text-sm font-medium border border-[#d97706] text-[#b45309] hover:bg-[#fff7ed] disabled:opacity-50"
+            className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-[#d97706] text-[#b45309] hover:bg-[#fff7ed] disabled:opacity-50"
           >
             Пакет по клиентам
           </button>
@@ -1143,7 +1143,7 @@ function CreateTab(p: CreateProps) {
           <button
             onClick={openMail}
             disabled={perOrgTotals.length === 0}
-            className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-[#7c3aed] text-[#7c3aed] hover:bg-[#f5f3ff] disabled:opacity-50"
+            className="w-full px-4 py-2 rounded-xl text-sm font-medium border border-[#7c3aed] text-[#7c3aed] hover:bg-[#f5f3ff] disabled:opacity-50"
           >
             {mailOpen ? 'Скрыть отправку' : 'Отправить клиенту на почту'}
           </button>
@@ -1208,7 +1208,7 @@ function CreateTab(p: CreateProps) {
               <button
                 onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf, perOrg: mailPerOrg, extraFiles: mailFiles, libraryAttachmentIds: mailLibIds })}
                 disabled={busy || !mailTo.trim() || perOrgTotals.length === 0}
-                className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 rounded-xl text-sm font-medium bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >
                 {busy && <Spinner size={16} color="#fff" />}
                 {busy ? 'Отправка…' : 'Отправить'}
@@ -1233,7 +1233,7 @@ function CreateTab(p: CreateProps) {
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs border-collapse">
                       <thead>
-                        <tr>{p.table.headers.map((h, i) => <th key={i} className="border border-gray-200 bg-[#eef2f6] px-2 py-1 font-semibold text-[#1b2a4a]">{h}</th>)}</tr>
+                        <tr>{p.table.headers.map((h, i) => <th key={i} className="border border-gray-200 bg-[#EEF1F4] px-2 py-1 font-semibold text-[#1b2a4a]">{h}</th>)}</tr>
                       </thead>
                       <tbody>
                         {p.table.rows.map((r, ri) => (
@@ -1255,7 +1255,7 @@ function CreateTab(p: CreateProps) {
               </div>
             ))}
             <div className="flex justify-end gap-2">
-              <button onClick={() => setPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
+              <button onClick={() => setPreview(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
               <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">Всё верно — скачать</button>
             </div>
           </div>
@@ -1272,7 +1272,7 @@ function CreateTab(p: CreateProps) {
             {docPreview.length > 1 && (
               <div className="flex gap-1 flex-wrap bg-[#F6F7F9] rounded-xl p-1">
                 {docPreview.map((p, i) => (
-                  <button key={i} onClick={() => setDocPreviewIdx(i)} className={`px-3 py-1.5 rounded-lg text-xs ${docPreviewIdx === i ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>{p.orgName}</button>
+                  <button key={i} onClick={() => setDocPreviewIdx(i)} className={`px-3 py-1.5 rounded-xl text-xs ${docPreviewIdx === i ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>{p.orgName}</button>
                 ))}
               </div>
             )}
@@ -1282,7 +1282,7 @@ function CreateTab(p: CreateProps) {
             </div>
             <div className="text-[11px] text-gray-400">Это черновой рендер (без точного оформления Word: шрифты/отступы могут отличаться). Финальный вид — в скачанном .docx / PDF.</div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setDocPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
+              <button onClick={() => setDocPreview(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
               <button onClick={() => { setDocPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">Скачать DOCX</button>
             </div>
           </div>
@@ -1321,17 +1321,17 @@ function CreateTab(p: CreateProps) {
             <div>
               <div className={label}>Вставка из Excel (столбцы: организация ⇥ ФИО ⇥ площадь ⇥ кол-во)</div>
               <textarea value={batchPaste} onChange={(e) => setBatchPaste(e.target.value)} className={`${input} h-16 font-mono text-xs`} placeholder={'ООО "Ромашка"\tИванов И.И.\t5\t\nООО "Луч"\tПетров П.П.\t12\t'} />
-              <button onClick={batchAddPaste} disabled={!batchPaste.trim()} className="mt-1 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
+              <button onClick={batchAddPaste} disabled={!batchPaste.trim()} className="mt-1 text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40">Добавить из вставки</button>
             </div>
 
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-gray-400">Клиентов: {batchClients.filter((c) => c.orgFull.trim()).length} · файлов будет ~{batchClients.filter((c) => c.orgFull.trim()).length * selectedOrgs.length}</span>
               <div className="flex gap-2">
-                <button onClick={() => setBatchOpen(false)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+                <button onClick={() => setBatchOpen(false)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
                 <button
                   onClick={async () => { const ok = await generateBatch(batchClients, 'docx'); if (ok) setBatchOpen(false); }}
                   disabled={busy || batchClients.filter((c) => c.orgFull.trim()).length === 0}
-                  className="px-4 py-2 text-sm rounded-lg bg-[#d97706] text-white hover:bg-[#b45309] disabled:opacity-50 inline-flex items-center gap-2"
+                  className="px-4 py-2 text-sm rounded-xl bg-[#d97706] text-white hover:bg-[#b45309] disabled:opacity-50 inline-flex items-center gap-2"
                 >
                   {busy && <Spinner size={16} color="#fff" />}
                   {busy ? 'Генерация…' : 'Скачать ZIP'}
@@ -1454,7 +1454,7 @@ function TemplatesTab({
           </div>
           <div>
             <div className={label}>Тело шаблона (форматируйте как в Word; вставляйте алиасы {'{{...}}'} из панели справа)</div>
-            <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
               <RichEditor key={draft.id || 'new'} initialHtml={draft.bodyHtml} onChange={(html) => setDraft((d) => (d ? { ...d, bodyHtml: html } : d))} />
             </div>
           </div>
@@ -1464,7 +1464,7 @@ function TemplatesTab({
           </label>
           <div className="flex gap-2">
             <button onClick={saveDraft} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить шаблон'}</button>
-            <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+            <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
           </div>
         </div>
         <div>
@@ -1478,7 +1478,7 @@ function TemplatesTab({
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <button onClick={openNew} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">Создать шаблон</button>
-        <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Загрузить .docx (можно несколько)</button>
+        <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Загрузить .docx (можно несколько)</button>
       </div>
 
       {uploadOpen && <DocxUpload orgs={orgs} serviceTypes={serviceTypes} onChanged={onChanged} setStatus={setStatus} />}
@@ -1559,7 +1559,7 @@ function AliasPanel({ aliases, onChanged, setStatus }: { aliases: Alias[]; onCha
         <input value={k} onChange={(e) => setK(e.target.value)} placeholder="ключ (латиница)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
         <input value={lbl} onChange={(e) => setLbl(e.target.value)} placeholder="описание" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
         <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="значение (текст)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
-        <button onClick={create} className="w-full px-3 py-1.5 rounded-lg bg-[#029cda] text-white text-xs hover:bg-[#0280b5]">Создать</button>
+        <button onClick={create} className="w-full px-3 py-1.5 rounded-xl bg-[#029cda] text-white text-xs hover:bg-[#0280b5]">Создать</button>
       </div>
     </div>
   );
@@ -1694,7 +1694,7 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
             уже с шапкой
           </label>
           {items.length > 0 && (
-            <button onClick={applyDefaultsToAll} className="px-3 py-2 text-xs rounded-lg border border-gray-200 text-[#313131] hover:bg-white whitespace-nowrap">
+            <button onClick={applyDefaultsToAll} className="px-3 py-2 text-xs rounded-xl border border-gray-200 text-[#313131] hover:bg-white whitespace-nowrap">
               Применить ко всем
             </button>
           )}
@@ -1760,7 +1760,7 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
           {busy ? 'Загрузка…' : pendingCount > 0 ? `Загрузить (${pendingCount})` : 'Загрузить'}
         </button>
         {items.some((it) => it.status === 'done') && (
-          <button onClick={clearDone} disabled={busy} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-white disabled:opacity-50">Убрать загруженные</button>
+          <button onClick={clearDone} disabled={busy} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-white disabled:opacity-50">Убрать загруженные</button>
         )}
       </div>
     </div>
@@ -1896,7 +1896,7 @@ function PricesTab({
     }
   };
 
-  const numCell = 'w-full px-2 py-1.5 rounded-lg border border-gray-200 text-sm text-right outline-none focus:border-[#029cda]';
+  const numCell = 'w-full px-2 py-1.5 rounded-xl border border-gray-200 text-sm text-right outline-none focus:border-[#029cda]';
 
   if (orgs.length === 0) {
     return <div className="text-sm text-gray-400 p-4">Сначала добавьте компании во вкладке «Настройки».</div>;
@@ -1914,7 +1914,7 @@ function PricesTab({
             <button
               key={f.key}
               onClick={() => setTab(f.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs ${tab === f.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs ${tab === f.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}
             >
               {f.label}
             </button>
@@ -1961,7 +1961,7 @@ function PricesTab({
       </div>
 
       {combinedServices.length > 0 && (
-        <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-lg px-3 py-2 space-y-1">
+        <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-xl px-3 py-2 space-y-1">
           <div className="font-medium text-[#0b5c7d]">Комбинированные услуги отдельной цены не имеют — строки и цены берутся из компонентов:</div>
           {combinedServices.map((s) => (
             <div key={s}>• <span className="text-[#313131]">{s}</span> = {serviceComponents(s).join(' + ')}</div>
@@ -2093,11 +2093,11 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
           {SEND_PERIODS.map((p) => (
-            <button key={p.key} onClick={() => { setPeriod(p.key); setOnlyFollowup(false); }} className={`px-3 py-1.5 rounded-lg text-sm ${period === p.key && !onlyFollowup ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>
+            <button key={p.key} onClick={() => { setPeriod(p.key); setOnlyFollowup(false); }} className={`px-3 py-1.5 rounded-xl text-sm ${period === p.key && !onlyFollowup ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}>
               {p.label}
             </button>
           ))}
-          <button onClick={() => setOnlyFollowup((v) => !v)} className={`px-3 py-1.5 rounded-lg text-sm ${onlyFollowup ? 'bg-[#fff7ed] text-[#b45309] font-medium' : 'text-gray-500'}`} title={`Отправлено, но не открыто дольше ${FOLLOWUP_DAYS} дней`}>
+          <button onClick={() => setOnlyFollowup((v) => !v)} className={`px-3 py-1.5 rounded-xl text-sm ${onlyFollowup ? 'bg-[#fff7ed] text-[#b45309] font-medium' : 'text-gray-500'}`} title={`Отправлено, но не открыто дольше ${FOLLOWUP_DAYS} дней`}>
             Требуют внимания{followupCount ? ` (${followupCount})` : ''}
           </button>
         </div>
@@ -2231,7 +2231,7 @@ function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s:
         <span className="text-sm text-gray-500 shrink-0">Компания-отправитель:</span>
         <Select value={orgKey} onChange={setOrgKey} className="min-w-[200px]" options={orgs.map((o) => ({ value: o.key, label: o.shortName || o.name }))} />
         <span className="text-xs text-gray-400">Следующий №: <b className="text-[#313131]">{nextNumber}</b></span>
-        <button onClick={addRow} className="ml-auto text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Строка</button>
+        <button onClick={addRow} className="ml-auto text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">+ Строка</button>
       </div>
 
       {loading ? <LoadingBlock /> : rows.length === 0 ? (

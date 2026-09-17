@@ -126,7 +126,7 @@ export default function UtmGenerator() {
             value={baseUrl}
             onChange={(e) => setBaseUrl(e.target.value)}
             placeholder="https://единаясреда.рф/blog/slug-stati"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
           />
           <p className="text-xs text-gray-400 mt-1">Можно переопределить для каждого канала ниже.</p>
         </div>
@@ -138,7 +138,7 @@ export default function UtmGenerator() {
             value={articleTitle}
             onChange={(e) => setArticleTitle(e.target.value)}
             placeholder="Как работает цифровое управление лесами"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
           />
         </div>
 
@@ -152,7 +152,7 @@ export default function UtmGenerator() {
             value={campaignOverride || campaignSlug}
             onChange={(e) => setCampaignOverride(e.target.value)}
             placeholder={campaignSlug || 'название_кампании'}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
           />
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function UtmGenerator() {
                       value={ch.url}
                       onChange={(e) => updateChannel(ch.id, 'url', e.target.value)}
                       placeholder={baseUrl}
-                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
+                      className="w-full border border-gray-200 rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
                     />
                   </div>
                   <div>
@@ -204,7 +204,7 @@ export default function UtmGenerator() {
                       type="text"
                       value={ch.source}
                       onChange={(e) => updateChannel(ch.id, 'source', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
+                      className="w-full border border-gray-200 rounded-xl px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
                     />
                   </div>
                   <div>
@@ -213,7 +213,7 @@ export default function UtmGenerator() {
                       type="text"
                       value={ch.medium}
                       onChange={(e) => updateChannel(ch.id, 'medium', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
+                      className="w-full border border-gray-200 rounded-xl px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
                     />
                   </div>
                   <div>
@@ -223,7 +223,7 @@ export default function UtmGenerator() {
                       value={ch.content}
                       onChange={(e) => updateChannel(ch.id, 'content', e.target.value)}
                       placeholder="версия_поста"
-                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
+                      className="w-full border border-gray-200 rounded-xl px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#029cda]/40"
                     />
                   </div>
                 </div>
@@ -268,14 +268,14 @@ export default function UtmGenerator() {
                 <span className="text-lg mt-0.5 flex-shrink-0">{r.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-700 mb-1">{r.label}</div>
-                  <div className="text-xs font-mono text-gray-500 break-all bg-gray-50 rounded-lg px-3 py-2 leading-relaxed">
+                  <div className="text-xs font-mono text-gray-500 break-all bg-gray-50 rounded-xl px-3 py-2 leading-relaxed">
                     {r.url}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => copyOne(r.url, r.id)}
-                  className="flex-shrink-0 mt-1 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:border-[#029cda] hover:text-[#029cda] transition-colors"
+                  className="flex-shrink-0 mt-1 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:border-[#029cda] hover:text-[#029cda] transition-colors"
                 >
                   {copied === r.id ? '✓' : 'Копировать'}
                 </button>

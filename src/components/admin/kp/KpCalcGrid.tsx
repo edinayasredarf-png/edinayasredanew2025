@@ -206,7 +206,7 @@ export default function KpCalcGrid({
         {selectedKey && (
           <span className="text-xs text-gray-400 hidden sm:inline">алиас: <code className="font-mono">{`{{${selectedKey}}}`}</code></span>
         )}
-        <button onClick={() => { setPasteOpen((v) => !v); resetImport(); }} className="ml-auto shrink-0 text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">Вставить из Excel</button>
+        <button onClick={() => { setPasteOpen((v) => !v); resetImport(); }} className="ml-auto shrink-0 text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">Вставить из Excel</button>
         <button onClick={addCol} className="text-sm text-[#029cda] hover:text-[#0280b5] shrink-0">+ Колонка</button>
       </div>
 
@@ -216,7 +216,7 @@ export default function KpCalcGrid({
           <textarea
             value={pasteText}
             onChange={(e) => { setPasteText(e.target.value); setMapping({}); }}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs font-mono outline-none focus:border-[#029cda] h-24 bg-white"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono outline-none focus:border-[#029cda] h-24 bg-white"
             placeholder={'Скопируйте диапазон в Excel (Ctrl+C) и вставьте сюда (Ctrl+V).\nНаименование\tПлощадь\tСтоимость\nГород Николаевск\t80000\t113537'}
           />
           {grid.length > 0 && (
@@ -227,19 +227,19 @@ export default function KpCalcGrid({
                   Первая строка — заголовки
                 </label>
                 <span className="text-gray-400">Распознано: {header.length} столбцов, {dataRows.length} строк</span>
-                <div className="ml-auto flex gap-1 bg-white rounded-lg p-1 border border-gray-200">
+                <div className="ml-auto flex gap-1 bg-white rounded-xl p-1 border border-gray-200">
                   <button onClick={() => setImportMode('map')} className={`px-2.5 py-1 rounded-md ${importMode === 'map' ? 'bg-[#029cda] text-white' : 'text-gray-500'}`}>Сопоставить с таблицей</button>
                   <button onClick={() => setImportMode('new')} className={`px-2.5 py-1 rounded-md ${importMode === 'new' ? 'bg-[#029cda] text-white' : 'text-gray-500'}`}>Новая таблица</button>
                 </div>
               </div>
 
               {/* Превью */}
-              <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg">
+              <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
                 <table className="text-xs border-collapse">
                   <thead>
                     <tr>
                       {header.map((h, i) => (
-                        <th key={i} className="border border-gray-200 bg-[#eef2f6] px-2 py-1 text-left font-semibold text-[#313131] min-w-[110px]">
+                        <th key={i} className="border border-gray-200 bg-[#EEF1F4] px-2 py-1 text-left font-semibold text-[#313131] min-w-[110px]">
                           <div className="truncate" title={h}>{h || `Колонка ${i + 1}`}</div>
                           {importMode === 'map' && (
                             <div className="mt-1 font-normal">
@@ -271,17 +271,17 @@ export default function KpCalcGrid({
                       <input type="checkbox" checked={replaceRows} onChange={(e) => setReplaceRows(e.target.checked)} />
                       Заменить текущие строки
                     </label>
-                    <button onClick={applyMap} className="ml-auto px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d]">Заполнить строки</button>
-                    <button onClick={() => setPasteOpen(false)} className="px-4 py-2 text-sm rounded-lg border border-gray-200">Отмена</button>
+                    <button onClick={applyMap} className="ml-auto px-4 py-2 text-sm rounded-xl bg-[#16a34a] text-white hover:bg-[#15803d]">Заполнить строки</button>
+                    <button onClick={() => setPasteOpen(false)} className="px-4 py-2 text-sm rounded-xl border border-gray-200">Отмена</button>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <div className="text-[11px] text-gray-500">Будет создана новая таблица со столбцами из заголовков (данные — как есть, без формул). Она станет выбранной и сохранится для повторного использования.</div>
                   <div className="flex items-center gap-2">
-                    <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Название таблицы (необязательно)" className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda] bg-white" />
-                    <button onClick={applyNew} disabled={importBusy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">{importBusy ? 'Создание…' : 'Создать таблицу'}</button>
-                    <button onClick={() => setPasteOpen(false)} className="px-4 py-2 text-sm rounded-lg border border-gray-200">Отмена</button>
+                    <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Название таблицы (необязательно)" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] bg-white" />
+                    <button onClick={applyNew} disabled={importBusy} className="px-4 py-2 text-sm rounded-xl bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">{importBusy ? 'Создание…' : 'Создать таблицу'}</button>
+                    <button onClick={() => setPasteOpen(false)} className="px-4 py-2 text-sm rounded-xl border border-gray-200">Отмена</button>
                   </div>
                 </div>
               )}
@@ -295,7 +295,7 @@ export default function KpCalcGrid({
           <thead>
             <tr>
               {columns.map((c, ci) => (
-                <th key={c.key} className="border border-gray-200 bg-[#eef2f6] px-2 py-1 text-xs font-semibold text-[#313131] min-w-[120px]">
+                <th key={c.key} className="border border-gray-200 bg-[#EEF1F4] px-2 py-1 text-xs font-semibold text-[#313131] min-w-[120px]">
                   <div className="flex items-center gap-1 justify-between">
                     <span className="truncate" title={c.label}>{c.label}</span>
                     <span className="flex items-center gap-0.5 text-gray-400">

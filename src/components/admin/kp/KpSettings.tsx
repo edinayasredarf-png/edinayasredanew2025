@@ -64,7 +64,7 @@ export default function KpSettings({
           <h3 className="text-sm font-semibold text-[#1b2a4a]">Компании (от кого КП)</h3>
           <button
             onClick={() => { setCreating(true); setEditKey(null); }}
-            className="text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]"
+            className="text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]"
           >
             + Добавить компанию
           </button>
@@ -183,7 +183,7 @@ function MailAttachmentsManager({ setStatus }: { setStatus: (s: string) => void 
           </div>
           <div className="space-y-1">
             {items.map((a) => (
-              <div key={a.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <div key={a.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-3 py-2">
                 <div className="text-sm text-[#313131] min-w-0">
                   <div className="truncate">{a.name}</div>
                   <div className="text-xs text-gray-400">{a.filename} · {fmtBytes(a.sizeBytes)}</div>
@@ -271,13 +271,13 @@ function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) 
       {open && (
         <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
           {!secretOk && (
-            <div className="text-xs bg-[#FFF7ED] border border-[#fed7aa] text-[#9a3412] rounded-lg px-3 py-2">
+            <div className="text-xs bg-[#FFF7ED] border border-[#fed7aa] text-[#9a3412] rounded-xl px-3 py-2">
               Не задан ключ шифрования (MAIL_SECRET_KEY или AUTH_SESSION_SECRET) — сохранить пароль ящика не получится. Проверка соединения работает.
             </div>
           )}
           <div className="space-y-1">
             {accounts.map((a) => (
-              <div key={a.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <div key={a.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-3 py-2">
                 <div className="text-sm text-[#313131]">
                   {a.label || a.from_email} <span className="text-xs text-gray-400">{a.from_email} · {a.smtp_host}:{a.smtp_port}{a.has_password ? '' : ' · без пароля'}{a.enabled ? '' : ' · выкл'}</span>
                 </div>
@@ -290,7 +290,7 @@ function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) 
             {accounts.length === 0 && <div className="text-sm text-gray-400">Ящиков пока нет. Добавьте — и выбирайте в карточке компании и при рассылке.</div>}
           </div>
           {!draft ? (
-            <button onClick={() => setDraft(emptyMailAcc())} className="text-sm px-4 py-2 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Добавить ящик</button>
+            <button onClick={() => setDraft(emptyMailAcc())} className="text-sm px-4 py-2 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">+ Добавить ящик</button>
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 p-3 space-y-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -306,8 +306,8 @@ function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) 
               </div>
               <div className="flex gap-2">
                 <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}Сохранить</button>
-                <button onClick={test} disabled={busy} className="px-4 py-2 text-sm rounded-lg border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50">Проверить соединение</button>
-                <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200">Отмена</button>
+                <button onClick={test} disabled={busy} className="px-4 py-2 text-sm rounded-xl border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50">Проверить соединение</button>
+                <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200">Отмена</button>
               </div>
             </div>
           )}
@@ -388,7 +388,7 @@ function OrgEditor({
         ) : (
           <span className="text-xs text-gray-400">не задано</span>
         )}
-        <label className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
+        <label className="text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 cursor-pointer">
           Загрузить
           <input type="file" accept="image/*" className="hidden" onChange={(e) => pickImage(field, e.target.files?.[0])} />
         </label>
@@ -474,7 +474,7 @@ function OrgEditor({
       </ToggleRow>
 
       {/* Цены вынесены в отдельную вкладку «Цены» */}
-      <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-lg px-3 py-2">
+      <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-xl px-3 py-2">
         Цены по услугам теперь задаются в отдельной вкладке <span className="font-medium text-[#0b5c7d]">«Цены»</span> (сводная таблица по всем компаниям).
       </div>
 
@@ -483,8 +483,8 @@ function OrgEditor({
           {busy && <Spinner size={16} color="#fff" />}
           {busy ? 'Сохранение…' : 'Сохранить компанию'}
         </button>
-        <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
-        {!isNew && <button onClick={del} className="ml-auto px-4 py-2 text-sm rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
+        <button onClick={onClose} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+        {!isNew && <button onClick={del} className="ml-auto px-4 py-2 text-sm rounded-xl border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
       </div>
     </div>
   );
@@ -607,7 +607,7 @@ function AliasesManager({
           <div className="space-y-1">
             <div className="text-xs font-medium text-gray-500">Свои алиасы</div>
             {customs.map((a) => (
-              <div key={a.key} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <div key={a.key} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-3 py-2">
                 <div className="text-sm text-[#313131]"><code className="font-mono">{`{{${a.key}}}`}</code> — {a.label || '—'} <span className="text-gray-400">= «{a.value}»</span></div>
                 <button onClick={() => del(a.key)} className="text-sm text-red-500">Удалить</button>
               </div>
@@ -670,7 +670,7 @@ function TablesManager({
     <div>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-[#1b2a4a]">Таблицы расчёта (шаблоны)</h3>
-        <button onClick={() => { setCreating(true); setEditKey(null); }} className="text-sm px-3 py-1.5 rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">+ Новая таблица</button>
+        <button onClick={() => { setCreating(true); setEditKey(null); }} className="text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">+ Новая таблица</button>
       </div>
 
       {creating && (
@@ -861,8 +861,8 @@ function TableEditor({
 
       <div className="flex items-center gap-2">
         <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
-        <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
-        {!isNew && <button onClick={remove} className="ml-auto px-4 py-2 text-sm rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
+        <button onClick={onClose} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+        {!isNew && <button onClick={remove} className="ml-auto px-4 py-2 text-sm rounded-xl border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
       </div>
       <div className="text-xs text-gray-400">«Σ» — суммировать колонку в строке ИТОГО. «Стоим.» — это колонка стоимости услуги (её сумма идёт в итог КП и в матрицу организаций).</div>
     </div>
@@ -969,7 +969,7 @@ function ServicesManager({
           {services.map((s) => {
             const combined = s.name.includes('+');
             return (
-            <div key={s.name} className="bg-white border border-gray-200 rounded-lg">
+            <div key={s.name} className="bg-white border border-gray-200 rounded-xl">
               <div className="flex flex-wrap items-center gap-2 px-3 py-2">
                 <input
                   className={`${input} flex-1 min-w-[160px]`}
@@ -1020,8 +1020,8 @@ function ServicesManager({
                   ))}
                   <div className="flex items-center gap-2">
                     <button onClick={() => setItemsDraft((arr) => [...arr, { key: '', name: '', unit: '' }])} className="text-sm text-[#029cda]">+ Позиция</button>
-                    <button onClick={saveItems} className="ml-auto px-3 py-1.5 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5]">Сохранить строки</button>
-                    <button onClick={() => setItemsFor(null)} className="px-3 py-1.5 text-sm rounded-lg border border-gray-200">Отмена</button>
+                    <button onClick={saveItems} className="ml-auto px-3 py-1.5 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">Сохранить строки</button>
+                    <button onClick={() => setItemsFor(null)} className="px-3 py-1.5 text-sm rounded-xl border border-gray-200">Отмена</button>
                   </div>
                 </div>
               )}
@@ -1090,7 +1090,7 @@ function PositionsManager({
         </div>
         <div className="space-y-1">
           {positions.map((p) => (
-            <div key={p} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+            <div key={p} className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
               <input className={`${input} flex-1`} value={edits[p] ?? p} onChange={(e) => setEdits((m) => ({ ...m, [p]: e.target.value }))} />
               {(edits[p] ?? p) !== p && <button onClick={() => rename(p)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>}
               <button onClick={() => del(p)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
@@ -1147,12 +1147,12 @@ function ExecutorsManager({
         </div>
         <div className="flex gap-2">
           <button onClick={save} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">{editId ? 'Сохранить' : 'Добавить'}</button>
-          {editId && <button onClick={() => { setEditId(null); setDraft({ fio: '', phone: '', email: '' }); }} className="px-4 py-2 text-sm rounded-lg border border-gray-200">Отмена</button>}
+          {editId && <button onClick={() => { setEditId(null); setDraft({ fio: '', phone: '', email: '' }); }} className="px-4 py-2 text-sm rounded-xl border border-gray-200">Отмена</button>}
         </div>
       </div>
       <div className="mt-2 space-y-1">
         {executors.map((e) => (
-          <div key={e.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2">
+          <div key={e.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-2">
             <div className="text-sm text-[#313131]">{e.fio} <span className="text-xs text-gray-400">{e.phone} {e.email}</span></div>
             <div className="flex gap-3">
               <button onClick={() => { setEditId(e.id); setDraft(e); }} className="text-sm text-[#029cda]">Изменить</button>

@@ -25,7 +25,7 @@ import {
   type RadarTrigger,
 } from '@/lib/radarTypes';
 
-const btn = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors';
+const btn = 'px-3 py-1.5 rounded-xl text-sm font-medium transition-colors';
 
 function timeAgo(ts: number): string {
   if (!ts) return '';
@@ -137,7 +137,7 @@ export default function NewsRadar() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg bg-[#F6F7F9] p-1">
+          <div className="inline-flex rounded-xl bg-[#F6F7F9] p-1">
             <button
               className={`${btn} ${view === 'feed' ? 'bg-white shadow text-[#029cda]' : 'text-gray-600'}`}
               onClick={() => setView('feed')}
@@ -163,7 +163,7 @@ export default function NewsRadar() {
 
       {msg && (
         <div
-          className={`mb-4 px-4 py-2.5 rounded-lg text-sm ${
+          className={`mb-4 px-4 py-2.5 rounded-xl text-sm ${
             msg.kind === 'ok'
               ? 'bg-green-50 text-green-700 border border-green-200'
               : 'bg-red-50 text-red-700 border border-red-200'
@@ -255,7 +255,7 @@ function FeedView(props: {
             onChange={(e) => setQInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && applySearch()}
             placeholder="Поиск по заголовку…"
-            className="h-9 px-3 rounded-lg border border-[#e8eaed] text-sm w-56 focus:outline-none focus:border-[#029cda]"
+            className="h-9 px-3 rounded-xl border border-[#e8eaed] text-sm w-56 focus:outline-none focus:border-[#029cda]"
           />
           <button className={`${btn} bg-[#F6F7F9] text-gray-700`} onClick={applySearch}>
             Найти
@@ -513,7 +513,7 @@ function TriggersView(props: {
             <input
               value={draft.label ?? ''}
               onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
-              className="w-full h-9 px-3 rounded-lg border border-[#e8eaed] text-sm focus:outline-none focus:border-[#029cda]"
+              className="w-full h-9 px-3 rounded-xl border border-[#e8eaed] text-sm focus:outline-none focus:border-[#029cda]"
               placeholder="Например: Субсидии на озеленение"
             />
           </div>
@@ -541,7 +541,7 @@ function TriggersView(props: {
               value={draft.query ?? ''}
               onChange={(e) => setDraft((d) => ({ ...d, query: e.target.value }))}
               rows={3}
-              className="w-full px-3 py-2 rounded-lg border border-[#e8eaed] text-sm focus:outline-none focus:border-[#029cda] resize-y"
+              className="w-full px-3 py-2 rounded-xl border border-[#e8eaed] text-sm focus:outline-none focus:border-[#029cda] resize-y"
               placeholder={
                 draft.kind === 'rss'
                   ? 'https://example.ru/rss'

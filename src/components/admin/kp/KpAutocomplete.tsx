@@ -89,7 +89,7 @@ export default function KpAutocomplete({
       />
       {loading && <div className="absolute right-3 top-2.5"><Spinner size={14} /></div>}
       {open && items.length > 0 && (
-        <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
           {items.map((it, i) => (
             <button
               key={i}

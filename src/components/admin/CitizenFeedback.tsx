@@ -39,9 +39,9 @@ function Attachments({ files }: { files: FileMeta[] }) {
             <a href={src} target="_blank" rel="noopener noreferrer" title={f.filename}>
               {isImg ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={src} alt={f.filename} className="w-16 h-16 object-cover rounded-lg border border-[#e8eaed]" />
+                <img src={src} alt={f.filename} className="w-16 h-16 object-cover rounded-xl border border-[#e8eaed]" />
               ) : (
-                <div className="w-16 h-16 rounded-lg border border-[#e8eaed] bg-[#F6F7F9] flex items-center justify-center text-2xl">🎬</div>
+                <div className="w-16 h-16 rounded-xl border border-[#e8eaed] bg-[#F6F7F9] flex items-center justify-center text-2xl">🎬</div>
               )}
             </a>
             <a href={`${src}?download=1`} className="text-[10px] text-[#029cda] hover:underline">скачать</a>
@@ -105,7 +105,7 @@ export default function CitizenFeedback() {
   };
 
   const chip = (active: boolean) =>
-    `px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-[#029cda] text-white' : 'bg-[#F6F7F9] text-gray-600 hover:bg-gray-100'}`;
+    `px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-[#029cda] text-white' : 'bg-[#F6F7F9] text-gray-600 hover:bg-gray-100'}`;
 
   return (
     <div className="font-[Raleway]">
@@ -121,7 +121,7 @@ export default function CitizenFeedback() {
         </div>
       </div>
 
-      {error && <div className="mb-4 px-4 py-2.5 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200">{error}</div>}
+      {error && <div className="mb-4 px-4 py-2.5 rounded-xl text-sm bg-red-50 text-red-700 border border-red-200">{error}</div>}
 
       {loading ? (
         <div className="py-16 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#029cda] mx-auto" /></div>

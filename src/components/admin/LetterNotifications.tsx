@@ -186,13 +186,13 @@ export default function LetterNotifications() {
   }, [rows]);
 
   const btn = (active: boolean) =>
-    `px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+    `px-3 py-1.5 text-sm rounded-xl border transition-colors ${
       active
         ? 'bg-[#029cda] text-white border-[#029cda]'
         : 'bg-white text-[#313131] border-gray-200 hover:bg-gray-50'
     }`;
   const inputCls =
-    'px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
+    'px-3 py-1.5 border border-gray-200 rounded-xl text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
 
   return (
     <div className="space-y-4 font-[Raleway]">
@@ -244,7 +244,7 @@ export default function LetterNotifications() {
         <button
           onClick={scanBounces}
           disabled={scanning}
-          className="ml-auto px-4 py-1.5 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40"
+          className="ml-auto px-4 py-1.5 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50 disabled:opacity-40"
           title="Прочитать почтовый ящик и обновить статусы доставки"
         >
           {scanning ? 'Обновление…' : 'Обновить статусы'}
@@ -252,12 +252,12 @@ export default function LetterNotifications() {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
+        <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
           {error}
         </div>
       )}
       {status && (
-        <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-sm text-green-700">
+        <div className="p-3 bg-green-50 border border-green-100 rounded-xl text-sm text-green-700">
           {status}
         </div>
       )}
@@ -277,7 +277,7 @@ export default function LetterNotifications() {
             onClick={() => scrollBy(-1)}
             aria-label="Прокрутить таблицу влево"
             title="Влево"
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50"
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50"
           >
             ‹
           </button>
@@ -286,7 +286,7 @@ export default function LetterNotifications() {
             onClick={() => scrollBy(1)}
             aria-label="Прокрутить таблицу вправо (к комментарию)"
             title="Вправо — к телефону и комментарию"
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50"
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50"
           >
             ›
           </button>

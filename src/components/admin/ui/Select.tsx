@@ -59,7 +59,7 @@ export function Select({
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Поиск…"
-                className="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15"
+                className="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15"
               />
             </div>
           )}
