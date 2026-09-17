@@ -38,6 +38,8 @@ function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: Calc
     else if (c.kind === 'const') s[c.key] = num(c.constValue);
     else if (c.kind === 'text') s[c.key] = num(row[c.key]); // «5 Га» → 5
   }
+  const enteredArea = 'area_sqm' in s ? s.area_sqm : ('area' in s ? s.area : 0);
+  s.area_ha = areaUnit === 'ha' ? enteredArea : enteredArea / 10000;
   if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
   const sMax: Record<string, number> = { ...s };
   // Пер-строчная цена (по первой выбранной компании), с верхней границей «до».

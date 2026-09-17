@@ -45,6 +45,8 @@ function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Reco
       else if (c.kind === 'const') s[c.key] = toNum(c.constValue);
       else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
     }
+    const enteredAreaS = 'area_sqm' in s ? s.area_sqm : ('area' in s ? s.area : 0);
+    s.area_ha = areaUnit === 'ha' ? enteredAreaS : enteredAreaS / 10000;
     if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
     if (row.__pd) s.price_direct = toNum(row.__pd);
     if (row.__pt) s.price_tender = toNum(row.__pt);
@@ -80,6 +82,8 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
       else if (c.kind === 'const') s[c.key] = toNum(c.constValue);
       else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
     }
+    const enteredArea = 'area_sqm' in s ? s.area_sqm : ('area' in s ? s.area : 0);
+    s.area_ha = areaUnit === 'ha' ? enteredArea : enteredArea / 10000;
     if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
     const sMax: Record<string, number> = { ...s };
     if (row.__pd) { s.price_direct = toNum(row.__pd); sMax.price_direct = toNum(row.__pdMax) || toNum(row.__pd); }

@@ -112,8 +112,10 @@ export function computeTable(
       else if (c.kind === "const") scope[c.key] = toNum(c.constValue);
       else if (c.kind === "text") scope[c.key] = toNum(row[c.key]); // «5 Га» → 5 для формул площади
     }
-    // Площадь в га: значение колонки area_sqm интерпретируем как гектары
-    // (для формул area_sqm/10000 переводим в кв.м, отображение — как введено).
+    // Единая площадь для формул: area_ha (га). Введённое число — в выбранной единице.
+    const enteredArea = "area_sqm" in scope ? scope.area_sqm : ("area" in scope ? scope.area : 0);
+    scope.area_ha = areaUnit === "ha" ? enteredArea : enteredArea / 10000;
+    // Легаси-формулы кадастровой используют area_sqm/10000 — держим area_sqm в кв.м.
     if (areaUnit === "ha" && "area_sqm" in scope) scope.area_sqm *= 10000;
     const scopeMax: Record<string, number> = { ...scope };
     // Пер-строчная цена из раздела «Цены» (по компании), с верхней границей «до».

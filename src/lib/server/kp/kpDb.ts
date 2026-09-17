@@ -410,8 +410,8 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
       columns: [
         { key: "name", label: "Услуга", kind: "text", align: "left" },
         { key: "area", label: "Площадь", kind: "text", align: "center" },
-        { key: "cost_direct", label: "Стоимость, руб. (для прямого контракта)", kind: "formula", formula: "area * price_direct", align: "center", ...costD },
-        { key: "cost_tender", label: "Стоимость, руб. (для торгового контракта)", kind: "formula", formula: "area * price_tender", align: "center", ...costT },
+        { key: "cost_direct", label: "Стоимость, руб. (для прямого контракта)", kind: "formula", formula: "area_ha * price_direct", align: "center", ...costD },
+        { key: "cost_tender", label: "Стоимость, руб. (для торгового контракта)", kind: "formula", formula: "area_ha * price_tender", align: "center", ...costT },
       ],
       rows: [
         { name: "Инвентаризация зелёных насаждений (площадные объекты)", area: "1 Га" },
@@ -494,8 +494,8 @@ async function seedDefaultCalcTable(pool: ReturnType<typeof getTimewebPool>): Pr
       try { cols = JSON.parse(String(rows[0].columns)); } catch { cols = []; }
       let changed = false;
       const patched = cols.map((c) => {
-        if (c.key === "cost_direct" && c.kind === "number" && !c.formula) { changed = true; return { ...c, kind: "formula", formula: "area * price_direct" }; }
-        if (c.key === "cost_tender" && c.kind === "number" && !c.formula) { changed = true; return { ...c, kind: "formula", formula: "area * price_tender" }; }
+        if (c.key === "cost_direct" && (c.kind === "number" || c.formula === "area * price_direct")) { changed = true; return { ...c, kind: "formula", formula: "area_ha * price_direct" }; }
+        if (c.key === "cost_tender" && (c.kind === "number" || c.formula === "area * price_tender")) { changed = true; return { ...c, kind: "formula", formula: "area_ha * price_tender" }; }
         return c;
       });
       if (changed) {
