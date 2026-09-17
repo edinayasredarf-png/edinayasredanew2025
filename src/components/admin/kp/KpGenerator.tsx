@@ -51,6 +51,42 @@ function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Reco
   return total;
 }
 
+interface PreviewTable { headers: string[]; align: string[]; rows: string[][]; footers: string[][]; serviceTotal: number; }
+
+/** Клиентский расчёт таблицы для предпросмотра (зеркало серверного computeTable). */
+function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Record<string, number>): PreviewTable {
+  const headers = columns.map((c) => c.label);
+  const align = columns.map((c) => c.align || (c.kind === 'text' ? 'left' : 'center'));
+  const costIdx = columns.findIndex((c) => c.isCost);
+  const sums = columns.map(() => 0);
+  const body = rows.map((row, ri) => {
+    const s: Record<string, number> = { ...base, row_index: ri + 1 };
+    for (const c of columns) {
+      if (c.kind === 'number') s[c.key] = toNum(row[c.key]);
+      else if (c.kind === 'const') s[c.key] = toNum(c.constValue);
+      else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
+    }
+    if (row.__pd) s.price_direct = toNum(row.__pd);
+    if (row.__pt) s.price_tender = toNum(row.__pt);
+    if (row.__p) s.price = toNum(row.__p);
+    return columns.map((c, ci) => {
+      let n = 0; let text = '';
+      if (c.kind === 'index') { n = ri + 1; text = String(ri + 1); }
+      else if (c.kind === 'text') { text = (row[c.key] || '').toString(); }
+      else if (c.kind === 'const') { text = c.constValue || ''; n = toNum(c.constValue); }
+      else if (c.kind === 'number') { n = toNum(row[c.key]); text = row[c.key] ? (c.money ? fmtMoney(n) : String(n)) : ''; }
+      else if (c.kind === 'formula') {
+        n = (row.__manual === '1' && row[c.key]) ? toNum(row[c.key]) : evalFormulaSafe(c.formula || '0', s);
+        s[c.key] = n; text = (c.money || c.isCost) ? fmtMoney(n) : String(n);
+      }
+      if (c.sum || c.isCost) sums[ci] += n;
+      return text;
+    });
+  });
+  const footer = columns.map((c, ci) => ci === 0 ? 'ВСЕГО' : ((c.sum || c.isCost) ? ((c.money || c.isCost) ? fmtMoney(sums[ci]) : String(sums[ci])) : ''));
+  return { headers, align, rows: body, footers: [footer], serviceTotal: costIdx >= 0 ? sums[costIdx] : 0 };
+}
+
 export default function KpGenerator() {
   const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history'>('create');
 
@@ -321,6 +357,36 @@ export default function KpGenerator() {
     return out;
   }, [serviceType, selectedOrgs, tiers, services, orgs, inc.service, inc.ais, inc.renewal, mode, tierFor]);
 
+  // Предпросмотр таблиц по каждой выбранной компании (с её ценами).
+  const computePreview = useCallback(() => {
+    return selectedOrgs.map((key) => {
+      const tier = tierFor(key);
+      const active = mode === 'tender' ? tier?.pricePerHaTender : tier?.pricePerHaDirect;
+      const base: Record<string, number> = {
+        price_direct: tier?.pricePerHaDirect ?? 0,
+        price_tender: tier?.pricePerHaTender ?? 0,
+        price: active ?? 0,
+        min_ha: tier?.minHectares ?? 1,
+      };
+      const rowsForOrg = rows.map((r) => {
+        if (!r.__line) return r;
+        const lp = tiers.find((t) => t.orgKey === key && t.serviceType === r.__svc)?.linePrices?.[r.__line as string];
+        if (!lp) return r;
+        return { ...r, __pd: lp.direct ? String(lp.direct) : '', __pt: lp.tender ? String(lp.tender) : '', __p: lp.direct ? String(lp.direct) : '' };
+      });
+      const table = inc.service ? computePreviewTable(columns, rowsForOrg, base) : null;
+      const tot = perOrgTotals.find((t) => t.key === key);
+      return {
+        key,
+        name: orgs.find((o) => o.key === key)?.shortName || key,
+        table,
+        ais: tot?.ais ?? 0,
+        renewal: tot?.renewal ?? 0,
+        grand: tot?.grand ?? 0,
+      };
+    });
+  }, [selectedOrgs, tierFor, mode, rows, tiers, columns, perOrgTotals, orgs, inc.service]);
+
   const previewTier = tierFor(selectedOrgs[0] || '');
   const previewScope = {
     price: mode === 'tender' ? previewTier?.pricePerHaTender ?? 0 : previewTier?.pricePerHaDirect ?? 0,
@@ -457,7 +523,7 @@ export default function KpGenerator() {
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
-            perOrgTotals, priceWarnings, generate, busy,
+            perOrgTotals, priceWarnings, computePreview, generate, busy,
           }}
         />
       )}
@@ -515,7 +581,7 @@ function CreateTab(p: CreateProps) {
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
-    perOrgTotals, priceWarnings, generate, busy,
+    perOrgTotals, priceWarnings, computePreview, generate, busy,
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
@@ -540,12 +606,15 @@ function CreateTab(p: CreateProps) {
     onTablesChanged: () => void; onImportedTable: (key: string, columns: CalcColumn[], rows: RowData[]) => void; setStatus: (s: string) => void;
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
     priceWarnings: string[];
+    computePreview: () => Array<{ key: string; name: string; table: PreviewTable | null; ais: number; renewal: number; grand: number }>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
   };
 
   const input = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#029cda]';
   const label = 'block text-xs font-medium text-gray-500 mb-1';
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
+
+  const [preview, setPreview] = React.useState<ReturnType<typeof computePreview> | null>(null);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -764,6 +833,14 @@ function CreateTab(p: CreateProps) {
           )}
 
           <button
+            onClick={() => setPreview(computePreview())}
+            disabled={perOrgTotals.length === 0}
+            className="w-full px-4 py-2 rounded-lg text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
+          >
+            👁 Предпросмотр
+          </button>
+
+          <button
             onClick={() => generate('docx')}
             disabled={busy || perOrgTotals.length === 0}
             className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50 flex items-center justify-center gap-2"
@@ -792,6 +869,50 @@ function CreateTab(p: CreateProps) {
           <div className="text-[11px] text-gray-400 text-center">PDF — через сервис pdf-service (LibreOffice). Рассылка на почту — следующий этап.</div>
         </div>
       </div>
+
+      {preview && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setPreview(null)}>
+          <div className="bg-white rounded-2xl max-w-4xl w-full my-8 p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-[#313131]">Предпросмотр — {preview.length} КП</h3>
+              <button onClick={() => setPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+            </div>
+            <div className="text-xs text-gray-400">Черновой расчёт по каждой компании. Оформление (шапка, подписант, текст) — из её шаблона при генерации.</div>
+            {preview.map((p) => (
+              <div key={p.key} className="border border-gray-200 rounded-xl p-4 space-y-2">
+                <div className="font-semibold text-sm text-[#313131]">{p.name}</div>
+                {p.table && p.table.rows.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr>{p.table.headers.map((h, i) => <th key={i} className="border border-gray-200 bg-[#eef2f6] px-2 py-1 font-semibold text-[#313131]">{h}</th>)}</tr>
+                      </thead>
+                      <tbody>
+                        {p.table.rows.map((r, ri) => (
+                          <tr key={ri}>{r.map((cell, ci) => <td key={ci} className={`border border-gray-200 px-2 py-1 ${p.table!.align[ci] === 'left' ? 'text-left' : p.table!.align[ci] === 'right' ? 'text-right' : 'text-center'}`}>{cell}</td>)}</tr>
+                        ))}
+                        {p.table.footers.map((f, fi) => (
+                          <tr key={`f${fi}`} className="font-bold bg-[#FAFBFC]">{f.map((cell, ci) => <td key={ci} className="border border-gray-200 px-2 py-1 text-right">{cell}</td>)}</tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : <div className="text-xs text-gray-400">Таблица не заполнена.</div>}
+                <div className="text-xs text-gray-600 flex flex-wrap gap-x-4 gap-y-0.5 pt-1">
+                  {p.table && p.table.serviceTotal > 0 && <span>Услуга: <b>{fmtMoney(p.table.serviceTotal)} ₽</b></span>}
+                  {p.ais > 0 && <span>АИС: <b>{fmtMoney(p.ais)} ₽</b></span>}
+                  {p.renewal > 0 && <span>Пролонгация: <b>{fmtMoney(p.renewal)} ₽</b></span>}
+                  <span className="text-[#313131]">Итого: <b>{fmtMoney(p.grand)} ₽</b></span>
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setPreview(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
+              <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-lg bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-50">Всё верно — скачать</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
