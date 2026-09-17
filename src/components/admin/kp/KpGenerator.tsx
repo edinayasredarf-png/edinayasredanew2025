@@ -653,13 +653,13 @@ export default function KpGenerator() {
   }
 
   const TABS = [
-    { k: 'create', icon: '📝', label: 'Создать КП' },
-    { k: 'templates', icon: '📁', label: 'Шаблоны' },
-    { k: 'prices', icon: '💰', label: 'Цены' },
-    { k: 'registry', icon: '📋', label: 'Реестр КП' },
-    { k: 'settings', icon: '⚙️', label: 'Настройки' },
-    { k: 'history', icon: '🗄', label: 'История' },
-    { k: 'sends', icon: '✉️', label: 'Рассылки' },
+    { k: 'create', label: 'Создать КП' },
+    { k: 'templates', label: 'Шаблоны' },
+    { k: 'prices', label: 'Цены' },
+    { k: 'registry', label: 'Реестр КП' },
+    { k: 'settings', label: 'Настройки' },
+    { k: 'history', label: 'История' },
+    { k: 'sends', label: 'Рассылки' },
   ] as const;
 
   return (
@@ -673,7 +673,6 @@ export default function KpGenerator() {
       <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <h2 className="text-base sm:text-lg font-semibold text-[#313131] leading-tight">Генератор коммерческих предложений</h2>
-          <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Одна форма → несколько организаций сразу. Формулы из Excel «Расчёт по документам».</p>
         </div>
         <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
@@ -684,7 +683,7 @@ export default function KpGenerator() {
                 tab === t.k ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500 hover:text-[#313131]'
               }`}
             >
-              <span aria-hidden>{t.icon}</span> <span className="align-middle">{t.label}</span>
+              {t.label}
             </button>
           ))}
         </div>
