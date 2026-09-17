@@ -293,6 +293,7 @@ export function buildKpContext(input: {
     // АИС
     ais_licenses: String(aisLicenses),
     ais_license_price: formatMoney(aisPrice),
+    ais_license_price_int: formatInt(aisPrice),
     ais_total: formatMoney(aisTotal),
     ais_license_price_in_words: rublesInWords(aisPrice),
     ais_total_in_words: rublesInWords(aisTotal),
@@ -301,6 +302,7 @@ export function buildKpContext(input: {
     // Пролонгация
     renewal_period: renewalYears ? countInWords(renewalYears, ["год", "года", "лет"]) : "",
     renewal_price_per_year: formatMoney(renewalPerYear),
+    renewal_price_per_year_int: formatInt(renewalPerYear),
     renewal_total: formatMoney(renewalTotal),
     renewal_price_per_year_in_words: rublesInWords(renewalPerYear),
     renewal_total_in_words: rublesInWords(renewalTotal),

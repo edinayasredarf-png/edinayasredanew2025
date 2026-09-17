@@ -675,7 +675,11 @@ const BUILTIN_ALIASES: Array<[string, string]> = [
   ["location", "Местоположение"],
   ["total_cost", "Итоговая стоимость"],
   ["total_cost_in_words", "Стоимость прописью"],
+  ["ais_license_price_int", "Цена АИС за место (400 000)"],
+  ["ais_license_price_in_words", "Цена АИС прописью"],
   ["ais_total", "Стоимость АИС"],
+  ["renewal_price_per_year_int", "Пролонгация за год (150 000)"],
+  ["renewal_price_per_year_in_words", "Пролонгация за год прописью"],
   ["renewal_total", "Стоимость пролонгации"],
 ];
 
