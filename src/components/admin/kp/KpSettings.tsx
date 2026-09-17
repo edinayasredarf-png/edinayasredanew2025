@@ -26,11 +26,12 @@ function emptyOrg(sort: number): Organization {
 }
 
 export default function KpSettings({
-  orgs, executors, services, headerLayout, aliases, calcTables, onChanged, setStatus,
+  orgs, executors, services, positions, headerLayout, aliases, calcTables, onChanged, setStatus,
 }: {
   orgs: Organization[];
   executors: Executor[];
   services: ServiceType[];
+  positions: string[];
   headerLayout: HeaderLayout;
   aliases: Alias[];
   calcTables: CalcTableDef[];
@@ -53,6 +54,8 @@ export default function KpSettings({
 
       {/* Услуги */}
       <ServicesManager services={services} calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
+      {/* Должности клиента */}
+      <PositionsManager positions={positions} onChanged={onChanged} setStatus={setStatus} />
       {/* Компании */}
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -833,6 +836,74 @@ function ServicesManager({
           {services.length === 0 && <div className="text-sm text-gray-400">Услуг пока нет.</div>}
         </div>
         <div className="text-xs text-gray-400">Список услуг общий. «Строки» — позиции услуги, попадающие в таблицу при её выборе; цены позиций — во вкладке «Цены». Комбинированные услуги (с «+») собирают строки из компонентов.</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Должности клиента ─────────── */
+function PositionsManager({
+  positions, onChanged, setStatus,
+}: {
+  positions: string[];
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [newName, setNewName] = useState('');
+  const [edits, setEdits] = useState<Record<string, string>>({});
+
+  const add = async () => {
+    const n = newName.trim();
+    if (!n) return;
+    const res = await fetch('/api/kp/positions', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: n }),
+    });
+    const j = await res.json();
+    if (!res.ok) return setStatus(j.error || 'Ошибка');
+    setNewName('');
+    setStatus('Должность добавлена');
+    onChanged();
+  };
+  const rename = async (oldName: string) => {
+    const nn = (edits[oldName] ?? '').trim();
+    if (!nn || nn === oldName) return;
+    await fetch('/api/kp/positions', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldName, newName: nn }),
+    });
+    setEdits((m) => { const c = { ...m }; delete c[oldName]; return c; });
+    setStatus('Должность переименована');
+    onChanged();
+  };
+  const del = async (name: string) => {
+    if (!confirm(`Удалить должность «${name}»?`)) return;
+    await fetch(`/api/kp/positions?name=${encodeURIComponent(name)}`, { method: 'DELETE', credentials: 'include' });
+    setStatus('Должность удалена');
+    onChanged();
+  };
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-[#313131] mb-2">🧑‍💼 Должности клиента</h3>
+      <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+        <div className="flex gap-2">
+          <input className={input} placeholder="Новая должность (например, Мэр)" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
+          <button onClick={add} className="px-4 py-2 text-sm rounded-lg bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Добавить</button>
+        </div>
+        <div className="space-y-1">
+          {positions.map((p) => (
+            <div key={p} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <input className={`${input} flex-1`} value={edits[p] ?? p} onChange={(e) => setEdits((m) => ({ ...m, [p]: e.target.value }))} />
+              {(edits[p] ?? p) !== p && <button onClick={() => rename(p)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>}
+              <button onClick={() => del(p)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
+            </div>
+          ))}
+          {positions.length === 0 && <div className="text-sm text-gray-400">Должностей пока нет.</div>}
+        </div>
+        <div className="text-xs text-gray-400">Список используется при выборе должности клиента в форме «Создать КП» (подставляется с организацией в род. падеже).</div>
       </div>
     </div>
   );

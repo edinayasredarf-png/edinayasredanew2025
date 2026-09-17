@@ -201,6 +201,21 @@ async function ensureTables(): Promise<void> {
     `create index if not exists kp_history_created_idx on kp_history (created_at desc)`
   );
 
+  // Справочник должностей клиента (редактируемый).
+  await pool.query(`
+    create table if not exists kp_positions (
+      name text primary key,
+      sort_order integer not null default 0
+    )
+  `);
+  {
+    const seed = ["Директор", "Генеральный директор", "Глава", "Заместитель главы", "И.о. главы"];
+    let pi = 1;
+    for (const name of seed) {
+      await pool.query("insert into kp_positions (name, sort_order) values ($1,$2) on conflict (name) do nothing", [name, pi++]);
+    }
+  }
+
   // Справочник услуг (редактируемый). Сид — из константы KP_SERVICE_TYPES.
   await pool.query(`
     create table if not exists kp_service_types (
@@ -754,6 +769,38 @@ export async function dbSetServiceLineItems(name: string, items: KpServiceLineIt
     }))
     .filter((x) => x.name.trim());
   await pool.query("update kp_service_types set line_items=$2 where name=$1", [name, JSON.stringify(clean)]);
+}
+
+/* ─────────── Должности клиента ─────────── */
+export async function dbListPositions(): Promise<string[]> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select name from kp_positions order by sort_order, name");
+  return rows.map((r) => String(r.name));
+}
+export async function dbAddPosition(name: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const n = name.trim().slice(0, 120);
+  if (!n) return;
+  const { rows } = await pool.query("select coalesce(max(sort_order),0)+1 as s from kp_positions");
+  await pool.query("insert into kp_positions (name, sort_order) values ($1,$2) on conflict (name) do nothing", [n, Number(rows[0]?.s ?? 1)]);
+}
+export async function dbRenamePosition(oldName: string, newName: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const nn = newName.trim().slice(0, 120);
+  if (!nn || nn === oldName) return;
+  await pool.query(
+    "insert into kp_positions (name, sort_order) select $2, sort_order from kp_positions where name=$1 on conflict (name) do nothing",
+    [oldName, nn]
+  );
+  await pool.query("delete from kp_positions where name=$1", [oldName]);
+}
+export async function dbDeletePosition(name: string): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query("delete from kp_positions where name=$1", [name]);
 }
 
 export async function dbGetServiceFormula(name: string): Promise<string> {

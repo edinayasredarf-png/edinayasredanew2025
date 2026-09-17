@@ -6,6 +6,7 @@ import {
   dbListCalcTables,
   dbListExecutors,
   dbListOrganizations,
+  dbListPositions,
   dbListServiceTypes,
   dbListTemplates,
   dbListTiers,
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [organizations, tiers, executors, templates, services, headerLayout, aliases, calcTables] =
+    const [organizations, tiers, executors, templates, services, headerLayout, aliases, calcTables, positions] =
       await Promise.all([
         dbListOrganizations(),
         dbListTiers(),
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
         dbGetHeaderLayout(),
         dbListAliases(),
         dbListCalcTables(),
+        dbListPositions(),
       ]);
     return NextResponse.json({
       organizations,
@@ -45,6 +47,7 @@ export async function GET(request: NextRequest) {
       headerLayout,
       aliases,
       calcTables,
+      positions,
     });
   } catch (e) {
     return NextResponse.json(

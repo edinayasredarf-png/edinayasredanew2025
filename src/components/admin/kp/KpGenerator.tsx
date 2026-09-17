@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import nextDynamic from 'next/dynamic';
 import KpSettings from './KpSettings';
 
@@ -8,6 +8,7 @@ const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { s
 
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
+import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
 import KpCalcGrid from './KpCalcGrid';
 import KpAutocomplete from './KpAutocomplete';
@@ -125,6 +126,9 @@ export default function KpGenerator() {
   const [clientOrgFull, setClientOrgFull] = useState('');
   const [clientFio, setClientFio] = useState('');
   const [clientPosition, setClientPosition] = useState('');
+  const [positions, setPositions] = useState<string[]>([]);
+  const [posSel, setPosSel] = useState('');
+  const lastPosAutoFill = useRef('');
   const [clientTerritory, setClientTerritory] = useState('');
   const [clientAreaTotal, setClientAreaTotal] = useState('');
   const [clientQuantity, setClientQuantity] = useState('');
@@ -157,6 +161,25 @@ export default function KpGenerator() {
     setClientOrgFull(v);
     if (clientCompanyId) { setClientCompanyId(''); setDeals([]); setDealId(''); }
   };
+
+  // Выбор должности из справочника → «Должность + организация в род. падеже».
+  const applyPosition = (name: string) => {
+    setPosSel(name);
+    const v = positionWithCompany(name, clientOrgFull);
+    setClientPosition(v);
+    lastPosAutoFill.current = v;
+  };
+  // При смене названия компании перезаполняем поле, если его не правили вручную.
+  useEffect(() => {
+    if (!posSel) return;
+    setClientPosition((cur) => {
+      if (cur !== lastPosAutoFill.current) return cur; // правили вручную — не трогаем
+      const v = positionWithCompany(posSel, clientOrgFull);
+      lastPosAutoFill.current = v;
+      return v;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientOrgFull]);
 
   const [kpDate, setKpDate] = useState('');
   const [kpNumber, setKpNumber] = useState('');
@@ -193,6 +216,7 @@ export default function KpGenerator() {
       setTemplates(d.templates || []);
       setServiceTypes(d.serviceTypes || []);
       setServices(d.services || []);
+      setPositions(d.positions || []);
       if (d.headerLayout) setHeaderLayout(d.headerLayout);
       setAliases(d.aliases || []);
       setCalcTables(d.calcTables || []);
@@ -609,6 +633,7 @@ export default function KpGenerator() {
             selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, clientCompanyId,
             clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
+            positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
             kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -646,6 +671,7 @@ export default function KpGenerator() {
           orgs={orgs}
           executors={executors}
           services={services}
+          positions={positions}
           headerLayout={headerLayout}
           aliases={aliases}
           calcTables={calcTables}
@@ -667,6 +693,7 @@ function CreateTab(p: CreateProps) {
     selectedOrgs, toggleOrg, tierFor, mode, setMode, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, clientCompanyId,
     clientFio, setClientFio, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
+    positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
     kpDate, setKpDate, kpNumber, setKpNumber, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
@@ -684,6 +711,7 @@ function CreateTab(p: CreateProps) {
     clientTerritory: string; setClientTerritory: (v: string) => void;
     clientAreaTotal: string; setClientAreaTotal: (v: string) => void;
     clientQuantity: string; setClientQuantity: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
+    positions: string[]; posSel: string; applyPosition: (name: string) => void;
     onPickCompany: (it: { id?: string; title: string }) => void;
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
@@ -840,8 +868,14 @@ function CreateTab(p: CreateProps) {
           </div>
           <div>
             <div className={label}>Должность клиента (для адресата в шапке)</div>
-            <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={input} placeholder="Глава администрации" />
-            <div className="text-xs text-gray-400 mt-1">В шапке справа ставится в дательном падеже: «Главе администрации».</div>
+            <div className="flex gap-2">
+              <select value={posSel} onChange={(e) => applyPosition(e.target.value)} className={`${input} sm:max-w-[220px]`}>
+                <option value="">Выбрать должность…</option>
+                {positions.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={`${input} flex-1`} placeholder="Глава администрации района" />
+            </div>
+            <div className="text-xs text-gray-400 mt-1">Выбор должности подставит «должность + организация в род. падеже» (например, «Глава администрации района») — можно отредактировать. В шапке справа ставится в дательном падеже.</div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
