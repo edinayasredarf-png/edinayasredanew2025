@@ -41,7 +41,9 @@ function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: Calc
   let val = 0;
   for (const c of cols) {
     if (c.kind === 'formula') {
-      s[c.key] = evalFormulaSafe(c.formula || '0', s);
+      s[c.key] = (row.__manual === '1' && row[c.key] !== undefined && row[c.key] !== '')
+        ? num(row[c.key])
+        : evalFormulaSafe(c.formula || '0', s);
       if (c.key === col.key) val = s[c.key];
     }
   }
@@ -314,7 +316,9 @@ export default function KpCalcGrid({
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, ri) => (
+            {rows.map((r, ri) => {
+              const manual = r.__manual === '1';
+              return (
               <tr key={ri}>
                 {columns.map((c) => (
                   <td key={c.key} className="border border-gray-200 px-1 py-0.5">
@@ -325,6 +329,15 @@ export default function KpCalcGrid({
                         className={input}
                         inputMode={c.kind === 'number' ? 'decimal' : undefined}
                       />
+                    ) : c.kind === 'formula' && manual ? (
+                      <input
+                        value={r[c.key] ?? ''}
+                        onChange={(e) => setCell(ri, c.key, e.target.value)}
+                        className={`${input} text-right`}
+                        inputMode="decimal"
+                        placeholder={cellPreview(c, r, ri, columns, previewScope)}
+                        title="Своя сумма (формула отключена для этой строки)"
+                      />
                     ) : (
                       <div className="px-2 py-1.5 text-gray-500 text-right">
                         {c.kind === 'index' ? ri + 1 : c.kind === 'const' ? (c.constValue || '') : cellPreview(c, r, ri, columns, previewScope)}
@@ -332,11 +345,19 @@ export default function KpCalcGrid({
                     )}
                   </td>
                 ))}
-                <td className="px-1">
+                <td className="px-1 whitespace-nowrap">
+                  {columns.some((c) => c.kind === 'formula') && (
+                    <button
+                      onClick={() => setRows((rs) => rs.map((x, j) => j === ri ? { ...x, __manual: manual ? '' : '1' } : x))}
+                      className={`px-1 ${manual ? 'text-[#16a34a]' : 'text-gray-400 hover:text-[#029cda]'}`}
+                      title={manual ? 'Сумма задаётся вручную — вернуть формулу' : 'Ввести сумму вручную'}
+                    >✎</button>
+                  )}
                   <button onClick={() => setRows((rs) => rs.filter((_, j) => j !== ri))} className="text-red-500 hover:text-red-600 px-1">✕</button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

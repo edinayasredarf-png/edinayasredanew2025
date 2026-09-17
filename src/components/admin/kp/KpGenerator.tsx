@@ -295,6 +295,32 @@ export default function KpGenerator() {
     });
   }, [selectedOrgs, orgs, tierFor, mode, ruralSettlement, inc.service, inc.ais, inc.renewal, rows, columns, templates, serviceType]);
 
+  // Предупреждения о незаполненных ценах (не блокируют, но подсвечивают).
+  const priceWarnings = useMemo(() => {
+    const out: string[] = [];
+    const labelOf = (key: string) => orgs.find((o) => o.key === key)?.shortName || key;
+    if (inc.service) {
+      const comps = serviceComponents(serviceType);
+      const items = comps.flatMap((svc) =>
+        (services.find((s) => s.name === svc)?.lineItems ?? []).map((it) => ({ svc, it })),
+      );
+      for (const key of selectedOrgs) {
+        if (items.length) {
+          for (const { svc, it } of items) {
+            const lp = tiers.find((t) => t.orgKey === key && t.serviceType === svc)?.linePrices?.[it.key];
+            if (!lp || (!lp.direct && !lp.tender)) out.push(`${labelOf(key)}: нет цены — «${it.name}»`);
+          }
+        } else {
+          const t = tierFor(key);
+          if (!(mode === 'tender' ? t?.pricePerHaTender : t?.pricePerHaDirect)) out.push(`${labelOf(key)}: не задана цена услуги`);
+        }
+      }
+    }
+    if (inc.ais) for (const key of selectedOrgs) { if (!tierFor(key)?.aisPrice) out.push(`${labelOf(key)}: не задана цена АИС`); }
+    if (inc.renewal) for (const key of selectedOrgs) { if (!tierFor(key)?.renewalPerYear) out.push(`${labelOf(key)}: не задана цена пролонгации`); }
+    return out;
+  }, [serviceType, selectedOrgs, tiers, services, orgs, inc.service, inc.ais, inc.renewal, mode, tierFor]);
+
   const previewTier = tierFor(selectedOrgs[0] || '');
   const previewScope = {
     price: mode === 'tender' ? previewTier?.pricePerHaTender ?? 0 : previewTier?.pricePerHaDirect ?? 0,
@@ -431,7 +457,7 @@ export default function KpGenerator() {
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
-            perOrgTotals, generate, busy,
+            perOrgTotals, priceWarnings, generate, busy,
           }}
         />
       )}
@@ -489,7 +515,7 @@ function CreateTab(p: CreateProps) {
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
-    perOrgTotals, generate, busy,
+    perOrgTotals, priceWarnings, generate, busy,
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
@@ -513,6 +539,7 @@ function CreateTab(p: CreateProps) {
     previewScope: { price: number; price_direct: number; price_tender: number; min_ha: number };
     onTablesChanged: () => void; onImportedTable: (key: string, columns: CalcColumn[], rows: RowData[]) => void; setStatus: (s: string) => void;
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
+    priceWarnings: string[];
     generate: (format?: 'docx' | 'pdf' | 'both') => void; busy: boolean;
   };
 
@@ -727,6 +754,14 @@ function CreateTab(p: CreateProps) {
               <div className="text-lg font-bold text-[#313131] mt-1">{fmtMoney(t.grand)} ₽</div>
             </div>
           ))}
+
+          {priceWarnings.length > 0 && (
+            <div className="text-xs bg-[#FFF7ED] border border-[#fed7aa] text-[#9a3412] rounded-lg px-3 py-2 space-y-0.5">
+              <div className="font-medium">⚠️ Проверьте цены (можно продолжить):</div>
+              {priceWarnings.slice(0, 8).map((w, i) => <div key={i}>• {w}</div>)}
+              {priceWarnings.length > 8 && <div>…и ещё {priceWarnings.length - 8}</div>}
+            </div>
+          )}
 
           <button
             onClick={() => generate('docx')}

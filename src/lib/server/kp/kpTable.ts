@@ -127,7 +127,12 @@ export function computeTable(
           text = row[c.key] ? (c.money ? fmtMoney(num) : fmtNum(num)) : "";
           break;
         case "formula": {
-          num = evaluateFormulaSafe(c.formula || "0", scope);
+          // Ручной override: если строка помечена «вручную» и ячейка заполнена — берём её.
+          if (row.__manual === "1" && row[c.key] !== undefined && row[c.key] !== "") {
+            num = toNum(row[c.key]);
+          } else {
+            num = evaluateFormulaSafe(c.formula || "0", scope);
+          }
           scope[c.key] = num; // доступно последующим формулам
           text = c.money || c.isCost ? fmtMoney(num) : fmtNum(num);
           break;
