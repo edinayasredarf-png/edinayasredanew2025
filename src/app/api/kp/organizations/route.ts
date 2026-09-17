@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
     signatureImage: org.signatureImage || "",
     writeKpNumber: org.writeKpNumber ?? true,
     mailAccountId: org.mailAccountId ?? null,
+    mailAccountKey: org.mailAccountKey ?? "",
     isActive: org.isActive ?? true,
     sortOrder: org.sortOrder ?? 0,
   };

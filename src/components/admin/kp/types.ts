@@ -15,6 +15,7 @@ export interface Organization {
   signatureImage: string;
   writeKpNumber: boolean;
   mailAccountId: number | null;
+  mailAccountKey: string;
   isActive: boolean;
   sortOrder: number;
 }

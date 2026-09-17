@@ -42,6 +42,7 @@ export interface KpOrganization {
   signatureImage: string;
   writeKpNumber: boolean; // писать ли номер КП/письма в документе
   mailAccountId: number | null;
+  mailAccountKey: string; // id ящика для рассылки (mailAccountsDb), '' = основной
   isActive: boolean;
   sortOrder: number;
 }
@@ -116,7 +117,8 @@ async function ensureTables(): Promise<void> {
     alter table kp_organizations
       add column if not exists header_image text not null default '',
       add column if not exists header_text text not null default '',
-      add column if not exists write_kp_number boolean not null default true
+      add column if not exists write_kp_number boolean not null default true,
+      add column if not exists mail_account_key text not null default ''
   `);
 
   await pool.query(`
@@ -853,6 +855,7 @@ function mapOrg(r: Record<string, unknown>): KpOrganization {
     signatureImage: String(r.signature_image ?? ""),
     writeKpNumber: r.write_kp_number == null ? true : Boolean(r.write_kp_number),
     mailAccountId: r.mail_account_id == null ? null : Number(r.mail_account_id),
+    mailAccountKey: String(r.mail_account_key ?? ""),
     isActive: Boolean(r.is_active),
     sortOrder: Number(r.sort_order ?? 0),
   };
@@ -881,19 +884,20 @@ export async function dbUpsertOrganization(o: KpOrganization): Promise<void> {
     `insert into kp_organizations
        (key, name, short_name, director_role, director_fio, requisites, phone, email,
         header_image, header_text, stamp_image, signature_image, write_kp_number,
-        mail_account_id, is_active, sort_order, updated_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16, now())
+        mail_account_id, mail_account_key, is_active, sort_order, updated_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, now())
      on conflict (key) do update set
        name=excluded.name, short_name=excluded.short_name, director_role=excluded.director_role,
        director_fio=excluded.director_fio, requisites=excluded.requisites, phone=excluded.phone,
        email=excluded.email, header_image=excluded.header_image, header_text=excluded.header_text,
        stamp_image=excluded.stamp_image, signature_image=excluded.signature_image,
        write_kp_number=excluded.write_kp_number, mail_account_id=excluded.mail_account_id,
+       mail_account_key=excluded.mail_account_key,
        is_active=excluded.is_active, sort_order=excluded.sort_order, updated_at=now()`,
     [
       o.key, o.name, o.shortName, o.directorRole, o.directorFio, o.requisites, o.phone, o.email,
       o.headerImage, o.headerText, o.stampImage, o.signatureImage, o.writeKpNumber,
-      o.mailAccountId, o.isActive, o.sortOrder,
+      o.mailAccountId, o.mailAccountKey || "", o.isActive, o.sortOrder,
     ]
   );
 }

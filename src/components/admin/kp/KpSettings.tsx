@@ -21,7 +21,7 @@ function emptyOrg(sort: number): Organization {
     key: '', name: '', shortName: '', directorRole: 'Директор', directorFio: '',
     requisites: '', phone: '', email: '', headerImage: '', headerText: '',
     stampImage: '', signatureImage: '', writeKpNumber: true, mailAccountId: null,
-    isActive: true, sortOrder: sort,
+    mailAccountKey: '', isActive: true, sortOrder: sort,
   };
 }
 
@@ -127,7 +127,15 @@ function OrgEditor({
 }) {
   const [d, setD] = useState<Organization>(org);
   const [busy, setBusy] = useState(false);
+  const [accounts, setAccounts] = useState<Array<{ id: string; label: string; from_email: string }>>([]);
   const set = (patch: Partial<Organization>) => setD((x) => ({ ...x, ...patch }));
+
+  React.useEffect(() => {
+    fetch('/api/letters/accounts', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (j?.accounts) setAccounts(j.accounts.filter((a: { enabled?: boolean }) => a.enabled)); })
+      .catch(() => {});
+  }, []);
 
   const pickImage = async (field: 'headerImage' | 'signatureImage' | 'stampImage', file?: File) => {
     if (!file) return;
@@ -242,6 +250,15 @@ function OrgEditor({
             Писать номер КП/письма
           </label>
         </div>
+      </div>
+
+      <div>
+        <div className={label}>Ящик для рассылки (от этой организации)</div>
+        <select value={d.mailAccountKey || ''} onChange={(e) => set({ mailAccountKey: e.target.value })} className={input}>
+          <option value="">Основной (по умолчанию)</option>
+          {accounts.map((a) => <option key={a.id} value={a.id}>{a.label} ({a.from_email})</option>)}
+        </select>
+        <div className="text-[11px] text-gray-400 mt-1">Используется при рассылке «от каждой организации отдельно».</div>
       </div>
       <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
         <input type="checkbox" checked={d.isActive} onChange={(e) => set({ isActive: e.target.checked })} />

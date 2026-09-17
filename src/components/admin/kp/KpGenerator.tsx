@@ -485,7 +485,7 @@ export default function KpGenerator() {
     }
   };
 
-  const sendEmail = async (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean }): Promise<boolean> => {
+  const sendEmail = async (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean }): Promise<boolean> => {
     const err = validate();
     if (err) { setStatus(err); return false; }
     if (!opts.to.trim()) { setStatus('Укажите e-mail клиента'); return false; }
@@ -494,11 +494,21 @@ export default function KpGenerator() {
     try {
       const res = await fetch('/api/kp/send', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...buildPayload(opts.asPdf ? 'pdf' : 'docx'), clientEmail: opts.to, subject: opts.subject, message: opts.message, accountId: opts.accountId, asPdf: opts.asPdf }),
+        body: JSON.stringify({ ...buildPayload(opts.asPdf ? 'pdf' : 'docx'), clientEmail: opts.to, subject: opts.subject, message: opts.message, accountId: opts.accountId, asPdf: opts.asPdf, perOrg: opts.perOrg }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'Ошибка отправки');
-      setStatus(d.ok ? `✅ Отправлено на ${d.to} (${d.count} КП)` : `⚠️ Не доставлено${d.rejected?.length ? ': ' + d.rejected.join(', ') : ''}`);
+      if (Array.isArray(d.perOrg)) {
+        const okList = d.perOrg.filter((s: { ok: boolean }) => s.ok);
+        const failList = d.perOrg.filter((s: { ok: boolean }) => !s.ok);
+        setStatus(
+          failList.length === 0
+            ? `✅ Отправлено от ${okList.length} организаций на ${d.to}`
+            : `⚠️ Отправлено ${okList.length} из ${d.perOrg.length}. Ошибки: ${failList.map((s: { org: string; error?: string }) => `${s.org} (${s.error})`).join('; ')}`,
+        );
+      } else {
+        setStatus(d.ok ? `✅ Отправлено на ${d.to} (${d.count} КП)` : `⚠️ Не доставлено${d.rejected?.length ? ': ' + d.rejected.join(', ') : ''}`);
+      }
       return Boolean(d.ok);
     } catch (e) {
       setStatus((e as Error).message);
@@ -673,7 +683,7 @@ function CreateTab(p: CreateProps) {
     priceWarnings: string[];
     computePreview: () => Array<{ key: string; name: string; table: PreviewTable | null; ais: number; renewal: number; grand: number }>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void;
-    sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean }) => Promise<boolean>;
+    sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean }) => Promise<boolean>;
     mailAccounts: Array<{ id: string; label: string; from_email: string }>;
     generateBatch: (clients: BatchClient[], format?: 'docx' | 'pdf' | 'both') => Promise<boolean>;
     busy: boolean;
@@ -690,6 +700,7 @@ function CreateTab(p: CreateProps) {
   const [mailMessage, setMailMessage] = React.useState('Здравствуйте!\n\nНаправляем коммерческое предложение во вложении. Будем рады сотрудничеству.');
   const [mailAccountId, setMailAccountId] = React.useState('default');
   const [mailAsPdf, setMailAsPdf] = React.useState(false);
+  const [mailPerOrg, setMailPerOrg] = React.useState(false);
   const [batchOpen, setBatchOpen] = React.useState(false);
   const [batchClients, setBatchClients] = React.useState<BatchClient[]>([{ orgFull: '', fio: '' }]);
   const [batchPaste, setBatchPaste] = React.useState('');
@@ -988,20 +999,30 @@ function CreateTab(p: CreateProps) {
                 <div className={label}>Сообщение</div>
                 <textarea value={mailMessage} onChange={(e) => setMailMessage(e.target.value)} className={`${input} h-24`} />
               </div>
-              <div>
-                <div className={label}>Ящик отправки</div>
-                <select value={mailAccountId} onChange={(e) => setMailAccountId(e.target.value)} className={input}>
-                  <option value="default">Основной (по умолчанию)</option>
-                  {mailAccounts.map((a) => <option key={a.id} value={a.id}>{a.label} ({a.from_email})</option>)}
-                </select>
-              </div>
+              <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer">
+                <input type="checkbox" checked={mailPerOrg} onChange={(e) => setMailPerOrg(e.target.checked)} />
+                От каждой организации отдельным письмом (из её ящика)
+              </label>
+              {!mailPerOrg && (
+                <div>
+                  <div className={label}>Ящик отправки</div>
+                  <select value={mailAccountId} onChange={(e) => setMailAccountId(e.target.value)} className={input}>
+                    <option value="default">Основной (по умолчанию)</option>
+                    {mailAccounts.map((a) => <option key={a.id} value={a.id}>{a.label} ({a.from_email})</option>)}
+                  </select>
+                </div>
+              )}
               <label className="flex items-center gap-2 text-xs text-[#313131] cursor-pointer">
                 <input type="checkbox" checked={mailAsPdf} onChange={(e) => setMailAsPdf(e.target.checked)} />
                 Вложение в PDF (нужен pdf-service; иначе DOCX)
               </label>
-              <div className="text-[11px] text-gray-400">Во вложении — {selectedOrgs.length} {selectedOrgs.length === 1 ? 'КП' : 'КП'} (по одному на организацию), одним письмом.</div>
+              <div className="text-[11px] text-gray-400">
+                {mailPerOrg
+                  ? `${selectedOrgs.length} писем клиенту — по одному от каждой организации из её ящика (задаётся в Настройках компании).`
+                  : `Одно письмо, во вложении ${selectedOrgs.length} КП (по одному на организацию).`}
+              </div>
               <button
-                onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf })}
+                onClick={() => sendEmail({ to: mailTo, subject: mailSubject, message: mailMessage, accountId: mailAccountId, asPdf: mailAsPdf, perOrg: mailPerOrg })}
                 disabled={busy || !mailTo.trim() || perOrgTotals.length === 0}
                 className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#7c3aed] text-white hover:bg-[#6d28d9] disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >

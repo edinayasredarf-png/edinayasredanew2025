@@ -5,7 +5,30 @@ import { buildKpDocuments, type KpGenerateRequest } from "@/lib/server/kp/kpBuil
 import { convertDocxToPdf, isPdfConfigured } from "@/lib/server/kp/kpPdf";
 import { sendLetterEmail, isMailerConfigured, type SmtpAccount } from "@/lib/server/mailer";
 import { dbGetMailAccountSecret } from "@/lib/server/mailAccountsDb";
-import { dbInsertHistory } from "@/lib/server/kp/kpDb";
+import { dbGetOrganization, dbInsertHistory } from "@/lib/server/kp/kpDb";
+
+/** Резолвит ящик отправки по id (или основной ENV). */
+async function resolveAccount(accountId: string): Promise<{ account?: SmtpAccount; error?: string }> {
+  const id = (accountId || "").trim();
+  if (!id || id === "default") {
+    if (!isMailerConfigured()) return { error: "основной SMTP не настроен" };
+    return {};
+  }
+  const sec = await dbGetMailAccountSecret(id);
+  if (!sec) return { error: "ящик не найден" };
+  if (!sec.enabled) return { error: "ящик отключён" };
+  if (!sec.smtp_host || !sec.smtp_user || !sec.smtp_pass) return { error: "у ящика нет SMTP-настроек" };
+  return {
+    account: {
+      host: sec.smtp_host,
+      port: sec.smtp_port,
+      secure: sec.smtp_secure,
+      user: sec.smtp_user,
+      pass: sec.smtp_pass,
+      from: sec.from_name ? `${sec.from_name} <${sec.from_email}>` : sec.from_email,
+    },
+  };
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +60,7 @@ export async function POST(request: NextRequest) {
     message?: string;
     accountId?: string;
     asPdf?: boolean;
+    perOrg?: boolean; // отправлять от каждой организации из её ящика (отдельными письмами)
   };
   try {
     body = await request.json();
@@ -52,30 +76,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Выберите организации и заполните форму" }, { status: 400 });
   }
 
-  // Ящик отправки: из БД по accountId либо основной (ENV).
-  let account: SmtpAccount | undefined;
+  const perOrg = Boolean(body.perOrg);
   const accountId = (body.accountId || "").trim();
-  if (accountId && accountId !== "default") {
-    const sec = await dbGetMailAccountSecret(accountId);
-    if (!sec) return NextResponse.json({ error: "Ящик отправки не найден" }, { status: 404 });
-    if (!sec.enabled) return NextResponse.json({ error: "Выбранный ящик отключён" }, { status: 400 });
-    if (!sec.smtp_host || !sec.smtp_user || !sec.smtp_pass) {
-      return NextResponse.json({ error: "У ящика не заданы SMTP-настройки или пароль" }, { status: 400 });
-    }
-    account = {
-      host: sec.smtp_host,
-      port: sec.smtp_port,
-      secure: sec.smtp_secure,
-      user: sec.smtp_user,
-      pass: sec.smtp_pass,
-      from: sec.from_name ? `${sec.from_name} <${sec.from_email}>` : sec.from_email,
-    };
-  } else if (!isMailerConfigured()) {
-    return NextResponse.json(
-      { error: "Почта не настроена: выберите ящик или задайте SMTP в переменных окружения" },
-      { status: 400 }
-    );
+
+  // Общий ящик (для режима «одним письмом» или как фолбэк per-org).
+  const baseAcc = await resolveAccount(accountId);
+  if (!perOrg && baseAcc.error) {
+    return NextResponse.json({ error: `Ящик отправки: ${baseAcc.error}` }, { status: 400 });
   }
+  const account = baseAcc.account;
 
   const asPdf = Boolean(body.asPdf);
   if (asPdf && !isPdfConfigured()) {
@@ -106,31 +115,49 @@ export async function POST(request: NextRequest) {
   const messageText = (body.message || "").trim() || "Здравствуйте!\n\nНаправляем коммерческое предложение во вложении.";
   const html = messageText.split(/\n/).map((l) => escapeHtml(l)).join("<br>");
 
+  const editor = getEditorFromRequest(request);
+  const createdBy = editor?.email || "admin";
+  const logHistory = (d: (typeof docs)[number]) =>
+    dbInsertHistory({
+      title: body.form.client.orgShort || body.form.client.orgFull,
+      clientOrg: body.form.client.orgFull,
+      serviceType: body.form.serviceType,
+      orgKey: d.orgKey,
+      orgName: d.orgName,
+      format: asPdf ? "pdf" : "docx",
+      totalCost: d.totalCost,
+      createdBy,
+      payload: { ...body, orgKeys: [d.orgKey], sentTo: to },
+    }).catch(() => 0);
+
+  // Режим «от каждой организации отдельно»: письмо на клиента из ящика каждой организации.
+  if (perOrg) {
+    const sent: Array<{ org: string; ok: boolean; error?: string }> = [];
+    for (let i = 0; i < docs.length; i++) {
+      const d = docs[i];
+      const org = await dbGetOrganization(d.orgKey);
+      const acc = await resolveAccount((org?.mailAccountKey || accountId || "").trim());
+      if (acc.error) { sent.push({ org: d.shortName, ok: false, error: `ящик: ${acc.error}` }); continue; }
+      try {
+        const r = await sendLetterEmail({ to, subject, html, text: messageText, attachments: [attachments[i]], account: acc.account });
+        sent.push({ org: d.shortName, ok: r.accepted, error: r.accepted ? undefined : (r.rejected.join(", ") || "не принято") });
+        await logHistory(d);
+      } catch (e) {
+        sent.push({ org: d.shortName, ok: false, error: (e as Error).message });
+      }
+    }
+    const okCount = sent.filter((s) => s.ok).length;
+    return NextResponse.json({ ok: okCount > 0, to, count: okCount, perOrg: sent, errors });
+  }
+
+  // Одним письмом со всеми вложениями.
   let result;
   try {
     result = await sendLetterEmail({ to, subject, html, text: messageText, attachments, account });
   } catch (e) {
     return NextResponse.json({ error: `Ошибка отправки: ${(e as Error).message}` }, { status: 502 });
   }
-
-  // Журнал истории (по записи на организацию).
-  const editor = getEditorFromRequest(request);
-  const createdBy = editor?.email || "admin";
-  await Promise.all(
-    docs.map((d) =>
-      dbInsertHistory({
-        title: body.form.client.orgShort || body.form.client.orgFull,
-        clientOrg: body.form.client.orgFull,
-        serviceType: body.form.serviceType,
-        orgKey: d.orgKey,
-        orgName: d.orgName,
-        format: asPdf ? "pdf" : "docx",
-        totalCost: d.totalCost,
-        createdBy,
-        payload: { ...body, orgKeys: [d.orgKey], sentTo: to },
-      }).catch(() => 0)
-    )
-  );
+  await Promise.all(docs.map(logHistory));
 
   return NextResponse.json({
     ok: result.accepted,
