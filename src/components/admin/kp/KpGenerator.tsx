@@ -137,7 +137,11 @@ export default function KpGenerator() {
   const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
   const [modeDirect, setModeDirect] = useState(true);
   const [modeTender, setModeTender] = useState(true);
-  const [areaUnit, setAreaUnit] = useState<'sqm' | 'ha'>('sqm');
+  // Единицы площади: можно включить обе (в таблице появятся оба столбца, значения связаны).
+  const [unitSqm, setUnitSqm] = useState(true);
+  const [unitHa, setUnitHa] = useState(false);
+  // Интерпретация введённого числа: если выбраны кв.м (или обе) — ввод в кв.м; только га — в га.
+  const areaUnit: 'sqm' | 'ha' = unitSqm ? 'sqm' : 'ha';
   // «Активный» режим (для одиночной цены `price` и итогов): прямой в приоритете.
   const mode: PriceMode = modeTender && !modeDirect ? 'tender' : 'direct';
   const [ruralSettlement, setRuralSettlement] = useState(false);
@@ -271,15 +275,38 @@ export default function KpGenerator() {
 
   // Колонки = из выбранной таблицы с учётом режима цены (прямой/торги) и единицы площади.
   const deriveColumns = useCallback((cols: CalcColumn[]): CalcColumn[] => {
-    return cols
+    const out = cols
       .filter((c) => !(c.key === 'cost_direct' && !modeDirect) && !(c.key === 'cost_tender' && !modeTender))
-      .map((c) => c.key === 'area_sqm' ? { ...c, label: areaUnit === 'ha' ? 'Площадь, га' : 'Площадь, кв.м' } : c);
-  }, [modeDirect, modeTender, areaUnit]);
+      .map((c) => c.key === 'area_sqm'
+        ? { ...c, label: (!unitSqm && unitHa) ? 'Площадь, га' : 'Площадь, кв.м' }
+        : c);
+    // Обе единицы: добавляем редактируемый столбец «Площадь, га» рядом с кв.м (значения связаны).
+    if (unitSqm && unitHa && !out.some((c) => c.key === 'area_ha')) {
+      const idx = out.findIndex((c) => c.key === 'area_sqm');
+      const haCol: CalcColumn = { key: 'area_ha', label: 'Площадь, га', kind: 'number', align: 'center', sum: true };
+      if (idx >= 0) out.splice(idx + 1, 0, haCol); else out.push(haCol);
+    }
+    return out;
+  }, [modeDirect, modeTender, unitSqm, unitHa]);
 
   useEffect(() => {
     const def = calcTables.find((t) => t.key === selectedTableKey);
     if (def) setColumns(deriveColumns(def.columns));
   }, [selectedTableKey, deriveColumns, calcTables]);
+
+  // При включении обеих единиц — досчитать парное значение площади в уже заполненных строках.
+  useEffect(() => {
+    if (!(unitSqm && unitHa)) return;
+    setRows((rs) => rs.map((r) => {
+      const sqmRaw = String(r.area_sqm ?? '').trim();
+      const haRaw = String(r.area_ha ?? '').trim();
+      const sqm = parseFloat(sqmRaw.replace(',', '.'));
+      const ha = parseFloat(haRaw.replace(',', '.'));
+      if (sqmRaw && !isNaN(sqm) && (!haRaw || isNaN(ha))) return { ...r, area_ha: String(+(sqm / 10000).toFixed(4)) };
+      if (haRaw && !isNaN(ha) && (!sqmRaw || isNaN(sqm))) return { ...r, area_sqm: String(Math.round(ha * 10000)) };
+      return r;
+    }));
+  }, [unitSqm, unitHa]);
 
   const onSelectTable = (key: string) => {
     const t = calcTables.find((x) => x.key === key);
@@ -711,7 +738,7 @@ export default function KpGenerator() {
         <CreateTab
           {...{
             orgs, serviceTypes, serviceType, onSelectService, inc,
-            selectedOrgs, toggleOrg, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
+            selectedOrgs, toggleOrg, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, unitSqm, setUnitSqm, unitHa, setUnitHa, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
@@ -775,7 +802,7 @@ type CreateProps = Record<string, unknown>;
 function CreateTab(p: CreateProps) {
   const {
     orgs, serviceTypes, serviceType, onSelectService, inc,
-    selectedOrgs, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
+    selectedOrgs, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, unitSqm, setUnitSqm, unitHa, setUnitHa, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
@@ -791,7 +818,8 @@ function CreateTab(p: CreateProps) {
     inc: { service: boolean; ais: boolean; renewal: boolean };
     selectedOrgs: string[]; toggleOrg: (k: string) => void; setSelectedOrgs: React.Dispatch<React.SetStateAction<string[]>>; tierFor: (k: string) => Tier | undefined;
     mode: PriceMode; modeDirect: boolean; setModeDirect: (v: boolean) => void; modeTender: boolean; setModeTender: (v: boolean) => void;
-    areaUnit: 'sqm' | 'ha'; setAreaUnit: (v: 'sqm' | 'ha') => void;
+    areaUnit: 'sqm' | 'ha';
+    unitSqm: boolean; setUnitSqm: (v: boolean) => void; unitHa: boolean; setUnitHa: (v: boolean) => void;
     ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
     clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string; orgFullError: boolean; fioError: boolean;
     clientFio: string; setClientFio: (v: string) => void; clientEmail: string; setClientEmail: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
@@ -912,9 +940,9 @@ function CreateTab(p: CreateProps) {
             </div>
             <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
               <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Единица площади</span>
-              <HelpTip text="Единицы измерения площади в таблицах услуг: квадратные метры или гектары." />
-              <ToggleRow checked={areaUnit === 'sqm'} onChange={() => setAreaUnit('sqm')}>кв. м</ToggleRow>
-              <ToggleRow checked={areaUnit === 'ha'} onChange={() => setAreaUnit('ha')}>Гектары</ToggleRow>
+              <HelpTip text="Можно включить обе — тогда в таблице будут оба столбца, значения связаны: изменил кв. м — пересчитаются га и наоборот." />
+              <ToggleRow checked={unitSqm} onChange={(v) => { if (!v && !unitHa) return; setUnitSqm(v); }}>кв. м</ToggleRow>
+              <ToggleRow checked={unitHa} onChange={(v) => { if (!v && !unitSqm) return; setUnitHa(v); }}>Гектары</ToggleRow>
             </div>
             <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
               <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Сельское поселение</span>

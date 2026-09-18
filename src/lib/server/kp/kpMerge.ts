@@ -364,7 +364,10 @@ function deriveAreaHa(payload: KpFormPayload): number {
   if (!hasHa && !hasSqm) return 0;
   let sum = 0;
   for (const r of payload.rows || []) {
-    sum += hasHa ? toNum(r.area_ha) : toNum(r.area_sqm) / 10000;
+    const ha = toNum(r.area_ha);
+    if (hasHa && ha) sum += ha;
+    else if (hasSqm) sum += toNum(r.area_sqm) / 10000;
+    else sum += ha;
   }
   return sum;
 }
