@@ -12,6 +12,7 @@ import { Select } from '@/components/admin/ui/Select';
 import { MultiSelect } from '@/components/admin/ui/MultiSelect';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
 import { inputClass } from '@/components/admin/ui/Field';
+import { WordIcon, PdfIcon } from '@/components/admin/ui/FileIcons';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
@@ -1126,6 +1127,7 @@ function CreateTab(p: CreateProps) {
           >
             {busy && <Spinner size={16} color="#fff" />}
             {busy ? 'Генерация…' : selectedOrgs.length > 1 ? `Скачать ${selectedOrgs.length} DOCX (ZIP)` : 'Скачать DOCX'}
+            {!busy && <WordIcon size={18} />}
           </button>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -1135,6 +1137,7 @@ function CreateTab(p: CreateProps) {
             >
               {busy && <Spinner size={16} />}
               PDF
+              {!busy && <PdfIcon size={18} />}
             </button>
             <button
               onClick={() => generate('both')}
@@ -1143,6 +1146,7 @@ function CreateTab(p: CreateProps) {
             >
               {busy && <Spinner size={16} />}
               DOCX+PDF
+              {!busy && <span className="inline-flex items-center gap-0.5"><WordIcon size={18} /><PdfIcon size={18} /></span>}
             </button>
           </div>
           <div className="text-[11px] text-gray-400 text-center">PDF — через сервис pdf-service (LibreOffice).</div>
@@ -1265,7 +1269,7 @@ function CreateTab(p: CreateProps) {
             ))}
             <div className="flex justify-end gap-2">
               <button onClick={() => setPreview(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
-              <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">Всё верно — скачать</button>
+              <button onClick={() => { setPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">Всё верно — скачать<WordIcon size={16} /></button>
             </div>
           </div>
         </div>
@@ -1292,7 +1296,7 @@ function CreateTab(p: CreateProps) {
             <div className="text-[11px] text-gray-400">Это черновой рендер (без точного оформления Word: шрифты/отступы могут отличаться). Финальный вид — в скачанном .docx / PDF.</div>
             <div className="flex justify-end gap-2">
               <button onClick={() => setDocPreview(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
-              <button onClick={() => { setDocPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50">Скачать DOCX</button>
+              <button onClick={() => { setDocPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">Скачать DOCX<WordIcon size={16} /></button>
             </div>
           </div>
         </div>
