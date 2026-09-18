@@ -71,7 +71,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function Kpi({ label, value, sub, onClick }: { label: string; value: React.ReactNode; sub?: string; onClick?: () => void }) {
-  const cls = "bg-[#F6F7F9] rounded-xl p-5 text-left w-full" + (onClick ? " hover:bg-[#029cda]/10 transition cursor-pointer" : "");
+  const cls = "bg-[#F6F7F9] rounded-xl p-5 text-left w-full shadow-sm" + (onClick ? " hover:bg-[#029cda]/10 hover:shadow-md transition cursor-pointer" : "");
   const inner = (
     <>
       <p className="text-sm text-gray-600">{label}</p>
@@ -2000,7 +2000,7 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
             {matches.map((m, i) => (
               <li key={`${m.callId}-${m.segmentIdx}-${i}`}
                 onClick={() => onOpen(m.callId, m.startMs)}
-                className="bg-white border border-gray-100 rounded-xl p-3 hover:bg-sky-50/60 cursor-pointer">
+                className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:bg-sky-50/60 transition cursor-pointer">
                 <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
                   <span>{m.startedAt ? new Date(m.startedAt).toLocaleString('ru-RU') : '—'}</span>
                   {m.managerName && <span>· {m.managerName}</span>}

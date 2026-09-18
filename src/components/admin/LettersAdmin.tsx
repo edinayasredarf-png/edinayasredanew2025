@@ -366,7 +366,7 @@ export default function LettersAdmin() {
 
           <div className="text-xs text-[#7C8A9A] space-y-1">
             <div>Реквизиты (№, дата), адресат (должность + ФИО в дат. падеже) и обращение формируются автоматически — их в тело писать не нужно.</div>
-            <div>Теги для тела, исполнителя и имени файла: <span className="font-mono text-[#0a7bb0]">{TAGS.join('  ')}</span></div>
+            <div>Теги для тела, исполнителя и имени файла: <span className="font-mono text-[#0280b5]">{TAGS.join('  ')}</span></div>
           </div>
 
           {/* Верхняя часть письма — слева (реквизиты) и справа (адресат) */}

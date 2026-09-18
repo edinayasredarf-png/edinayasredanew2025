@@ -239,7 +239,7 @@ export default function UtmGenerator() {
           type="button"
           onClick={generate}
           disabled={!baseUrl.trim() && !channels.some((c) => c.enabled && c.url)}
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#029cda] text-white text-sm font-medium hover:bg-[#0287be] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#029cda] text-white text-sm font-medium hover:bg-[#0280b5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

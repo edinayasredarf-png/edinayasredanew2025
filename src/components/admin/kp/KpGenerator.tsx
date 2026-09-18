@@ -883,7 +883,7 @@ function CreateTab(p: CreateProps) {
                     key={o.key}
                     type="button"
                     onClick={() => toggleOrg(o.key)}
-                    className={`text-left px-3 py-2.5 rounded-xl text-sm transition ${
+                    className={`text-left px-3 py-2.5 rounded-xl text-sm shadow-sm hover:shadow-md transition ${
                       active ? 'border-2 border-[#029cda] bg-[#EAF6FC]' : 'border-2 border-transparent ring-1 ring-gray-200 bg-white hover:ring-gray-300'
                     }`}
                   >
