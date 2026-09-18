@@ -192,7 +192,7 @@ export default function LetterNotifications() {
         : 'bg-white text-[#313131] border-gray-200 hover:bg-gray-50'
     }`;
   const inputCls =
-    'px-3 py-1.5 border border-gray-200 rounded-xl text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
+    'px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-sm text-[#313131] outline-none transition-colors hover:border-[#029cda] focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
 
   return (
     <div className="space-y-4 font-[Raleway]">

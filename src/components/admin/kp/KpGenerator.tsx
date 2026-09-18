@@ -10,6 +10,7 @@ import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
 import { Select } from '@/components/admin/ui/Select';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
+import { inputClass } from '@/components/admin/ui/Field';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
@@ -506,6 +507,10 @@ export default function KpGenerator() {
     recordRegistry,
   });
 
+  const [submitted, setSubmitted] = useState(false);
+  const orgFullError = submitted && !clientOrgFull.trim();
+  const fioError = submitted && !clientFio.trim();
+
   const validate = (): string | null => {
     if (selectedOrgs.length === 0) return 'Выберите хотя бы одну организацию';
     if (!clientOrgFull.trim()) return 'Укажите наименование организации клиента';
@@ -517,6 +522,7 @@ export default function KpGenerator() {
   };
 
   const generate = async (format: 'docx' | 'pdf' | 'both' = 'docx') => {
+    setSubmitted(true);
     const err = validate();
     if (err) {
       setStatus(err);
@@ -703,7 +709,7 @@ export default function KpGenerator() {
           {...{
             orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
-            clientOrgFull, onChangeCompany, clientCompanyId,
+            clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
@@ -767,7 +773,7 @@ function CreateTab(p: CreateProps) {
   const {
     orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
-    clientOrgFull, onChangeCompany, clientCompanyId,
+    clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
@@ -784,7 +790,7 @@ function CreateTab(p: CreateProps) {
     mode: PriceMode; modeDirect: boolean; setModeDirect: (v: boolean) => void; modeTender: boolean; setModeTender: (v: boolean) => void;
     areaUnit: 'sqm' | 'ha'; setAreaUnit: (v: 'sqm' | 'ha') => void;
     ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
-    clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string;
+    clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string; orgFullError: boolean; fioError: boolean;
     clientFio: string; setClientFio: (v: string) => void; clientEmail: string; setClientEmail: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void;
     clientAreaTotal: string; setClientAreaTotal: (v: string) => void;
@@ -815,7 +821,7 @@ function CreateTab(p: CreateProps) {
     busy: boolean;
   };
 
-  const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
+  const input = inputClass();
   const label = 'block text-xs font-medium text-gray-500 mb-1';
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
 
@@ -923,8 +929,9 @@ function CreateTab(p: CreateProps) {
                   </button>
                 ))}
               </div>
-              <ToggleRow checked={ruralSettlement} onChange={setRuralSettlement} className="mt-2">
-                Сельское поселение <span className="text-xs text-gray-400">(цена АИС ÷ 1,6)</span>
+              <ToggleRow bordered checked={ruralSettlement} onChange={setRuralSettlement} className="mt-2"
+                hint="Для сельских поселений цена АИС «Единая среда» делится на 1,6.">
+                Сельское поселение
               </ToggleRow>
             </div>
             <div>
@@ -944,8 +951,10 @@ function CreateTab(p: CreateProps) {
           <div className="text-sm font-semibold text-[#1b2a4a]">Данные клиента</div>
           <div>
             <div className={label}>Полное наименование организации клиента *</div>
-            <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={input} placeholder='Администрация Николаевского муниципального района' />
-            <div className="text-xs text-gray-400 mt-1">Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.</div>
+            <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={inputClass(orgFullError)} placeholder='Администрация Николаевского муниципального района' />
+            {orgFullError
+              ? <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>
+              : <div className="text-xs text-gray-400 mt-1">Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.</div>}
           </div>
           {deals.length > 0 && (
             <div className="bg-white border border-[#cbe8f5] rounded-xl p-3 space-y-2">
@@ -954,17 +963,19 @@ function CreateTab(p: CreateProps) {
                 <div className={label}>Сделка компании</div>
                 <Select value={dealId} onChange={setDealId} placeholder="— не выбрано —" options={[{ value: '', label: '— не выбрано —' }, ...deals.map((d) => ({ value: d.id, label: `${d.title} (#${d.id})` }))]} />
               </div>
-              <ToggleRow checked={uploadToBitrix} onChange={setUploadToBitrix} disabled={!dealId}>
+              <ToggleRow bordered checked={uploadToBitrix} onChange={setUploadToBitrix} disabled={!dealId}
+                hint="Файлы (docx/pdf по всем выбранным компаниям) добавятся в сделку при генерации. Внимание: поле перезаписывается новым набором.">
                 Загружать готовые КП в сделку (поле «Файл КП»)
               </ToggleRow>
-              <div className="text-[11px] text-gray-400">Файлы (docx/pdf по всем выбранным компаниям) добавятся в сделку при генерации. Внимание: поле перезаписывается новым набором.</div>
             </div>
           )}
           <div>
             <div className={label}>Полное ФИО клиента *</div>
-            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); if (it.email) setClientEmail(it.email); }} className={input} placeholder="Иванов Иван Иванович" />
+            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); if (it.email) setClientEmail(it.email); }} className={inputClass(fioError)} placeholder="Иванов Иван Иванович" />
             {clientEmail && <div className="text-[11px] text-gray-400 mt-0.5">e-mail из Bitrix: {clientEmail}</div>}
-            <div className="text-xs text-gray-400 mt-1">{clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.</div>
+            {fioError
+              ? <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>
+              : <div className="text-xs text-gray-400 mt-1">{clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.</div>}
           </div>
           <div>
             <div className={label}>Обращение</div>
@@ -1175,7 +1186,8 @@ function CreateTab(p: CreateProps) {
                   </div>
                 </div>
               )}
-              <ToggleRow checked={mailPerOrg} onChange={setMailPerOrg} className="text-xs">
+              <ToggleRow bordered checked={mailPerOrg} onChange={setMailPerOrg}
+                hint="Каждой организации уйдёт отдельное письмо из её собственного почтового ящика (тема и текст берутся из настроек организации).">
                 От каждой организации отдельным письмом (из её ящика)
               </ToggleRow>
               {!mailPerOrg && (
@@ -1188,8 +1200,9 @@ function CreateTab(p: CreateProps) {
                   />
                 </div>
               )}
-              <ToggleRow checked={mailAsPdf} onChange={setMailAsPdf} className="text-xs">
-                Вложение в PDF (нужен pdf-service; иначе DOCX)
+              <ToggleRow bordered checked={mailAsPdf} onChange={setMailAsPdf}
+                hint="Вложение уйдёт в PDF (требуется настроенный pdf-service). Если выключено — отправляется DOCX.">
+                Вложение в PDF
               </ToggleRow>
               <div>
                 <div className={label}>Доп. вложения (прайс, презентация…)</div>
@@ -1430,7 +1443,7 @@ function TemplatesTab({
     onChanged();
   };
 
-  const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
+  const input = inputClass();
   const label = 'block text-xs font-medium text-gray-500 mb-1';
 
   if (draft) {
@@ -1589,7 +1602,7 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
   const [busy, setBusy] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
+  const input = inputClass();
   const label = 'block text-xs font-medium text-gray-500 mb-1';
 
   const uid = () =>

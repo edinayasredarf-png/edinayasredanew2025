@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { listPress, upsertPress, deletePress, PressItem } from "@/lib/pressStore";
+import { inputClass } from "@/components/admin/ui/Field";
 
 function genId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -115,7 +116,7 @@ export default function PressAdmin() {
     }
   };
 
-  const inputCls = "w-full px-3 py-2 border border-[#e0e0e0] rounded-xl text-[14px] text-[#313131] focus:outline-none focus:ring-2 focus:ring-[#029cda]/40 focus:border-[#029cda]";
+  const inputCls = inputClass();
   const labelCls = "block text-[13px] font-medium text-[#52555a] mb-1";
 
   return (

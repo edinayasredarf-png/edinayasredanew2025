@@ -87,7 +87,7 @@ export default function KpCalcGrid({
   onImportedTable?: (key: string, columns: CalcColumn[], rows: RowData[]) => void;
   setStatus?: (s: string) => void;
 }) {
-  const input = 'w-full px-2 py-1.5 rounded-md border border-gray-200 text-sm outline-none focus:border-[#029cda] bg-white';
+  const input = 'w-full px-2 py-1.5 rounded-md border border-gray-200 text-sm outline-none bg-white transition-colors hover:border-[#029cda] focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
   const inputCols = columns.filter((c) => c.kind === 'text' || c.kind === 'number');
 
   const setCell = (ri: number, key: string, v: string) =>

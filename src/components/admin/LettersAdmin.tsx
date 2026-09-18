@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import nextDynamic from 'next/dynamic';
 import LetterNotifications from './LetterNotifications';
 import { Select } from '@/components/admin/ui/Select';
+import { inputClass } from '@/components/admin/ui/Field';
 
 const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
@@ -290,7 +291,7 @@ export default function LettersAdmin() {
     } finally { setSending(false); }
   };
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
+  const inputCls = inputClass();
 
   return (
     <div className="space-y-6 font-[Raleway]">
@@ -670,7 +671,7 @@ function MailAccountsPanel({
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-[#313131] focus:ring-2 focus:ring-[#029cda] focus:border-transparent';
+  const inputCls = inputClass();
 
   const startEdit = (a: MailAccount) => {
     setEditingId(a.id);

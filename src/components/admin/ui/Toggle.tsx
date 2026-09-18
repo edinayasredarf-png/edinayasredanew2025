@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { HelpTip } from "./HelpTip";
 
 /** Пилюля-переключатель (свитч) в стиле референса: бирюзовый трек + белый бегунок. */
 export function Switch({ checked, disabled, "aria-label": ariaLabel }: {
@@ -20,25 +21,67 @@ export function Switch({ checked, disabled, "aria-label": ariaLabel }: {
   );
 }
 
-/** Кликабельная строка «свитч + подпись». Тоглит по клику на всю строку. */
-export function ToggleRow({ checked, onChange, disabled, children, className = "" }: {
+/** Кликабельная строка «свитч + подпись». Тоглит по клику на всю строку.
+ *  bordered — вариант-карточка в окантовке (подпись слева, свитч справа), как в референсе. */
+export function ToggleRow({ checked, onChange, disabled, children, hint, bordered, className = "" }: {
   checked: boolean;
   onChange: (v: boolean) => void;
   disabled?: boolean;
   children: React.ReactNode;
+  hint?: string;
+  bordered?: boolean;
   className?: string;
 }) {
-  return (
+  const toggleBtn = (labelText: React.ReactNode) => (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`flex items-center gap-2 text-left text-sm text-[#313131] disabled:opacity-50 ${className}`}
+      className="inline-flex items-center gap-2 text-left disabled:opacity-50"
     >
       <Switch checked={checked} disabled={disabled} />
-      <span className="min-w-0">{children}</span>
+      {labelText != null && <span className="min-w-0">{labelText}</span>}
     </button>
+  );
+
+  if (bordered) {
+    // Карточка в окантовке: подпись слева, свитч справа. Кнопкой является только сам свитч
+    // (иначе получилась бы кнопка внутри кнопки вместе с «?»).
+    return (
+      <div className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-[#1b2a4a] transition-colors hover:border-[#029cda] ${className}`}>
+        <span className="inline-flex items-center gap-1.5 min-w-0">
+          <span className="min-w-0">{children}</span>
+          {hint && <HelpTip text={hint} />}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={checked}
+          disabled={disabled}
+          onClick={() => onChange(!checked)}
+          className="shrink-0 disabled:opacity-50"
+          aria-label={typeof children === "string" ? children : "Переключатель"}
+        >
+          <Switch checked={checked} disabled={disabled} />
+        </button>
+      </div>
+    );
+  }
+
+  if (hint) {
+    return (
+      <span className={`inline-flex items-center gap-1.5 text-sm text-[#313131] ${className}`}>
+        {toggleBtn(children)}
+        <HelpTip text={hint} />
+      </span>
+    );
+  }
+
+  return (
+    <span className={`inline-flex items-center text-sm text-[#313131] ${className}`}>
+      {toggleBtn(children)}
+    </span>
   );
 }

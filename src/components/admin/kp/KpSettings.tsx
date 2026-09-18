@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import { Spinner } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
+import { inputClass } from '@/components/admin/ui/Field';
 import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
-const input = 'w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
+const input = inputClass();
 const label = 'block text-xs font-medium text-gray-500 mb-1';
 
 async function uploadImage(file: File): Promise<string> {
@@ -469,7 +470,8 @@ function OrgEditor({
         <textarea value={d.mailBody || ''} onChange={(e) => set({ mailBody: e.target.value })} className={`${input} h-24`} placeholder={'Здравствуйте!\n\nНаправляем коммерческое предложение во вложении…'} />
         <div className="text-[11px] text-gray-400 mt-1">Применяется при отправке «от каждой организации отдельно».</div>
       </div>
-      <ToggleRow checked={d.isActive} onChange={(v) => set({ isActive: v })}>
+      <ToggleRow bordered checked={d.isActive} onChange={(v) => set({ isActive: v })}
+        hint="Отключённые организации не показываются в выборе при создании КП.">
         Активна (показывать в выборе)
       </ToggleRow>
 
