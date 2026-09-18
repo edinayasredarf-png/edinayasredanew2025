@@ -9,6 +9,7 @@ const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { s
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
 import { Select } from '@/components/admin/ui/Select';
+import { MultiSelect } from '@/components/admin/ui/MultiSelect';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
 import { inputClass } from '@/components/admin/ui/Field';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
@@ -708,7 +709,7 @@ export default function KpGenerator() {
         <CreateTab
           {...{
             orgs, serviceTypes, serviceType, onSelectService, inc,
-            selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
+            selectedOrgs, toggleOrg, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
@@ -772,7 +773,7 @@ type CreateProps = Record<string, unknown>;
 function CreateTab(p: CreateProps) {
   const {
     orgs, serviceTypes, serviceType, onSelectService, inc,
-    selectedOrgs, toggleOrg, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
+    selectedOrgs, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, setAreaUnit, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
@@ -786,7 +787,7 @@ function CreateTab(p: CreateProps) {
   } = p as never as {
     orgs: Organization[]; serviceTypes: string[]; serviceType: string; onSelectService: (v: string) => void;
     inc: { service: boolean; ais: boolean; renewal: boolean };
-    selectedOrgs: string[]; toggleOrg: (k: string) => void; tierFor: (k: string) => Tier | undefined;
+    selectedOrgs: string[]; toggleOrg: (k: string) => void; setSelectedOrgs: React.Dispatch<React.SetStateAction<string[]>>; tierFor: (k: string) => Tier | undefined;
     mode: PriceMode; modeDirect: boolean; setModeDirect: (v: boolean) => void; modeTender: boolean; setModeTender: (v: boolean) => void;
     areaUnit: 'sqm' | 'ha'; setAreaUnit: (v: 'sqm' | 'ha') => void;
     ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
@@ -874,35 +875,30 @@ function CreateTab(p: CreateProps) {
       <div className="lg:col-span-2 space-y-4">
         {/* Организации + услуга */}
         <div className={panel}>
-          <div>
-            <div className={label}>Тип услуги</div>
-            <Select value={serviceType} onChange={onSelectService} searchable placeholder="Выберите услугу" options={serviceTypes.map((s) => ({ value: s, label: s }))} />
-          </div>
-          <div>
-            <div className={label}>Организации (от кого КП) — отметьте все нужные, будет по одному КП на каждую</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {orgs.map((o) => {
-                const t = tierFor(o.key);
-                const active = selectedOrgs.includes(o.key);
-                return (
-                  <button
-                    key={o.key}
-                    type="button"
-                    onClick={() => toggleOrg(o.key)}
-                    className={`text-left px-3 py-2.5 rounded-xl text-sm shadow-sm hover:shadow-md transition ${
-                      active ? 'border-2 border-[#029cda] bg-[#EAF6FC]' : 'border-2 border-transparent ring-1 ring-gray-200 bg-white hover:ring-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${active ? 'bg-[#029cda] border-[#029cda] text-white' : 'border-gray-300'}`}>{active ? '✓' : ''}</span>
-                      <span className="font-medium text-[#313131]">{o.name}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1 pl-6">
-                      {t ? `${fmtMoney(mode === 'tender' ? t.pricePerHaTender : t.pricePerHaDirect)} ₽/га · АИС ${fmtMoney(t.aisPrice)} ₽` : 'нет тарифа для этой услуги'}
-                    </div>
-                  </button>
-                );
-              })}
+          <div className="flex flex-col md:flex-row md:items-start gap-3">
+            <div className="md:flex-1 min-w-0">
+              <div className={label}>Тип услуги</div>
+              <Select value={serviceType} onChange={onSelectService} searchable placeholder="Выберите услугу" options={serviceTypes.map((s) => ({ value: s, label: s }))} />
+            </div>
+            <div className="md:flex-1 min-w-0">
+              <div className={label}>Организации (от кого КП)</div>
+              <MultiSelect
+                value={selectedOrgs}
+                onChange={setSelectedOrgs}
+                searchable
+                placeholder="Выберите компании"
+                allLabel="Все компании"
+                ariaLabel="Организации"
+                options={orgs.map((o) => {
+                  const t = tierFor(o.key);
+                  return {
+                    value: o.key,
+                    label: o.name,
+                    sub: t ? `${fmtMoney(mode === 'tender' ? t.pricePerHaTender : t.pricePerHaDirect)} ₽/га · АИС ${fmtMoney(t.aisPrice)} ₽` : 'нет тарифа для этой услуги',
+                  };
+                })}
+              />
+              <div className="text-[11px] text-gray-400 mt-1">По одному КП на каждую выбранную компанию.</div>
             </div>
           </div>
           <div className="flex flex-wrap gap-4">
