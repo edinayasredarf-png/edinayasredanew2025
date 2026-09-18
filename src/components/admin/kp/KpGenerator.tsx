@@ -855,6 +855,12 @@ function CreateTab(p: CreateProps) {
   const input = inputClass();
   const label = 'block text-xs font-medium text-gray-500 mb-1';
   const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
+  const fieldLabel = (text: React.ReactNode, hint?: string, required?: boolean) => (
+    <div className="flex items-center gap-1.5 mb-1">
+      <span className="text-xs font-medium text-gray-500">{text}{required && <span className="text-red-500"> *</span>}</span>
+      {hint && <HelpTip text={hint} />}
+    </div>
+  );
 
   const [preview, setPreview] = React.useState<ReturnType<typeof computePreview> | null>(null);
   const [docPreview, setDocPreview] = React.useState<Array<{ orgName: string; html: string }> | null>(null);
@@ -963,13 +969,22 @@ function CreateTab(p: CreateProps) {
         {/* Данные клиента */}
         <div className={panel}>
           <div className="text-sm font-semibold text-[#1b2a4a]">Данные клиента</div>
-          <div>
-            <div className={label}>Полное наименование организации клиента *</div>
-            <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={inputClass(orgFullError)} placeholder='Администрация Николаевского муниципального района' />
-            {orgFullError
-              ? <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>
-              : <div className="text-xs text-gray-400 mt-1">Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.</div>}
+
+          {/* Организация + ФИО */}
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="md:flex-1 min-w-0">
+              {fieldLabel('Полное наименование организации клиента', 'Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.', true)}
+              <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={inputClass(orgFullError)} placeholder='Администрация Николаевского муниципального района' />
+              {orgFullError && <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>}
+            </div>
+            <div className="md:flex-1 min-w-0">
+              {fieldLabel('Полное ФИО клиента', `${clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.`, true)}
+              <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); if (it.email) setClientEmail(it.email); }} className={inputClass(fioError)} placeholder="Иванов Иван Иванович" />
+              {clientEmail && <div className="text-[11px] text-gray-400 mt-0.5">e-mail из Bitrix: {clientEmail}</div>}
+              {fioError && <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>}
+            </div>
           </div>
+
           {deals.length > 0 && (
             <div className="bg-white border border-[#cbe8f5] rounded-xl p-3 space-y-2">
               <div className="text-sm font-semibold text-[#0b5c7d]">Сделка Bitrix24</div>
@@ -983,37 +998,34 @@ function CreateTab(p: CreateProps) {
               </ToggleRow>
             </div>
           )}
-          <div>
-            <div className={label}>Полное ФИО клиента *</div>
-            <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); if (it.email) setClientEmail(it.email); }} className={inputClass(fioError)} placeholder="Иванов Иван Иванович" />
-            {clientEmail && <div className="text-[11px] text-gray-400 mt-0.5">e-mail из Bitrix: {clientEmail}</div>}
-            {fioError
-              ? <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>
-              : <div className="text-xs text-gray-400 mt-1">{clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.</div>}
-          </div>
-          <div>
-            <div className={label}>Обращение</div>
-            <Select value={salutation} onChange={setSalutation} className="sm:max-w-xs" placeholder="Авто (по ФИО)" options={[{ value: '', label: 'Авто (по ФИО)' }, { value: 'Уважаемый', label: 'Уважаемый' }, { value: 'Уважаемая', label: 'Уважаемая' }]} />
-          </div>
-          <div>
-            <div className={label}>Должность клиента (для адресата в шапке)</div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Select value={posSel} onChange={applyPosition} className="sm:w-[220px] shrink-0" placeholder="Выбрать должность…" options={[{ value: '', label: 'Выбрать должность…' }, ...positions.map((p) => ({ value: p, label: p }))]} />
-              <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={`${input} flex-1`} placeholder="Глава администрации района" />
+
+          {/* Обращение + Должность */}
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="md:w-[200px] shrink-0">
+              <div className={label}>Обращение</div>
+              <Select value={salutation} onChange={setSalutation} placeholder="Авто (по ФИО)" options={[{ value: '', label: 'Авто (по ФИО)' }, { value: 'Уважаемый', label: 'Уважаемый' }, { value: 'Уважаемая', label: 'Уважаемая' }]} />
             </div>
-            <div className="text-xs text-gray-400 mt-1">Выбор должности подставит «должность + организация в род. падеже» (например, «Глава администрации района») — можно отредактировать. В шапке справа ставится в дательном падеже.</div>
+            <div className="md:flex-1 min-w-0">
+              {fieldLabel('Должность клиента', 'Выбор должности подставит «должность + организация в род. падеже» (например, «Глава администрации района») — можно отредактировать. В шапке справа ставится в дательном падеже.')}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Select value={posSel} onChange={applyPosition} className="sm:w-[220px] shrink-0" placeholder="Выбрать должность…" options={[{ value: '', label: 'Выбрать должность…' }, ...positions.map((p) => ({ value: p, label: p }))]} />
+                <input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className={`${input} flex-1`} placeholder="Глава администрации района" />
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <div className={label}>Территория / объект (алиас {'{{territory}}'})</div>
+
+          {/* Территория / площадь / количество */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="lg:col-span-2">
+              {fieldLabel('Территория / объект', 'Подставляется в шаблон как {{territory}}.')}
               <input value={clientTerritory} onChange={(e) => setClientTerritory(e.target.value)} className={input} placeholder="города Луганск / Липецкой области" />
             </div>
             <div>
-              <div className={label}>Общая площадь (алиас {'{{area_total}}'})</div>
+              {fieldLabel('Общая площадь', 'Подставляется в шаблон как {{area_total}}.')}
               <input value={clientAreaTotal} onChange={(e) => setClientAreaTotal(e.target.value)} className={input} placeholder="6 Га / 156 507 м²" />
             </div>
             <div>
-              <div className={label}>Количество объектов (алиас {'{{quantity_units}}'})</div>
+              {fieldLabel('Количество объектов', 'Подставляется в шаблон как {{quantity_units}}.')}
               <input value={clientQuantity} onChange={(e) => setClientQuantity(e.target.value)} className={input} inputMode="numeric" placeholder="200" />
             </div>
           </div>
