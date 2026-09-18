@@ -1034,36 +1034,45 @@ function CreateTab(p: CreateProps) {
         {/* Параметры КП */}
         <div className={panel}>
           <div className="text-sm font-semibold text-[#1b2a4a]">Параметры КП</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <div className={label}>Дата КП (пусто = сегодня)</div>
+
+          {/* Дата · Номер (+реестр) · Срок */}
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="md:w-[200px] shrink-0">
+              {fieldLabel('Дата КП', 'Оставьте пустым — подставится сегодняшняя дата.')}
               <DatePicker value={kpDate} onChange={setKpDate} placeholder="Сегодня" />
             </div>
-            <div>
-              <div className={label}>Номер КП (пусто = авто)</div>
-              <input value={kpNumber} onChange={(e) => setKpNumber(e.target.value)} className={input} placeholder="КП-…" disabled={recordRegistry} />
-              <ToggleRow checked={recordRegistry} onChange={setRecordRegistry} className="mt-1.5 text-xs">
-                Записать в реестр (№ по каждой компании)
-              </ToggleRow>
+            <div className="md:flex-1 min-w-0">
+              {fieldLabel('Номер КП', 'Оставьте пустым — номер сформируется автоматически.')}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input value={kpNumber} onChange={(e) => setKpNumber(e.target.value)} className={`${input} flex-1`} placeholder="КП-…" disabled={recordRegistry} />
+                <ToggleRow bordered checked={recordRegistry} onChange={setRecordRegistry} className="sm:w-auto shrink-0"
+                  hint="При включении номер присваивается автоматически по каждой компании и записывается в реестр.">
+                  Записать в реестр
+                </ToggleRow>
+              </div>
             </div>
-            <div>
-              <div className={label}>Срок действия</div>
-              <input value={validityPeriod} onChange={(e) => setValidityPeriod(e.target.value)} className={input} />
+            <div className="md:w-[170px] shrink-0">
+              {fieldLabel('Срок действия')}
+              <input value={validityPeriod} onChange={(e) => setValidityPeriod(e.target.value)} className={input} placeholder="30 дней" />
             </div>
+          </div>
+
+          {/* Запрос заказчика · Исполнитель */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <div className={label}>№ запроса заказчика</div>
+              {fieldLabel('№ запроса заказчика', 'Если КП делается в ответ на входящий запрос — его номер попадёт в шапку.')}
               <input value={requestNumber} onChange={(e) => setRequestNumber(e.target.value)} className={input} />
             </div>
             <div>
-              <div className={label}>Дата запроса заказчика</div>
+              {fieldLabel('Дата запроса заказчика', 'Дата входящего запроса заказчика (для шапки письма).')}
               <DatePicker value={requestDate} onChange={setRequestDate} placeholder="Дата запроса" />
             </div>
             <div>
-              <div className={label}>Исполнитель (менеджер) *</div>
+              {fieldLabel('Исполнитель (менеджер)', 'Менеджер-исполнитель — попадёт в подпись и контакты КП.', true)}
               <Select
                 value={executorId ? String(executorId) : ''}
                 onChange={(v) => setExecutorId(v ? Number(v) : '')}
-                placeholder="Выберите исполнителя…"
+                placeholder="Выберите…"
                 options={[{ value: '', label: 'Выберите…' }, ...executors.map((ex) => ({ value: String(ex.id), label: ex.fio }))]}
               />
             </div>
