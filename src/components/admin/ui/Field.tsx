@@ -7,7 +7,7 @@ import { HelpTip } from "./HelpTip";
  *  hover/focus — бирюзовый #029cda, ошибка — красный. */
 export function inputClass(error?: boolean, extra = "") {
   const base =
-    "w-full px-3 py-2 rounded-xl border bg-white text-sm text-[#313131] placeholder:text-gray-400 outline-none transition-colors";
+    "w-full px-3 py-2.5 rounded-xl border bg-white text-sm text-[#313131] placeholder:text-gray-400 outline-none transition-colors";
   const state = error
     ? "border-red-400 hover:border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/15"
     : "border-gray-200 hover:border-[#029cda] focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15";

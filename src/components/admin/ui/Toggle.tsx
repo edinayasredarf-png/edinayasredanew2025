@@ -50,7 +50,7 @@ export function ToggleRow({ checked, onChange, disabled, children, hint, bordere
     // Карточка в окантовке: подпись слева, свитч справа. Кнопкой является только сам свитч
     // (иначе получилась бы кнопка внутри кнопки вместе с «?»).
     return (
-      <div className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-[#1b2a4a] transition-colors hover:border-[#029cda] ${className}`}>
+      <div className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-[#1b2a4a] transition-colors hover:border-[#029cda] ${className}`}>
         <span className="inline-flex items-center gap-1.5 min-w-0">
           <span className="min-w-0">{children}</span>
           {hint && <HelpTip text={hint} />}
