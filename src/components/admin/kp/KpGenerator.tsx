@@ -12,6 +12,7 @@ import { Select } from '@/components/admin/ui/Select';
 import { MultiSelect } from '@/components/admin/ui/MultiSelect';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
 import { inputClass } from '@/components/admin/ui/Field';
+import { HelpTip } from '@/components/admin/ui/HelpTip';
 import { WordIcon, PdfIcon } from '@/components/admin/ui/FileIcons';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
@@ -902,45 +903,33 @@ function CreateTab(p: CreateProps) {
               <div className="text-[11px] text-gray-400 mt-1">По одному КП на каждую выбранную компанию.</div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <div>
-              <div className={label}>Режим цены (можно оба)</div>
-              <div className="flex flex-col gap-1 pt-1">
-                <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-                  <input type="checkbox" checked={modeDirect} onChange={(e) => { const v = e.target.checked; if (!v && !modeTender) return; setModeDirect(v); }} />
-                  Прямой контракт
-                </label>
-                <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-                  <input type="checkbox" checked={modeTender} onChange={(e) => { const v = e.target.checked; if (!v && !modeDirect) return; setModeTender(v); }} />
-                  Торги
-                </label>
-              </div>
-              <div className="text-[11px] text-gray-400 mt-1">В таблице показываются выбранные колонки стоимости.</div>
+          <div className="flex flex-wrap gap-2.5">
+            <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
+              <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Режим цены</span>
+              <HelpTip text="Можно включить оба режима — в таблице покажутся выбранные колонки стоимости (прямой контракт и/или торги)." />
+              <ToggleRow checked={modeDirect} onChange={(v) => { if (!v && !modeTender) return; setModeDirect(v); }}>Прямой контракт</ToggleRow>
+              <ToggleRow checked={modeTender} onChange={(v) => { if (!v && !modeDirect) return; setModeTender(v); }}>Торги</ToggleRow>
             </div>
-            <div>
-              <div className={label}>Единица площади</div>
-              <div className="inline-flex gap-1 bg-[#EEF1F4] rounded-xl p-1">
-                {(['sqm', 'ha'] as const).map((u) => (
-                  <button key={u} onClick={() => setAreaUnit(u)} className={`px-4 py-1.5 rounded-xl text-sm transition-colors ${areaUnit === u ? 'bg-white shadow-sm text-[#1b2a4a] font-medium' : 'text-gray-500 hover:text-[#1b2a4a]'}`}>
-                    {u === 'sqm' ? 'кв. м' : 'гектары'}
-                  </button>
-                ))}
-              </div>
-              <ToggleRow bordered checked={ruralSettlement} onChange={setRuralSettlement} className="mt-2"
-                hint="Для сельских поселений цена АИС «Единая среда» делится на 1,6.">
-                Сельское поселение
-              </ToggleRow>
+            <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
+              <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Единица площади</span>
+              <HelpTip text="Единицы измерения площади в таблицах услуг: квадратные метры или гектары." />
+              <ToggleRow checked={areaUnit === 'sqm'} onChange={() => setAreaUnit('sqm')}>кв. м</ToggleRow>
+              <ToggleRow checked={areaUnit === 'ha'} onChange={() => setAreaUnit('ha')}>Гектары</ToggleRow>
             </div>
-            <div>
-              <div className={label}>Входит в услугу</div>
-              <div className="flex flex-wrap gap-1 pt-1 text-xs">
-                {inc.service && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">Услуга</span>}
-                {inc.ais && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">АИС «Единая среда»</span>}
-                {inc.renewal && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">Пролонгация</span>}
-              </div>
-              <div className="text-[11px] text-gray-400 mt-1">Состав определяется выбранной услугой (у каждой свой шаблон и таблица).</div>
+            <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
+              <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Сельское поселение</span>
+              <HelpTip text="Для сельских поселений цена АИС «Единая среда» делится на 1,6." />
+              <ToggleRow checked={ruralSettlement} onChange={setRuralSettlement}>{null}</ToggleRow>
             </div>
           </div>
+          {(inc.service || inc.ais || inc.renewal) && (
+            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="text-gray-500">Входит в услугу:</span>
+              {inc.service && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">Услуга</span>}
+              {inc.ais && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">АИС «Единая среда»</span>}
+              {inc.renewal && <span className="px-2 py-1 rounded-xl bg-[#EAF6FC] text-[#0b5c7d]">Пролонгация</span>}
+            </div>
+          )}
         </div>
 
         {/* Данные клиента */}
