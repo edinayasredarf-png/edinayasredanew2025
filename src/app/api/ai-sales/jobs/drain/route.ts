@@ -22,7 +22,11 @@ export const maxDuration = 300;
 function isCron(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET?.trim();
   if (!secret) return false;
-  return (request.headers.get("authorization") || "") === `Bearer ${secret}`;
+  // Заголовок (Vercel Cron, самопродолжение) ИЛИ query-параметр ?key= —
+  // чтобы внешний планировщик (cron-job.org) можно было настроить одним URL.
+  if ((request.headers.get("authorization") || "") === `Bearer ${secret}`) return true;
+  const q = new URL(request.url).searchParams;
+  return q.get("key") === secret || q.get("secret") === secret;
 }
 
 /** Максимальная глубина самопродолжения — предохранитель от бесконечной цепочки. */
