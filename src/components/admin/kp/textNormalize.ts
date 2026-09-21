@@ -69,6 +69,11 @@ function transformWord(w: string, first: boolean): string {
 export function normalizeCompanyName(input: string): string {
   let s = (input || "").trim().replace(/\s+/g, " ");
   if (!s) return s;
+  // Снять кавычки, обёрнутые вокруг ВСЕГО названия (мусор из Bitrix), — но не
+  // трогать бренд в кавычках вроде ООО «Ромашка» (там строка не начинается с кавычки).
+  while (s.length > 2 && /^["«»“”„]/.test(s) && /["«»“”„]$/.test(s)) {
+    s = s.slice(1, -1).trim();
+  }
   s = normalizeQuotes(s);
   let first = true;
   s = s.replace(/[A-Za-zА-ЯЁа-яё][A-Za-zА-ЯЁа-яё.]*(?:-[A-Za-zА-ЯЁа-яё.]+)*/g, (w) => {

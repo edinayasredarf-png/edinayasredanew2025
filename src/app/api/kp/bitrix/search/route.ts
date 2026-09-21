@@ -11,6 +11,12 @@ export const dynamic = "force-dynamic";
  * Если Bitrix не настроен — пустой список (поле работает как обычный ввод).
  */
 
+/** Bitrix часто оборачивает всё название компании в «прямые» кавычки —
+ *  для клиентов (администраций) это мусор, убираем их из подсказок. */
+function cleanCompanyTitle(raw: string): string {
+  return String(raw || "").replace(/["“”„]/g, "").replace(/\s+/g, " ").trim();
+}
+
 interface Item {
   id?: string;
   title: string;
@@ -73,7 +79,7 @@ export async function GET(request: NextRequest) {
     });
     const items: Item[] = (result || [])
       .slice(0, 15)
-      .map((r) => ({ id: String(r.ID || ""), title: String(r.TITLE || "").trim() }))
+      .map((r) => ({ id: String(r.ID || ""), title: cleanCompanyTitle(String(r.TITLE || "")) }))
       .filter((i) => i.title);
     return NextResponse.json({ items });
   } catch {
