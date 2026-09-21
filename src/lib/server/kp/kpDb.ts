@@ -648,6 +648,55 @@ export async function dbSetHeaderLayout(layout: KpHeaderLayout): Promise<void> {
   );
 }
 
+/* ─────────────── Оформление документа ─────────────── */
+
+export interface KpDocStyle {
+  /** Приводить весь документ к единому шрифту. */
+  forceFont: boolean;
+  /** Семейство шрифта, например «Times New Roman». */
+  fontFamily: string;
+  /** Вставлять авто-шапку с реквизитами/адресатом (лево/центр/право). */
+  headerAliases: boolean;
+}
+
+export const DEFAULT_DOC_STYLE: KpDocStyle = {
+  forceFont: true,
+  fontFamily: "Times New Roman",
+  headerAliases: true,
+};
+
+export async function dbGetDocStyle(): Promise<KpDocStyle> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select value from kp_settings where key='docStyle'");
+  if (!rows[0]) return DEFAULT_DOC_STYLE;
+  try {
+    const v = JSON.parse(String(rows[0].value)) as Partial<KpDocStyle>;
+    return {
+      forceFont: v.forceFont !== undefined ? Boolean(v.forceFont) : DEFAULT_DOC_STYLE.forceFont,
+      fontFamily: (typeof v.fontFamily === "string" && v.fontFamily.trim()) ? v.fontFamily.trim().slice(0, 80) : DEFAULT_DOC_STYLE.fontFamily,
+      headerAliases: v.headerAliases !== undefined ? Boolean(v.headerAliases) : DEFAULT_DOC_STYLE.headerAliases,
+    };
+  } catch {
+    return DEFAULT_DOC_STYLE;
+  }
+}
+
+export async function dbSetDocStyle(style: KpDocStyle): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const clean: KpDocStyle = {
+    forceFont: Boolean(style.forceFont),
+    fontFamily: String(style.fontFamily || DEFAULT_DOC_STYLE.fontFamily).trim().slice(0, 80) || DEFAULT_DOC_STYLE.fontFamily,
+    headerAliases: Boolean(style.headerAliases),
+  };
+  await pool.query(
+    `insert into kp_settings (key, value) values ('docStyle', $1)
+     on conflict (key) do update set value=excluded.value`,
+    [JSON.stringify(clean)]
+  );
+}
+
 /* ─────────────── Алиасы ─────────────── */
 
 export interface KpAlias {

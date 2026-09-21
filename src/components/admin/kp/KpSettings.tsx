@@ -5,7 +5,7 @@ import { Spinner } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
 import { inputClass } from '@/components/admin/ui/Field';
-import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
+import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, DocStyle, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
 
 const input = inputClass();
 const label = 'block text-xs font-medium text-gray-500 mb-1';
@@ -29,13 +29,14 @@ function emptyOrg(sort: number): Organization {
 }
 
 export default function KpSettings({
-  orgs, executors, services, positions, headerLayout, aliases, calcTables, onChanged, setStatus,
+  orgs, executors, services, positions, headerLayout, docStyle, aliases, calcTables, onChanged, setStatus,
 }: {
   orgs: Organization[];
   executors: Executor[];
   services: ServiceType[];
   positions: string[];
   headerLayout: HeaderLayout;
+  docStyle: DocStyle;
   aliases: Alias[];
   calcTables: CalcTableDef[];
   onChanged: () => void;
@@ -48,6 +49,9 @@ export default function KpSettings({
     <div className="space-y-6">
       {/* Таблицы расчёта */}
       <TablesManager calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
+
+      {/* Оформление документа */}
+      <DocStyleEditor style={docStyle} onChanged={onChanged} setStatus={setStatus} />
 
       {/* Шапка документа */}
       <HeaderLayoutEditor layout={headerLayout} onChanged={onChanged} setStatus={setStatus} />
@@ -493,6 +497,67 @@ function OrgEditor({
 }
 
 /* ─────────── Шапка документа ─────────── */
+function DocStyleEditor({
+  style, onChanged, setStatus,
+}: {
+  style: DocStyle;
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [forceFont, setForceFont] = useState(style.forceFont);
+  const [fontFamily, setFontFamily] = useState(style.fontFamily || 'Times New Roman');
+  const [headerAliases, setHeaderAliases] = useState(style.headerAliases);
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch('/api/kp/doc-style', {
+        method: 'PUT', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docStyle: { forceFont, fontFamily: fontFamily.trim() || 'Times New Roman', headerAliases } }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'Ошибка');
+      setStatus('Оформление сохранено');
+      onChanged();
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const FONTS = ['Times New Roman', 'Arial', 'Calibri', 'PT Astra Serif', 'PT Serif', 'Georgia', 'Verdana'];
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-[#1b2a4a] mb-2">Оформление документа (общее для всех шаблонов)</h3>
+      <div className="bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+        <ToggleRow bordered checked={forceFont} onChange={setForceFont}
+          hint="Приводит весь документ (шапку, текст шаблона, таблицу) к одному шрифту. Выключите, чтобы сохранить шрифты из самого шаблона.">
+          Единый шрифт для всего документа
+        </ToggleRow>
+        {forceFont && (
+          <div className="sm:max-w-xs">
+            <div className={label}>Шрифт документа</div>
+            <Select value={fontFamily} onChange={setFontFamily}
+              options={(FONTS.includes(fontFamily) ? FONTS : [fontFamily, ...FONTS]).map((f) => ({ value: f, label: f }))} />
+          </div>
+        )}
+        <ToggleRow bordered checked={headerAliases} onChange={setHeaderAliases}
+          hint="Автоматическая шапка с реквизитами КП (слева) и адресатом (справа). Выключите, если шапка уже есть в самом шаблоне или не нужна.">
+          Авто-шапка с реквизитами (слева/справа)
+        </ToggleRow>
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
+          {busy && <Spinner size={16} color="#fff" />}
+          {busy ? 'Сохранение…' : 'Сохранить оформление'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function HeaderLayoutEditor({
   layout, onChanged, setStatus,
 }: {

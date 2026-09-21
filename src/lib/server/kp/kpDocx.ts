@@ -340,6 +340,33 @@ function autoSignerBlock(
   );
 }
 
+/* ─────────────── Единый шрифт ─────────────── */
+
+/** Приводит все текстовые раны документа к одному семейству шрифта. */
+function normalizeFonts(xml: string, family: string): string {
+  const rf = `<w:rFonts w:ascii="${family}" w:hAnsi="${family}" w:cs="${family}" w:eastAsia="${family}"/>`;
+  // 1) убираем существующие rFonts (и самозакрытые, и парные).
+  let out = xml
+    .replace(/<w:rFonts\b[^>]*\/>/g, "")
+    .replace(/<w:rFonts\b[^>]*>[\s\S]*?<\/w:rFonts>/g, "");
+  // 2) вставляем наш rFonts первым в каждый rPr; порядок важен: сначала открытые
+  //    теги <w:rPr>, затем самозакрытые <w:rPr/>, иначе получится дубль rFonts.
+  out = out.replace(/<w:rPr>/g, `<w:rPr>${rf}`).replace(/<w:rPr\/>/g, `<w:rPr>${rf}</w:rPr>`);
+  // 3) раны без rPr — добавляем rPr с нашим шрифтом первым потомком.
+  out = out.replace(/(<w:r(?:\s[^>]*)?>)(?!<w:rPr)/g, `$1<w:rPr>${rf}</w:rPr>`);
+  return out;
+}
+
+/** Прописывает единый шрифт в styles.xml (docDefaults и все стили). */
+async function patchStylesFont(zip: JSZip, family: string): Promise<void> {
+  const f = zip.file("word/styles.xml");
+  if (!f) return;
+  const rf = `<w:rFonts w:ascii="${family}" w:hAnsi="${family}" w:cs="${family}" w:eastAsia="${family}"/>`;
+  let xml = await f.async("string");
+  xml = xml.replace(/<w:rFonts\b[^>]*\/>/g, rf).replace(/<w:rFonts\b[^>]*>[\s\S]*?<\/w:rFonts>/g, rf);
+  zip.file("word/styles.xml", xml);
+}
+
 /* ─────────────── Сборка ─────────────── */
 
 /** Заполняет .docx-шаблон и возвращает готовый буфер .docx. */
@@ -350,7 +377,8 @@ export async function fillDocxTemplate(
   images: KpImage[] = [],
   autoBlocks = true,
   header: HeaderLayout | null = null,
-  tableAlias = ""
+  tableAlias = "",
+  forceFont = ""
 ): Promise<Buffer> {
   const zip = await JSZip.loadAsync(templateBuffer);
   const docFile = zip.file("word/document.xml");
@@ -426,13 +454,18 @@ export async function fillDocxTemplate(
     }
   }
 
+  if (forceFont) filled = normalizeFonts(filled, forceFont);
   zip.file("word/document.xml", filled);
 
   // Колонтитулы — только текст/таблица (без картинок для MVP).
   for (const f of zip.file(/word\/(header|footer)\d*\.xml/)) {
     const hx = await f.async("string");
-    zip.file(f.name, fillDocumentXml(hx, tags, table, {}, tableAlias));
+    let hf = fillDocumentXml(hx, tags, table, {}, tableAlias);
+    if (forceFont) hf = normalizeFonts(hf, forceFont);
+    zip.file(f.name, hf);
   }
+
+  if (forceFont) await patchStylesFont(zip, forceFont);
 
   const out = await zip.generateAsync({
     type: "nodebuffer",

@@ -1,6 +1,7 @@
 import "server-only";
 import {
   dbGetCustomAliasValues,
+  dbGetDocStyle,
   dbGetExecutor,
   dbGetHeaderLayout,
   dbAddRegistryRow,
@@ -100,9 +101,10 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
 
   const executor = req.executorId ? await dbGetExecutor(req.executorId) : null;
   const serviceType = req.form.serviceType;
-  const [headerLayout, customAliases] = await Promise.all([
+  const [headerLayout, customAliases, docStyle] = await Promise.all([
     dbGetHeaderLayout(),
     dbGetCustomAliasValues(),
+    dbGetDocStyle(),
   ]);
 
   for (const orgKey of req.orgKeys) {
@@ -195,8 +197,9 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         ctx.table,
         images,
         !template.skipAutoBlocks, // авто-шапка/подписант, если шаблон их не содержит
-        headerLayout, // расположение реквизитов/адресата (лево/центр/право)
-        ctx.tableAlias // {{<алиас таблицы>}} тоже заменяется на таблицу
+        docStyle.headerAliases ? headerLayout : null, // авто-шапка с реквизитами/адресатом (лево/центр/право)
+        ctx.tableAlias, // {{<алиас таблицы>}} тоже заменяется на таблицу
+        docStyle.forceFont ? docStyle.fontFamily : "" // единый шрифт всего документа
       );
       docs.push({
         orgKey,

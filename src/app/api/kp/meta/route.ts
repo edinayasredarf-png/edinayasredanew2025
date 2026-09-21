@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import {
+  dbGetDocStyle,
   dbGetHeaderLayout,
   dbListAliases,
   dbListCalcTables,
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [organizations, tiers, executors, templates, services, headerLayout, aliases, calcTables, positions] =
+    const [organizations, tiers, executors, templates, services, headerLayout, aliases, calcTables, positions, docStyle] =
       await Promise.all([
         dbListOrganizations(),
         dbListTiers(),
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
         dbListAliases(),
         dbListCalcTables(),
         dbListPositions(),
+        dbGetDocStyle(),
       ]);
     return NextResponse.json({
       organizations,
@@ -48,6 +50,7 @@ export async function GET(request: NextRequest) {
       aliases,
       calcTables,
       positions,
+      docStyle,
     });
   } catch (e) {
     return NextResponse.json(

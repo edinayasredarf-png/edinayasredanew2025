@@ -120,6 +120,12 @@ export interface HeaderLayout {
   right: string[];
 }
 
+export interface DocStyle {
+  forceFont: boolean;
+  fontFamily: string;
+  headerAliases: boolean;
+}
+
 export interface Alias {
   key: string;
   label: string;

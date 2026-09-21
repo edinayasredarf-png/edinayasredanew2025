@@ -19,7 +19,7 @@ import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
 import KpCalcGrid from './KpCalcGrid';
 import KpAutocomplete from './KpAutocomplete';
-import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, PriceMode, ServiceType, HeaderLayout, Alias, CalcColumn, CalcTableDef, RowData } from './types';
+import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, PriceMode, ServiceType, HeaderLayout, DocStyle, Alias, CalcColumn, CalcTableDef, RowData } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
 function toNum(v: string | number | undefined): number {
@@ -128,6 +128,7 @@ export default function KpGenerator() {
   const [serviceTypes, setServiceTypes] = useState<string[]>([]);
   const [services, setServices] = useState<ServiceType[]>([]);
   const [headerLayout, setHeaderLayout] = useState<HeaderLayout>({ left: [], center: [], right: [] });
+  const [docStyle, setDocStyle] = useState<DocStyle>({ forceFont: true, fontFamily: 'Times New Roman', headerAliases: true });
   const [aliases, setAliases] = useState<Alias[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
@@ -250,6 +251,7 @@ export default function KpGenerator() {
       setServices(d.services || []);
       setPositions(d.positions || []);
       if (d.headerLayout) setHeaderLayout(d.headerLayout);
+      if (d.docStyle) setDocStyle(d.docStyle);
       setAliases(d.aliases || []);
       setCalcTables(d.calcTables || []);
     } catch (e) {
@@ -781,6 +783,7 @@ export default function KpGenerator() {
           services={services}
           positions={positions}
           headerLayout={headerLayout}
+          docStyle={docStyle}
           aliases={aliases}
           calcTables={calcTables}
           onChanged={loadMeta}
