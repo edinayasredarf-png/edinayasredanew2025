@@ -851,6 +851,7 @@ function CreateTab(p: CreateProps) {
   const [preview, setPreview] = React.useState<ReturnType<typeof computePreview> | null>(null);
   const [docPreview, setDocPreview] = React.useState<DocPreviewItem[] | null>(null);
   const [docPreviewIdx, setDocPreviewIdx] = React.useState(0);
+  const [showPreviewOptions, setShowPreviewOptions] = React.useState(false);
   const [mailOpen, setMailOpen] = React.useState(false);
   const [mailTo, setMailTo] = React.useState('');
   const [mailSubject, setMailSubject] = React.useState('Коммерческое предложение');
@@ -1124,21 +1125,36 @@ function CreateTab(p: CreateProps) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-2">
+          <div>
             <button
-              onClick={() => setPreview(computePreview())}
+              onClick={() => setShowPreviewOptions((v) => !v)}
               disabled={perOrgTotals.length === 0}
-              className="px-3 py-2 rounded-xl text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
+              aria-expanded={showPreviewOptions}
+              className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              Таблица
+              Предпросмотр
+              <svg className={`w-4 h-4 transition-transform ${showPreviewOptions ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden>
+                <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
-            <button
-              onClick={async () => { const p = await fetchDocPreview(); if (p) { setDocPreview(p); setDocPreviewIdx(0); } }}
-              disabled={busy || perOrgTotals.length === 0}
-              className="px-3 py-2 rounded-xl text-sm font-medium border border-[#029cda] text-[#029cda] hover:bg-[#EAF6FC] disabled:opacity-50"
-            >
-              Документ
-            </button>
+            {showPreviewOptions && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <button
+                  onClick={() => { setPreview(computePreview()); setShowPreviewOptions(false); }}
+                  disabled={perOrgTotals.length === 0}
+                  className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-white text-[#1b2a4a] hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50"
+                >
+                  Таблица
+                </button>
+                <button
+                  onClick={async () => { setShowPreviewOptions(false); const p = await fetchDocPreview(); if (p) { setDocPreview(p); setDocPreviewIdx(0); } }}
+                  disabled={busy || perOrgTotals.length === 0}
+                  className="px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-white text-[#1b2a4a] hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50"
+                >
+                  Документ
+                </button>
+              </div>
+            )}
           </div>
           <button
             onClick={() => generate('docx')}
