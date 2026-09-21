@@ -9,7 +9,7 @@ registerAllHandlers();
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 /**
  * Дренаж очереди AI-задач. Два способа вызова (как radar/refresh):
