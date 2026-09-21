@@ -14,6 +14,7 @@ import { DatePicker } from '@/components/admin/ui/DatePicker';
 import { inputClass } from '@/components/admin/ui/Field';
 import { HelpTip } from '@/components/admin/ui/HelpTip';
 import { WordIcon, PdfIcon } from '@/components/admin/ui/FileIcons';
+import { normalizeCompanyName, normalizeFio } from '@/components/admin/kp/textNormalize';
 import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
@@ -187,6 +188,8 @@ export default function KpGenerator() {
     setClientOrgFull(v);
     if (clientCompanyId) { setClientCompanyId(''); setDeals([]); setDealId(''); }
   };
+  // «Красивый вид»: убрать КАПС/кривые кавычки, НЕ сбрасывая привязку к Bitrix.
+  const beautifyCompany = () => setClientOrgFull((v) => normalizeCompanyName(v));
 
   // Выбор должности из справочника → «Должность + организация в род. падеже».
   const applyPosition = (name: string) => {
@@ -708,7 +711,7 @@ export default function KpGenerator() {
           {...{
             orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, unitSqm, setUnitSqm, unitHa, setUnitHa, ruralSettlement, setRuralSettlement,
-            clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
+            clientOrgFull, onChangeCompany, beautifyCompany, clientCompanyId, orgFullError, fioError,
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
@@ -787,7 +790,7 @@ function CreateTab(p: CreateProps) {
   const {
     orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, unitSqm, setUnitSqm, unitHa, setUnitHa, ruralSettlement, setRuralSettlement,
-    clientOrgFull, onChangeCompany, clientCompanyId, orgFullError, fioError,
+    clientOrgFull, onChangeCompany, beautifyCompany, clientCompanyId, orgFullError, fioError,
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
@@ -805,7 +808,7 @@ function CreateTab(p: CreateProps) {
     areaUnit: 'sqm' | 'ha';
     unitSqm: boolean; setUnitSqm: (v: boolean) => void; unitHa: boolean; setUnitHa: (v: boolean) => void;
     ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
-    clientOrgFull: string; onChangeCompany: (v: string) => void; clientCompanyId: string; orgFullError: boolean; fioError: boolean;
+    clientOrgFull: string; onChangeCompany: (v: string) => void; beautifyCompany: () => void; clientCompanyId: string; orgFullError: boolean; fioError: boolean;
     clientFio: string; setClientFio: (v: string) => void; clientEmail: string; setClientEmail: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void;
     clientAreaTotal: string; setClientAreaTotal: (v: string) => void;
@@ -942,13 +945,31 @@ function CreateTab(p: CreateProps) {
           {/* Организация + ФИО */}
           <div className="flex flex-col md:flex-row gap-3">
             <div className="md:flex-1 min-w-0">
-              {fieldLabel('Полное наименование организации клиента', 'Начните вводить — подставим из Bitrix24. Короткое имя для файла сформируется автоматически.', true)}
-              <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={inputClass(orgFullError)} placeholder='Администрация Николаевского муниципального района' />
+              {fieldLabel('Полное наименование организации клиента', 'Начните вводить — подставим из Bitrix24. Кнопка «Aa» приводит название к красивому виду: убирает КАПС и делает кавычки-ёлочки «».', true)}
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <KpAutocomplete value={clientOrgFull} onChange={onChangeCompany} type="company" onPick={onPickCompany} className={inputClass(orgFullError)} placeholder='Администрация Николаевского муниципального района' />
+                </div>
+                <button type="button" onClick={beautifyCompany} disabled={!clientOrgFull.trim()}
+                  title="Привести к красивому виду: убрать КАПС, кавычки-ёлочки «»"
+                  className="shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-[#1b2a4a] hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-40">
+                  Aa
+                </button>
+              </div>
               {orgFullError && <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>}
             </div>
             <div className="md:flex-1 min-w-0">
-              {fieldLabel('Полное ФИО клиента', `${clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически.`, true)}
-              <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); if (it.email) setClientEmail(it.email); }} className={inputClass(fioError)} placeholder="Иванов Иван Иванович" />
+              {fieldLabel('Полное ФИО клиента', `${clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически. Кнопка «Aa» убирает КАПС.`, true)}
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <KpAutocomplete value={clientFio} onChange={setClientFio} type="contact" companyId={clientCompanyId} onPick={(it) => { setClientFio(it.title); if (it.position) setClientPosition(it.position); if (it.email) setClientEmail(it.email); }} className={inputClass(fioError)} placeholder="Иванов Иван Иванович" />
+                </div>
+                <button type="button" onClick={() => setClientFio(normalizeFio(clientFio))} disabled={!clientFio.trim()}
+                  title="Привести ФИО к красивому виду (убрать КАПС)"
+                  className="shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-[#1b2a4a] hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-40">
+                  Aa
+                </button>
+              </div>
               {clientEmail && <div className="text-[11px] text-gray-400 mt-0.5">e-mail из Bitrix: {clientEmail}</div>}
               {fioError && <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>}
             </div>
