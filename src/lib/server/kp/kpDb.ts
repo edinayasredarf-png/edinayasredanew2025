@@ -91,9 +91,24 @@ export interface KpTemplateMeta {
 }
 
 let ensured = false;
+let ensuring: Promise<void> | null = null;
 
+/** Single-flight: параллельные вызовы ждут один прогон миграций, а не запускают
+ *  каждый свой набор DDL (иначе на холодном старте десятки create/alter дерутся
+ *  за коннекты и упираются в connectionTimeout). */
 async function ensureTables(): Promise<void> {
   if (ensured) return;
+  if (ensuring) return ensuring;
+  ensuring = ensureTablesImpl();
+  try {
+    await ensuring;
+    ensured = true;
+  } finally {
+    ensuring = null;
+  }
+}
+
+async function ensureTablesImpl(): Promise<void> {
   const pool = getTimewebPool();
 
   await pool.query(`
@@ -385,7 +400,6 @@ async function ensureTables(): Promise<void> {
   await pool.query(`delete from kp_templates where seed_key is not null`);
 
   await seedDefaults(pool);
-  ensured = true;
 }
 
 /* ─────────────── Расчётные таблицы ─────────────── */
