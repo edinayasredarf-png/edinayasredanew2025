@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
+import { ScrollX } from '@/components/admin/ui/ScrollX';
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -516,7 +517,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
-        <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+        <ScrollX className="bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>
@@ -603,7 +604,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
               );
             })}
           </table>
-        </div>
+        </ScrollX>
       )}
     </div>
   );
@@ -1044,7 +1045,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
-        <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+        <ScrollX className="bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>{['Клиент / Сделка', 'Менеджер', 'Звонков', 'Темп.', 'Score', 'Оценка мен.', 'Следующий шаг'].map((h) => (
@@ -1068,7 +1069,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
               )}
             </tbody>
           </table>
-        </div>
+        </ScrollX>
       )}
     </div>
   );
@@ -1814,7 +1815,7 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
       <h2 className="text-xl font-bold text-gray-900 mb-4">Менеджеры</h2>
       <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : (
-        <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+        <ScrollX className="bg-white rounded-xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>{['Менеджер', 'Звонков', 'Сделок', '🔥 Горячих', 'Оценка', 'Deal Score'].map((h) => (
@@ -1835,7 +1836,7 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
               {items.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-gray-400">Нет данных.</td></tr>}
             </tbody>
           </table>
-        </div>
+        </ScrollX>
       )}
     </div>
   );
@@ -2094,7 +2095,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
             </div>
           )}
 
-          <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+          <ScrollX className="bg-white rounded-xl border border-gray-100">
             <table className="min-w-full text-sm">
               <thead className="bg-[#F6F7F9] text-gray-600">
                 <tr>{['Дата', 'Менеджер', 'Клиент', 'Сделка: чел./LLM/Δ', 'Менеджер: чел./LLM/Δ', 'Ревьюер'].map((h) => (
@@ -2114,7 +2115,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollX>
         </>
       )}
     </div>
@@ -2280,7 +2281,7 @@ function KnowledgeBase() {
         </div>
       )}
 
-      <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+      <ScrollX className="bg-white rounded-xl border border-gray-100">
         <table className="min-w-full text-sm">
           <thead className="bg-[#F6F7F9] text-gray-600">
             <tr>{['Заголовок', 'Категория', 'Чанки', 'Обновлён', ''].map((h) => (
@@ -2303,7 +2304,7 @@ function KnowledgeBase() {
             {docs.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-gray-400">База знаний пуста — добавьте первый документ.</td></tr>}
           </tbody>
         </table>
-      </div>
+      </ScrollX>
     </div>
   );
 }
@@ -2388,7 +2389,7 @@ function Departments() {
         {/* Сотрудники */}
         <div>
           <p className="text-sm font-semibold text-gray-700 mb-3">Сотрудники по отделам</p>
-          <div className="overflow-x-auto bg-white rounded-xl border border-gray-100">
+          <ScrollX className="bg-white rounded-xl border border-gray-100">
             <table className="min-w-full text-sm">
               <thead className="bg-[#F6F7F9] text-gray-600">
                 <tr><th className="text-left font-medium px-3 py-2">Сотрудник</th><th className="text-left font-medium px-3 py-2">Отдел</th></tr>
@@ -2406,7 +2407,7 @@ function Departments() {
                 {managers.length === 0 && <tr><td colSpan={2} className="px-3 py-6 text-center text-gray-400">Сотрудники появятся после синхронизации Bitrix.</td></tr>}
               </tbody>
             </table>
-          </div>
+          </ScrollX>
         </div>
       </div>
     </div>
