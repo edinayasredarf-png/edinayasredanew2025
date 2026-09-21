@@ -633,7 +633,7 @@ export default function KpGenerator() {
     }
   };
 
-  const fetchDocPreview = async (): Promise<Array<{ orgName: string; html: string }> | null> => {
+  const fetchDocPreview = async (): Promise<DocPreviewItem[] | null> => {
     const err = validate();
     if (err) { setStatus(err); return null; }
     setBusy(true);
@@ -768,6 +768,20 @@ export default function KpGenerator() {
 }
 
 /* ═══════════════ Вкладка «Создать КП» ═══════════════ */
+type DocPreviewItem = { orgName: string; pdf?: string; html?: string };
+
+/** Показывает PDF из base64 в iframe (точный вид документа). Управляет blob-URL. */
+function PdfFrame({ base64 }: { base64: string }) {
+  const url = React.useMemo(() => {
+    const bin = atob(base64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+  }, [base64]);
+  React.useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  return <iframe src={url} className="w-full h-[75vh] rounded-xl border border-gray-200 bg-white" title="Предпросмотр документа (PDF)" />;
+}
+
 type CreateProps = Record<string, unknown>;
 function CreateTab(p: CreateProps) {
   const {
@@ -813,7 +827,7 @@ function CreateTab(p: CreateProps) {
     perOrgTotals: Array<{ key: string; name: string; serviceTotal: number; ais: number; renewal: number; grand: number; hasTemplate: boolean }>;
     priceWarnings: string[];
     computePreview: () => Array<{ key: string; name: string; table: PreviewTable | null; ais: number; renewal: number; grand: number }>;
-    fetchDocPreview: () => Promise<Array<{ orgName: string; html: string }> | null>;
+    fetchDocPreview: () => Promise<DocPreviewItem[] | null>;
     generate: (format?: 'docx' | 'pdf' | 'both') => void;
     sendEmail: (opts: { to: string; subject: string; message: string; accountId: string; asPdf: boolean; perOrg: boolean; extraFiles?: File[]; libraryAttachmentIds?: number[] }) => Promise<boolean>;
     mailAccounts: Array<{ id: string; label: string; from_email: string }>;
@@ -832,7 +846,7 @@ function CreateTab(p: CreateProps) {
   );
 
   const [preview, setPreview] = React.useState<ReturnType<typeof computePreview> | null>(null);
-  const [docPreview, setDocPreview] = React.useState<Array<{ orgName: string; html: string }> | null>(null);
+  const [docPreview, setDocPreview] = React.useState<DocPreviewItem[] | null>(null);
   const [docPreviewIdx, setDocPreviewIdx] = React.useState(0);
   const [mailOpen, setMailOpen] = React.useState(false);
   const [mailTo, setMailTo] = React.useState('');
@@ -1259,9 +1273,12 @@ function CreateTab(p: CreateProps) {
         </div>
       )}
 
-      {docPreview && (
+      {docPreview && (() => {
+        const cur = docPreview[docPreviewIdx];
+        const isPdf = Boolean(cur?.pdf);
+        return (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto p-4" onClick={() => setDocPreview(null)}>
-          <div className="bg-white rounded-2xl max-w-3xl w-full my-8 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className={`bg-white rounded-2xl w-full my-8 p-6 space-y-4 ${isPdf ? 'max-w-4xl' : 'max-w-3xl'}`} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-[#1b2a4a]">Предпросмотр документа</h3>
               <button onClick={() => setDocPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
@@ -1273,18 +1290,28 @@ function CreateTab(p: CreateProps) {
                 ))}
               </div>
             )}
-            <style>{`.kp-doc-preview table{border-collapse:collapse;width:100%;margin:8px 0}.kp-doc-preview td,.kp-doc-preview th{border:1px solid #d1d5db;padding:4px 6px;vertical-align:top}.kp-doc-preview img{max-width:100%}.kp-doc-preview p{margin:6px 0}`}</style>
-            <div className="border border-gray-200 rounded-xl p-6 bg-white max-h-[70vh] overflow-y-auto text-sm leading-relaxed kp-doc-preview overflow-x-auto">
-              <div dangerouslySetInnerHTML={{ __html: docPreview[docPreviewIdx]?.html || '' }} />
-            </div>
-            <div className="text-[11px] text-gray-400">Это черновой рендер (без точного оформления Word: шрифты/отступы могут отличаться). Финальный вид — в скачанном .docx / PDF.</div>
+            {isPdf ? (
+              <PdfFrame base64={cur.pdf!} />
+            ) : (
+              <>
+                <style>{`.kp-doc-preview table{border-collapse:collapse;width:100%;margin:8px 0}.kp-doc-preview td,.kp-doc-preview th{border:1px solid #d1d5db;padding:4px 6px;vertical-align:top}.kp-doc-preview img{max-width:100%}.kp-doc-preview p{margin:6px 0}`}</style>
+                <div className="border border-gray-200 rounded-xl p-6 bg-white max-h-[70vh] overflow-y-auto text-sm leading-relaxed kp-doc-preview overflow-x-auto">
+                  <div dangerouslySetInnerHTML={{ __html: cur?.html || '' }} />
+                </div>
+                <div className="text-[11px] text-gray-400">Это черновой рендер (шрифты/отступы могут отличаться). Точный вид появится, когда настроен pdf-service.</div>
+              </>
+            )}
             <div className="flex justify-end gap-2">
               <button onClick={() => setDocPreview(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Закрыть</button>
+              {isPdf && (
+                <button onClick={() => { setDocPreview(null); generate('pdf'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1b2a4a] hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50 inline-flex items-center gap-2">Скачать PDF<PdfIcon size={16} /></button>
+              )}
               <button onClick={() => { setDocPreview(null); generate('docx'); }} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">Скачать DOCX<WordIcon size={16} /></button>
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
     </div>
   );

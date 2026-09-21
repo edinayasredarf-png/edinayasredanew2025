@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import mammoth from "mammoth";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { buildKpDocuments, type KpGenerateRequest } from "@/lib/server/kp/kpBuild";
+import { convertDocxToPdf, isPdfConfigured } from "@/lib/server/kp/kpPdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-/** Полный предпросмотр: строит DOCX и отдаёт его как HTML (по каждой компании). */
+/** Полный предпросмотр: строит DOCX и отдаёт точный PDF (если настроен pdf-service),
+ *  иначе — черновой HTML (mammoth), по каждой компании. */
 export async function POST(request: NextRequest) {
   try {
     await requireAdminAccess(request);
@@ -32,8 +34,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: errors[0]?.message || "Не удалось собрать документ", errors }, { status: 422 });
   }
 
-  const previews: Array<{ orgName: string; html: string }> = [];
+  const pdfOn = isPdfConfigured();
+  const previews: Array<{ orgName: string; pdf?: string; html?: string }> = [];
   for (const d of docs) {
+    // Точный вид документа: DOCX → PDF через LibreOffice-сервис.
+    if (pdfOn) {
+      try {
+        const pdf = await convertDocxToPdf(d.docx);
+        previews.push({ orgName: d.shortName, pdf: pdf.toString("base64") });
+        continue;
+      } catch {
+        // pdf-сервис недоступен/упал — падаем на HTML-фолбэк ниже.
+      }
+    }
     try {
       const res = await mammoth.convertToHtml({ buffer: d.docx });
       previews.push({ orgName: d.shortName, html: res.value });
