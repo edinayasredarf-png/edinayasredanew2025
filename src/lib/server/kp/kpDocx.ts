@@ -340,6 +340,16 @@ function autoSignerBlock(
   );
 }
 
+/** Блок исполнителя внизу документа: «Исполнитель: ФИО, тел. …».
+ *  Пусто, если исполнитель не выбран (нет ФИО). */
+function autoExecutorBlock(fio?: string, phone?: string): string {
+  if (!fio || !fio.trim()) return "";
+  const parts = [`Исполнитель: ${fio.trim()}`];
+  if (phone && phone.trim()) parts.push(`тел. ${phone.trim()}`);
+  const text = parts.join(", ");
+  return `<w:p/><w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r>${valueToTextRuns(text)}</w:r></w:p>`;
+}
+
 /* ─────────────── Единый шрифт ─────────────── */
 
 /** Приводит все текстовые раны документа к одному семейству шрифта. */
@@ -433,6 +443,7 @@ export async function fillDocxTemplate(
   // тела, подписанта — перед завершающим <w:sectPr> (иначе перед </w:body>).
   const headerAlias = /\{\{(company_header|company_header_image)\}\}/.test(xml);
   const signerAlias = /\{\{(signature|stamp|signer_name|signer_role|sender_director)\}\}/.test(xml);
+  const executorAlias = /\{\{executor_(fio|fio_short|fio_initials|phone)\}\}/.test(xml);
 
   if (autoBlocks) {
     let top = "";
@@ -451,6 +462,14 @@ export async function fillDocxTemplate(
       const idx = filled.lastIndexOf("<w:sectPr");
       if (idx !== -1) filled = filled.slice(0, idx) + block + filled.slice(idx);
       else filled = filled.replace("</w:body>", `${block}</w:body>`);
+    }
+  }
+  if (autoBlocks && !executorAlias) {
+    const eblock = autoExecutorBlock(tags.executor_fio, tags.executor_phone);
+    if (eblock) {
+      const idx = filled.lastIndexOf("<w:sectPr");
+      if (idx !== -1) filled = filled.slice(0, idx) + eblock + filled.slice(idx);
+      else filled = filled.replace("</w:body>", `${eblock}</w:body>`);
     }
   }
 
