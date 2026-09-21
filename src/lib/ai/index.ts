@@ -2,6 +2,7 @@ import "server-only";
 
 import { AnthropicProvider } from "@/lib/ai/providers/anthropic";
 import { YandexGptProvider } from "@/lib/ai/providers/yandexgpt";
+import { OpenAiCompatProvider } from "@/lib/ai/providers/openaiCompat";
 import { getAiConfig } from "@/lib/server/aiSales/settingsDb";
 import type { AiProvider } from "@/lib/ai/interfaces";
 
@@ -11,7 +12,7 @@ export * from "@/lib/ai/interfaces";
  * Фабрика AI-провайдера (§44 ТЗ: dependency inversion). Провайдер и модель
  * читаются из ai_settings (UI «Настройки AI»), с фолбэком на env. Меняются без
  * перезапуска — на следующем анализе.
- *   ai.provider = anthropic (Claude) | yandex (YandexGPT)
+ *   ai.provider = anthropic (Claude) | yandex (YandexGPT) | selfhosted (свой сервер)
  */
 export async function getAiProvider(): Promise<AiProvider> {
   const cfg = await getAiConfig();
@@ -19,6 +20,10 @@ export async function getAiProvider(): Promise<AiProvider> {
     case "yandex":
     case "yandexgpt":
       return new YandexGptProvider();
+    case "selfhosted":
+    case "local":
+    case "openai":
+      return new OpenAiCompatProvider({ defaultModel: cfg.analysisModel || undefined });
     case "anthropic":
     default:
       return new AnthropicProvider({ defaultModel: cfg.analysisModel || undefined });

@@ -1611,11 +1611,11 @@ function Settings() {
           <Select value={str('diarization.provider', 'yandex')} onChange={(v) => set('diarization.provider', v)} className="w-full" ariaLabel="Диаризация"
             options={[{ value: 'yandex', label: 'Yandex (встроенная)' }, { value: 'pyannote', label: 'pyannote (свой сервер, точнее)' }]} />
         </Field>
-        <Field label="AI-провайдер анализа" hint="anthropic (Claude) или yandex (YandexGPT)">
+        <Field label="AI-провайдер анализа" hint="anthropic (Claude), yandex (YandexGPT) или selfhosted (свой сервер, OpenAI-совместимый: llama.cpp/vLLM). Для своего сервера задайте SELFHOSTED_LLM_URL в env.">
           <Select value={str('ai.provider', 'yandex')} onChange={(v) => set('ai.provider', v)} className="w-full" ariaLabel="AI-провайдер"
-            options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }]} />
+            options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }, { value: 'selfhosted', label: 'Свой сервер (OpenAI-совместимый)' }]} />
         </Field>
-        <Field label="Модель анализа (для Claude)" hint="напр. claude-opus-5. Для YandexGPT задаётся в env YANDEX_GPT_MODEL.">
+        <Field label="Модель анализа (Claude / свой сервер)" hint="напр. claude-opus-5, или имя модели вашего сервера. Для YandexGPT — в env YANDEX_GPT_MODEL, для своего сервера можно задать SELFHOSTED_LLM_MODEL.">
           <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" />
         </Field>
         <Field label="Анализ включён">
