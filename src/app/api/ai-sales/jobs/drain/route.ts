@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { drainQueue } from "@/lib/server/aiSales/jobRunner";
 import { queueStats } from "@/lib/server/aiSales/jobsDb";
@@ -25,6 +25,9 @@ function isCron(request: NextRequest): boolean {
   return (request.headers.get("authorization") || "") === `Bearer ${secret}`;
 }
 
+/** Максимальная глубина самопродолжения — предохранитель от бесконечной цепочки. */
+const MAX_CHAIN = 40;
+
 async function handle(request: NextRequest) {
   if (!isCron(request)) {
     try {
@@ -40,7 +43,28 @@ async function handle(request: NextRequest) {
     // = 30с) и в Hobby maxDuration. За вызов прожёвываем десятки страниц.
     const report = await drainQueue(25_000);
     const stats = await queueStats();
-    return NextResponse.json({ ok: true, report, stats });
+
+    // Самопродолжение: одна пачка тянет следующую, пока очередь не опустеет —
+    // чтобы бэклог разгребался с одного запуска (крон/кнопка), а не по одной пачке.
+    const chain = Number(new URL(request.url).searchParams.get("chain") || "0");
+    const remaining = (stats.pending || 0) + (stats.retry || 0);
+    const secret = process.env.CRON_SECRET?.trim();
+    if (secret && remaining > 0 && report.claimed > 0 && chain < MAX_CHAIN) {
+      const next = new URL(request.url);
+      next.searchParams.set("chain", String(chain + 1));
+      after(async () => {
+        try {
+          await fetch(next.toString(), {
+            method: "GET",
+            headers: { authorization: `Bearer ${secret}` },
+          });
+        } catch {
+          /* следующую пачку подхватит крон */
+        }
+      });
+    }
+
+    return NextResponse.json({ ok: true, report, stats, chain });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Ошибка дренажа очереди";
     return NextResponse.json({ error: message }, { status: 500 });
