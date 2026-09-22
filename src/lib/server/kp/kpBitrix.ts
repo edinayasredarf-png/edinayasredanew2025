@@ -8,7 +8,7 @@ import { bitrixCall, bitrixConfigured } from "@/lib/server/bitrix";
  */
 
 export const KP_DEAL_FILE_FIELD =
-  process.env.KP_BITRIX_DEAL_FILE_FIELD?.trim() || "UF_CRM_DEAL_AMO_ZHTQYGFXQYUHKMXD";
+  process.env.KP_BITRIX_DEAL_FILE_FIELD?.trim() || "UF_CRM_1790087172011";
 
 export interface BitrixDeal {
   id: string;
