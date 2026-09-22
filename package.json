@@ -77,7 +77,8 @@
     "swiper": "^11.2.10",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "unpdf": "^1.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -2211,6 +2211,13 @@ function KnowledgeBase() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  // Массовая загрузка файлов (drag-and-drop).
+  const [showUpload, setShowUpload] = useState(false);
+  const [upCat, setUpCat] = useState('');
+  const [upFiles, setUpFiles] = useState<File[]>([]);
+  const [upBusy, setUpBusy] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [upResults, setUpResults] = useState<Array<{ name: string; ok: boolean; error?: string; chars?: number }> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
@@ -2249,6 +2256,27 @@ function KnowledgeBase() {
     await load();
   };
 
+  const addFiles = (list: FileList | File[]) => {
+    const arr = Array.from(list).filter((f) => /\.(docx|pdf|txt|md|markdown|csv)$/i.test(f.name));
+    if (arr.length) setUpFiles((prev) => [...prev, ...arr]);
+  };
+  const uploadBatch = async () => {
+    if (!upFiles.length) return;
+    setUpBusy(true); setUpResults(null); setErr('');
+    try {
+      const fd = new FormData();
+      if (upCat) fd.append('category', upCat);
+      upFiles.forEach((f) => fd.append('files', f));
+      const r = await fetch('/api/ai-sales/kb/upload', { method: 'POST', body: fd, credentials: 'include' });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка загрузки');
+      setUpResults(j.results || []);
+      setUpFiles([]);
+      await load();
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setUpBusy(false); }
+  };
+
   if (loading) return <LoadingBlock />;
 
   return (
@@ -2257,7 +2285,62 @@ function KnowledgeBase() {
         <h2 className="text-xl font-bold text-gray-900">База знаний</h2>
         <button onClick={openNew} className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white">+ Документ</button>
       </div>
-      <p className="text-sm text-gray-500 mb-5">Материалы для ассистента: продукты, цены, FAQ, скрипты, регламенты, возражения, примеры звонков. При сохранении текст индексируется (эмбеддинги Yandex).</p>
+      <p className="text-sm text-gray-500 mb-3">Материалы для ассистента: продукты, цены, FAQ, скрипты, регламенты, возражения, примеры звонков. При сохранении текст индексируется (эмбеддинги Yandex).</p>
+
+      {/* Массовая загрузка файлов */}
+      <div className="mb-5">
+        <button onClick={() => setShowUpload((v) => !v)} className="text-sm font-medium text-[#029cda] hover:text-[#0280b5]">
+          {showUpload ? 'Скрыть массовую загрузку' : 'Массовая загрузка файлов (перетащите или выберите)'}
+        </button>
+        {showUpload && (
+          <div className="mt-2 bg-[#F6F7F9] rounded-xl p-4 space-y-3">
+            <div className="sm:w-[240px]">
+              <div className="text-xs text-gray-500 mb-1">Категория для всей пачки</div>
+              <Select value={upCat} onChange={setUpCat} placeholder="Без категории"
+                options={[{ value: '', label: 'Без категории' }, ...categories.map((c) => ({ value: c.value, label: c.label }))]} />
+            </div>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
+              className={`rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors ${dragOver ? 'border-[#029cda] bg-[#EAF6FC]' : 'border-gray-300 bg-white'}`}
+            >
+              <p className="text-sm text-gray-600">Перетащите файлы сюда</p>
+              <label className="inline-block mt-2 px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-sm text-[#313131] hover:border-[#029cda] cursor-pointer">
+                или выбрать файлы
+                <input type="file" multiple accept=".docx,.pdf,.txt,.md,.markdown,.csv" className="hidden"
+                  onChange={(e) => { addFiles(e.target.files || []); e.target.value = ''; }} />
+              </label>
+              <p className="text-[11px] text-gray-400 mt-2">.docx, .pdf, .txt, .md — текст извлекается и индексируется автоматически</p>
+            </div>
+            {upFiles.length > 0 && (
+              <div className="space-y-1">
+                {upFiles.map((f, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs bg-white border border-gray-200 rounded-lg px-3 py-1.5">
+                    <span className="truncate">{f.name} <span className="text-gray-400">({Math.round(f.size / 1024)} КБ)</span></span>
+                    <button onClick={() => setUpFiles((prev) => prev.filter((_, j) => j !== i))} className="text-red-500 hover:text-red-600 shrink-0 ml-2">✕</button>
+                  </div>
+                ))}
+                <button onClick={uploadBatch} disabled={upBusy}
+                  className="mt-2 px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50 inline-flex items-center gap-2">
+                  {upBusy && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
+                  {upBusy ? 'Загрузка и индексация…' : `Загрузить и проиндексировать (${upFiles.length})`}
+                </button>
+              </div>
+            )}
+            {upResults && (
+              <div className="space-y-1 text-xs">
+                {upResults.map((r, i) => (
+                  <div key={i} className={r.ok ? 'text-green-700' : 'text-red-600'}>
+                    {r.ok ? '✓' : '✕'} {r.name}{r.ok ? ` — ${r.chars} симв., проиндексировано` : ` — ${r.error}`}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       {sel && (

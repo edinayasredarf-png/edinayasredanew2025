@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   experimental: {
     turbo: undefined,
   },
+  // unpdf (парсер PDF для базы знаний) — не бандлить webpack'ом (использует import.meta
+  // из pdf.js), грузим как внешний серверный пакет в рантайме.
+  serverExternalPackages: ['unpdf'],
   // включаем шрифт письма (Tinos, Times-совместимый) в серверную функцию генерации PDF
   outputFileTracingIncludes: {
     '/api/letters/generate': ['./public/fonts/tinos/**'],
