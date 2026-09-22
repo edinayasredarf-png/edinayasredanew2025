@@ -1,5 +1,6 @@
 import "server-only";
 
+import * as z from "zod/v4";
 import {
   AiProviderNotConfiguredError,
   AiValidationError,
@@ -53,6 +54,19 @@ function extractJson(text: string): unknown | null {
 const toNum = (v: unknown): number =>
   v == null ? 0 : Number(v) || 0;
 
+/**
+ * Компактная схема ответа (имена ключей!) для модели. Без этого YandexGPT сам
+ * выдумывает ключи (напр. «ответ» вместо «answer») и валидация проваливается.
+ */
+function schemaHint(schema: z.ZodType<unknown>): string {
+  try {
+    const js = z.toJSONSchema(schema, { io: "output" }) as Record<string, unknown>;
+    return JSON.stringify(js);
+  } catch {
+    return "";
+  }
+}
+
 export class YandexGptProvider implements AiProvider {
   readonly name = "yandexgpt";
   readonly defaultModel: string;
@@ -81,10 +95,14 @@ export class YandexGptProvider implements AiProvider {
     const model = req.model || this.defaultModel;
     const modelUri = `gpt://${folderId}/${model}`;
 
+    const hint = schemaHint(req.schema);
     const system =
       req.system +
       "\n\nВЕРНИ ОТВЕТ СТРОГО как один валидный JSON-объект требуемой структуры. " +
-      "Без markdown, без пояснений, без текста до или после JSON.";
+      "Без markdown, без пояснений, без текста до или после JSON." +
+      (hint
+        ? `\n\nJSON-СХЕМА ОТВЕТА (используй РОВНО эти имена ключей на английском, не переводи их):\n${hint}`
+        : "");
 
     let lastErr: unknown;
     for (let attempt = 0; attempt < 3; attempt++) {

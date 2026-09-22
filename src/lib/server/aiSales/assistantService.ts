@@ -14,7 +14,7 @@ import { getTimewebPool } from "@/lib/timewebPg";
  */
 
 const AnswerSchema = z.object({
-  answer: z.string().catch(""),
+  answer: z.string().min(1),
 });
 
 const SYSTEM = `Ты — ассистент руководителя отдела продаж компании «Единая среда».
