@@ -589,6 +589,11 @@ export default function KpGenerator() {
       let msg = `Готово: ${selectedOrgs.length} КП`;
       const bx = decodeURIComponent(res.headers.get('X-Kp-Bitrix') || '');
       if (bx.startsWith('ok:')) msg += ` · загружено в сделку Bitrix (${bx.slice(3)} файлов)`;
+      else if (bx.startsWith('single:')) {
+        const [field, total, timeline] = bx.slice(7).split('/');
+        msg += ` · в сделку Bitrix: поле «Файл КП» одиночное — в него ${field} из ${total}`;
+        if (Number(timeline) > 0) msg += `, остальные (${timeline}) приложены комментарием в Таймлайн. Чтобы все файлы были в поле — сделайте поле множественным в Bitrix`;
+      }
       else if (bx.startsWith('error:')) msg += ` · ⚠️ в Bitrix не загрузилось: ${bx.slice(6)}`;
       setStatus(msg);
     } catch (e) {

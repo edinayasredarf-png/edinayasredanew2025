@@ -37,29 +37,64 @@ export interface KpUploadFile {
   buffer: Buffer;
 }
 
-/** Множественное ли поле «Файл КП» (кэш на процесс). Одиночное поле требует
- *  один объект {fileData}, множественное — массив; иначе Bitrix игнорирует запись. */
-let fileFieldMultiple: boolean | null = null;
+/** Множественное ли поле «Файл КП» (кэш с TTL). Одиночное поле требует один
+ *  объект {fileData}, множественное — массив; иначе Bitrix игнорирует запись.
+ *  TTL нужен, чтобы после смены типа поля в Bitrix значение подхватилось без
+ *  редеплоя (на «тёплой» лямбде Vercel кэш иначе жил бы вечно). */
+let fileFieldMultiple: { value: boolean; at: number } | null = null;
+const FIELD_TTL_MS = 60_000;
 async function isFileFieldMultiple(): Promise<boolean> {
-  if (fileFieldMultiple !== null) return fileFieldMultiple;
+  if (fileFieldMultiple && Date.now() - fileFieldMultiple.at < FIELD_TTL_MS) return fileFieldMultiple.value;
+  let value = false;
   try {
     const { result } = await bitrixCall<Record<string, { isMultiple?: boolean }>>("crm.deal.fields");
-    fileFieldMultiple = Boolean(result?.[KP_DEAL_FILE_FIELD]?.isMultiple);
+    value = Boolean(result?.[KP_DEAL_FILE_FIELD]?.isMultiple);
   } catch {
-    fileFieldMultiple = false;
+    value = fileFieldMultiple?.value ?? false;
   }
-  return fileFieldMultiple;
+  fileFieldMultiple = { value, at: Date.now() };
+  return value;
+}
+
+export interface KpUploadResult {
+  /** Множественное ли файловое поле сделки. */
+  multiple: boolean;
+  /** Сколько файлов записано в файловое поле сделки. */
+  fieldCount: number;
+  /** Сколько файлов приложено к комментарию в Таймлайне (fallback для одиночного поля). */
+  timelineCount: number;
+  total: number;
+}
+
+/** Приложить все КП комментарием в Таймлайн сделки (несколько файлов там доступны
+ *  всегда, независимо от типа пользовательского поля). */
+async function postFilesToTimeline(dealId: string, files: KpUploadFile[]): Promise<number> {
+  try {
+    await bitrixCall("crm.timeline.comment.add", {
+      fields: {
+        ENTITY_ID: Number(dealId),
+        ENTITY_TYPE: "deal",
+        COMMENT: `Коммерческие предложения (${files.length} шт.)`,
+        FILES: files.map((f) => ({ fileData: [f.filename, f.buffer.toString("base64")] })),
+      },
+    });
+    return files.length;
+  } catch {
+    return 0;
+  }
 }
 
 /**
- * Кладёт файлы в файловое поле сделки. Формат зависит от типа поля:
- *  - множественное → массив {fileData};
- *  - одиночное → один объект {fileData} (берём первый файл).
+ * Кладёт КП в сделку Bitrix24:
+ *  - множественное поле → массив {fileData} (все файлы в поле);
+ *  - одиночное поле → первый файл в поле + ВЕСЬ комплект комментарием в Таймлайн,
+ *    чтобы менеджер видел все КП (одиночное поле хранит лишь один файл — это
+ *    ограничение Bitrix, а не бага генератора).
  * ВНИМАНИЕ: Bitrix заменяет значение поля целиком (перезапись).
  */
-export async function uploadKpToDeal(dealId: string, files: KpUploadFile[]): Promise<void> {
+export async function uploadKpToDeal(dealId: string, files: KpUploadFile[]): Promise<KpUploadResult> {
   if (!bitrixConfigured()) throw new Error("Bitrix не настроен");
-  if (!dealId || files.length === 0) return;
+  if (!dealId || files.length === 0) return { multiple: false, fieldCount: 0, timelineCount: 0, total: 0 };
   const multiple = await isFileFieldMultiple();
   const asData = (f: KpUploadFile) => ({ fileData: [f.filename, f.buffer.toString("base64")] });
   const value = multiple ? files.map(asData) : asData(files[0]);
@@ -67,4 +102,8 @@ export async function uploadKpToDeal(dealId: string, files: KpUploadFile[]): Pro
     id: dealId,
     fields: { [KP_DEAL_FILE_FIELD]: value },
   });
+  const fieldCount = multiple ? files.length : 1;
+  // Одиночное поле и файлов больше одного — дублируем весь комплект в Таймлайн.
+  const timelineCount = !multiple && files.length > 1 ? await postFilesToTimeline(dealId, files) : 0;
+  return { multiple, fieldCount, timelineCount, total: files.length };
 }

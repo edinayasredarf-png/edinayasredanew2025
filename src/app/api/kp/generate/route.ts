@@ -107,8 +107,11 @@ export async function POST(request: NextRequest) {
       if (wantPdf && pdfs[i]) kpFiles.push({ filename: `${d.filename}.pdf`, buffer: pdfs[i] as Buffer });
     });
     try {
-      await uploadKpToDeal(String(body.bitrix.dealId), kpFiles);
-      bitrixStatus = `ok:${kpFiles.length}`;
+      const r = await uploadKpToDeal(String(body.bitrix.dealId), kpFiles);
+      // single:<в поле>/<всего>/<в таймлайне> — одиночное поле; ok:<всего> — множественное.
+      bitrixStatus = r.multiple
+        ? `ok:${r.fieldCount}`
+        : `single:${r.fieldCount}/${r.total}/${r.timelineCount}`;
     } catch (e) {
       bitrixStatus = `error:${(e as Error).message}`;
     }
