@@ -3,6 +3,7 @@
 import React from 'react';
 import { evalFormulaSafe } from './formulaClient';
 import { Select } from '@/components/admin/ui/Select';
+import { ScrollX } from '@/components/admin/ui/ScrollX';
 import type { CalcColumn, CalcTableDef, RowData } from './types';
 
 function num(v: string | undefined): number {
@@ -303,7 +304,7 @@ export default function KpCalcGrid({
         </div>
       )}
 
-      <div className="overflow-x-auto -mx-5 px-5">
+      <ScrollX className="-mx-5 px-5" fade="246,247,249">
         <table className="text-sm border-collapse">
           <thead>
             <tr>
@@ -370,7 +371,7 @@ export default function KpCalcGrid({
             })}
           </tbody>
         </table>
-      </div>
+      </ScrollX>
 
       <button onClick={() => setRows((rs) => [...rs, {}])} className="text-sm text-[#029cda] hover:text-[#0280b5]">+ Добавить строку</button>
     </div>
