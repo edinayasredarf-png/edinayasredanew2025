@@ -686,7 +686,7 @@ export default function KpGenerator() {
       {/* Шапка: заголовок + подчёркнутые вкладки (стиль референса). Прокрутка на узких экранах. */}
       <div className="space-y-3">
         <h2 className="text-lg sm:text-xl font-bold text-[#1b2a4a] leading-tight tracking-tight">Генератор коммерческих предложений</h2>
-        <div className="flex gap-5 sm:gap-6 overflow-x-auto border-b border-gray-200 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <ScrollX className="border-b border-gray-200" innerClassName="flex gap-5 sm:gap-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
             <button
               key={t.k}
@@ -698,7 +698,7 @@ export default function KpGenerator() {
               {t.label}
             </button>
           ))}
-        </div>
+        </ScrollX>
       </div>
 
       {status && (

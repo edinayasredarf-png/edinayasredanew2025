@@ -2675,7 +2675,7 @@ export default function AiSalesSection() {
 
   return (
     <div>
-      <div className="mb-5 border-b border-gray-200 overflow-x-auto">
+      <ScrollX className="mb-5 border-b border-gray-200">
         <div className="flex gap-1 min-w-max">
           {SECTIONS.map((s) => (
             <button key={s.view} type="button" onClick={() => go(s.view)}
@@ -2684,7 +2684,7 @@ export default function AiSalesSection() {
             </button>
           ))}
         </div>
-      </div>
+      </ScrollX>
       {body}
     </div>
   );

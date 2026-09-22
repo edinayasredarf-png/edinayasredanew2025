@@ -60,7 +60,7 @@ export function ScrollX({
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
-      <div ref={ref} className={`overflow-x-auto [scrollbar-width:thin] ${innerClassName}`}>
+      <div ref={ref} className={`overflow-x-auto ${innerClassName}`}>
         {children}
       </div>
 
