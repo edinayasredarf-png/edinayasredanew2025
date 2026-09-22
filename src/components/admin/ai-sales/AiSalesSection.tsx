@@ -8,7 +8,7 @@ import { ScrollX } from '@/components/admin/ui/ScrollX';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
+type View = 'dashboard' | 'signals' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -1282,6 +1282,119 @@ function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────── Сигналы РОПа (проактивная лента) ─────────── */
+interface SignalItem {
+  id: string; severity: 'critical' | 'risk' | 'opportunity'; kind: 'deal' | 'commitment' | 'coaching' | 'lost';
+  title: string; detail: string; action: string | null; link: string | null; manager: string | null; count: number | null;
+}
+interface SignalsData {
+  signals: SignalItem[];
+  counts: { critical: number; risk: number; opportunity: number };
+  digest: string;
+}
+const SIG_STYLE: Record<SignalItem['severity'], { dot: string; ring: string; label: string }> = {
+  critical: { dot: 'bg-red-500', ring: 'border-red-200', label: '🔴 Критично' },
+  risk: { dot: 'bg-amber-500', ring: 'border-amber-200', label: '🟠 Риск' },
+  opportunity: { dot: 'bg-emerald-500', ring: 'border-emerald-200', label: '🟢 Возможность' },
+};
+const SIG_KIND: Record<SignalItem['kind'], string> = {
+  deal: 'Сделка', commitment: 'Обещания', coaching: 'Коучинг', lost: 'Проигрыши',
+};
+
+/** id сделки из сигнала вида deal-crit-<id> / deal-risk-<id> (для перехода в карточку). */
+function signalDealId(s: SignalItem): string | null {
+  const m = s.id.match(/^deal-(?:crit|risk)-(.+)$/);
+  return m ? m[1] : null;
+}
+
+function Signals({ onOpen }: { onOpen: (id: string) => void }) {
+  const [data, setData] = useState<SignalsData | null>(null);
+  const [period, setPeriod] = usePersistentPeriod();
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/signals?${periodQS(period)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period]);
+  useEffect(() => { load(); }, [load]);
+
+  const copyDigest = async () => {
+    if (!data?.digest) return;
+    try { await navigator.clipboard.writeText(data.digest); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard недоступен */ }
+  };
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-xl font-bold text-gray-900">Сигналы — что горит прямо сейчас</h2>
+        <button onClick={load} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
+      </div>
+      <p className="text-sm text-gray-500 mb-4">Приоритетная лента для РОПа: критичные сделки, просроченные обещания клиентам, слабые этапы и всплески проигрышей. Клик по карточке сделки — открыть её.</p>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {loading ? <LoadingBlock /> : !data ? null : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <Kpi label="🔴 Критично" value={data.counts.critical} />
+            <Kpi label="🟠 Риск" value={data.counts.risk} />
+            <Kpi label="🟢 Возможности" value={data.counts.opportunity} />
+          </div>
+
+          {data.digest && (
+            <div className="bg-[#029cda]/5 border border-[#029cda]/20 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-semibold text-gray-800">Дайджест на утро</p>
+                <button onClick={copyDigest} className="text-xs px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 hover:text-[#029cda]">{copied ? 'Скопировано' : 'Скопировать'}</button>
+              </div>
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{data.digest}</pre>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {data.signals.map((s) => {
+              const dealId = signalDealId(s);
+              const st = SIG_STYLE[s.severity];
+              const inner = (
+                <div className="flex items-start gap-3">
+                  <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${st.dot}`} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-gray-900 text-sm">{s.title}</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">{SIG_KIND[s.kind]}</span>
+                      {s.count != null && <span className="text-[11px] text-gray-400">×{s.count}</span>}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-0.5">{s.detail}</p>
+                    {s.action && <p className="text-xs text-[#029cda] mt-1">→ {s.action}</p>}
+                    <div className="flex gap-3 text-xs text-gray-400 mt-1">
+                      {s.manager && <span>{s.manager}</span>}
+                      {s.link && <a href={s.link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="hover:text-[#029cda]">Открыть в Bitrix ↗</a>}
+                    </div>
+                  </div>
+                </div>
+              );
+              return dealId ? (
+                <button key={s.id} onClick={() => onOpen(dealId)} className={`w-full text-left bg-white rounded-xl border ${st.ring} p-3 hover:shadow-sm transition`}>{inner}</button>
+              ) : (
+                <div key={s.id} className={`bg-white rounded-xl border ${st.ring} p-3`}>{inner}</div>
+              );
+            })}
+            {data.signals.length === 0 && <p className="text-sm text-gray-400 px-1 py-8 text-center">Критичных сигналов нет — можно работать в штатном режиме 👌</p>}
+          </div>
         </div>
       )}
     </div>
@@ -2697,6 +2810,7 @@ function Scripts() {
 /* ─────────── Раздел «Речевая аналитика» (единый, со своим навбаром) ─────────── */
 const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'dashboard', label: 'Обзор' },
+  { view: 'signals', label: 'Сигналы' },
   { view: 'calls', label: 'Коммуникации' },
   { view: 'search', label: 'Поиск' },
   { view: 'assistant', label: 'Ассистент' },
@@ -2738,6 +2852,7 @@ export default function AiSalesSection() {
     // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки, поиск).
     if (openCall) return <CallDetail id={openCall} initialSeekMs={openCallSeek} onBack={closeCall} />;
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
+    if (view === 'signals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Signals onOpen={setOpenDeal} />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
     if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'assistant') return <Assistant />;
