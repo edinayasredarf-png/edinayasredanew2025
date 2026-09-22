@@ -79,7 +79,7 @@ export async function getSignals(
       severity: "critical",
       kind: "commitment",
       title: `Просрочены обещания клиентам: ${overdue.length}`,
-      detail: top.length ? `Например: ${top.join("; ")}` : "Обещанные менеджерами действия не выполнены в срок.",
+      detail: (top.length ? `Например: ${top.join("; ")}. ` : "Обещанные менеджерами действия не выполнены в срок. ") + "Список актуален на сейчас (не зависит от выбранного периода).",
       action: "Закрыть просроченные follow-up или перенести срок клиенту.",
       link: null,
       manager: null,
@@ -135,12 +135,27 @@ export async function getSignals(
     });
   }
 
+  // 6) Возможности (сигналы к покупке) — чтобы счётчик вёл к реальным карточкам.
+  for (const r of reco.opportunity.slice(0, 6)) {
+    signals.push({
+      id: `deal-opp-${r.bitrixDealId}`,
+      severity: "opportunity",
+      kind: "deal",
+      title: r.company || r.title || `Сделка #${r.bitrixDealId}`,
+      detail: r.reason,
+      action: r.action,
+      link: r.dealUrl,
+      manager: r.manager,
+      count: null,
+    });
+  }
+
   signals.sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
 
   const counts = {
     critical: signals.filter((s) => s.severity === "critical").length,
     risk: signals.filter((s) => s.severity === "risk").length,
-    opportunity: reco.counts.opportunity,
+    opportunity: signals.filter((s) => s.severity === "opportunity").length,
   };
 
   return { signals, counts, digest: buildDigest(signals, counts, insights.headlines) };

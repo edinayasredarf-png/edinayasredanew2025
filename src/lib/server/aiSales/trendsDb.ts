@@ -16,6 +16,7 @@ export interface TrendPoint {
   avgDealScore: number | null;
   avgManagerScore: number | null;
   hot: number;
+  partial: boolean;         // текущая (неполная) неделя — не учитывается в сравнении
 }
 
 export interface PeriodDelta {
@@ -91,6 +92,7 @@ export async function getTrends(
   const mgrByWeek = new Map<number, string | null>();
   for (const r of mgrRows.rows) mgrByWeek.set(r.wk.getTime(), r.avg_mgr);
 
+  const curWeekStart = rows.rows.length ? rows.rows[rows.rows.length - 1].wk.getTime() : 0;
   const fmt = (d: Date) => `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
   const weekly: TrendPoint[] = rows.rows.map((r) => ({
     week: r.wk.toISOString().slice(0, 10),
@@ -100,24 +102,68 @@ export async function getTrends(
     avgDealScore: round(r.avg_deal),
     avgManagerScore: round(mgrByWeek.get(r.wk.getTime()) ?? null),
     hot: Number(r.hot),
+    partial: r.wk.getTime() === curWeekStart, // последняя неделя — неполная
   }));
 
-  // Период к периоду: последняя половина недель vs предыдущая половина.
-  const half = Math.floor(weekly.length / 2);
-  const prev = weekly.slice(0, half);
-  const cur = weekly.slice(half);
-  const sum = (a: TrendPoint[], k: "calls" | "hot") => a.reduce((n, p) => n + p[k], 0);
-  const avg = (a: TrendPoint[], k: "avgDealScore" | "avgManagerScore"): number | null => {
-    const vals = a.map((p) => p[k]).filter((v): v is number => v != null);
-    return vals.length ? round(vals.reduce((n, v) => n + v, 0) / vals.length) : null;
-  };
-
-  const delta: PeriodDelta = {
-    calls: sum(cur, "calls"), callsPrev: sum(prev, "calls"),
-    hot: sum(cur, "hot"), hotPrev: sum(prev, "hot"),
-    avgDealScore: avg(cur, "avgDealScore"), avgDealScorePrev: avg(prev, "avgDealScore"),
-    avgManagerScore: avg(cur, "avgManagerScore"), avgManagerScorePrev: avg(prev, "avgManagerScore"),
-  };
-
+  const delta = await getPeriodDelta(managerBitrixId);
   return { weekly, delta };
+}
+
+/**
+ * Сравнение периода к периоду по ЗАВЕРШЁННЫМ неделям (текущая неполная неделя
+ * исключена): последние 6 полных недель против предыдущих 6. Средние берём прямо
+ * из SQL — они естественно взвешены по объёму (avg по всем строкам окна), а не
+ * «среднее из недельных средних».
+ */
+async function getPeriodDelta(managerBitrixId: string | null): Promise<PeriodDelta> {
+  const pool = getTimewebPool();
+  const cMgr = managerBitrixId ? ` and c.bitrix_user_id = $1` : "";
+  const cParams = managerBitrixId ? [managerBitrixId] : [];
+  // Окна по звонкам: [now-12w, now-6w) — прошлый; [now-6w, now-0w) без текущей недели.
+  const callsAgg = await pool.query<{
+    calls_cur: string; calls_prev: string; hot_cur: string; hot_prev: string;
+    deal_cur: string | null; deal_prev: string | null;
+  }>(
+    `with b as (
+       select date_trunc('week', now()) as cur_wk,
+              date_trunc('week', now()) - interval '6 weeks' as cur_from,
+              date_trunc('week', now()) - interval '12 weeks' as prev_from
+     )
+     select
+       count(c.id) filter (where c.started_at >= b.cur_from and c.started_at < b.cur_wk)::text as calls_cur,
+       count(c.id) filter (where c.started_at >= b.prev_from and c.started_at < b.cur_from)::text as calls_prev,
+       count(*) filter (where a.deal_temperature = 'HOT' and c.started_at >= b.cur_from and c.started_at < b.cur_wk)::text as hot_cur,
+       count(*) filter (where a.deal_temperature = 'HOT' and c.started_at >= b.prev_from and c.started_at < b.cur_from)::text as hot_prev,
+       avg(a.deal_score) filter (where c.started_at >= b.cur_from and c.started_at < b.cur_wk)::text as deal_cur,
+       avg(a.deal_score) filter (where c.started_at >= b.prev_from and c.started_at < b.cur_from)::text as deal_prev
+     from b
+     left join ai_calls c on c.started_at >= b.prev_from and c.started_at < b.cur_wk${cMgr}
+     left join ai_call_analysis a on a.call_id = c.id`,
+    cParams
+  );
+
+  const dMgr = managerBitrixId ? ` and d.bitrix_user_id = $1` : "";
+  const mgrAgg = await pool.query<{ mgr_cur: string | null; mgr_prev: string | null }>(
+    `with b as (
+       select date_trunc('week', now()) as cur_wk,
+              date_trunc('week', now()) - interval '6 weeks' as cur_from,
+              date_trunc('week', now()) - interval '12 weeks' as prev_from
+     )
+     select
+       avg(di.manager_score) filter (where di.last_call_at >= b.cur_from and di.last_call_at < b.cur_wk)::text as mgr_cur,
+       avg(di.manager_score) filter (where di.last_call_at >= b.prev_from and di.last_call_at < b.cur_from)::text as mgr_prev
+     from b
+     left join ai_deal_insights di on di.last_call_at >= b.prev_from and di.last_call_at < b.cur_wk
+     left join ai_deals d on d.bitrix_deal_id = di.bitrix_deal_id${dMgr}`,
+    cParams
+  );
+
+  const c = callsAgg.rows[0];
+  const m = mgrAgg.rows[0];
+  return {
+    calls: Number(c?.calls_cur || 0), callsPrev: Number(c?.calls_prev || 0),
+    hot: Number(c?.hot_cur || 0), hotPrev: Number(c?.hot_prev || 0),
+    avgDealScore: round(c?.deal_cur ?? null), avgDealScorePrev: round(c?.deal_prev ?? null),
+    avgManagerScore: round(m?.mgr_cur ?? null), avgManagerScorePrev: round(m?.mgr_prev ?? null),
+  };
 }

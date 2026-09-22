@@ -8,8 +8,8 @@ import { ScrollX } from '@/components/admin/ui/ScrollX';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
-export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
+export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
   if (sec == null) return '—';
@@ -237,7 +237,7 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
         <Kpi label="🔥 Горячие" value={data.temperature.hot} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'HOT' }) : undefined} />
         <Kpi label="Тёплые" value={data.temperature.warm} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'WARM' }) : undefined} />
         <Kpi label="Холодные" value={data.temperature.cold} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'COLD' }) : undefined} />
-        <Kpi label="Кому звонить сегодня" value={data.attention.withoutNextStep} sub="AI рекомендует →" onClick={onNavigate ? () => onNavigate({ tab: 'ai-reco' }) : undefined} />
+        <Kpi label="Кому звонить сегодня" value={data.attention.withoutNextStep} sub="Открыть сигналы →" onClick={onNavigate ? () => onNavigate({ tab: 'ai-signals' }) : undefined} />
       </div>
 
       <QueuePanel refreshSignal={queueTick} />
@@ -1236,81 +1236,6 @@ interface RecoItem {
   dealUrl: string | null; severity: string; reason: string; action: string | null;
   temperature: string | null; dealScore: number | null; daysSinceCall: number | null;
 }
-interface RecoData { critical: RecoItem[]; risk: RecoItem[]; opportunity: RecoItem[]; counts: { critical: number; risk: number; opportunity: number } }
-
-const RECO_COL = {
-  critical: { title: '🔴 Критично', hint: 'Требуют вмешательства', ring: 'border-red-200', head: 'text-red-700' },
-  risk: { title: '🟠 Риск', hint: 'Высокая вероятность потери', ring: 'border-amber-200', head: 'text-amber-700' },
-  opportunity: { title: '🟢 Возможность', hint: 'Сигналы к покупке', ring: 'border-emerald-200', head: 'text-emerald-700' },
-} as const;
-
-function RecoCard({ it, onOpen }: { it: RecoItem; onOpen: (id: string) => void }) {
-  return (
-    <button onClick={() => onOpen(it.bitrixDealId)} className="w-full text-left bg-white rounded-xl border border-gray-100 p-3 hover:border-[#029cda]/40 hover:shadow-sm transition">
-      <div className="flex items-start justify-between gap-2">
-        <span className="font-medium text-gray-900 text-sm leading-snug">{it.company || it.title || `Сделка #${it.bitrixDealId}`}</span>
-        {it.temperature && <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[it.temperature] || ''}`}>{tempRu(it.temperature)}</span>}
-      </div>
-      <p className="text-sm text-gray-700 mt-1">{it.reason}</p>
-      {it.action && <p className="text-xs text-[#029cda] mt-1">→ {it.action}</p>}
-      <div className="flex gap-3 text-xs text-gray-400 mt-2">
-        {it.manager && <span>{it.manager}</span>}
-        {it.dealScore != null && <span>{it.dealScore}/100</span>}
-        {it.daysSinceCall != null && <span>{it.daysSinceCall} дн. назад</span>}
-      </div>
-    </button>
-  );
-}
-
-function Recommendations({ onOpen }: { onOpen: (id: string) => void }) {
-  const [data, setData] = useState<RecoData | null>(null);
-  const [period, setPeriod] = usePersistentPeriod();
-  const [err, setErr] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    setLoading(true); setErr('');
-    try {
-      const r = await fetch(`/api/ai-sales/recommendations?${periodQS(period)}`);
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || 'Ошибка');
-      setData(j);
-    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
-    finally { setLoading(false); }
-  }, [period]);
-  useEffect(() => { load(); }, [load]);
-
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-xl font-bold text-gray-900">AI рекомендует — кому звонить сегодня</h2>
-        <button onClick={load} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
-      </div>
-      <p className="text-sm text-gray-500 mb-4">Приоритетные сделки по данным разборов звонков. Клик — открыть карточку сделки.</p>
-      <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <LoadingBlock /> : !data ? null : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {(['critical', 'risk', 'opportunity'] as const).map((key) => (
-            <div key={key} className={`rounded-2xl border ${RECO_COL[key].ring} bg-[#F6F7F9]/60 p-3`}>
-              <div className="flex items-baseline justify-between px-1 mb-3">
-                <span className={`font-bold ${RECO_COL[key].head}`}>{RECO_COL[key].title}</span>
-                <span className="text-sm text-gray-400">{data.counts[key]}</span>
-              </div>
-              <p className="text-xs text-gray-400 px-1 mb-3">{RECO_COL[key].hint}</p>
-              <div className="space-y-2">
-                {data[key].map((it) => <RecoCard key={it.bitrixDealId} it={it} onOpen={onOpen} />)}
-                {data[key].length === 0 && <p className="text-sm text-gray-400 px-1 py-4">Пусто — здесь чисто 👌</p>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ─────────── Сигналы РОПа (проактивная лента) ─────────── */
 interface SignalItem {
   id: string; severity: 'critical' | 'risk' | 'opportunity'; kind: 'deal' | 'commitment' | 'coaching' | 'lost';
@@ -1332,7 +1257,7 @@ const SIG_KIND: Record<SignalItem['kind'], string> = {
 
 /** id сделки из сигнала вида deal-crit-<id> / deal-risk-<id> (для перехода в карточку). */
 function signalDealId(s: SignalItem): string | null {
-  const m = s.id.match(/^deal-(?:crit|risk)-(.+)$/);
+  const m = s.id.match(/^deal-(?:crit|risk|opp)-(.+)$/);
   return m ? m[1] : null;
 }
 
@@ -1427,7 +1352,7 @@ function Signals({ onOpen }: { onOpen: (id: string) => void }) {
 /* ─────────── Динамика во времени ─────────── */
 interface TrendPoint {
   week: string; label: string; calls: number; analyzed: number;
-  avgDealScore: number | null; avgManagerScore: number | null; hot: number;
+  avgDealScore: number | null; avgManagerScore: number | null; hot: number; partial?: boolean;
 }
 interface TrendsData {
   weekly: TrendPoint[];
@@ -1485,8 +1410,9 @@ function MiniChart({ points, barKey, lineKey, lineMax, title, barLabel, lineLabe
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 160 }} preserveAspectRatio="none">
         {points.map((p, i) => (
           <g key={i}>
-            <rect x={x(i)} y={yBar(p[barKey])} width={Math.max(1, bw * 0.7)} height={H - padB - yBar(p[barKey])} rx={2} className="fill-[#029cda]/50" />
-            {(i % 2 === 0 || n <= 13) && <text x={x(i) + bw * 0.35} y={H - 6} textAnchor="middle" className="fill-gray-400" fontSize={9}>{p.label}</text>}
+            <rect x={x(i)} y={yBar(p[barKey])} width={Math.max(1, bw * 0.7)} height={H - padB - yBar(p[barKey])} rx={2}
+              className={p.partial ? 'fill-[#029cda]/20' : 'fill-[#029cda]/50'} />
+            {(i % 2 === 0 || n <= 13) && <text x={x(i) + bw * 0.35} y={H - 6} textAnchor="middle" className="fill-gray-400" fontSize={9}>{p.partial ? 'тек.' : p.label}</text>}
           </g>
         ))}
         {path && <path d={path} fill="none" stroke="#f59e0b" strokeWidth={2} />}
@@ -1498,19 +1424,20 @@ function MiniChart({ points, barKey, lineKey, lineMax, title, barLabel, lineLabe
 
 function Trends() {
   const [data, setData] = useState<TrendsData | null>(null);
+  const [weeks, setWeeks] = useState(12);
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const r = await fetch('/api/ai-sales/trends?weeks=12');
+      const r = await fetch(`/api/ai-sales/trends?weeks=${weeks}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
       setData(j);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
-  }, []);
+  }, [weeks]);
   useEffect(() => { load(); }, [load]);
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
@@ -1519,9 +1446,14 @@ function Trends() {
     <div>
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-xl font-bold text-gray-900">Динамика — прогресс во времени</h2>
-        <button onClick={load} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
+        <div className="flex items-center gap-1">
+          {[8, 12, 26].map((w) => (
+            <button key={w} onClick={() => setWeeks(w)}
+              className={`px-3 py-1.5 rounded-xl text-sm transition ${weeks === w ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>{w} нед.</button>
+          ))}
+        </div>
       </div>
-      <p className="text-sm text-gray-500 mb-4">Последние 12 недель. Сравнение — вторая половина периода к первой (последние 6 недель против предыдущих 6).</p>
+      <p className="text-sm text-gray-500 mb-4">Столбцы — звонки по неделям; текущая (неполная) неделя выделена бледным и в сравнение не входит. Сравнение — последние 6 полных недель против предыдущих 6 (средние взвешены по объёму).</p>
       {loading ? <LoadingBlock /> : !data ? null : (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1966,7 +1898,7 @@ interface RopData {
   overdueFollowups: number;
 }
 
-function Rop({ onOpen }: { onOpen: (id: string) => void }) {
+function Rop({ onNavigate }: { onNavigate: (t: NavTarget) => void }) {
   const [data, setData] = useState<RopData | null>(null);
   const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
@@ -2017,17 +1949,16 @@ function Rop({ onOpen }: { onOpen: (id: string) => void }) {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 p-4">
-              <p className="font-semibold text-gray-800 mb-3">Требует внимания сегодня</p>
-              <div className="space-y-2">
-                {data.attention.items.map((it) => (
-                  <button key={it.bitrixDealId} onClick={() => it.bitrixDealId && onOpen(it.bitrixDealId)} className="w-full text-left border-b border-gray-50 pb-2 hover:text-[#029cda]">
-                    <p className="text-sm text-gray-900">{it.company || `Сделка #${it.bitrixDealId}`}</p>
-                    <p className="text-xs text-gray-500">{it.reason}</p>
-                  </button>
-                ))}
-                {data.attention.items.length === 0 && <p className="text-gray-400 text-sm">Критичных сделок нет 👌</p>}
+            <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col">
+              <p className="font-semibold text-gray-800 mb-3">Требует внимания</p>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="rounded-xl bg-red-50 p-3 text-center"><p className="text-2xl font-bold text-red-600">{data.attention.criticalCount}</p><p className="text-xs text-red-500">критично</p></div>
+                <div className="rounded-xl bg-amber-50 p-3 text-center"><p className="text-2xl font-bold text-amber-600">{data.attention.riskCount}</p><p className="text-xs text-amber-500">риск</p></div>
+                <div className="rounded-xl bg-gray-50 p-3 text-center"><p className="text-2xl font-bold text-gray-700">{data.overdueFollowups}</p><p className="text-xs text-gray-500">просрочки</p></div>
               </div>
+              <p className="text-sm text-gray-500 mb-3">Полный приоритезированный список — во вкладке «Сигналы».</p>
+              <button onClick={() => onNavigate({ tab: 'ai-signals' })}
+                className="mt-auto px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white hover:brightness-95">Открыть Сигналы →</button>
             </div>
           </div>
         </div>
@@ -2947,27 +2878,37 @@ function Scripts() {
 }
 
 /* ─────────── Раздел «Речевая аналитика» (единый, со своим навбаром) ─────────── */
-const SECTIONS: Array<{ view: View; label: string }> = [
-  { view: 'dashboard', label: 'Обзор' },
-  { view: 'signals', label: 'Сигналы' },
-  { view: 'calls', label: 'Коммуникации' },
-  { view: 'search', label: 'Поиск' },
-  { view: 'assistant', label: 'Ассистент' },
-  { view: 'rop', label: 'AI РОП' },
-  { view: 'trends', label: 'Динамика' },
-  { view: 'reco', label: 'Рекомендации' },
-  { view: 'followups', label: 'Follow-up' },
-  { view: 'deals', label: 'Сделки' },
-  { view: 'managers', label: 'Менеджеры' },
-  { view: 'lost', label: 'Проигрыши' },
-  { view: 'insights', label: 'Отчёты' },
-  { view: 'qc', label: 'Контроль качества' },
-  { view: 'tags', label: 'Разметка' },
-  { view: 'departments', label: 'Отделы' },
-  { view: 'scripts', label: 'Скрипт' },
-  { view: 'kb', label: 'База знаний' },
-  { view: 'prompts', label: 'Промты' },
-  { view: 'settings', label: 'Настройки' },
+interface NavGroup { key: string; label: string; views: Array<{ view: View; label: string }> }
+
+/** Двухуровневая навигация: группа → её вкладки. Снимает частокол из 18 вкладок. */
+const GROUPS: NavGroup[] = [
+  { key: 'main', label: 'Главное', views: [
+    { view: 'dashboard', label: 'Обзор' },
+    { view: 'signals', label: 'Сигналы' },
+    { view: 'rop', label: 'AI РОП' },
+    { view: 'trends', label: 'Динамика' },
+    { view: 'followups', label: 'Follow-up' },
+  ] },
+  { key: 'reviews', label: 'Разборы', views: [
+    { view: 'calls', label: 'Коммуникации' },
+    { view: 'search', label: 'Поиск' },
+    { view: 'deals', label: 'Сделки' },
+    { view: 'qc', label: 'Контроль качества' },
+    { view: 'assistant', label: 'Ассистент' },
+  ] },
+  { key: 'analytics', label: 'Аналитика', views: [
+    { view: 'managers', label: 'Менеджеры' },
+    { view: 'insights', label: 'Отчёты' },
+    { view: 'lost', label: 'Проигрыши' },
+    { view: 'tags', label: 'Разметка' },
+  ] },
+  { key: 'setup', label: 'Настройка', views: [
+    { view: 'departments', label: 'Отделы' },
+    { view: 'scripts', label: 'Скрипт' },
+    { view: 'kb', label: 'База знаний' },
+    { view: 'prompts', label: 'Промты' },
+    { view: 'settings', label: 'Настройки' },
+  ] },
 ];
 
 export default function AiSalesSection() {
@@ -2981,12 +2922,41 @@ export default function AiSalesSection() {
   const closeCall = () => { setOpenCall(null); setOpenCallSeek(null); };
   const go = (v: View) => { setView(v); closeCall(); setOpenDeal(null); setInitTemp(undefined); setInitTag(undefined); };
   const nav = (t: NavTarget) => {
-    const map: Record<string, View> = { 'ai-deals': 'deals', 'ai-calls': 'calls', 'ai-reco': 'reco' };
+    const map: Record<string, View> = { 'ai-deals': 'deals', 'ai-calls': 'calls', 'ai-signals': 'signals' };
     setInitTemp(t.temperature); setInitTag(t.tag);
     closeCall(); setOpenDeal(null);
     setView(map[t.tab] ?? 'dashboard');
   };
   const openCallAt = (id: string, startMs: number | null) => { setOpenCall(id); setOpenCallSeek(startMs); };
+
+  // URL-состояние: вкладка/открытый звонок/сделка → query (браузерный «Назад»,
+  // F5 и ссылки). Параметры с префиксом as* — чтобы не мешать родительской админке.
+  const urlInit = useRef(false);
+  useEffect(() => {
+    // Зеркалим состояние из URL: при загрузке и на «Назад/Вперёд» (popstate).
+    const restore = () => {
+      const q = new URLSearchParams(window.location.search);
+      const v = q.get('asv') as View | null;
+      setView(v && GROUPS.some((g) => g.views.some((x) => x.view === v)) ? v : 'dashboard');
+      setOpenCall(q.get('asc'));
+      setOpenDeal(q.get('asd'));
+    };
+    restore();
+    window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, []);
+  useEffect(() => {
+    const cur = new URLSearchParams(window.location.search);
+    const next = new URLSearchParams(window.location.search);
+    if (view && view !== 'dashboard') next.set('asv', view); else next.delete('asv');
+    if (openCall) next.set('asc', openCall); else next.delete('asc');
+    if (openDeal) next.set('asd', openDeal); else next.delete('asd');
+    if (next.toString() === cur.toString()) { urlInit.current = true; return; }
+    const url = next.toString() ? `?${next}` : window.location.pathname;
+    // Первая запись — нормализация (replace), дальше переходы — в историю (push).
+    if (!urlInit.current) { urlInit.current = true; window.history.replaceState(null, '', url); }
+    else window.history.pushState(null, '', url);
+  }, [view, openCall, openDeal]);
 
   const body = (() => {
     // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки, поиск).
@@ -3006,18 +2976,32 @@ export default function AiSalesSection() {
     if (view === 'insights') return <Insights />;
     if (view === 'followups') return <FollowUps />;
     if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <LostDeals onOpen={setOpenDeal} />;
-    if (view === 'rop') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Rop onOpen={setOpenDeal} />;
+    if (view === 'rop') return <Rop onNavigate={nav} />;
     if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Managers onOpen={setOpenDeal} />;
-    if (view === 'reco') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Recommendations onOpen={setOpenDeal} />;
     if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
     return <Calls initialTemperature={initTemp} initialTag={initTag} />;
   })();
 
+  const activeGroup = GROUPS.find((g) => g.views.some((v) => v.view === view)) ?? GROUPS[0];
+  const openGroup = (g: NavGroup) => { if (!g.views.some((v) => v.view === view)) go(g.views[0].view); };
+
   return (
     <div>
+      {/* Уровень 1 — группы */}
+      <ScrollX className="mb-2">
+        <div className="flex gap-1 min-w-max">
+          {GROUPS.map((g) => (
+            <button key={g.key} type="button" onClick={() => openGroup(g)}
+              className={`px-3.5 py-1.5 text-sm rounded-xl whitespace-nowrap transition ${g.key === activeGroup.key ? 'bg-[#029cda] text-white font-medium' : 'text-gray-500 hover:bg-gray-100'}`}>
+              {g.label}
+            </button>
+          ))}
+        </div>
+      </ScrollX>
+      {/* Уровень 2 — вкладки активной группы */}
       <ScrollX className="mb-5 border-b border-gray-200">
         <div className="flex gap-1 min-w-max">
-          {SECTIONS.map((s) => (
+          {activeGroup.views.map((s) => (
             <button key={s.view} type="button" onClick={() => go(s.view)}
               className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
               {s.label}

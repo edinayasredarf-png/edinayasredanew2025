@@ -97,6 +97,7 @@ function AdminLogin() {
 }
 
 type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp';
+const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp'];
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
@@ -142,7 +143,22 @@ export default function AdminPanel() {
       if (s) setFavorites(JSON.parse(s));
     } catch { /* нет localStorage */ }
     setAvatarUrl(authStore.getCurrentProfile()?.avatar_url);
+    // Восстановление активной вкладки из URL (?tab=) — для F5 и внешних ссылок.
+    try {
+      const t = new URLSearchParams(window.location.search).get('tab');
+      if (t && ALL_TAB_IDS.includes(t as TabId)) setActiveTab(t as TabId);
+    } catch { /* нет URL */ }
   }, []);
+
+  // Отражаем активную вкладку в URL (replace — без засорения истории).
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get('tab') === activeTab) return;
+      q.set('tab', activeTab);
+      window.history.replaceState(null, '', `?${q}`);
+    } catch { /* нет URL */ }
+  }, [activeTab]);
 
   useEffect(() => {
     const h = (e: MouseEvent) => { if (!profileRef.current?.contains(e.target as Node)) setShowProfileMenu(false); };
