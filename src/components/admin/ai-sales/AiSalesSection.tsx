@@ -2218,12 +2218,6 @@ function KnowledgeBase() {
   const [upBusy, setUpBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [upResults, setUpResults] = useState<Array<{ name: string; ok: boolean; error?: string; chars?: number }> | null>(null);
-  // Инструмент PDF → Word.
-  const [showP2w, setShowP2w] = useState(false);
-  const [p2wFile, setP2wFile] = useState<File | null>(null);
-  const [p2wOcr, setP2wOcr] = useState(false);
-  const [p2wBusy, setP2wBusy] = useState(false);
-  const [p2wErr, setP2wErr] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
@@ -2283,26 +2277,6 @@ function KnowledgeBase() {
     finally { setUpBusy(false); }
   };
 
-  const convertPdfToWord = async () => {
-    if (!p2wFile) return;
-    setP2wBusy(true); setP2wErr('');
-    try {
-      const fd = new FormData();
-      fd.append('file', p2wFile);
-      if (p2wOcr) fd.append('ocr', '1');
-      const r = await fetch('/api/tools/pdf-to-word', { method: 'POST', body: fd, credentials: 'include' });
-      if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Ошибка конвертации'); }
-      const blob = await r.blob();
-      const cd = r.headers.get('Content-Disposition') || '';
-      const m = cd.match(/filename\*=UTF-8''([^;]+)/);
-      const name = m ? decodeURIComponent(m[1]) : 'документ.docx';
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = name; a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) { setP2wErr(e instanceof Error ? e.message : 'Ошибка'); }
-    finally { setP2wBusy(false); }
-  };
 
   if (loading) return <LoadingBlock />;
 
@@ -2364,37 +2338,6 @@ function KnowledgeBase() {
                 ))}
               </div>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Инструмент: PDF → Word (распознавание) */}
-      <div className="mb-5">
-        <button onClick={() => setShowP2w((v) => !v)} className="text-sm font-medium text-[#029cda] hover:text-[#0280b5]">
-          {showP2w ? 'Скрыть PDF → Word' : 'PDF → Word (распознавание сканов)'}
-        </button>
-        {showP2w && (
-          <div className="mt-2 bg-[#F6F7F9] rounded-xl p-4 space-y-3">
-            <p className="text-xs text-gray-500">Конвертирует PDF в редактируемый .docx. Обычный PDF — извлекается текстовый слой; скан — распознаётся через OCR (Yandex Vision). Вёрстка не сохраняется — выходит редактируемый текст.</p>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <label className="inline-block px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-sm text-[#313131] hover:border-[#029cda] cursor-pointer shrink-0">
-                {p2wFile ? 'Другой PDF' : 'Выбрать PDF'}
-                <input type="file" accept=".pdf" className="hidden" onChange={(e) => { setP2wFile(e.target.files?.[0] || null); e.target.value = ''; }} />
-              </label>
-              {p2wFile && <span className="text-xs text-gray-600 truncate">{p2wFile.name} <span className="text-gray-400">({Math.round(p2wFile.size / 1024)} КБ)</span></span>}
-            </div>
-            <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-              <input type="checkbox" checked={p2wOcr} onChange={(e) => setP2wOcr(e.target.checked)} />
-              Форсировать OCR (если это скан или текст извлекается плохо)
-            </label>
-            <div className="flex items-center gap-3">
-              <button onClick={convertPdfToWord} disabled={p2wBusy || !p2wFile}
-                className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50 inline-flex items-center gap-2">
-                {p2wBusy && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
-                {p2wBusy ? 'Конвертация…' : 'Конвертировать в Word'}
-              </button>
-              {p2wErr && <span className="text-xs text-red-600">{p2wErr}</span>}
-            </div>
           </div>
         )}
       </div>

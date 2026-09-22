@@ -119,7 +119,7 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
 }
 
 export default function KpGenerator() {
-  const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history' | 'sends' | 'registry'>('create');
+  const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history' | 'sends' | 'registry' | 'pdf2word'>('create');
 
   // Справочники
   const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -672,6 +672,7 @@ export default function KpGenerator() {
     { k: 'settings', label: 'Настройки' },
     { k: 'history', label: 'История' },
     { k: 'sends', label: 'Рассылки' },
+    { k: 'pdf2word', label: 'PDF → Word' },
   ] as const;
 
   return (
@@ -767,6 +768,8 @@ export default function KpGenerator() {
       {tab === 'sends' && <SendsTab setStatus={setStatus} />}
 
       {tab === 'registry' && <RegistryTab orgs={orgs} setStatus={setStatus} />}
+
+      {tab === 'pdf2word' && <PdfToWordTab setStatus={setStatus} />}
     </div>
   );
 }
@@ -1351,6 +1354,71 @@ function CreateTab(p: CreateProps) {
         );
       })()}
 
+    </div>
+  );
+}
+
+/* ═══════════════ Вкладка «PDF → Word» (распознавание) ═══════════════ */
+function PdfToWordTab({ setStatus }: { setStatus: (s: string) => void }) {
+  const [file, setFile] = React.useState<File | null>(null);
+  const [forceOcr, setForceOcr] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [err, setErr] = React.useState('');
+
+  const convert = async () => {
+    if (!file) return;
+    setBusy(true); setErr(''); setStatus('Конвертация PDF → Word…');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      if (forceOcr) fd.append('ocr', '1');
+      const r = await fetch('/api/tools/pdf-to-word', { method: 'POST', body: fd, credentials: 'include' });
+      if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Ошибка конвертации'); }
+      const blob = await r.blob();
+      const cd = r.headers.get('Content-Disposition') || '';
+      const m = cd.match(/filename\*=UTF-8''([^;]+)/);
+      const name = m ? decodeURIComponent(m[1]) : 'документ.docx';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; a.click();
+      URL.revokeObjectURL(url);
+      setStatus('Готово: скачан .docx');
+    } catch (e) { setErr((e as Error).message); setStatus(''); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4 max-w-2xl">
+      <div>
+        <div className="text-sm font-semibold text-[#1b2a4a]">PDF → Word (распознавание)</div>
+        <p className="text-xs text-gray-500 mt-1">Конвертирует PDF в редактируемый .docx. Обычный PDF — извлекается текстовый слой; скан — распознаётся через OCR (Yandex Vision). Вёрстка не сохраняется — на выходе редактируемый текст.</p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <label className="inline-block px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-[#313131] hover:border-[#029cda] cursor-pointer shrink-0">
+          {file ? 'Выбрать другой PDF' : 'Выбрать PDF'}
+          <input type="file" accept=".pdf" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
+        </label>
+        {file && <span className="text-xs text-gray-600 truncate">{file.name} <span className="text-gray-400">({Math.round(file.size / 1024)} КБ)</span></span>}
+      </div>
+
+      <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+        <input type="checkbox" checked={forceOcr} onChange={(e) => setForceOcr(e.target.checked)} />
+        Форсировать OCR (для сканов или если текст извлекается плохо)
+      </label>
+
+      <div className="flex items-center gap-3">
+        <button onClick={convert} disabled={busy || !file}
+          className="px-4 py-2.5 rounded-xl text-sm font-medium bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
+          {busy && <Spinner size={16} color="#fff" />}
+          {busy ? 'Конвертация…' : 'Конвертировать в Word'}
+        </button>
+        {err && <span className="text-xs text-red-600">{err}</span>}
+      </div>
+
+      <div className="text-[11px] text-gray-400">
+        Крупные многостраничные сканы могут не успеть за лимит времени — разбейте на части. OCR требует настроенного YANDEX_VISION_API_KEY.
+      </div>
     </div>
   );
 }
