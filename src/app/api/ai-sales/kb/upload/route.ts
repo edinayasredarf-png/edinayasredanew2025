@@ -3,12 +3,13 @@ import { requireRopAccess } from "@/lib/server/authFromBearer";
 import { createDocument } from "@/lib/server/aiSales/kbDb";
 import mammoth from "mammoth";
 import { extractText, getDocumentProxy } from "unpdf";
+import { ocrConfigured, ocrPdf } from "@/lib/server/ocr";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 60;
 
-/** Извлекает текст из файла (docx/pdf/txt/md/csv). */
+/** Извлекает текст из файла (docx/pdf/txt/md/csv). Скан-PDF — через OCR (если настроен). */
 async function fileToText(name: string, buf: Buffer): Promise<string> {
   const lower = name.toLowerCase();
   if (lower.endsWith(".docx")) {
@@ -18,7 +19,12 @@ async function fileToText(name: string, buf: Buffer): Promise<string> {
   if (lower.endsWith(".pdf")) {
     const pdf = await getDocumentProxy(new Uint8Array(buf));
     const { text } = await extractText(pdf, { mergePages: true });
-    return Array.isArray(text) ? text.join("\n") : String(text || "");
+    const layer = (Array.isArray(text) ? text.join("\n") : String(text || "")).trim();
+    // Текстового слоя нет/мало (скан) — пробуем OCR.
+    if (layer.length < 40 && ocrConfigured()) {
+      return await ocrPdf(buf);
+    }
+    return layer;
   }
   if (/\.(txt|md|markdown|csv)$/.test(lower)) {
     return buf.toString("utf8");
