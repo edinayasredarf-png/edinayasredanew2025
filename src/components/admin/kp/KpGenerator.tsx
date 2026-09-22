@@ -1389,10 +1389,7 @@ function PdfToWordTab({ setStatus }: { setStatus: (s: string) => void }) {
 
   return (
     <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4 max-w-2xl">
-      <div>
-        <div className="text-sm font-semibold text-[#1b2a4a]">PDF → Word (распознавание)</div>
-        <p className="text-xs text-gray-500 mt-1">Конвертирует PDF в редактируемый .docx. Обычный PDF — извлекается текстовый слой; скан — распознаётся через OCR (Yandex Vision). Вёрстка не сохраняется — на выходе редактируемый текст.</p>
-      </div>
+      <div className="text-sm font-semibold text-[#1b2a4a]">PDF → Word (распознавание)</div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <label className="inline-block px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-[#313131] hover:border-[#029cda] cursor-pointer shrink-0">
@@ -1414,10 +1411,6 @@ function PdfToWordTab({ setStatus }: { setStatus: (s: string) => void }) {
           {busy ? 'Конвертация…' : 'Конвертировать в Word'}
         </button>
         {err && <span className="text-xs text-red-600">{err}</span>}
-      </div>
-
-      <div className="text-[11px] text-gray-400">
-        Крупные многостраничные сканы могут не успеть за лимит времени — разбейте на части. OCR требует настроенного YANDEX_VISION_API_KEY.
       </div>
     </div>
   );

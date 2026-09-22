@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSalesAccess } from "@/lib/server/authFromBearer";
 import { extractText, getDocumentProxy } from "unpdf";
-import { ocrConfigured, ocrPdf } from "@/lib/server/ocr";
+import { ocrConfigured, ocrPdfPages } from "@/lib/server/ocr";
+import { ocrPagesToHtml } from "@/lib/server/ocrFormat";
 import { buildDocxFromHtml } from "@/lib/server/kp/kpHtmlDocx";
 
 export const runtime = "nodejs";
@@ -44,31 +45,38 @@ export async function POST(request: NextRequest) {
   const buf = Buffer.from(await file.arrayBuffer());
   const forceOcr = String(form.get("ocr") || "") === "1";
 
-  let text = "";
+  let html = "";
+
+  // 1) Текстовый слой (обычный PDF) — плоский текст в абзацы.
   if (!forceOcr) {
     try {
       const pdf = await getDocumentProxy(new Uint8Array(buf));
       const { text: t } = await extractText(pdf, { mergePages: true });
-      text = (Array.isArray(t) ? t.join("\n") : String(t || "")).trim();
+      const text = (Array.isArray(t) ? t.join("\n") : String(t || "")).trim();
+      if (text.length >= 40) html = textToHtml(text);
     } catch {
       /* нет текстового слоя — уйдём в OCR ниже */
     }
   }
-  if ((forceOcr || text.length < 40)) {
+
+  // 2) OCR (скан) — с восстановлением вёрстки (центрирование, красная строка, заголовки).
+  if (!html) {
     if (!ocrConfigured()) {
       return NextResponse.json({ error: "У PDF нет текстового слоя, а OCR не настроен (YANDEX_VISION_API_KEY)" }, { status: 422 });
     }
     try {
-      text = await ocrPdf(buf);
+      const pages = await ocrPdfPages(buf);
+      const totalLines = pages.reduce((n, p) => n + p.lines.length, 0);
+      if (!totalLines) {
+        return NextResponse.json({ error: "Не удалось распознать текст (пустой скан?)" }, { status: 422 });
+      }
+      html = ocrPagesToHtml(pages);
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message || "Ошибка OCR" }, { status: 502 });
     }
   }
-  if (!text.trim()) {
-    return NextResponse.json({ error: "Не удалось извлечь/распознать текст" }, { status: 422 });
-  }
 
-  const docx = await buildDocxFromHtml(textToHtml(text));
+  const docx = await buildDocxFromHtml(html);
   const base = (file.name || "документ").replace(/\.[^.]+$/, "") || "документ";
   const filename = `${base}.docx`;
   return new NextResponse(new Uint8Array(docx), {

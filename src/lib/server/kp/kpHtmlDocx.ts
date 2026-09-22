@@ -15,6 +15,7 @@ interface Ctx {
   underline: boolean;
   align: "left" | "center" | "right" | "both";
   size?: number; // half-points
+  indent?: number; // отступ первой строки (красная строка), в twips
 }
 
 interface Run {
@@ -48,6 +49,18 @@ function alignOf(el: HTMLElement, fallback: Ctx["align"]): Ctx["align"] {
   if (v === "justify") return "both";
   if (v === "left") return "left";
   return fallback;
+}
+
+/** Отступ первой строки (красная строка) из style="text-indent:…" → twips. */
+function indentOf(el: HTMLElement): number {
+  const style = (el.getAttribute("style") || "").toLowerCase();
+  const m = style.match(/text-indent\s*:\s*([\d.]+)\s*(em|pt|cm|mm|px)?/);
+  if (!m) return 0;
+  const n = parseFloat(m[1]) || 0;
+  if (n <= 0) return 0;
+  const unit = m[2] || "em";
+  const twips = unit === "pt" ? n * 20 : unit === "cm" ? n * 567 : unit === "mm" ? n * 56.7 : unit === "px" ? n * 15 : n * 240; // em при 12pt
+  return Math.min(2000, Math.round(twips));
 }
 
 function runsFrom(node: Node, ctx: Ctx): Run[] {
@@ -84,9 +97,10 @@ function runXml(r: Run): string {
   return `<w:r>${rprXml}<w:t xml:space="preserve">${xmlEscape(r.text || "")}</w:t></w:r>`;
 }
 
-function paragraph(runs: Run[], align: Ctx["align"], prefix?: string): string {
+function paragraph(runs: Run[], align: Ctx["align"], indent?: number, prefix?: string): string {
   const jc = align && align !== "left" ? `<w:jc w:val="${align}"/>` : "";
-  const pPr = jc ? `<w:pPr>${jc}</w:pPr>` : "";
+  const ind = indent && indent > 0 ? `<w:ind w:firstLine="${indent}"/>` : "";
+  const pPr = jc || ind ? `<w:pPr>${jc}${ind}</w:pPr>` : "";
   const pre = prefix ? `<w:r><w:t xml:space="preserve">${xmlEscape(prefix)}</w:t></w:r>` : "";
   const body = runs.map(runXml).join("");
   return `<w:p>${pPr}${pre}${body || '<w:t xml:space="preserve"></w:t>'}</w:p>`.replace(
@@ -110,7 +124,7 @@ function paragraphsFrom(node: HTMLElement, ctx: Ctx, listPrefix?: string): strin
   let inline: Run[] = [];
   const flush = () => {
     if (inline.length) {
-      out.push(paragraph(inline, ctx.align, listPrefix));
+      out.push(paragraph(inline, ctx.align, ctx.indent, listPrefix));
       inline = [];
     }
   };
@@ -124,6 +138,7 @@ function paragraphsFrom(node: HTMLElement, ctx: Ctx, listPrefix?: string): strin
         align: alignOf(ch, ctx.align),
         bold: ctx.bold || tag.startsWith("h"),
         size: headingSize(tag) ?? ctx.size,
+        indent: indentOf(ch),
       };
       let prefix: string | undefined;
       if (tag === "li") {

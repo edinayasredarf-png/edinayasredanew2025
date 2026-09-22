@@ -53,13 +53,24 @@ export async function ocrImage(buffer: Buffer, mime = "image/png"): Promise<stri
   return j.result?.textAnnotation?.fullText || "";
 }
 
-/**
- * OCR PDF (многостраничного) через async API. deadlineMs — общий бюджет
- * (на Vercel Hobby функция ≤60с, поэтому по умолчанию 50с).
- */
-export async function ocrPdf(buffer: Buffer, deadlineMs = 50_000): Promise<string> {
-  const { apiKey, folderId } = creds();
+/* ─── Структурный OCR (с координатами строк — для сохранения вёрстки) ─── */
 
+interface Vertex { x?: string | number; y?: string | number }
+interface TextAnnotation {
+  width?: string | number;
+  height?: string | number;
+  fullText?: string;
+  blocks?: Array<{ lines?: Array<{ text?: string; boundingBox?: { vertices?: Vertex[] } }> }>;
+}
+
+export interface OcrLine { text: string; x0: number; x1: number; top: number; height: number }
+export interface OcrPage { width: number; height: number; lines: OcrLine[] }
+
+const num = (v: string | number | undefined): number => (v == null ? 0 : Number(v) || 0);
+
+/** Общий вызов: submit → опрос → getRecognition. Возвращает textAnnotation по страницам. */
+async function recognizePdf(buffer: Buffer, deadlineMs: number): Promise<TextAnnotation[]> {
+  const { apiKey, folderId } = creds();
   const start = await fetch(OCR_ASYNC, {
     method: "POST",
     headers: headers(apiKey, folderId),
@@ -85,17 +96,41 @@ export async function ocrPdf(buffer: Buffer, deadlineMs = 50_000): Promise<strin
   if (!rec.ok) throw new Error(`OCR result ${rec.status}: ${(await rec.text().catch(() => "")).slice(0, 300)}`);
   const raw = await rec.text();
 
-  const pages: string[] = [];
+  const anns: TextAnnotation[] = [];
   for (const line of raw.split("\n")) {
     const s = line.trim();
     if (!s) continue;
     try {
-      const obj = JSON.parse(s) as { result?: { textAnnotation?: { fullText?: string } } };
-      const t = obj.result?.textAnnotation?.fullText;
-      if (t) pages.push(t);
-    } catch {
-      /* строка не JSON — пропускаем */
-    }
+      const obj = JSON.parse(s) as { result?: { textAnnotation?: TextAnnotation } };
+      if (obj.result?.textAnnotation) anns.push(obj.result.textAnnotation);
+    } catch { /* строка не JSON — пропускаем */ }
   }
-  return pages.join("\n\n");
+  return anns;
+}
+
+/** OCR PDF → просто текст (для базы знаний). */
+export async function ocrPdf(buffer: Buffer, deadlineMs = 50_000): Promise<string> {
+  const anns = await recognizePdf(buffer, deadlineMs);
+  return anns.map((a) => a.fullText || "").filter(Boolean).join("\n\n");
+}
+
+/** OCR PDF → страницы со строками и координатами (для сохранения вёрстки). */
+export async function ocrPdfPages(buffer: Buffer, deadlineMs = 50_000): Promise<OcrPage[]> {
+  const anns = await recognizePdf(buffer, deadlineMs);
+  return anns.map((a) => {
+    const lines: OcrLine[] = [];
+    for (const b of a.blocks || []) {
+      for (const ln of b.lines || []) {
+        const vs = ln.boundingBox?.vertices || [];
+        if (!ln.text || vs.length === 0) continue;
+        const xs = vs.map((v) => num(v.x));
+        const ys = vs.map((v) => num(v.y));
+        const x0 = Math.min(...xs), x1 = Math.max(...xs);
+        const y0 = Math.min(...ys), y1 = Math.max(...ys);
+        lines.push({ text: ln.text, x0, x1, top: y0, height: y1 - y0 });
+      }
+    }
+    lines.sort((p, q) => p.top - q.top || p.x0 - q.x0);
+    return { width: num(a.width) || 1000, height: num(a.height) || 1400, lines };
+  });
 }
