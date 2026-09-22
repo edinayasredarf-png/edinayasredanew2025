@@ -791,7 +791,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
     dealScore?: { score?: number; temperature?: string; factors?: Array<{ factor: string; points: number; reason: string }> };
     nextStep?: { action?: string | null };
     risks?: Array<{ type: string; detail: string }>;
-    managerPerformance?: { overall?: number | null; didWell?: string[]; mistakes?: string[]; improveNextTime?: string[] };
+    managerPerformance?: { overall?: number | null; didWell?: string[]; mistakes?: string[]; improveNextTime?: string[]; exampleBetterResponse?: string | null; criteria?: Array<{ key?: string; score?: number; comment?: string | null }> };
     products?: Array<{ name: string; confidence: number }>;
     objections?: Array<{ text?: string; quote?: string | null; raisedBy?: string; handled?: boolean; managerResponse?: string | null; responseQuality?: string | null; recommendation?: string | null; startMs?: number | null; endMs?: number | null }>;
   };
@@ -968,6 +968,29 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                   {a.managerPerformance.didWell?.length ? <div><p className="text-xs uppercase tracking-wide text-emerald-600">Хорошо</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.didWell.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                   {a.managerPerformance.mistakes?.length ? <div><p className="text-xs uppercase tracking-wide text-amber-600">Ошибки</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.mistakes.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                   {a.managerPerformance.improveNextTime?.length ? <div><p className="text-xs uppercase tracking-wide text-sky-600">Улучшить</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.improveNextTime.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                  {a.managerPerformance.exampleBetterResponse?.trim() ? (
+                    <div className="rounded-xl border border-[#029cda]/30 bg-[#029cda]/5 p-3">
+                      <p className="text-xs uppercase tracking-wide text-[#029cda] mb-1">Как ответить лучше в следующий раз</p>
+                      <p className="text-sm text-gray-800 italic">«{a.managerPerformance.exampleBetterResponse.trim()}»</p>
+                    </div>
+                  ) : null}
+                  {a.managerPerformance.criteria?.filter((c) => c.key).length ? (
+                    <details className="rounded-xl bg-[#F6F7F9] p-2.5">
+                      <summary className="text-xs uppercase tracking-wide text-gray-500 cursor-pointer">Разбор по этапам ({a.managerPerformance.criteria.filter((c) => c.key).length})</summary>
+                      <ul className="mt-2 space-y-1.5">
+                        {a.managerPerformance.criteria!.filter((c) => c.key).map((c, i) => {
+                          const sc = typeof c.score === 'number' ? c.score : null;
+                          const tone = sc == null ? 'text-gray-400' : sc >= 7 ? 'text-emerald-600' : sc >= 4 ? 'text-amber-600' : 'text-red-600';
+                          return (
+                            <li key={i} className="flex items-start gap-2 text-sm">
+                              <span className={`shrink-0 font-semibold ${tone} w-10`}>{sc != null ? `${sc}/10` : '—'}</span>
+                              <span className="text-gray-700"><b className="text-gray-800">{CRIT_LABEL[c.key || ''] || c.key}</b>{c.comment ? ` — ${c.comment}` : ''}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </details>
+                  ) : null}
                 </div>
               )}
               {a.objections && a.objections.filter((o) => (o.text || o.quote)?.trim()).length > 0 && (
