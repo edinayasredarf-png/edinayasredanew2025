@@ -8,7 +8,7 @@ import { ScrollX } from '@/components/admin/ui/ScrollX';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'reco' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-reco'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -1418,6 +1418,122 @@ function Signals({ onOpen }: { onOpen: (id: string) => void }) {
             })}
             {data.signals.length === 0 && <p className="text-sm text-gray-400 px-1 py-8 text-center">Критичных сигналов нет — можно работать в штатном режиме 👌</p>}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────── Динамика во времени ─────────── */
+interface TrendPoint {
+  week: string; label: string; calls: number; analyzed: number;
+  avgDealScore: number | null; avgManagerScore: number | null; hot: number;
+}
+interface TrendsData {
+  weekly: TrendPoint[];
+  delta: {
+    calls: number; callsPrev: number; hot: number; hotPrev: number;
+    avgDealScore: number | null; avgDealScorePrev: number | null;
+    avgManagerScore: number | null; avgManagerScorePrev: number | null;
+  };
+}
+
+/** Показатель с дельтой к прошлому периоду. higherIsBetter=false пока не нужен. */
+function DeltaKpi({ label, value, prev, suffix = '' }: { label: string; value: number | null; prev: number | null; suffix?: string }) {
+  const has = value != null && prev != null;
+  const diff = has ? (value as number) - (prev as number) : null;
+  const up = diff != null && diff > 0.0001;
+  const down = diff != null && diff < -0.0001;
+  const pct = has && (prev as number) !== 0 ? Math.round((diff as number) / Math.abs(prev as number) * 100) : null;
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4">
+      <p className="text-xs text-gray-400">{label}</p>
+      <p className="text-2xl font-bold text-gray-900 mt-1">{value ?? '—'}{value != null ? suffix : ''}</p>
+      <p className={`text-xs mt-1 ${up ? 'text-emerald-600' : down ? 'text-red-600' : 'text-gray-400'}`}>
+        {diff == null ? 'нет данных за прошлый период' : `${up ? '▲' : down ? '▼' : '='} ${diff > 0 ? '+' : ''}${Number(diff.toFixed(1))}${suffix}${pct != null ? ` (${pct > 0 ? '+' : ''}${pct}%)` : ''} к прошлому периоду`}
+      </p>
+    </div>
+  );
+}
+
+/** Мини-график: столбцы (bars) с необязательной линией поверх (line, своя шкала). */
+function MiniChart({ points, barKey, lineKey, lineMax, title, barLabel, lineLabel }: {
+  points: TrendPoint[]; barKey: 'calls'; lineKey?: 'avgDealScore' | 'avgManagerScore'; lineMax?: number;
+  title: string; barLabel: string; lineLabel?: string;
+}) {
+  const W = 640, H = 160, padL = 28, padR = 28, padB = 22, padT = 10;
+  const n = points.length;
+  const bw = n ? (W - padL - padR) / n : 0;
+  const barMax = Math.max(1, ...points.map((p) => p[barKey]));
+  const x = (i: number) => padL + bw * i + bw * 0.15;
+  const yBar = (v: number) => H - padB - (v / barMax) * (H - padB - padT);
+  const lm = lineMax ?? 100;
+  const yLine = (v: number) => H - padB - (v / lm) * (H - padB - padT);
+  const linePts = lineKey
+    ? points.map((p, i) => ({ i, v: p[lineKey] })).filter((d) => d.v != null) as { i: number; v: number }[]
+    : [];
+  const path = linePts.map((d, k) => `${k === 0 ? 'M' : 'L'} ${(x(d.i) + bw * 0.35).toFixed(1)} ${yLine(d.v).toFixed(1)}`).join(' ');
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="font-semibold text-gray-800 text-sm">{title}</p>
+        <div className="flex gap-3 text-xs text-gray-400">
+          <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-[#029cda]/60" />{barLabel}</span>
+          {lineLabel && <span className="inline-flex items-center gap-1"><span className="h-2 w-3 rounded-full bg-amber-500" />{lineLabel}</span>}
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 160 }} preserveAspectRatio="none">
+        {points.map((p, i) => (
+          <g key={i}>
+            <rect x={x(i)} y={yBar(p[barKey])} width={Math.max(1, bw * 0.7)} height={H - padB - yBar(p[barKey])} rx={2} className="fill-[#029cda]/50" />
+            {(i % 2 === 0 || n <= 13) && <text x={x(i) + bw * 0.35} y={H - 6} textAnchor="middle" className="fill-gray-400" fontSize={9}>{p.label}</text>}
+          </g>
+        ))}
+        {path && <path d={path} fill="none" stroke="#f59e0b" strokeWidth={2} />}
+        {linePts.map((d, k) => <circle key={k} cx={x(d.i) + bw * 0.35} cy={yLine(d.v)} r={2.5} fill="#f59e0b" />)}
+      </svg>
+    </div>
+  );
+}
+
+function Trends() {
+  const [data, setData] = useState<TrendsData | null>(null);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/trends?weeks=12');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-xl font-bold text-gray-900">Динамика — прогресс во времени</h2>
+        <button onClick={load} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
+      </div>
+      <p className="text-sm text-gray-500 mb-4">Последние 12 недель. Сравнение — вторая половина периода к первой (последние 6 недель против предыдущих 6).</p>
+      {loading ? <LoadingBlock /> : !data ? null : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <DeltaKpi label="Звонки за период" value={data.delta.calls} prev={data.delta.callsPrev} />
+            <DeltaKpi label="🔥 Горячие" value={data.delta.hot} prev={data.delta.hotPrev} />
+            <DeltaKpi label="Ср. Deal Score" value={data.delta.avgDealScore} prev={data.delta.avgDealScorePrev} />
+            <DeltaKpi label="Ср. оценка менеджера" value={data.delta.avgManagerScore} prev={data.delta.avgManagerScorePrev} suffix="/10" />
+          </div>
+          <MiniChart points={data.weekly} barKey="calls" lineKey="avgDealScore" lineMax={100}
+            title="Звонки и качество сделок по неделям" barLabel="звонки" lineLabel="Deal Score (0–100)" />
+          <MiniChart points={data.weekly} barKey="calls" lineKey="avgManagerScore" lineMax={10}
+            title="Звонки и оценка менеджеров по неделям" barLabel="звонки" lineLabel="оценка (0–10)" />
         </div>
       )}
     </div>
@@ -2838,6 +2954,7 @@ const SECTIONS: Array<{ view: View; label: string }> = [
   { view: 'search', label: 'Поиск' },
   { view: 'assistant', label: 'Ассистент' },
   { view: 'rop', label: 'AI РОП' },
+  { view: 'trends', label: 'Динамика' },
   { view: 'reco', label: 'Рекомендации' },
   { view: 'followups', label: 'Follow-up' },
   { view: 'deals', label: 'Сделки' },
@@ -2876,6 +2993,7 @@ export default function AiSalesSection() {
     if (openCall) return <CallDetail id={openCall} initialSeekMs={openCallSeek} onBack={closeCall} />;
     if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
     if (view === 'signals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Signals onOpen={setOpenDeal} />;
+    if (view === 'trends') return <Trends />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
     if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'assistant') return <Assistant />;
