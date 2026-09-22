@@ -2144,7 +2144,7 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
         </div>
 
         {/* Таблица (планшет/десктоп) */}
-        <div className="hidden sm:block overflow-x-auto bg-white border border-gray-200 rounded-xl">
+        <ScrollX className="hidden sm:block bg-white border border-gray-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
@@ -2181,7 +2181,7 @@ function SendsTab({ setStatus }: { setStatus: (s: string) => void }) {
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollX>
       </>
       )}
       <div className="text-[11px] text-gray-400">Открытие фиксируется по картинке-пикселю: сигнал косвенный (почтовые клиенты могут блокировать картинки или подгружать их сами).</div>
@@ -2247,7 +2247,7 @@ function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s:
       {loading ? <LoadingBlock /> : rows.length === 0 ? (
         <div className="text-sm text-gray-400">Реестр пуст. Записи добавляются автоматически при генерации КП (галочка «Записать в реестр») или вручную.</div>
       ) : (
-        <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
+        <ScrollX className="bg-white border border-gray-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
@@ -2278,7 +2278,7 @@ function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s:
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollX>
       )}
       <div className="text-[11px] text-gray-400">Правки сохраняются при выходе из поля. № письма присваивается поочерёдно по этой компании; при генерации КП с галочкой «Записать в реестр» строка создаётся автоматически.</div>
     </div>
