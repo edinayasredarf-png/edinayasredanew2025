@@ -1240,9 +1240,12 @@ interface RecoItem {
 interface SignalItem {
   id: string; severity: 'critical' | 'risk' | 'opportunity'; kind: 'deal' | 'commitment' | 'coaching' | 'lost';
   title: string; detail: string; action: string | null; link: string | null; manager: string | null; count: number | null;
+  hiddenStatus?: 'done' | 'snoozed'; hiddenUntil?: string | null;
 }
 interface SignalsData {
   signals: SignalItem[];
+  hidden: SignalItem[];
+  hiddenCount: number;
   counts: { critical: number; risk: number; opportunity: number };
   digest: string;
 }
@@ -1261,24 +1264,96 @@ function signalDealId(s: SignalItem): string | null {
   return m ? m[1] : null;
 }
 
+const SNOOZE_OPTS: Array<[number, string]> = [[1, '1 дн'], [3, '3 дн'], [7, '7 дн'], [14, '14 дн']];
+
+/** Одна карточка сигнала: клик по заголовку сделки — открыть; действия — готово/отложить/вернуть. */
+function SignalCard({ s, onOpen, onAct, busy }: {
+  s: SignalItem;
+  onOpen: (id: string) => void;
+  onAct: (id: string, action: 'done' | 'snooze' | 'restore', days?: number) => void;
+  busy: boolean;
+}) {
+  const [snoozeOpen, setSnoozeOpen] = useState(false);
+  const dealId = signalDealId(s);
+  const st = SIG_STYLE[s.severity];
+  const hidden = !!s.hiddenStatus;
+  const until = s.hiddenUntil ? new Date(s.hiddenUntil).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) : null;
+
+  return (
+    <div className={`bg-white rounded-xl border ${st.ring} p-3 ${hidden ? 'opacity-70' : ''} ${busy ? 'pointer-events-none opacity-50' : ''}`}>
+      <div className="flex items-start gap-3">
+        <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${st.dot}`} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {dealId ? (
+              <button onClick={() => onOpen(dealId)} className="font-medium text-gray-900 text-sm text-left hover:text-[#029cda]">{s.title}</button>
+            ) : (
+              <span className="font-medium text-gray-900 text-sm">{s.title}</span>
+            )}
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">{SIG_KIND[s.kind]}</span>
+            {s.count != null && <span className="text-[11px] text-gray-400">×{s.count}</span>}
+            {hidden && <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">{s.hiddenStatus === 'done' ? 'Готово' : `Отложено${until ? ` до ${until}` : ''}`}</span>}
+          </div>
+          <p className="text-sm text-gray-600 mt-0.5">{s.detail}</p>
+          {s.action && <p className="text-xs text-[#029cda] mt-1">→ {s.action}</p>}
+          <div className="flex items-center gap-3 text-xs text-gray-400 mt-2 flex-wrap">
+            {s.manager && <span>{s.manager}</span>}
+            {s.link && <a href={s.link} target="_blank" rel="noreferrer" className="hover:text-[#029cda]">Открыть в Bitrix ↗</a>}
+            <span className="flex-1" />
+            {hidden ? (
+              <button onClick={() => onAct(s.id, 'restore')} className="px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 hover:text-[#029cda]">Вернуть в ленту</button>
+            ) : !snoozeOpen ? (
+              <>
+                <button onClick={() => onAct(s.id, 'done')} className="px-2.5 py-1 rounded-full border border-emerald-300 text-emerald-700 hover:bg-emerald-50">✓ Готово</button>
+                <button onClick={() => setSnoozeOpen(true)} className="px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 hover:text-[#029cda]">Отложить ▾</button>
+              </>
+            ) : (
+              <>
+                <span className="text-gray-400">Отложить на:</span>
+                {SNOOZE_OPTS.map(([d, lbl]) => (
+                  <button key={d} onClick={() => { setSnoozeOpen(false); onAct(s.id, 'snooze', d); }} className="px-2 py-1 rounded-full border border-gray-300 text-gray-600 hover:text-[#029cda]">{lbl}</button>
+                ))}
+                <button onClick={() => setSnoozeOpen(false)} className="px-2 py-1 text-gray-400 hover:text-gray-600">×</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Signals({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<SignalsData | null>(null);
   const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true); setErr('');
+  const load = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
+    setErr('');
     try {
-      const r = await fetch(`/api/ai-sales/signals?${periodQS(period)}`);
+      const r = await fetch(`/api/ai-sales/signals?${periodQS(period)}${showHidden ? '&hidden=1' : ''}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
       setData(j);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
-  }, [period]);
+  }, [period, showHidden]);
   useEffect(() => { load(); }, [load]);
+
+  const act = async (id: string, action: 'done' | 'snooze' | 'restore', days?: number) => {
+    setBusyId(id);
+    try {
+      const r = await jsonPost('/api/ai-sales/signals', { signalId: id, action, days });
+      if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Ошибка'); }
+      await load({ silent: true });
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setBusyId(null); }
+  };
 
   const copyDigest = async () => {
     if (!data?.digest) return;
@@ -1291,9 +1366,9 @@ function Signals({ onOpen }: { onOpen: (id: string) => void }) {
     <div>
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-xl font-bold text-gray-900">Сигналы — что горит прямо сейчас</h2>
-        <button onClick={load} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
+        <button onClick={() => load()} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
       </div>
-      <p className="text-sm text-gray-500 mb-4">Приоритетная лента для РОПа: критичные сделки, просроченные обещания клиентам, слабые этапы и всплески проигрышей. Клик по карточке сделки — открыть её.</p>
+      <p className="text-sm text-gray-500 mb-4">Приоритетная лента для РОПа: критичные сделки, просроченные обещания клиентам, слабые этапы и всплески проигрышей. Отметьте «Готово» или «Отложить» — обработанное уходит из ленты.</p>
       <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : (
         <div className="space-y-4">
@@ -1314,35 +1389,27 @@ function Signals({ onOpen }: { onOpen: (id: string) => void }) {
           )}
 
           <div className="space-y-2">
-            {data.signals.map((s) => {
-              const dealId = signalDealId(s);
-              const st = SIG_STYLE[s.severity];
-              const inner = (
-                <div className="flex items-start gap-3">
-                  <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${st.dot}`} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-gray-900 text-sm">{s.title}</span>
-                      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">{SIG_KIND[s.kind]}</span>
-                      {s.count != null && <span className="text-[11px] text-gray-400">×{s.count}</span>}
-                    </div>
-                    <p className="text-sm text-gray-600 mt-0.5">{s.detail}</p>
-                    {s.action && <p className="text-xs text-[#029cda] mt-1">→ {s.action}</p>}
-                    <div className="flex gap-3 text-xs text-gray-400 mt-1">
-                      {s.manager && <span>{s.manager}</span>}
-                      {s.link && <a href={s.link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="hover:text-[#029cda]">Открыть в Bitrix ↗</a>}
-                    </div>
-                  </div>
-                </div>
-              );
-              return dealId ? (
-                <button key={s.id} onClick={() => onOpen(dealId)} className={`w-full text-left bg-white rounded-xl border ${st.ring} p-3 hover:shadow-sm transition`}>{inner}</button>
-              ) : (
-                <div key={s.id} className={`bg-white rounded-xl border ${st.ring} p-3`}>{inner}</div>
-              );
-            })}
+            {data.signals.map((s) => (
+              <SignalCard key={s.id} s={s} onOpen={onOpen} onAct={act} busy={busyId === s.id} />
+            ))}
             {data.signals.length === 0 && <p className="text-sm text-gray-400 px-1 py-8 text-center">Критичных сигналов нет — можно работать в штатном режиме 👌</p>}
           </div>
+
+          {(data.hiddenCount > 0 || showHidden) && (
+            <div>
+              <button onClick={() => setShowHidden((v) => !v)} className="text-sm text-gray-500 hover:text-[#029cda]">
+                {showHidden ? '▲ Скрыть обработанные' : `▼ Показать обработанные (${data.hiddenCount})`}
+              </button>
+              {showHidden && (
+                <div className="space-y-2 mt-2">
+                  {data.hidden.map((s) => (
+                    <SignalCard key={s.id} s={s} onOpen={onOpen} onAct={act} busy={busyId === s.id} />
+                  ))}
+                  {data.hidden.length === 0 && <p className="text-sm text-gray-400 px-1 py-4">Обработанных сигналов нет.</p>}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

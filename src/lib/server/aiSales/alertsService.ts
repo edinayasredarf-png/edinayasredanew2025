@@ -11,6 +11,7 @@ import { getDailyRecommendations } from "@/lib/server/aiSales/recommendationsDb"
 import { getOverdueFollowUps } from "@/lib/server/aiSales/followupsDb";
 import { getInsights, CRITERION_LABEL } from "@/lib/server/aiSales/insightsDb";
 import { getLostDealAnalytics } from "@/lib/server/aiSales/lostDealsDb";
+import { getActiveSignalStates } from "@/lib/server/aiSales/signalStateDb";
 
 export type Severity = "critical" | "risk" | "opportunity";
 export type SignalKind = "deal" | "commitment" | "coaching" | "lost";
@@ -25,6 +26,8 @@ export interface Signal {
   link: string | null;    // ссылка на сделку в Bitrix (если применимо)
   manager: string | null;
   count: number | null;   // для агрегированных сигналов
+  hiddenStatus?: "done" | "snoozed"; // проставляется только у скрытых (в списке «скрытые»)
+  hiddenUntil?: string | null;
 }
 
 interface DateRange { from?: string | null; to?: string | null }
@@ -39,19 +42,23 @@ const LOST_SPIKE_SHARE = 0.4;   // и её доля среди проигрыш�
 
 export interface SignalsResult {
   signals: Signal[];
+  hidden: Signal[];       // скрытые (готово/отложено) — по запросу
+  hiddenCount: number;
   counts: { critical: number; risk: number; opportunity: number };
   digest: string; // короткий текст «на утро» для РОПа
 }
 
 export async function getSignals(
   managerBitrixId: string | null,
-  range?: DateRange
+  range?: DateRange,
+  includeHidden = false
 ): Promise<SignalsResult> {
-  const [reco, overdue, insights, lost] = await Promise.all([
+  const [reco, overdue, insights, lost, states] = await Promise.all([
     getDailyRecommendations(managerBitrixId, range),
     getOverdueFollowUps(managerBitrixId),
     getInsights(managerBitrixId, range),
     getLostDealAnalytics(managerBitrixId, range),
+    getActiveSignalStates(),
   ]);
 
   const signals: Signal[] = [];
@@ -152,13 +159,29 @@ export async function getSignals(
 
   signals.sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
 
+  // Разделяем на активные и скрытые (готово/отложено). Скрытые не шумят в ленте,
+  // но доступны по кнопке «показать скрытые».
+  const active: Signal[] = [];
+  const hidden: Signal[] = [];
+  for (const s of signals) {
+    const st = states.get(s.id);
+    if (st) hidden.push({ ...s, hiddenStatus: st.status, hiddenUntil: st.snoozeUntil });
+    else active.push(s);
+  }
+
   const counts = {
-    critical: signals.filter((s) => s.severity === "critical").length,
-    risk: signals.filter((s) => s.severity === "risk").length,
-    opportunity: signals.filter((s) => s.severity === "opportunity").length,
+    critical: active.filter((s) => s.severity === "critical").length,
+    risk: active.filter((s) => s.severity === "risk").length,
+    opportunity: active.filter((s) => s.severity === "opportunity").length,
   };
 
-  return { signals, counts, digest: buildDigest(signals, counts, insights.headlines) };
+  return {
+    signals: active,
+    hidden: includeHidden ? hidden : [],
+    hiddenCount: hidden.length,
+    counts,
+    digest: buildDigest(active, counts, insights.headlines),
+  };
 }
 
 /** Короткая сводка «на утро»: сначала критичное, потом 1-2 системных вывода. */
