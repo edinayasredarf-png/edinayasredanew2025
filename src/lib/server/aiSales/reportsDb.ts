@@ -216,3 +216,103 @@ export async function getConversionMatrix(range?: DateRange): Promise<Conversion
 
   return { results, managers };
 }
+
+/* ─── Возражения по менеджерам ─── */
+
+export interface ObjectionRowM {
+  bitrixUserId: string;
+  name: string | null;
+  callsWithObj: number;
+  total: number;
+  unhandled: number;
+  handledPct: number | null;
+}
+
+export async function getObjectionsByManager(range?: DateRange): Promise<ObjectionRowM[]> {
+  const pool = getTimewebPool();
+  const params: unknown[] = [];
+  const rSql = rangeSql(range, params);
+  const { rows } = await pool.query<{ uid: string; name: string | null; total: string; unhandled: string; calls_with_obj: string }>(
+    `with latest as (
+       select distinct on (a.call_id) a.call_id, a.data
+         from ai_call_analysis a
+         order by a.call_id, a.created_at desc
+     )
+     select c.bitrix_user_id uid, m.full_name name,
+            count(*)::text total,
+            count(*) filter (where (o->>'handled') = 'false')::text unhandled,
+            count(distinct l.call_id)::text calls_with_obj
+       from latest l
+       join ai_calls c on c.id = l.call_id
+       left join ai_managers m on m.bitrix_user_id = c.bitrix_user_id
+       cross join lateral jsonb_array_elements(l.data->'objections') o
+      where c.bitrix_user_id is not null and coalesce(trim(o->>'text'), '') <> ''${rSql}
+      group by 1, 2`,
+    params
+  );
+  return rows
+    .map((r) => {
+      const total = Number(r.total);
+      const unhandled = Number(r.unhandled);
+      return {
+        bitrixUserId: r.uid,
+        name: r.name,
+        callsWithObj: Number(r.calls_with_obj),
+        total,
+        unhandled,
+        handledPct: total ? Math.round(((total - unhandled) / total) * 100) : null,
+      };
+    })
+    .sort((a, b) => b.unhandled - a.unhandled || b.total - a.total);
+}
+
+export interface ObjectionCall {
+  callId: string;
+  startedAt: string | null;
+  clientTitle: string | null;
+  dealUrl: string | null;
+  objections: Array<{ text: string; handled: boolean; recommendation: string | null }>;
+}
+
+export async function getObjectionCalls(
+  bitrixUserId: string,
+  onlyUnhandled: boolean,
+  range?: DateRange
+): Promise<ObjectionCall[]> {
+  if (!bitrixUserId) return [];
+  const pool = getTimewebPool();
+  const params: unknown[] = [bitrixUserId];
+  const rSql = rangeSql(range, params);
+  const { rows } = await pool.query<{ call_id: string; started_at: Date | null; client_title: string | null; bitrix_deal_id: string | null; objections: unknown }>(
+    `with latest as (
+       select distinct on (a.call_id) a.call_id, a.data
+         from ai_call_analysis a
+         order by a.call_id, a.created_at desc
+     )
+     select c.id call_id, c.started_at, c.client_title, c.bitrix_deal_id, l.data->'objections' objections
+       from latest l
+       join ai_calls c on c.id = l.call_id
+      where c.bitrix_user_id = $1${rSql}
+        and exists (
+          select 1 from jsonb_array_elements(l.data->'objections') o
+           where coalesce(trim(o->>'text'), '') <> ''${onlyUnhandled ? " and (o->>'handled') = 'false'" : ""}
+        )
+      order by c.started_at desc
+      limit 100`,
+    params
+  );
+  const origin = bitrixPortalOrigin();
+  return rows.map((r) => {
+    const raw = Array.isArray(r.objections) ? (r.objections as Array<Record<string, unknown>>) : [];
+    const objections = raw
+      .filter((o) => String(o.text || "").trim() && (!onlyUnhandled || o.handled === false))
+      .map((o) => ({ text: String(o.text || "").trim(), handled: o.handled === true, recommendation: o.recommendation ? String(o.recommendation) : null }));
+    return {
+      callId: r.call_id,
+      startedAt: r.started_at ? r.started_at.toISOString() : null,
+      clientTitle: r.client_title,
+      dealUrl: r.bitrix_deal_id && origin ? `${origin}/crm/deal/details/${r.bitrix_deal_id}/` : null,
+      objections,
+    };
+  });
+}

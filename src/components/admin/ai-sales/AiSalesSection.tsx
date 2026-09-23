@@ -1950,7 +1950,9 @@ interface ConvCellT { count: number; pct: number | null }
 interface ConvRowT { bitrixUserId: string; name: string | null; calls: number; cells: Record<string, ConvCellT> }
 interface ConvData { results: string[]; managers: ConvRowT[] }
 interface StepCallT { callId: string; startedAt: string | null; clientTitle: string | null; dealUrl: string | null; score: number | null }
-type CheckMode = 'steps' | 'avg' | 'conv';
+interface ObjRowM { bitrixUserId: string; name: string | null; callsWithObj: number; total: number; unhandled: number; handledPct: number | null }
+interface ObjCallT { callId: string; startedAt: string | null; clientTitle: string | null; dealUrl: string | null; objections: Array<{ text: string; handled: boolean; recommendation: string | null }> }
+type CheckMode = 'steps' | 'avg' | 'conv' | 'obj';
 
 const pctColor = (v: number | null) => (v == null ? 'text-gray-300' : v >= 80 ? 'text-emerald-600' : v >= 50 ? 'text-amber-600' : 'text-red-600');
 
@@ -1983,12 +1985,16 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
   const [mode, setMode] = useState<CheckMode>('steps');
   const [data, setData] = useState<ChecklistData | null>(null);
   const [conv, setConv] = useState<ConvData | null>(null);
+  const [obj, setObj] = useState<ObjRowM[] | null>(null);
   const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
   // Провал по ячейке: звонки, где менеджер выполнил/провалил шаг.
   const [drill, setDrill] = useState<{ uid: string; key: string; completed: boolean; step: string; manager: string } | null>(null);
   const [drillItems, setDrillItems] = useState<StepCallT[] | null>(null);
+  // Провал по возражениям: звонки менеджера с не отработанными возражениями.
+  const [objDrill, setObjDrill] = useState<{ uid: string; manager: string; unhandled: boolean } | null>(null);
+  const [objDrillItems, setObjDrillItems] = useState<ObjCallT[] | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
@@ -1998,6 +2004,11 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
         const j = await r.json();
         if (!r.ok) throw new Error(j.error || 'Ошибка');
         setConv(j);
+      } else if (mode === 'obj') {
+        const r = await fetch(`/api/ai-sales/reports/objections?${periodQS(period)}`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        setObj(j.items || []);
       } else {
         const r = await fetch(`/api/ai-sales/reports/script-steps?${periodQS(period)}`);
         const j = await r.json();
@@ -2008,6 +2019,20 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
     finally { setLoading(false); }
   }, [period, mode]);
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!objDrill) { setObjDrillItems(null); return; }
+    let alive = true;
+    setObjDrillItems(null);
+    (async () => {
+      try {
+        const r = await fetch(`/api/ai-sales/reports/objections/calls?uid=${encodeURIComponent(objDrill.uid)}&unhandled=${objDrill.unhandled ? 1 : 0}&${periodQS(period)}`);
+        const j = await r.json();
+        if (alive) setObjDrillItems(r.ok ? (j.items || []) : []);
+      } catch { if (alive) setObjDrillItems([]); }
+    })();
+    return () => { alive = false; };
+  }, [objDrill, period]);
 
   useEffect(() => {
     if (!drill) { setDrillItems(null); return; }
@@ -2025,7 +2050,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
-  const MODES: Array<[CheckMode, string]> = [['steps', 'Соблюдение по шагам'], ['avg', 'Средний балл'], ['conv', 'Конверсия']];
+  const MODES: Array<[CheckMode, string]> = [['steps', 'Соблюдение по шагам'], ['avg', 'Средний балл'], ['conv', 'Конверсия'], ['obj', 'Возражения']];
 
   return (
     <div>
@@ -2147,7 +2172,74 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
               </table>
             </ScrollX>
           ))}
+
+          {/* Возражения по менеджерам — всего / не отработано / % отработки */}
+          {mode === 'obj' && (!obj || obj.length === 0 ? (
+            <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет возражений за период.</p>
+          ) : (
+            <ScrollX className="bg-white rounded-xl border border-gray-100">
+              <table className="min-w-full text-sm">
+                <thead className="bg-[#F6F7F9] text-gray-600">
+                  <tr>
+                    <th className="text-left font-medium px-3 py-2 whitespace-nowrap">Менеджер</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Звонков с возр.</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Всего возражений</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Не отработано</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">% отработки</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {obj.map((m) => (
+                    <tr key={m.bitrixUserId} className="hover:bg-sky-50/40">
+                      <td className="px-3 py-2"><button onClick={() => onOpen(m.bitrixUserId)} className="font-medium text-gray-900 text-left hover:text-[#029cda]">{m.name || `#${m.bitrixUserId}`}</button></td>
+                      <td className="px-3 py-2 text-right text-gray-500">{m.callsWithObj}</td>
+                      <td className="px-3 py-2 text-right text-gray-700">{m.total}</td>
+                      <td className="px-3 py-2 text-right">
+                        {m.unhandled > 0
+                          ? <button onClick={() => setObjDrill({ uid: m.bitrixUserId, manager: m.name || `#${m.bitrixUserId}`, unhandled: true })} className="font-semibold text-red-600 hover:underline">{m.unhandled}</button>
+                          : <span className="text-emerald-600">0</span>}
+                      </td>
+                      <td className={`px-3 py-2 text-right font-medium ${pctColor(m.handledPct)}`}>{m.handledPct != null ? `${m.handledPct}%` : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollX>
+          ))}
         </>
+      )}
+
+      {objDrill && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 p-4 overflow-y-auto" onClick={() => setObjDrill(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mt-10 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between p-4 border-b border-gray-100">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{objDrill.manager} · не отработанные возражения</p>
+                <p className="font-semibold text-gray-900">Звонки{objDrillItems ? <span className="text-gray-400 font-normal"> · {objDrillItems.length}</span> : null}</p>
+              </div>
+              <button onClick={() => setObjDrill(null)} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+            </div>
+            <div className="p-4 overflow-y-auto space-y-2">
+              {objDrillItems === null ? <LoadingBlock /> : objDrillItems.length === 0 ? <p className="text-gray-400 text-sm">Звонков не найдено.</p> : objDrillItems.map((d) => (
+                <div key={d.callId} className="rounded-xl border border-gray-100 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <button onClick={() => { setObjDrill(null); onOpenCall(d.callId); }} className="font-medium text-gray-900 text-sm text-left hover:text-[#029cda]">{d.clientTitle || 'Звонок'}</button>
+                    {d.startedAt && <span className="shrink-0 text-xs text-gray-400">{new Date(d.startedAt).toLocaleDateString('ru-RU')}</span>}
+                  </div>
+                  <ul className="mt-1 space-y-1">
+                    {d.objections.map((o, i) => (
+                      <li key={i} className="text-sm text-gray-700">
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full mr-1 ${o.handled ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>{o.handled ? 'отраб.' : 'не отраб.'}</span>
+                        {o.text}
+                        {o.recommendation && <span className="block text-xs text-sky-600 pl-1">→ {o.recommendation}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {drill && (
