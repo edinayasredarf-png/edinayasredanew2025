@@ -10,7 +10,7 @@ import { DatePicker } from '@/components/admin/ui/DatePicker';
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -1941,6 +1941,80 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
   );
 }
 
+/* ─────────── Чек-листы: соблюдение по шагам (менеджер × шаги) ─────────── */
+interface StepCol { key: string; title: string }
+interface StepCell { completed: number; total: number; pct: number | null }
+interface ChecklistRow { bitrixUserId: string; name: string | null; calls: number; avgScore: number | null; cells: Record<string, StepCell> }
+interface ChecklistData { steps: StepCol[]; managers: ChecklistRow[] }
+
+const pctColor = (v: number | null) => (v == null ? 'text-gray-300' : v >= 80 ? 'text-emerald-600' : v >= 50 ? 'text-amber-600' : 'text-red-600');
+
+function Checklists({ onOpen }: { onOpen: (id: string) => void }) {
+  const [data, setData] = useState<ChecklistData | null>(null);
+  const [period, setPeriod] = usePersistentPeriod();
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/reports/script-steps?${periodQS(period)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setData(j);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period]);
+  useEffect(() => { load(); }, [load]);
+
+  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Чек-листы — соблюдение по шагам</h2>
+      <p className="text-sm text-gray-500 mb-4">Как каждый менеджер выполняет шаги скрипта: % выполнения по шагу и средний балл. Клик по менеджеру — его карточка.</p>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {loading ? <LoadingBlock /> : !data ? null : data.managers.length === 0 ? (
+        <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет оценок скрипта за период. Убедитесь, что задан активный скрипт и звонки проанализированы.</p>
+      ) : (
+        <ScrollX className="bg-white rounded-xl border border-gray-100">
+          <table className="min-w-full text-sm">
+            <thead className="bg-[#F6F7F9] text-gray-600">
+              <tr>
+                <th className="text-left font-medium px-3 py-2 whitespace-nowrap sticky left-0 bg-[#F6F7F9] z-10">Менеджер</th>
+                <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Звонков</th>
+                <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Ср. балл</th>
+                {data.steps.map((s) => (
+                  <th key={s.key} className="text-right font-medium px-3 py-2 whitespace-nowrap max-w-[160px] truncate" title={s.title}>{s.title}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {data.managers.map((m) => (
+                <tr key={m.bitrixUserId} className="hover:bg-sky-50/40">
+                  <td className="px-3 py-2 sticky left-0 bg-white z-10">
+                    <button onClick={() => onOpen(m.bitrixUserId)} className="font-medium text-gray-900 text-left hover:text-[#029cda]">{m.name || `#${m.bitrixUserId}`}</button>
+                  </td>
+                  <td className="px-3 py-2 text-right text-gray-500">{m.calls}</td>
+                  <td className={`px-3 py-2 text-right font-medium ${pctColor(m.avgScore)}`}>{m.avgScore != null ? `${m.avgScore}%` : '—'}</td>
+                  {data.steps.map((s) => {
+                    const c = m.cells[s.key];
+                    return (
+                      <td key={s.key} className={`px-3 py-2 text-right ${pctColor(c?.pct ?? null)}`} title={c ? `${c.completed}/${c.total}` : ''}>
+                        {c && c.pct != null ? `${c.pct}%` : '—'}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollX>
+      )}
+    </div>
+  );
+}
+
 /* ─────────── Follow-up (обещания менеджеров) ─────────── */
 interface FollowUpItem {
   id: string; action: string; deadline: string | null; status: string; overdue: boolean;
@@ -3277,6 +3351,7 @@ const GROUPS: NavGroup[] = [
   { key: 'analytics', label: 'Аналитика', views: [
     { view: 'managers', label: 'Менеджеры' },
     { view: 'insights', label: 'Отчёты' },
+    { view: 'checklists', label: 'Чек-листы' },
     { view: 'lost', label: 'Проигрыши' },
     { view: 'tags', label: 'Разметка' },
   ] },
@@ -3355,6 +3430,7 @@ export default function AiSalesSection() {
     if (view === 'followups') return <FollowUps />;
     if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <LostDeals onOpen={setOpenDeal} />;
     if (view === 'rop') return <Rop onNavigate={nav} />;
+    if (view === 'checklists') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Checklists onOpen={setOpenDeal} />;
     if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Managers onOpen={setOpenDeal} />;
     if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
     return <Calls initialTemperature={initTemp} initialTag={initTag} />;
