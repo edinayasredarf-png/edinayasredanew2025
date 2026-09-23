@@ -1056,6 +1056,8 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
           )}
         </div>
       </div>
+
+      {data.call.bitrixDealId && <div className="mt-4"><DealBitrixTimeline dealId={data.call.bitrixDealId} /></div>}
     </div>
   );
 }
