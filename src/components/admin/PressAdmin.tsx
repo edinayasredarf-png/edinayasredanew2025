@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { listPress, upsertPress, deletePress, PressItem } from "@/lib/pressStore";
 import { inputClass } from "@/components/admin/ui/Field";
+import { DatePicker } from "@/components/admin/ui/DatePicker";
 
 function genId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -164,13 +165,11 @@ export default function PressAdmin() {
             </div>
             <div>
               <label className={labelCls}>Дата публикации</label>
-              <input
-                type="date"
-                className={inputCls}
+              <DatePicker
                 value={new Date(Number(form.published_at)).toISOString().slice(0, 10)}
-                onChange={e => {
-                  const d = new Date(e.target.value);
-                  setForm(f => ({ ...f, published_at: isNaN(d.getTime()) ? f.published_at : d.getTime() }));
+                onChange={v => {
+                  const d = new Date(v);
+                  setForm(f => ({ ...f, published_at: (!v || isNaN(d.getTime())) ? f.published_at : d.getTime() }));
                 }}
               />
             </div>

@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { sb_listPosts } from '@/lib/blogStore';
 import { sb_listAllComments } from '@/lib/commentsStore';
+import { DatePicker } from '@/components/admin/ui/DatePicker';
 
 /* Главный дашборд админки: виджеты из разных разделов (визиты, лиды, письма,
    статьи, комментарии) с общим фильтром периода. Фон — единый серый, без теней. */
@@ -88,13 +89,11 @@ export default function AdminDashboard() {
           </button>
         ))}
         <span className="text-gray-300 mx-1">|</span>
-        <input type="date" value={mode === 'custom' ? from : range.from} max={to}
-          onChange={(e) => { setMode('custom'); setFrom(e.target.value); }}
-          className="px-2 py-1.5 rounded-xl bg-[#F6F7F9] text-sm text-gray-700" />
+        <DatePicker value={mode === 'custom' ? from : range.from} max={to} placeholder="с даты" className="w-[150px]"
+          onChange={(v) => { setMode('custom'); setFrom(v); }} />
         <span className="text-gray-400 text-sm">—</span>
-        <input type="date" value={mode === 'custom' ? to : range.to} min={from}
-          onChange={(e) => { setMode('custom'); setTo(e.target.value); }}
-          className="px-2 py-1.5 rounded-xl bg-[#F6F7F9] text-sm text-gray-700" />
+        <DatePicker value={mode === 'custom' ? to : range.to} min={from} placeholder="по дату" className="w-[150px]"
+          onChange={(v) => { setMode('custom'); setTo(v); }} />
       </div>
 
       {/* Виджеты-KPI */}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DatePicker } from '@/components/admin/ui/DatePicker';
 
 type DeliveryStatus = 'accepted' | 'delivered' | 'bounced' | 'rejected' | 'error';
 
@@ -213,21 +214,9 @@ export default function LetterNotifications() {
 
         {period === 'range' && (
           <span className="flex items-center gap-2">
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className={inputCls}
-              aria-label="Дата с"
-            />
+            <DatePicker value={from} max={to || undefined} onChange={setFrom} placeholder="с даты" className="w-[150px]" />
             <span className="text-[#9AA6B2]">—</span>
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className={inputCls}
-              aria-label="Дата по"
-            />
+            <DatePicker value={to} min={from || undefined} onChange={setTo} placeholder="по дату" className="w-[150px]" />
           </span>
         )}
 

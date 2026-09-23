@@ -19,12 +19,15 @@ function fmtRu(v: string): string {
 }
 
 /** Кастомный выбор даты (ISO YYYY-MM-DD) в стиле референса. */
-export function DatePicker({ value, onChange, placeholder = "Выберите дату", className = "" }: {
+export function DatePicker({ value, onChange, placeholder = "Выберите дату", className = "", min, max }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   className?: string;
+  min?: string; // нижняя граница (ISO), включительно
+  max?: string; // верхняя граница (ISO), включительно
 }) {
+  const inRange = (iso: string) => (!min || iso >= min) && (!max || iso <= max);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const today = new Date();
@@ -83,23 +86,32 @@ export function DatePicker({ value, onChange, placeholder = "Выберите д
             {WEEKDAYS.map((w) => <div key={w} className="h-7 grid place-items-center text-[11px] text-gray-400">{w}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-0.5">
-            {cells.map((c, i) => c === null ? <div key={i} /> : (
-              <button
-                key={i}
-                type="button"
-                onClick={() => { onChange(toIso(view.y, view.m, c.d)); setOpen(false); }}
-                className={`h-8 grid place-items-center rounded-xl text-sm transition-colors ${
-                  isSel(c.d) ? "bg-[#029cda] text-white font-medium"
-                  : isToday(c.d) ? "text-[#029cda] font-medium hover:bg-[#EAF6FC]"
-                  : "text-[#1b2a4a] hover:bg-gray-100"
-                }`}
-              >
-                {c.d}
-              </button>
-            ))}
+            {cells.map((c, i) => {
+              if (c === null) return <div key={i} />;
+              const iso = toIso(view.y, view.m, c.d);
+              const disabled = !inRange(iso);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => { onChange(iso); setOpen(false); }}
+                  className={`h-8 grid place-items-center rounded-xl text-sm transition-colors ${
+                    disabled ? "text-gray-300 cursor-not-allowed"
+                    : isSel(c.d) ? "bg-[#029cda] text-white font-medium"
+                    : isToday(c.d) ? "text-[#029cda] font-medium hover:bg-[#EAF6FC]"
+                    : "text-[#1b2a4a] hover:bg-gray-100"
+                  }`}
+                >
+                  {c.d}
+                </button>
+              );
+            })}
           </div>
           <div className="flex items-center justify-between mt-2 px-1">
-            <button type="button" onClick={() => { onChange(toIso(today.getFullYear(), today.getMonth(), today.getDate())); setOpen(false); }} className="text-xs text-[#029cda] hover:text-[#0280b5]">Сегодня</button>
+            {inRange(toIso(today.getFullYear(), today.getMonth(), today.getDate()))
+              ? <button type="button" onClick={() => { onChange(toIso(today.getFullYear(), today.getMonth(), today.getDate())); setOpen(false); }} className="text-xs text-[#029cda] hover:text-[#0280b5]">Сегодня</button>
+              : <span />}
             {value && <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="text-xs text-gray-400 hover:text-gray-600">Очистить</button>}
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { DatePicker } from '@/components/admin/ui/DatePicker';
 
 /* ── Типы ответов API ── */
 interface MetrikaSummary {
@@ -275,22 +276,9 @@ export default function AnalyticsDashboard({ only }: { only?: AnalyticsView }) {
         </div>
         {dateMode === 'custom' && (
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <input
-              type="date"
-              value={customFrom}
-              max={customTo || todayDate()}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-[#F6F7F9]"
-            />
+            <DatePicker value={customFrom} max={customTo || todayDate()} onChange={setCustomFrom} placeholder="с даты" className="w-[150px]" />
             <span className="text-[#9AA6B2] text-sm">—</span>
-            <input
-              type="date"
-              value={customTo}
-              min={customFrom}
-              max={todayDate()}
-              onChange={(e) => setCustomTo(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-[#313131] bg-[#F6F7F9]"
-            />
+            <DatePicker value={customTo} min={customFrom || undefined} max={todayDate()} onChange={setCustomTo} placeholder="по дату" className="w-[150px]" />
           </div>
         )}
       </div>

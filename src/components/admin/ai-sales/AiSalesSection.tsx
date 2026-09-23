@@ -5,6 +5,7 @@ import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
 import { ExcelIcon } from '@/components/admin/ui/FileIcons';
+import { DatePicker } from '@/components/admin/ui/DatePicker';
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -136,13 +137,11 @@ function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) =
         </button>
       ))}
       <span className="text-gray-300 mx-1">|</span>
-      <input type="date" value={value.from || ''} max={value.to || undefined}
-        onChange={(e) => onChange({ from: e.target.value || null, to: value.to })}
-        className="px-2 py-1.5 rounded-xl border border-gray-300 text-sm text-gray-700" />
+      <DatePicker value={value.from || ''} max={value.to || undefined} placeholder="с даты" className="w-[150px]"
+        onChange={(v) => onChange({ from: v || null, to: value.to })} />
       <span className="text-gray-400 text-sm">—</span>
-      <input type="date" value={value.to || ''} min={value.from || undefined}
-        onChange={(e) => onChange({ from: value.from, to: e.target.value || null })}
-        className="px-2 py-1.5 rounded-xl border border-gray-300 text-sm text-gray-700" />
+      <DatePicker value={value.to || ''} min={value.from || undefined} placeholder="по дату" className="w-[150px]"
+        onChange={(v) => onChange({ from: value.from, to: v || null })} />
       <button onClick={() => onChange(NO_PERIOD)}
         className={`px-3 py-1.5 rounded-xl text-sm transition ${active === 'all' ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
         Всё
