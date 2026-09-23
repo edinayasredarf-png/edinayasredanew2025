@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getTimewebPool } from "@/lib/timewebPg";
+import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 
 /**
  * Табличные отчёты по чек-листам (как в референсе): матрица «менеджер × шаги
@@ -103,4 +104,115 @@ export async function getScriptStepMatrix(range?: DateRange): Promise<ScriptStep
     .sort((a, b) => (b.avgScore ?? -1) - (a.avgScore ?? -1) || b.calls - a.calls);
 
   return { steps, managers };
+}
+
+/* ─── Провал по ячейке: звонки, где менеджер выполнил/провалил шаг ─── */
+
+export interface StepCall {
+  callId: string;
+  startedAt: string | null;
+  clientTitle: string | null;
+  dealUrl: string | null;
+  score: number | null;
+}
+
+export async function getStepCalls(
+  bitrixUserId: string,
+  stepKey: string,
+  completed: boolean,
+  range?: DateRange
+): Promise<StepCall[]> {
+  if (!bitrixUserId || !stepKey) return [];
+  const pool = getTimewebPool();
+  const params: unknown[] = [bitrixUserId, stepKey, completed];
+  const rSql = rangeSql(range, params);
+  const { rows } = await pool.query<{ call_id: string; started_at: Date | null; client_title: string | null; bitrix_deal_id: string | null; score: number | null }>(
+    `with latest as (
+       select distinct on (ss.call_id) ss.call_id, ss.score, ss.steps
+         from ai_call_script_scores ss
+         order by ss.call_id, ss.created_at desc
+     )
+     select c.id call_id, c.started_at, c.client_title, c.bitrix_deal_id, l.score
+       from latest l
+       join ai_calls c on c.id = l.call_id
+      where c.bitrix_user_id = $1${rSql}
+        and exists (
+          select 1 from jsonb_array_elements(l.steps) st
+           where st->>'key' = $2 and ((st->>'completed') = 'true') = $3
+        )
+      order by c.started_at desc
+      limit 100`,
+    params
+  );
+  const origin = bitrixPortalOrigin();
+  return rows.map((r) => ({
+    callId: r.call_id,
+    startedAt: r.started_at ? r.started_at.toISOString() : null,
+    clientTitle: r.client_title,
+    dealUrl: r.bitrix_deal_id && origin ? `${origin}/crm/deal/details/${r.bitrix_deal_id}/` : null,
+    score: r.score,
+  }));
+}
+
+/* ─── Конверсия: менеджер × результаты звонков ─── */
+
+export interface ConvCell { count: number; pct: number | null }
+export interface ConvRow {
+  bitrixUserId: string;
+  name: string | null;
+  calls: number;
+  cells: Record<string, ConvCell>;
+}
+export interface ConversionMatrix {
+  results: string[]; // типы результатов в порядке приоритета
+  managers: ConvRow[];
+}
+
+// Порядок колонок результатов (воронка → отказ).
+const RESULT_ORDER = ["agreed", "meeting_set", "send_quote", "callback", "not_agreed", "not_interested", "no_contact", "other"];
+
+export async function getConversionMatrix(range?: DateRange): Promise<ConversionMatrix> {
+  const pool = getTimewebPool();
+  const params: unknown[] = [];
+  const rSql = rangeSql(range, params);
+  const { rows } = await pool.query<{ uid: string; name: string | null; result_type: string | null; n: string }>(
+    `with latest as (
+       select distinct on (a.call_id) a.call_id, a.result_type
+         from ai_call_analysis a
+         order by a.call_id, a.created_at desc
+     )
+     select c.bitrix_user_id uid, m.full_name name,
+            coalesce(l.result_type, 'other') result_type, count(*)::text n
+       from latest l
+       join ai_calls c on c.id = l.call_id
+       left join ai_managers m on m.bitrix_user_id = c.bitrix_user_id
+      where c.bitrix_user_id is not null${rSql}
+      group by 1, 2, 3`,
+    params
+  );
+
+  const present = new Set<string>();
+  const byUid = new Map<string, { name: string | null; calls: number; cells: Record<string, ConvCell> }>();
+  for (const r of rows) {
+    present.add(r.result_type || "other");
+    const m = byUid.get(r.uid) || { name: r.name, calls: 0, cells: {} };
+    const n = Number(r.n);
+    m.calls += n;
+    m.cells[r.result_type || "other"] = { count: n, pct: 0 };
+    if (r.name) m.name = r.name;
+    byUid.set(r.uid, m);
+  }
+  // Проценты от общего числа звонков менеджера.
+  for (const m of byUid.values()) {
+    for (const k of Object.keys(m.cells)) {
+      m.cells[k].pct = m.calls ? Math.round((m.cells[k].count / m.calls) * 100) : null;
+    }
+  }
+
+  const results = RESULT_ORDER.filter((t) => present.has(t));
+  const managers: ConvRow[] = [...byUid.entries()]
+    .map(([uid, v]) => ({ bitrixUserId: uid, name: v.name, calls: v.calls, cells: v.cells }))
+    .sort((a, b) => b.calls - a.calls);
+
+  return { results, managers };
 }

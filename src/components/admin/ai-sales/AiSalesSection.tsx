@@ -1941,75 +1941,241 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
   );
 }
 
-/* ─────────── Чек-листы: соблюдение по шагам (менеджер × шаги) ─────────── */
+/* ─────────── Чек-листы: соблюдение по шагам / средний балл / конверсия ─────────── */
 interface StepCol { key: string; title: string }
 interface StepCell { completed: number; total: number; pct: number | null }
 interface ChecklistRow { bitrixUserId: string; name: string | null; calls: number; avgScore: number | null; cells: Record<string, StepCell> }
 interface ChecklistData { steps: StepCol[]; managers: ChecklistRow[] }
+interface ConvCellT { count: number; pct: number | null }
+interface ConvRowT { bitrixUserId: string; name: string | null; calls: number; cells: Record<string, ConvCellT> }
+interface ConvData { results: string[]; managers: ConvRowT[] }
+interface StepCallT { callId: string; startedAt: string | null; clientTitle: string | null; dealUrl: string | null; score: number | null }
+type CheckMode = 'steps' | 'avg' | 'conv';
 
 const pctColor = (v: number | null) => (v == null ? 'text-gray-300' : v >= 80 ? 'text-emerald-600' : v >= 50 ? 'text-amber-600' : 'text-red-600');
 
-function Checklists({ onOpen }: { onOpen: (id: string) => void }) {
+/** Кнопка выгрузки матрицы чек-листов в .xlsx за период. */
+function MatrixExport({ period }: { period: Period }) {
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    setBusy(true);
+    try {
+      const r = await fetch(`/api/ai-sales/reports/script-steps/export?${periodQS(period)}`);
+      if (!r.ok) return;
+      const blob = await r.blob();
+      const cd = r.headers.get('Content-Disposition') || '';
+      const m = cd.match(/filename\*=UTF-8''([^;]+)/);
+      const name = m ? decodeURIComponent(m[1]) : 'Чек-листы.xlsx';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } finally { setBusy(false); }
+  };
+  return (
+    <button onClick={run} disabled={busy}
+      className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700 hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50 inline-flex items-center gap-2">
+      {busy && <Spinner />}<ExcelIcon />Экспорт в Excel
+    </button>
+  );
+}
+
+function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOpenCall: (id: string) => void }) {
+  const [mode, setMode] = useState<CheckMode>('steps');
   const [data, setData] = useState<ChecklistData | null>(null);
+  const [conv, setConv] = useState<ConvData | null>(null);
   const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
+  // Провал по ячейке: звонки, где менеджер выполнил/провалил шаг.
+  const [drill, setDrill] = useState<{ uid: string; key: string; completed: boolean; step: string; manager: string } | null>(null);
+  const [drillItems, setDrillItems] = useState<StepCallT[] | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const r = await fetch(`/api/ai-sales/reports/script-steps?${periodQS(period)}`);
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || 'Ошибка');
-      setData(j);
+      if (mode === 'conv') {
+        const r = await fetch(`/api/ai-sales/reports/conversion?${periodQS(period)}`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        setConv(j);
+      } else {
+        const r = await fetch(`/api/ai-sales/reports/script-steps?${periodQS(period)}`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        setData(j);
+      }
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
-  }, [period]);
+  }, [period, mode]);
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!drill) { setDrillItems(null); return; }
+    let alive = true;
+    setDrillItems(null);
+    (async () => {
+      try {
+        const r = await fetch(`/api/ai-sales/reports/script-steps/calls?uid=${encodeURIComponent(drill.uid)}&key=${encodeURIComponent(drill.key)}&completed=${drill.completed ? 1 : 0}&${periodQS(period)}`);
+        const j = await r.json();
+        if (alive) setDrillItems(r.ok ? (j.items || []) : []);
+      } catch { if (alive) setDrillItems([]); }
+    })();
+    return () => { alive = false; };
+  }, [drill, period]);
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
+  const MODES: Array<[CheckMode, string]> = [['steps', 'Соблюдение по шагам'], ['avg', 'Средний балл'], ['conv', 'Конверсия']];
+
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Чек-листы — соблюдение по шагам</h2>
-      <p className="text-sm text-gray-500 mb-4">Как каждый менеджер выполняет шаги скрипта: % выполнения по шагу и средний балл. Клик по менеджеру — его карточка.</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Чек-листы и конверсия</h2>
+          <p className="text-sm text-gray-500 mb-3">Работа менеджеров по чек-листам и результатам. Клик по ячейке шага — звонки; клик по менеджеру — карточка.</p>
+        </div>
+        {mode === 'steps' && <MatrixExport period={period} />}
+      </div>
+      <div className="flex flex-wrap gap-1 mb-3">
+        {MODES.map(([k, label]) => (
+          <button key={k} onClick={() => setMode(k)}
+            className={`px-3 py-1.5 rounded-xl text-sm transition ${mode === k ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>{label}</button>
+        ))}
+      </div>
       <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <LoadingBlock /> : !data ? null : data.managers.length === 0 ? (
-        <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет оценок скрипта за период. Убедитесь, что задан активный скрипт и звонки проанализированы.</p>
-      ) : (
-        <ScrollX className="bg-white rounded-xl border border-gray-100">
-          <table className="min-w-full text-sm">
-            <thead className="bg-[#F6F7F9] text-gray-600">
-              <tr>
-                <th className="text-left font-medium px-3 py-2 whitespace-nowrap sticky left-0 bg-[#F6F7F9] z-10">Менеджер</th>
-                <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Звонков</th>
-                <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Ср. балл</th>
-                {data.steps.map((s) => (
-                  <th key={s.key} className="text-right font-medium px-3 py-2 whitespace-nowrap max-w-[160px] truncate" title={s.title}>{s.title}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {data.managers.map((m) => (
-                <tr key={m.bitrixUserId} className="hover:bg-sky-50/40">
-                  <td className="px-3 py-2 sticky left-0 bg-white z-10">
-                    <button onClick={() => onOpen(m.bitrixUserId)} className="font-medium text-gray-900 text-left hover:text-[#029cda]">{m.name || `#${m.bitrixUserId}`}</button>
-                  </td>
-                  <td className="px-3 py-2 text-right text-gray-500">{m.calls}</td>
-                  <td className={`px-3 py-2 text-right font-medium ${pctColor(m.avgScore)}`}>{m.avgScore != null ? `${m.avgScore}%` : '—'}</td>
-                  {data.steps.map((s) => {
-                    const c = m.cells[s.key];
-                    return (
-                      <td key={s.key} className={`px-3 py-2 text-right ${pctColor(c?.pct ?? null)}`} title={c ? `${c.completed}/${c.total}` : ''}>
-                        {c && c.pct != null ? `${c.pct}%` : '—'}
+
+      {loading ? <LoadingBlock /> : (
+        <>
+          {/* Соблюдение по шагам — матрица с провалом по ячейке */}
+          {mode === 'steps' && (!data || data.managers.length === 0 ? (
+            <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет оценок скрипта за период. Убедитесь, что задан активный скрипт и звонки проанализированы.</p>
+          ) : (
+            <ScrollX className="bg-white rounded-xl border border-gray-100">
+              <table className="min-w-full text-sm">
+                <thead className="bg-[#F6F7F9] text-gray-600">
+                  <tr>
+                    <th className="text-left font-medium px-3 py-2 whitespace-nowrap sticky left-0 bg-[#F6F7F9] z-10">Менеджер</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Звонков</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Ср. балл</th>
+                    {data.steps.map((s) => (
+                      <th key={s.key} className="text-right font-medium px-3 py-2 whitespace-nowrap max-w-[160px] truncate" title={s.title}>{s.title}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.managers.map((m) => (
+                    <tr key={m.bitrixUserId} className="hover:bg-sky-50/40">
+                      <td className="px-3 py-2 sticky left-0 bg-white z-10">
+                        <button onClick={() => onOpen(m.bitrixUserId)} className="font-medium text-gray-900 text-left hover:text-[#029cda]">{m.name || `#${m.bitrixUserId}`}</button>
                       </td>
-                    );
-                  })}
-                </tr>
+                      <td className="px-3 py-2 text-right text-gray-500">{m.calls}</td>
+                      <td className={`px-3 py-2 text-right font-medium ${pctColor(m.avgScore)}`}>{m.avgScore != null ? `${m.avgScore}%` : '—'}</td>
+                      {data.steps.map((s) => {
+                        const c = m.cells[s.key];
+                        const failed = c && c.pct != null && c.pct < 100 ? c.total - c.completed : 0;
+                        return (
+                          <td key={s.key} className={`px-3 py-2 text-right ${pctColor(c?.pct ?? null)}`} title={c ? `${c.completed}/${c.total} выполнено` : ''}>
+                            {c && c.pct != null
+                              ? <button onClick={() => setDrill({ uid: m.bitrixUserId, key: s.key, completed: failed === 0, step: s.title, manager: m.name || `#${m.bitrixUserId}` })}
+                                  className="hover:underline">{c.pct}%</button>
+                              : '—'}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollX>
+          ))}
+
+          {/* Средний балл по чек-листам — лидерборд */}
+          {mode === 'avg' && (!data || data.managers.length === 0 ? (
+            <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет оценок скрипта за период.</p>
+          ) : (
+            <ScrollX className="bg-white rounded-xl border border-gray-100">
+              <table className="min-w-full text-sm">
+                <thead className="bg-[#F6F7F9] text-gray-600">
+                  <tr>
+                    <th className="text-left font-medium px-3 py-2 w-10">#</th>
+                    <th className="text-left font-medium px-3 py-2 whitespace-nowrap">Менеджер</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Звонков</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Средний балл</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.managers.map((m, i) => (
+                    <tr key={m.bitrixUserId} className="hover:bg-sky-50/40">
+                      <td className="px-3 py-2 text-gray-400">{i + 1}</td>
+                      <td className="px-3 py-2"><button onClick={() => onOpen(m.bitrixUserId)} className="font-medium text-gray-900 text-left hover:text-[#029cda]">{m.name || `#${m.bitrixUserId}`}</button></td>
+                      <td className="px-3 py-2 text-right text-gray-500">{m.calls}</td>
+                      <td className={`px-3 py-2 text-right font-semibold ${pctColor(m.avgScore)}`}>{m.avgScore != null ? `${m.avgScore}%` : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollX>
+          ))}
+
+          {/* Конверсия — менеджер × результаты */}
+          {mode === 'conv' && (!conv || conv.managers.length === 0 ? (
+            <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет данных по результатам звонков за период.</p>
+          ) : (
+            <ScrollX className="bg-white rounded-xl border border-gray-100">
+              <table className="min-w-full text-sm">
+                <thead className="bg-[#F6F7F9] text-gray-600">
+                  <tr>
+                    <th className="text-left font-medium px-3 py-2 whitespace-nowrap sticky left-0 bg-[#F6F7F9] z-10">Менеджер</th>
+                    <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Звонков</th>
+                    {conv.results.map((t) => (
+                      <th key={t} className="text-right font-medium px-3 py-2 whitespace-nowrap">{RESULT_LABEL[t] || t}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {conv.managers.map((m) => (
+                    <tr key={m.bitrixUserId} className="hover:bg-sky-50/40">
+                      <td className="px-3 py-2 sticky left-0 bg-white z-10"><button onClick={() => onOpen(m.bitrixUserId)} className="font-medium text-gray-900 text-left hover:text-[#029cda]">{m.name || `#${m.bitrixUserId}`}</button></td>
+                      <td className="px-3 py-2 text-right text-gray-500">{m.calls}</td>
+                      {conv.results.map((t) => {
+                        const c = m.cells[t];
+                        return <td key={t} className="px-3 py-2 text-right text-gray-700">{c ? <span><b>{c.count}</b> <span className="text-gray-400">({c.pct}%)</span></span> : '—'}</td>;
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollX>
+          ))}
+        </>
+      )}
+
+      {drill && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 p-4 overflow-y-auto" onClick={() => setDrill(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mt-10 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between p-4 border-b border-gray-100">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{drill.manager} · {drill.completed ? 'выполнил шаг' : 'провалил шаг'}</p>
+                <p className="font-semibold text-gray-900">{drill.step}{drillItems ? <span className="text-gray-400 font-normal"> · {drillItems.length}</span> : null}</p>
+              </div>
+              <button onClick={() => setDrill(null)} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+            </div>
+            <div className="p-4 overflow-y-auto space-y-2">
+              {drillItems === null ? <LoadingBlock /> : drillItems.length === 0 ? <p className="text-gray-400 text-sm">Звонков не найдено.</p> : drillItems.map((d) => (
+                <div key={d.callId} className="rounded-xl border border-gray-100 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <button onClick={() => { setDrill(null); onOpenCall(d.callId); }} className="font-medium text-gray-900 text-sm text-left hover:text-[#029cda]">{d.clientTitle || 'Звонок'}</button>
+                    {d.score != null && <span className="shrink-0 text-xs text-gray-400">скрипт {d.score}%</span>}
+                  </div>
+                  <div className="flex gap-3 text-xs text-gray-400 mt-1 flex-wrap">
+                    {d.startedAt && <span>{new Date(d.startedAt).toLocaleString('ru-RU')}</span>}
+                    {d.dealUrl && <a href={d.dealUrl} target="_blank" rel="noreferrer" className="hover:text-[#029cda]" onClick={(e) => e.stopPropagation()}>Bitrix ↗</a>}
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </ScrollX>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -3430,7 +3596,7 @@ export default function AiSalesSection() {
     if (view === 'followups') return <FollowUps />;
     if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <LostDeals onOpen={setOpenDeal} />;
     if (view === 'rop') return <Rop onNavigate={nav} />;
-    if (view === 'checklists') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Checklists onOpen={setOpenDeal} />;
+    if (view === 'checklists') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Checklists onOpen={setOpenDeal} onOpenCall={(cid) => openCallAt(cid, null)} />;
     if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Managers onOpen={setOpenDeal} />;
     if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
     return <Calls initialTemperature={initTemp} initialTag={initTag} />;
