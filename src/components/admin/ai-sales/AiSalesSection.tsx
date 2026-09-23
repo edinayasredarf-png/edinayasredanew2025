@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
+import { ExcelIcon } from '@/components/admin/ui/FileIcons';
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -145,6 +146,37 @@ function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) =
       <button onClick={() => onChange(NO_PERIOD)}
         className={`px-3 py-1.5 rounded-xl text-sm transition ${active === 'all' ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
         Всё
+      </button>
+    </div>
+  );
+}
+
+/** Кнопка выгрузки отчёта РОПа (менеджеры + сводка отдела) в .xlsx за период. */
+function ExportButton({ period }: { period: Period }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const run = async () => {
+    setBusy(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/export?${periodQS(period)}`);
+      if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Ошибка экспорта'); }
+      const blob = await r.blob();
+      const cd = r.headers.get('Content-Disposition') || '';
+      const m = cd.match(/filename\*=UTF-8''([^;]+)/);
+      const name = m ? decodeURIComponent(m[1]) : 'Отчет-продажи.xlsx';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="flex items-center gap-2">
+      {err && <span className="text-xs text-red-600">{err}</span>}
+      <button onClick={run} disabled={busy}
+        className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700 hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50 inline-flex items-center gap-2">
+        {busy && <Spinner />}<ExcelIcon />Экспорт в Excel
       </button>
     </div>
   );
@@ -1612,8 +1644,13 @@ function Insights() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">AI Insights</h2>
-      <p className="text-sm text-gray-500 mb-4">Агрегаты по разборам звонков за период.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">AI Insights</h2>
+          <p className="text-sm text-gray-500 mb-4">Агрегаты по разборам звонков за период.</p>
+        </div>
+        <ExportButton period={period} />
+      </div>
       <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : (
         <div className="space-y-4">
@@ -2062,7 +2099,10 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Менеджеры</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-900">Менеджеры</h2>
+        <ExportButton period={period} />
+      </div>
       <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : (
         <ScrollX className="bg-white rounded-xl border border-gray-100">
