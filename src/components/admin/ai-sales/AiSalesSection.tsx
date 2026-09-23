@@ -1258,6 +1258,59 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
           </div>
         </div>
       </div>
+
+      <DealBitrixTimeline dealId={data.deal.bitrixDealId} />
+    </div>
+  );
+}
+
+interface TimelineItem { kind: 'comment' | 'activity'; text: string; author: string | null; createdAt: string | null; done?: boolean; activityType?: string | null }
+interface DealTimelineData { items: TimelineItem[]; lastActivityAt: string | null; configured: boolean }
+
+/** Живой контекст сделки из Bitrix: комментарии и активности («что там происходит»). */
+function DealBitrixTimeline({ dealId }: { dealId: string | null }) {
+  const [data, setData] = useState<DealTimelineData | null>(null);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true); setErr('');
+    (async () => {
+      try {
+        const r = await fetch(`/api/ai-sales/deals/${dealId}/timeline`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        if (alive) setData(j);
+      } catch (e) { if (alive) setErr(e instanceof Error ? e.message : 'Ошибка'); }
+      finally { if (alive) setLoading(false); }
+    })();
+    return () => { alive = false; };
+  }, [dealId]);
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4 mt-4">
+      <p className="font-semibold text-gray-800 mb-3">Активность в Bitrix</p>
+      {loading ? <LoadingBlock /> : err ? <p className="text-sm text-red-600">{err}</p>
+        : !data?.configured ? <p className="text-sm text-gray-400">Интеграция с Bitrix не настроена.</p>
+        : data.items.length === 0 ? <p className="text-sm text-gray-400">Комментариев и активностей по сделке нет.</p>
+        : (
+          <div className="space-y-3">
+            {data.items.map((it, i) => (
+              <div key={i} className="flex gap-3 text-sm border-b border-gray-50 pb-2 last:border-0">
+                <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${it.kind === 'comment' ? 'bg-[#029cda]' : it.done ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-800 break-words">{it.text}</p>
+                  <div className="flex gap-2 text-xs text-gray-400 mt-0.5 flex-wrap">
+                    <span>{it.kind === 'comment' ? 'комментарий' : (it.activityType || 'активность')}{it.kind === 'activity' && (it.done ? ' · выполнена' : ' · запланирована')}</span>
+                    {it.author && <span>· {it.author}</span>}
+                    {it.createdAt && <span>· {new Date(it.createdAt).toLocaleString('ru-RU')}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
     </div>
   );
 }
@@ -1270,7 +1323,7 @@ interface RecoItem {
 }
 /* ─────────── Сигналы РОПа (проактивная лента) ─────────── */
 interface SignalItem {
-  id: string; severity: 'critical' | 'risk' | 'opportunity'; kind: 'deal' | 'commitment' | 'coaching' | 'lost';
+  id: string; severity: 'critical' | 'risk' | 'opportunity'; kind: 'deal' | 'commitment' | 'coaching' | 'lost' | 'no_contact';
   title: string; detail: string; action: string | null; link: string | null; manager: string | null; count: number | null;
   hiddenStatus?: 'done' | 'snoozed'; hiddenUntil?: string | null;
 }
@@ -1287,12 +1340,12 @@ const SIG_STYLE: Record<SignalItem['severity'], { dot: string; ring: string; lab
   opportunity: { dot: 'bg-emerald-500', ring: 'border-emerald-200', label: '🟢 Возможность' },
 };
 const SIG_KIND: Record<SignalItem['kind'], string> = {
-  deal: 'Сделка', commitment: 'Обещания', coaching: 'Коучинг', lost: 'Проигрыши',
+  deal: 'Сделка', commitment: 'Обещания', coaching: 'Коучинг', lost: 'Проигрыши', no_contact: 'Брошен клиент',
 };
 
-/** id сделки из сигнала вида deal-crit-<id> / deal-risk-<id> (для перехода в карточку). */
+/** id сделки из сигнала вида deal-crit-<id> / deal-nc-<id> (для перехода в карточку). */
 function signalDealId(s: SignalItem): string | null {
-  const m = s.id.match(/^deal-(?:crit|risk|opp)-(.+)$/);
+  const m = s.id.match(/^deal-(?:crit|risk|opp|nc)-(.+)$/);
   return m ? m[1] : null;
 }
 

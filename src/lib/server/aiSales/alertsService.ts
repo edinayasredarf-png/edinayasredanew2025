@@ -12,9 +12,10 @@ import { getOverdueFollowUps } from "@/lib/server/aiSales/followupsDb";
 import { getInsights, CRITERION_LABEL } from "@/lib/server/aiSales/insightsDb";
 import { getLostDealAnalytics } from "@/lib/server/aiSales/lostDealsDb";
 import { getActiveSignalStates } from "@/lib/server/aiSales/signalStateDb";
+import { getAbandonedClients } from "@/lib/server/aiSales/noContactDb";
 
 export type Severity = "critical" | "risk" | "opportunity";
-export type SignalKind = "deal" | "commitment" | "coaching" | "lost";
+export type SignalKind = "deal" | "commitment" | "coaching" | "lost" | "no_contact";
 
 export interface Signal {
   id: string;
@@ -53,11 +54,12 @@ export async function getSignals(
   range?: DateRange,
   includeHidden = false
 ): Promise<SignalsResult> {
-  const [reco, overdue, insights, lost, states] = await Promise.all([
+  const [reco, overdue, insights, lost, abandoned, states] = await Promise.all([
     getDailyRecommendations(managerBitrixId, range),
     getOverdueFollowUps(managerBitrixId),
     getInsights(managerBitrixId, range),
     getLostDealAnalytics(managerBitrixId, range),
+    getAbandonedClients(managerBitrixId).catch(() => []),
     getActiveSignalStates(),
   ]);
 
@@ -91,6 +93,25 @@ export async function getSignals(
       link: null,
       manager: null,
       count: overdue.length,
+    });
+  }
+
+  // 2b) Брошенные клиенты: не дозвонились и с тех пор ни повторного звонка, ни
+  //     активности в Bitrix. Реальный «клиент забыт», а не разовый недозвон.
+  const fmtTime = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+  for (const a of abandoned.slice(0, 6)) {
+    const digits = (a.phone || "").replace(/\D/g, "").slice(-10);
+    signals.push({
+      id: a.bitrixDealId ? `deal-nc-${a.bitrixDealId}` : `abandoned-phone-${digits || a.callId}`,
+      severity: "critical",
+      kind: "no_contact",
+      title: a.clientTitle || (a.phone ? `Клиент ${a.phone}` : `Сделка #${a.bitrixDealId}`),
+      detail: `Не дозвонились ${fmtTime(a.startedAt)} — и с тех пор ни повторного звонка, ни активности в Bitrix${a.bitrixDealId ? "" : " (нет привязки к сделке)"}.`,
+      action: "Перезвонить клиенту или зафиксировать следующий шаг в сделке.",
+      link: a.dealUrl,
+      manager: a.manager,
+      count: null,
     });
   }
 

@@ -5,6 +5,7 @@ import { setSignalState, type SignalAction } from "@/lib/server/aiSales/signalSt
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 30; // проверка активности сделок в Bitrix добавляет сетевых вызовов
 
 /** Проактивная лента «Сигналы РОПа»: что горит прямо сейчас + дайджест на утро. */
 export async function GET(request: NextRequest) {
