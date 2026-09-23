@@ -72,7 +72,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function Kpi({ label, value, sub, onClick }: { label: string; value: React.ReactNode; sub?: string; onClick?: () => void }) {
-  const cls = "bg-[#F6F7F9] rounded-xl p-5 text-left w-full shadow-sm" + (onClick ? " hover:bg-[#029cda]/10 hover:shadow-md transition cursor-pointer" : "");
+  const cls = "bg-[#F6F7F9] rounded-xl p-5 text-left w-full shadow-sm" + (onClick ? " hover:bg-[#029cda]/10 hover:shadow-md transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]" : "");
   const inner = (
     <>
       <p className="text-sm text-gray-600">{label}</p>
@@ -3056,10 +3056,10 @@ export default function AiSalesSection() {
     <div>
       {/* Уровень 1 — группы */}
       <ScrollX className="mb-2">
-        <div className="flex gap-1 min-w-max">
+        <div className="flex gap-1 min-w-max" role="tablist" aria-label="Разделы речевой аналитики">
           {GROUPS.map((g) => (
-            <button key={g.key} type="button" onClick={() => openGroup(g)}
-              className={`px-3.5 py-1.5 text-sm rounded-xl whitespace-nowrap transition ${g.key === activeGroup.key ? 'bg-[#029cda] text-white font-medium' : 'text-gray-500 hover:bg-gray-100'}`}>
+            <button key={g.key} type="button" role="tab" aria-selected={g.key === activeGroup.key} onClick={() => openGroup(g)}
+              className={`px-3.5 py-1.5 text-sm rounded-xl whitespace-nowrap transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-offset-1 ${g.key === activeGroup.key ? 'bg-[#029cda] text-white font-medium' : 'text-gray-500 hover:bg-gray-100'}`}>
               {g.label}
             </button>
           ))}
@@ -3067,10 +3067,10 @@ export default function AiSalesSection() {
       </ScrollX>
       {/* Уровень 2 — вкладки активной группы */}
       <ScrollX className="mb-5 border-b border-gray-200">
-        <div className="flex gap-1 min-w-max">
+        <div className="flex gap-1 min-w-max" role="tablist" aria-label={activeGroup.label}>
           {activeGroup.views.map((s) => (
-            <button key={s.view} type="button" onClick={() => go(s.view)}
-              className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
+            <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
+              className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
               {s.label}
             </button>
           ))}
