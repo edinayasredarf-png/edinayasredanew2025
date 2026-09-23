@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getTimewebPool } from "@/lib/timewebPg";
+import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 
 /**
  * AI Insights — агрегаты по разборам звонков (§9,§81 ТЗ). Всё обычным SQL (§45),
@@ -146,3 +147,90 @@ export async function getInsights(
 }
 
 export { CRITERION_LABEL };
+
+/* ─── Drill-down: конкретные сделки за агрегатом (по какой сделке проблема) ─── */
+
+export type InsightKind = "objection" | "product" | "pain" | "competitor";
+
+export interface InsightDeal {
+  callId: string;
+  bitrixDealId: string | null;
+  company: string | null;
+  manager: string | null;
+  dealUrl: string | null;
+  startedAt: string | null;
+  context: string | null;   // для возражения — дословная цитата
+  unhandled?: boolean;      // для возражения — не отработано
+}
+
+/** Пути JSONB для каждого типа агрегата (совпадают с getInsights). */
+const KIND_MATCH: Record<InsightKind, string> = {
+  objection: `exists (select 1 from jsonb_array_elements(l.data->'objections') o where lower(trim(o->>'text')) = $VAL$)`,
+  product: `exists (select 1 from jsonb_array_elements(l.data->'products') p where lower(trim(p->>'name')) = $VAL$)`,
+  pain: `exists (select 1 from jsonb_array_elements_text(l.data->'painPoints') x where lower(trim(x)) = $VAL$)`,
+  competitor: `exists (select 1 from jsonb_array_elements(l.data->'competitors') cmp where lower(trim(cmp->>'name')) = $VAL$)`,
+};
+
+/** Сделки/звонки, где встретился конкретный агрегат (возражение/продукт/боль/конкурент). */
+export async function getInsightDeals(
+  kind: InsightKind,
+  value: string,
+  managerBitrixId: string | null,
+  range?: DateRange
+): Promise<InsightDeal[]> {
+  const v = (value || "").trim().toLowerCase();
+  if (!v || !KIND_MATCH[kind]) return [];
+  const pool = getTimewebPool();
+  const f = buildFilter(managerBitrixId, range);
+  const params = [...f.params, v];
+  const vRef = `$${params.length}`;
+  const match = KIND_MATCH[kind].replace("$VAL$", vRef);
+
+  // Для возражения — дословная цитата и статус «не отработано».
+  const objLateral =
+    kind === "objection"
+      ? `left join lateral (
+           select o->>'quote' quote, (o->>'handled') handled
+             from jsonb_array_elements(l.data->'objections') o
+            where lower(trim(o->>'text')) = ${vRef}
+            order by (case when (o->>'handled') = 'false' then 0 else 1 end)
+            limit 1
+         ) ol on true`
+      : "";
+  const objSelect = kind === "objection" ? `ol.quote as context, (ol.handled = 'false') as unhandled` : `null::text as context, null::boolean as unhandled`;
+
+  const { rows } = await pool.query<{
+    call_id: string; bitrix_deal_id: string | null; company: string | null;
+    manager: string | null; started_at: Date | null; context: string | null; unhandled: boolean | null;
+  }>(
+    `with latest as (
+       select distinct on (a.call_id) a.call_id, a.data,
+              c.bitrix_deal_id, c.bitrix_company_id, c.bitrix_user_id, c.started_at
+         from ai_call_analysis a join ai_calls c on c.id = a.call_id
+        where ${f.sql}
+        order by a.call_id, a.created_at desc
+     )
+     select l.call_id, l.bitrix_deal_id, l.started_at,
+            comp.title as company, m.full_name as manager, ${objSelect}
+       from latest l
+       left join ai_companies comp on comp.bitrix_company_id = l.bitrix_company_id
+       left join ai_managers m on m.bitrix_user_id = l.bitrix_user_id
+       ${objLateral}
+      where ${match}
+      order by l.started_at desc nulls last
+      limit 60`,
+    params
+  );
+
+  const origin = bitrixPortalOrigin();
+  return rows.map((r) => ({
+    callId: r.call_id,
+    bitrixDealId: r.bitrix_deal_id,
+    company: r.company,
+    manager: r.manager,
+    dealUrl: r.bitrix_deal_id && origin ? `${origin}/crm/deal/details/${r.bitrix_deal_id}/` : null,
+    startedAt: r.started_at ? r.started_at.toISOString() : null,
+    context: r.context,
+    unhandled: r.unhandled ?? undefined,
+  }));
+}

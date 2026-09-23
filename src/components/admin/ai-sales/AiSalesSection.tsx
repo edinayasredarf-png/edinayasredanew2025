@@ -864,11 +864,6 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
 
       <ReviewWidget callId={id} llmDeal={a?.dealScore?.score ?? null} llmManager={a?.managerPerformance?.overall ?? null} />
 
-      <details className="bg-[#F6F7F9] rounded-xl p-4 mb-4">
-        <summary className="text-sm font-semibold text-gray-700 cursor-pointer">Спросить ассистента про этот звонок</summary>
-        <div className="mt-3"><AssistantAsk callId={id} compact placeholder="Например: почему такая оценка? какие ошибки?" /></div>
-      </details>
-
       {data.metrics && (data.metrics.managerWords + data.metrics.clientWords > 0) && (() => {
         const m = data.metrics!;
         const ratio = m.talkRatioManagerTime ?? m.talkRatioManager;
@@ -895,30 +890,6 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
               {m.hasTimestamps && <span>Пауз &gt;3с: <b>{m.pausesOver3s ?? '—'}</b></span>}
               {m.hasTimestamps && <span>Макс. пауза: <b>{fmtSec(m.longestPauseSec)}</b></span>}
             </div>
-          </div>
-        );
-      })()}
-
-      {data.scriptScore && data.scriptScore.steps.length > 0 && (() => {
-        const ss = data.scriptScore!;
-        const done = ss.steps.filter((s) => s.completed).length;
-        const pct = ss.score ?? Math.round((done / ss.steps.length) * 100);
-        const tone = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-red-600';
-        return (
-          <div className="bg-[#F6F7F9] rounded-xl p-5 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold text-gray-700">Соблюдение скрипта {ss.scriptVersion != null && <span className="text-xs text-gray-400 font-normal">(v{ss.scriptVersion})</span>}</p>
-              <p className={`text-sm font-semibold ${tone}`}>{pct}% <span className="text-gray-400 font-normal">({done}/{ss.steps.length})</span></p>
-            </div>
-            <ul className="space-y-1.5">
-              {ss.steps.map((s) => (
-                <li key={s.key} className="flex items-start gap-2 text-sm">
-                  <span className={s.completed ? 'text-emerald-600' : 'text-red-500'}>{s.completed ? '✓' : '✕'}</span>
-                  <span className="text-gray-800">{s.title}</span>
-                  {s.reason && <span className="text-gray-400">— {s.reason}</span>}
-                </li>
-              ))}
-            </ul>
           </div>
         );
       })()}
@@ -994,36 +965,67 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                   <ul className="list-disc pl-5 text-red-600">{a.risks.filter((r) => r.detail?.trim()).map((r, i) => <li key={i}>{r.detail}</li>)}</ul>
                 </div>
               )}
-              {a.managerPerformance && (
+              {a.managerPerformance && (a.managerPerformance.didWell?.length || a.managerPerformance.mistakes?.length || a.managerPerformance.improveNextTime?.length) ? (
                 <div className="grid grid-cols-1 gap-2">
                   {a.managerPerformance.didWell?.length ? <div><p className="text-xs uppercase tracking-wide text-emerald-600">Хорошо</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.didWell.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                   {a.managerPerformance.mistakes?.length ? <div><p className="text-xs uppercase tracking-wide text-amber-600">Ошибки</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.mistakes.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                   {a.managerPerformance.improveNextTime?.length ? <div><p className="text-xs uppercase tracking-wide text-sky-600">Улучшить</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.improveNextTime.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
-                  {a.managerPerformance.exampleBetterResponse?.trim() ? (
-                    <div className="rounded-xl border border-[#029cda]/30 bg-[#029cda]/5 p-3">
-                      <p className="text-xs uppercase tracking-wide text-[#029cda] mb-1">Как ответить лучше в следующий раз</p>
-                      <p className="text-sm text-gray-800 italic">«{a.managerPerformance.exampleBetterResponse.trim()}»</p>
-                    </div>
-                  ) : null}
-                  {a.managerPerformance.criteria?.filter((c) => c.key).length ? (
-                    <details className="rounded-xl bg-[#F6F7F9] p-2.5">
-                      <summary className="text-xs uppercase tracking-wide text-gray-500 cursor-pointer">Разбор по этапам ({a.managerPerformance.criteria.filter((c) => c.key).length})</summary>
-                      <ul className="mt-2 space-y-1.5">
-                        {a.managerPerformance.criteria!.filter((c) => c.key).map((c, i) => {
-                          const sc = typeof c.score === 'number' ? c.score : null;
-                          const tone = sc == null ? 'text-gray-400' : sc >= 7 ? 'text-emerald-600' : sc >= 4 ? 'text-amber-600' : 'text-red-600';
-                          return (
-                            <li key={i} className="flex items-start gap-2 text-sm">
-                              <span className={`shrink-0 font-semibold ${tone} w-10`}>{sc != null ? `${sc}/10` : '—'}</span>
-                              <span className="text-gray-700"><b className="text-gray-800">{CRIT_LABEL[c.key || ''] || c.key}</b>{c.comment ? ` — ${c.comment}` : ''}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </details>
-                  ) : null}
                 </div>
-              )}
+              ) : null}
+
+              <details className="rounded-xl bg-[#F6F7F9] p-2.5">
+                <summary className="text-xs uppercase tracking-wide text-gray-500 cursor-pointer">Спросить ассистента про этот звонок</summary>
+                <div className="mt-2"><AssistantAsk callId={id} compact placeholder="Например: почему такая оценка? какие ошибки?" /></div>
+              </details>
+
+              {a.managerPerformance?.exampleBetterResponse?.trim() ? (
+                <div className="rounded-xl border border-[#029cda]/30 bg-[#029cda]/5 p-3">
+                  <p className="text-xs uppercase tracking-wide text-[#029cda] mb-1">Как ответить лучше в следующий раз</p>
+                  <p className="text-sm text-gray-800 italic">«{a.managerPerformance.exampleBetterResponse.trim()}»</p>
+                </div>
+              ) : null}
+
+              {data.scriptScore && data.scriptScore.steps.length > 0 ? (() => {
+                const ss = data.scriptScore!;
+                const done = ss.steps.filter((s) => s.completed).length;
+                const pct = ss.score ?? Math.round((done / ss.steps.length) * 100);
+                const tone = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-red-600';
+                return (
+                  <div className="rounded-xl bg-[#F6F7F9] p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs uppercase tracking-wide text-gray-500">Соблюдение скрипта {ss.scriptVersion != null && <span className="normal-case text-gray-400">(v{ss.scriptVersion})</span>}</p>
+                      <p className={`text-sm font-semibold ${tone}`}>{pct}% <span className="text-gray-400 font-normal">({done}/{ss.steps.length})</span></p>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {ss.steps.map((s) => (
+                        <li key={s.key} className="flex items-start gap-2 text-sm">
+                          <span className={s.completed ? 'text-emerald-600' : 'text-red-500'}>{s.completed ? '✓' : '✕'}</span>
+                          <span className="text-gray-800">{s.title}</span>
+                          {s.reason && <span className="text-gray-400">— {s.reason}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })() : null}
+
+              {a.managerPerformance?.criteria?.filter((c) => c.key).length ? (
+                <details className="rounded-xl bg-[#F6F7F9] p-2.5">
+                  <summary className="text-xs uppercase tracking-wide text-gray-500 cursor-pointer">Разбор по этапам ({a.managerPerformance.criteria.filter((c) => c.key).length})</summary>
+                  <ul className="mt-2 space-y-1.5">
+                    {a.managerPerformance.criteria!.filter((c) => c.key).map((c, i) => {
+                      const sc = typeof c.score === 'number' ? c.score : null;
+                      const tone = sc == null ? 'text-gray-400' : sc >= 7 ? 'text-emerald-600' : sc >= 4 ? 'text-amber-600' : 'text-red-600';
+                      return (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <span className={`shrink-0 font-semibold ${tone} w-10`}>{sc != null ? `${sc}/10` : '—'}</span>
+                          <span className="text-gray-700"><b className="text-gray-800">{CRIT_LABEL[c.key || ''] || c.key}</b>{c.comment ? ` — ${c.comment}` : ''}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </details>
+              ) : null}
               {a.objections && a.objections.filter((o) => (o.text || o.quote)?.trim()).length > 0 && (
                 <div>
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Возражения</p>
@@ -1054,10 +1056,10 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
               )}
             </div>
           )}
+
+          {data.call.bitrixDealId && <div className="mt-4"><DealBitrixTimeline dealId={data.call.bitrixDealId} collapsible /></div>}
         </div>
       </div>
-
-      {data.call.bitrixDealId && <div className="mt-4"><DealBitrixTimeline dealId={data.call.bitrixDealId} /></div>}
     </div>
   );
 }
@@ -1268,13 +1270,21 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
 interface TimelineItem { kind: 'comment' | 'activity'; text: string; author: string | null; createdAt: string | null; done?: boolean; activityType?: string | null }
 interface DealTimelineData { items: TimelineItem[]; lastActivityAt: string | null; configured: boolean }
 
-/** Живой контекст сделки из Bitrix: комментарии и активности («что там происходит»). */
-function DealBitrixTimeline({ dealId }: { dealId: string | null }) {
+/**
+ * Живой контекст сделки из Bitrix: комментарии и активности («что там происходит»).
+ * collapsible — раскрываемый список: данные грузятся только при первом раскрытии
+ * (чтобы карточка открывалась быстро, а Bitrix дёргался лишь по запросу).
+ */
+function DealBitrixTimeline({ dealId, collapsible = false }: { dealId: string | null; collapsible?: boolean }) {
   const [data, setData] = useState<DealTimelineData | null>(null);
   const [err, setErr] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(!collapsible);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
+    if (!open || loadedRef.current) return;
+    loadedRef.current = true;
     let alive = true;
     setLoading(true); setErr('');
     (async () => {
@@ -1287,31 +1297,45 @@ function DealBitrixTimeline({ dealId }: { dealId: string | null }) {
       finally { if (alive) setLoading(false); }
     })();
     return () => { alive = false; };
-  }, [dealId]);
+  }, [open, dealId]);
+
+  const body = loading ? <LoadingBlock /> : err ? <p className="text-sm text-red-600">{err}</p>
+    : !data?.configured ? <p className="text-sm text-gray-400">Интеграция с Bitrix не настроена.</p>
+    : data.items.length === 0 ? <p className="text-sm text-gray-400">Комментариев и активностей по сделке нет.</p>
+    : (
+      <div className="space-y-3">
+        {data.items.map((it, i) => (
+          <div key={i} className="flex gap-3 text-sm border-b border-gray-50 pb-2 last:border-0">
+            <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${it.kind === 'comment' ? 'bg-[#029cda]' : it.done ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+            <div className="min-w-0 flex-1">
+              <p className="text-gray-800 break-words">{it.text}</p>
+              <div className="flex gap-2 text-xs text-gray-400 mt-0.5 flex-wrap">
+                <span>{it.kind === 'comment' ? 'комментарий' : (it.activityType || 'активность')}{it.kind === 'activity' && (it.done ? ' · выполнена' : ' · запланирована')}</span>
+                {it.author && <span>· {it.author}</span>}
+                {it.createdAt && <span>· {new Date(it.createdAt).toLocaleString('ru-RU')}</span>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+
+  if (collapsible) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 p-4">
+        <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between text-left">
+          <span className="font-semibold text-gray-800">Активность в Bitrix</span>
+          <span className="text-gray-400 text-sm">{open ? '▲ свернуть' : '▼ показать'}</span>
+        </button>
+        {open && <div className="mt-3">{body}</div>}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 mt-4">
       <p className="font-semibold text-gray-800 mb-3">Активность в Bitrix</p>
-      {loading ? <LoadingBlock /> : err ? <p className="text-sm text-red-600">{err}</p>
-        : !data?.configured ? <p className="text-sm text-gray-400">Интеграция с Bitrix не настроена.</p>
-        : data.items.length === 0 ? <p className="text-sm text-gray-400">Комментариев и активностей по сделке нет.</p>
-        : (
-          <div className="space-y-3">
-            {data.items.map((it, i) => (
-              <div key={i} className="flex gap-3 text-sm border-b border-gray-50 pb-2 last:border-0">
-                <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${it.kind === 'comment' ? 'bg-[#029cda]' : it.done ? 'bg-emerald-500' : 'bg-amber-400'}`} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-gray-800 break-words">{it.text}</p>
-                  <div className="flex gap-2 text-xs text-gray-400 mt-0.5 flex-wrap">
-                    <span>{it.kind === 'comment' ? 'комментарий' : (it.activityType || 'активность')}{it.kind === 'activity' && (it.done ? ' · выполнена' : ' · запланирована')}</span>
-                    {it.author && <span>· {it.author}</span>}
-                    {it.createdAt && <span>· {new Date(it.createdAt).toLocaleString('ru-RU')}</span>}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+      {body}
     </div>
   );
 }
@@ -1651,23 +1675,30 @@ const RESULT_LABEL: Record<string, string> = {
   no_contact: 'не дозвонились', other: 'другое',
 };
 
-function TopList({ title, rows, max }: { title: string; rows: Array<{ label: string; count: number; extra?: string }>; max: number }) {
+function TopList({ title, rows, max, onRow }: { title: string; rows: Array<{ label: string; count: number; extra?: string }>; max: number; onRow?: (label: string) => void }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4">
-      <p className="font-semibold text-gray-800 mb-3">{title}</p>
+      <p className="font-semibold text-gray-800 mb-3">{title}{onRow && rows.length > 0 && <span className="text-xs font-normal text-gray-400 ml-2">клик — по каким сделкам</span>}</p>
       {rows.length === 0 ? <p className="text-gray-400 text-sm">Нет данных.</p> : (
         <div className="space-y-2">
-          {rows.map((r, i) => (
-            <div key={i} className="text-sm">
-              <div className="flex justify-between gap-2">
-                <span className="text-gray-700 truncate">{r.label}{r.extra ? <span className="text-red-500 text-xs ml-1">{r.extra}</span> : null}</span>
-                <span className="text-gray-500 shrink-0">{r.count}</span>
-              </div>
-              <div className="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                <div className="h-full bg-[#029cda]" style={{ width: `${max ? Math.round((r.count / max) * 100) : 0}%` }} />
-              </div>
-            </div>
-          ))}
+          {rows.map((r, i) => {
+            const inner = (
+              <>
+                <div className="flex justify-between gap-2">
+                  <span className="text-gray-700 truncate">{r.label}{r.extra ? <span className="text-red-500 text-xs ml-1">{r.extra}</span> : null}</span>
+                  <span className="text-gray-500 shrink-0">{r.count}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                  <div className="h-full bg-[#029cda]" style={{ width: `${max ? Math.round((r.count / max) * 100) : 0}%` }} />
+                </div>
+              </>
+            );
+            return onRow ? (
+              <button key={i} onClick={() => onRow(r.label)} className="w-full text-left text-sm rounded-lg -mx-1 px-1 py-0.5 hover:bg-sky-50/70 transition">{inner}</button>
+            ) : (
+              <div key={i} className="text-sm">{inner}</div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -1726,6 +1757,9 @@ function WeakCriteria({ rows }: { rows: Array<{ key: string; avg: number }> }) {
 }
 
 interface RecoBuckets { critical: RecoItem[]; risk: RecoItem[] }
+type DrillKind = 'objection' | 'product' | 'pain' | 'competitor';
+interface InsightDeal { callId: string; bitrixDealId: string | null; company: string | null; manager: string | null; dealUrl: string | null; startedAt: string | null; context: string | null; unhandled?: boolean }
+const DRILL_TITLE: Record<DrillKind, string> = { objection: 'Возражение', product: 'Продукт', pain: 'Боль клиента', competitor: 'Конкурент' };
 
 function Insights({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<InsightsData | null>(null);
@@ -1733,6 +1767,8 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
   const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
+  const [drill, setDrill] = useState<{ kind: DrillKind; label: string } | null>(null);
+  const [drillItems, setDrillItems] = useState<InsightDeal[] | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
@@ -1750,6 +1786,20 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
     finally { setLoading(false); }
   }, [period]);
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!drill) { setDrillItems(null); return; }
+    let alive = true;
+    setDrillItems(null);
+    (async () => {
+      try {
+        const r = await fetch(`/api/ai-sales/insights/deals?kind=${drill.kind}&value=${encodeURIComponent(drill.label)}&${periodQS(period)}`);
+        const j = await r.json();
+        if (alive) setDrillItems(r.ok ? (j.items || []) : []);
+      } catch { if (alive) setDrillItems([]); }
+    })();
+    return () => { alive = false; };
+  }, [drill, period]);
 
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
@@ -1815,14 +1865,46 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <TopList title="Частые возражения" max={maxOf(data.topObjections)} rows={data.topObjections.map((o) => ({ label: o.text, count: o.count, extra: o.unhandled ? `${o.unhandled} не отработано` : undefined }))} />
+            <TopList title="Частые возражения" max={maxOf(data.topObjections)} onRow={(l) => setDrill({ kind: 'objection', label: l })} rows={data.topObjections.map((o) => ({ label: o.text, count: o.count, extra: o.unhandled ? `${o.unhandled} не отработано` : undefined }))} />
             <div className="bg-white rounded-xl border border-gray-100 p-4">
               <p className="font-semibold text-gray-800 mb-3">Слабые этапы отдела</p>
               <WeakCriteria rows={data.managerWeakCriteria} />
             </div>
-            <TopList title="Востребованные продукты" max={maxOf(data.topProducts)} rows={data.topProducts.map((p) => ({ label: p.name, count: p.count }))} />
-            <TopList title="Боли клиентов" max={maxOf(data.topPainPoints)} rows={data.topPainPoints.map((p) => ({ label: p.name, count: p.count }))} />
-            <TopList title="Конкуренты" max={maxOf(data.topCompetitors)} rows={data.topCompetitors.map((c) => ({ label: c.name, count: c.count }))} />
+            <TopList title="Востребованные продукты" max={maxOf(data.topProducts)} onRow={(l) => setDrill({ kind: 'product', label: l })} rows={data.topProducts.map((p) => ({ label: p.name, count: p.count }))} />
+            <TopList title="Боли клиентов" max={maxOf(data.topPainPoints)} onRow={(l) => setDrill({ kind: 'pain', label: l })} rows={data.topPainPoints.map((p) => ({ label: p.name, count: p.count }))} />
+            <TopList title="Конкуренты" max={maxOf(data.topCompetitors)} onRow={(l) => setDrill({ kind: 'competitor', label: l })} rows={data.topCompetitors.map((c) => ({ label: c.name, count: c.count }))} />
+          </div>
+        </div>
+      )}
+
+      {drill && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 p-4 overflow-y-auto" onClick={() => setDrill(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mt-10 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between p-4 border-b border-gray-100">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-gray-400">{DRILL_TITLE[drill.kind]}</p>
+                <p className="font-semibold text-gray-900">«{drill.label}»{drillItems ? <span className="text-gray-400 font-normal"> · {drillItems.length}</span> : null}</p>
+              </div>
+              <button onClick={() => setDrill(null)} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+            </div>
+            <div className="p-4 overflow-y-auto space-y-2">
+              {drillItems === null ? <LoadingBlock /> : drillItems.length === 0 ? <p className="text-gray-400 text-sm">Сделок не найдено.</p> : drillItems.map((d, i) => (
+                <div key={i} className="rounded-xl border border-gray-100 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    {d.bitrixDealId
+                      ? <button onClick={() => { setDrill(null); onOpen(d.bitrixDealId!); }} className="font-medium text-gray-900 text-sm text-left hover:text-[#029cda]">{d.company || `Сделка #${d.bitrixDealId}`}</button>
+                      : <span className="font-medium text-gray-900 text-sm">{d.company || 'Без сделки'}</span>}
+                    {d.unhandled != null && <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-full ${d.unhandled ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>{d.unhandled ? 'не отработано' : 'отработано'}</span>}
+                  </div>
+                  {d.context && <p className="text-sm text-gray-600 mt-1 italic">«{d.context}»</p>}
+                  <div className="flex gap-3 text-xs text-gray-400 mt-1 flex-wrap">
+                    {d.manager && <span>{d.manager}</span>}
+                    {d.startedAt && <span>{new Date(d.startedAt).toLocaleDateString('ru-RU')}</span>}
+                    {d.dealUrl && <a href={d.dealUrl} target="_blank" rel="noreferrer" className="hover:text-[#029cda]" onClick={(e) => e.stopPropagation()}>Bitrix ↗</a>}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
