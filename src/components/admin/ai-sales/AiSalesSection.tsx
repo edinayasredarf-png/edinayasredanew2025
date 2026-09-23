@@ -946,11 +946,11 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
               )}
               {a.summary && <p className="text-gray-700">{a.summary}</p>}
               {a.nextStep?.action && (
-                <div><p className="text-xs uppercase tracking-wide text-gray-400">Следующий шаг</p><p className="text-gray-800">{a.nextStep.action}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Следующий шаг</p><p className="text-gray-800">{a.nextStep.action}</p></div>
               )}
               {a.dealScore?.factors && a.dealScore.factors.filter((f) => f.reason?.trim()).length > 0 && (
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Почему такой балл</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Почему такой балл</p>
                   <ul className="space-y-0.5">
                     {a.dealScore.factors.filter((f) => f.reason?.trim()).map((f, i) => (
                       <li key={i} className={f.points >= 0 ? 'text-emerald-700' : 'text-red-600'}>
@@ -962,26 +962,26 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
               )}
               {a.risks && a.risks.filter((r) => r.detail?.trim()).length > 0 && (
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Риски</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Риски</p>
                   <ul className="list-disc pl-5 text-red-600">{a.risks.filter((r) => r.detail?.trim()).map((r, i) => <li key={i}>{r.detail}</li>)}</ul>
                 </div>
               )}
               {a.managerPerformance && (a.managerPerformance.didWell?.length || a.managerPerformance.mistakes?.length || a.managerPerformance.improveNextTime?.length) ? (
                 <div className="grid grid-cols-1 gap-2">
-                  {a.managerPerformance.didWell?.length ? <div><p className="text-xs uppercase tracking-wide text-emerald-600">Хорошо</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.didWell.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
-                  {a.managerPerformance.mistakes?.length ? <div><p className="text-xs uppercase tracking-wide text-amber-600">Ошибки</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.mistakes.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
-                  {a.managerPerformance.improveNextTime?.length ? <div><p className="text-xs uppercase tracking-wide text-sky-600">Улучшить</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.improveNextTime.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                  {a.managerPerformance.didWell?.length ? <div><p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Хорошо</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.didWell.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                  {a.managerPerformance.mistakes?.length ? <div><p className="text-xs font-semibold uppercase tracking-wide text-amber-600">Ошибки</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.mistakes.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                  {a.managerPerformance.improveNextTime?.length ? <div><p className="text-xs font-semibold uppercase tracking-wide text-sky-600">Улучшить</p><ul className="list-disc pl-5 text-gray-700">{a.managerPerformance.improveNextTime.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                 </div>
               ) : null}
 
-              <details className="rounded-xl bg-[#F6F7F9] p-2.5">
-                <summary className="text-xs uppercase tracking-wide text-gray-500 cursor-pointer">Спросить ассистента про этот звонок</summary>
-                <div className="mt-2"><AssistantAsk callId={id} compact placeholder="Например: почему такая оценка? какие ошибки?" /></div>
-              </details>
+              <div className="rounded-xl bg-[#F6F7F9] p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Спросить ассистента про этот звонок</p>
+                <AssistantAsk callId={id} compact placeholder="Например: почему такая оценка? какие ошибки?" />
+              </div>
 
               {a.managerPerformance?.exampleBetterResponse?.trim() ? (
                 <div className="rounded-xl border border-[#029cda]/30 bg-[#029cda]/5 p-3">
-                  <p className="text-xs uppercase tracking-wide text-[#029cda] mb-1">Как ответить лучше в следующий раз</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#029cda] mb-1">Как ответить лучше в следующий раз</p>
                   <p className="text-sm text-gray-800 italic">«{a.managerPerformance.exampleBetterResponse.trim()}»</p>
                 </div>
               ) : null}
@@ -994,7 +994,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                 return (
                   <div className="rounded-xl bg-[#F6F7F9] p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs uppercase tracking-wide text-gray-500">Соблюдение скрипта {ss.scriptVersion != null && <span className="normal-case text-gray-400">(v{ss.scriptVersion})</span>}</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Соблюдение скрипта {ss.scriptVersion != null && <span className="normal-case text-gray-400">(v{ss.scriptVersion})</span>}</p>
                       <p className={`text-sm font-semibold ${tone}`}>{pct}% <span className="text-gray-400 font-normal">({done}/{ss.steps.length})</span></p>
                     </div>
                     <ul className="space-y-1.5">
@@ -1012,7 +1012,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
 
               {a.managerPerformance?.criteria?.filter((c) => c.key).length ? (
                 <details className="rounded-xl bg-[#F6F7F9] p-2.5">
-                  <summary className="text-xs uppercase tracking-wide text-gray-500 cursor-pointer">Разбор по этапам ({a.managerPerformance.criteria.filter((c) => c.key).length})</summary>
+                  <summary className="text-xs font-semibold uppercase tracking-wide text-gray-500 cursor-pointer">Разбор по этапам ({a.managerPerformance.criteria.filter((c) => c.key).length})</summary>
                   <ul className="mt-2 space-y-1.5">
                     {a.managerPerformance.criteria!.filter((c) => c.key).map((c, i) => {
                       const sc = typeof c.score === 'number' ? c.score : null;
@@ -1029,7 +1029,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
               ) : null}
               {a.objections && a.objections.filter((o) => (o.text || o.quote)?.trim()).length > 0 && (
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Возражения</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Возражения</p>
                   <ul className="space-y-2">
                     {a.objections.filter((o) => (o.text || o.quote)?.trim()).map((o, i) => (
                       <li key={i} className="rounded-xl bg-[#F6F7F9] p-2.5">
@@ -1212,10 +1212,10 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
                 </div>
               )}
               {ins.summary && <p className="text-gray-700">{ins.summary}</p>}
-              {ins.nextBestAction && (<div><p className="text-xs uppercase tracking-wide text-gray-400">Следующее действие</p><p className="text-gray-800">{ins.nextBestAction}</p></div>)}
-              {ins.stageRecommendation && (<div><p className="text-xs uppercase tracking-wide text-gray-400">Рекомендация по стадии</p><p className="text-gray-800">{ins.stageRecommendation}</p></div>)}
+              {ins.nextBestAction && (<div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Следующее действие</p><p className="text-gray-800">{ins.nextBestAction}</p></div>)}
+              {ins.stageRecommendation && (<div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Рекомендация по стадии</p><p className="text-gray-800">{ins.stageRecommendation}</p></div>)}
               {ins.risks && ins.risks.filter((r) => r.detail?.trim()).length > 0 && (
-                <div><p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Риски</p>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Риски</p>
                   <ul className="list-disc pl-5 text-red-600">{ins.risks.filter((r) => r.detail?.trim()).map((r, i) => <li key={i}>{r.detail}</li>)}</ul></div>
               )}
               {ins.keyFacts && (
@@ -1228,9 +1228,9 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
               )}
               {ins.managerAssessment && (
                 <div className="space-y-2">
-                  {ins.managerAssessment.strengths?.length ? <div><p className="text-xs uppercase tracking-wide text-emerald-600">Сильные стороны</p><ul className="list-disc pl-5 text-gray-700">{ins.managerAssessment.strengths.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
-                  {ins.managerAssessment.weaknesses?.length ? <div><p className="text-xs uppercase tracking-wide text-amber-600">Зоны роста</p><ul className="list-disc pl-5 text-gray-700">{ins.managerAssessment.weaknesses.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
-                  {ins.managerAssessment.coaching?.length ? <div><p className="text-xs uppercase tracking-wide text-sky-600">Коучинг по сделке</p><ul className="list-disc pl-5 text-gray-700">{ins.managerAssessment.coaching.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                  {ins.managerAssessment.strengths?.length ? <div><p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Сильные стороны</p><ul className="list-disc pl-5 text-gray-700">{ins.managerAssessment.strengths.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                  {ins.managerAssessment.weaknesses?.length ? <div><p className="text-xs font-semibold uppercase tracking-wide text-amber-600">Зоны роста</p><ul className="list-disc pl-5 text-gray-700">{ins.managerAssessment.weaknesses.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
+                  {ins.managerAssessment.coaching?.length ? <div><p className="text-xs font-semibold uppercase tracking-wide text-sky-600">Коучинг по сделке</p><ul className="list-disc pl-5 text-gray-700">{ins.managerAssessment.coaching.map((x, i) => <li key={i}>{x}</li>)}</ul></div> : null}
                 </div>
               )}
             </div>
@@ -1883,7 +1883,7 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mt-10 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between p-4 border-b border-gray-100">
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400">{DRILL_TITLE[drill.kind]}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{DRILL_TITLE[drill.kind]}</p>
                 <p className="font-semibold text-gray-900">«{drill.label}»{drillItems ? <span className="text-gray-400 font-normal"> · {drillItems.length}</span> : null}</p>
               </div>
               <button onClick={() => setDrill(null)} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
@@ -2204,7 +2204,7 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
         <div className="space-y-5">
           {data.groups.map((g) => (
             <div key={g.category}>
-              <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">{g.categoryLabel}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{g.categoryLabel}</p>
               <div className="flex flex-wrap gap-2">
                 {g.tags.map((t) => (
                   <button key={t.slug} onClick={() => onNavigate?.({ tab: 'ai-calls', tag: t.slug })}
@@ -2402,8 +2402,8 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TopList title="Навыки по критериям (0–10)" max={10} rows={data.criteria.map((c) => ({ label: c.label, count: c.avg }))} />
         <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
-          {data.strengths.length > 0 && (<div><p className="text-xs uppercase tracking-wide text-emerald-600 mb-1">Сильные стороны</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}
-          {data.weaknesses.length > 0 && (<div><p className="text-xs uppercase tracking-wide text-amber-600 mb-1">Зоны роста</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.weaknesses.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}
+          {data.strengths.length > 0 && (<div><p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">Сильные стороны</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}
+          {data.weaknesses.length > 0 && (<div><p className="text-xs font-semibold uppercase tracking-wide text-amber-600 mb-1">Зоны роста</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.weaknesses.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}
           {data.strengths.length === 0 && data.weaknesses.length === 0 && <p className="text-gray-400 text-sm">Недостаточно данных по сильным/слабым сторонам.</p>}
         </div>
       </div>
@@ -2647,6 +2647,17 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
 interface AssistantSource { title: string; category: string | null; score: number }
 
 /** Общий блок вопрос→ответ. callId — для вопросов про конкретный звонок. */
+/** Иконка «AI» (из ai.svg) — наследует цвет текста через currentColor. */
+function AiIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 128 128" className={className} fill="none" stroke="currentColor" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="6" d="M107 37.7667V37C107 28.1634 99.8366 21 91 21H90.2333M107 90.7111V91C107 99.8365 99.8366 107 91 107H90.2333M37.2889 107H37C28.1634 107 21 99.8366 21 91V90.7111M21 37.7667V37C21 28.1634 28.1634 21 37 21H37.2889" />
+      <path strokeDasharray="10 10" strokeLinecap="round" strokeWidth="6" d="M107 55.1444V73.3333M72.8556 107H54.6667M21 73.3333V55.1444M54.6667 21H72.8556" />
+      <path strokeLinecap="round" strokeWidth="6" d="M46 77L58.0909 51.2123C58.1517 51.0828 58.2819 51 58.425 51V51C58.5718 51 58.7046 51.087 58.7632 51.2215L70 77M51 70H63M81 77V51" />
+    </svg>
+  );
+}
+
 function AssistantAsk({ callId, compact = false, placeholder }: { callId?: string; compact?: boolean; placeholder?: string }) {
   const [q, setQ] = useState('');
   const [answer, setAnswer] = useState('');
@@ -2679,10 +2690,11 @@ function AssistantAsk({ callId, compact = false, placeholder }: { callId?: strin
       <div className="flex gap-2">
         <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') ask(); }}
           placeholder={placeholder || 'Задайте вопрос…'}
-          className="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
+          className={`flex-1 px-3 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda] ${compact ? 'py-1.5' : 'py-2'}`} />
         <button onClick={() => ask()} disabled={busy || !q.trim()}
-          className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-2">
-          {busy && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}Спросить
+          className={`rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50 flex items-center gap-1.5 ${compact ? 'px-3 py-1.5' : 'px-4 py-2'}`}>
+          {busy ? <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" /> : null}
+          Спросить<AiIcon className="w-4 h-4" />
         </button>
       </div>
       {!answer && !busy && (
