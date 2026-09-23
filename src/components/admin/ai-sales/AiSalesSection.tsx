@@ -894,12 +894,13 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
         );
       })()}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Транскрипт */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <p className="font-semibold text-gray-800 mb-3">Транскрипция</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        {/* Транскрипт — «липкий» на высоту экрана: правый блок листаем страницей,
+            транскрипт остаётся на виду и скроллится внутри (без пустоты снизу). */}
+        <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col lg:sticky lg:top-4 lg:self-start lg:h-[calc(100vh-120px)]">
+          <p className="font-semibold text-gray-800 mb-3 shrink-0">Транскрипция</p>
           {!data.transcript ? <p className="text-gray-400 text-sm">Пока нет транскрипта.</p> : (
-            <div className="space-y-3 max-h-[520px] xl:max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
+            <div className="space-y-3 flex-1 min-h-0 overflow-y-auto pr-1">
               {data.transcript.segments.map((s) => (
                 <div key={s.idx} className="text-sm">
                   <button onClick={() => seek(s.startMs)} disabled={s.startMs == null}
