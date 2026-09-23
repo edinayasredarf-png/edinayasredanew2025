@@ -658,11 +658,12 @@ interface DetailData {
     talkRatioManagerTime: number | null; wpmManager: number | null; wpmClient: number | null;
     longestPauseSec: number | null; pausesOver3s: number | null; hasTimestamps: boolean;
   };
-  scriptScore?: null | {
-    scriptVersion: number | null;
-    score: number | null;
-    steps: Array<{ key: string; title: string; completed: boolean; reason: string | null }>;
-  };
+  scriptScore?: null | ScriptScoreT;
+}
+interface ScriptScoreT {
+  scriptVersion: number | null;
+  score: number | null;
+  steps: Array<{ key: string; title: string; completed: boolean; reason: string | null; overridden?: boolean }>;
 }
 
 const roleLabel = (role: string | null, speaker: string | null) =>
@@ -759,6 +760,7 @@ function ReviewWidget({ callId, llmDeal, llmManager }: { callId: string; llmDeal
 
 function CallDetail({ id, onBack, backLabel = '← К списку', initialSeekMs = null }: { id: string; onBack: () => void; backLabel?: string; initialSeekMs?: number | null }) {
   const [data, setData] = useState<DetailData | null>(null);
+  const [script, setScript] = useState<ScriptScoreT | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
@@ -772,10 +774,28 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
       setData(j);
+      setScript(j?.scriptScore ?? null);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Ручная правка оценки шага скрипта (если ИИ ошибся) — оптимистично + пересчёт %.
+  const toggleStep = async (key: string, completed: boolean) => {
+    setScript((prev) => {
+      if (!prev) return prev;
+      const steps = prev.steps.map((s) => (s.key === key ? { ...s, completed, overridden: true } : s));
+      const done = steps.filter((s) => s.completed).length;
+      const score = steps.length ? Math.round((done / steps.length) * 100) : prev.score;
+      return { ...prev, steps, score };
+    });
+    try {
+      await fetch(`/api/ai-sales/calls/${id}/script`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, completed }),
+      });
+    } catch { /* оптимистично: правку оставляем на экране */ }
+  };
 
   const reanalyze = async () => {
     setBusy(true); setMsg('');
@@ -986,23 +1006,31 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                 </div>
               ) : null}
 
-              {data.scriptScore && data.scriptScore.steps.length > 0 ? (() => {
-                const ss = data.scriptScore!;
-                const done = ss.steps.filter((s) => s.completed).length;
-                const pct = ss.score ?? Math.round((done / ss.steps.length) * 100);
+              {script && script.steps.length > 0 ? (() => {
+                const done = script.steps.filter((s) => s.completed).length;
+                const pct = script.score ?? Math.round((done / script.steps.length) * 100);
                 const tone = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-red-600';
                 return (
                   <div className="rounded-xl bg-[#F6F7F9] p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Соблюдение скрипта {ss.scriptVersion != null && <span className="normal-case text-gray-400">(v{ss.scriptVersion})</span>}</p>
-                      <p className={`text-sm font-semibold ${tone}`}>{pct}% <span className="text-gray-400 font-normal">({done}/{ss.steps.length})</span></p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Соблюдение скрипта {script.scriptVersion != null && <span className="normal-case text-gray-400">(v{script.scriptVersion})</span>}</p>
+                      <p className={`text-sm font-semibold ${tone}`}>{pct}% <span className="text-gray-400 font-normal">({done}/{script.steps.length})</span></p>
                     </div>
-                    <ul className="space-y-1.5">
-                      {ss.steps.map((s) => (
-                        <li key={s.key} className="flex items-start gap-2 text-sm">
-                          <span className={s.completed ? 'text-emerald-600' : 'text-red-500'}>{s.completed ? '✓' : '✕'}</span>
-                          <span className="text-gray-800">{s.title}</span>
-                          {s.reason && <span className="text-gray-400">— {s.reason}</span>}
+                    <p className="text-[11px] text-gray-400 mb-2">Оценка ИИ. Если ошиблась — поправьте Да/Нет, балл пересчитается.</p>
+                    <ul className="space-y-2">
+                      {script.steps.map((s) => (
+                        <li key={s.key} className="text-sm">
+                          <div className="flex items-center gap-2">
+                            <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
+                              <button onClick={() => toggleStep(s.key, true)}
+                                className={`px-2 py-0.5 text-xs ${s.completed ? 'bg-emerald-500 text-white' : 'bg-white text-gray-500 hover:bg-emerald-50'}`}>Да</button>
+                              <button onClick={() => toggleStep(s.key, false)}
+                                className={`px-2 py-0.5 text-xs border-l border-gray-200 ${!s.completed ? 'bg-red-500 text-white' : 'bg-white text-gray-500 hover:bg-red-50'}`}>Нет</button>
+                            </div>
+                            <span className="text-gray-800">{s.title}</span>
+                            {s.overridden && <span className="text-[10px] text-[#029cda] shrink-0" title="Поправлено вручную">испр.</span>}
+                          </div>
+                          {s.reason && <p className="text-gray-400 text-xs mt-0.5 pl-1">{s.reason}</p>}
                         </li>
                       ))}
                     </ul>

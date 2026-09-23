@@ -159,7 +159,32 @@ export async function saveScriptScore(input: {
 export interface CallScriptScore {
   scriptVersion: number | null;
   score: number | null;
-  steps: Array<{ key: string; title: string; completed: boolean; reason: string | null }>;
+  steps: Array<{ key: string; title: string; completed: boolean; reason: string | null; overridden?: boolean }>;
+}
+
+/**
+ * Ручная правка оценки шага скрипта (РОП/менеджер поправил, если ИИ ошибся).
+ * Обновляем последнюю оценку звонка: меняем completed у шага, помечаем overridden,
+ * пересчитываем балл. Возвращаем обновлённую оценку.
+ */
+export async function overrideScriptStep(
+  callId: string,
+  key: string,
+  completed: boolean
+): Promise<CallScriptScore | null> {
+  const cur = await getScriptScore(callId);
+  if (!cur) return null;
+  const steps = cur.steps.map((s) => (s.key === key ? { ...s, completed, overridden: true } : s));
+  const done = steps.filter((s) => s.completed).length;
+  const score = steps.length ? Math.round((done / steps.length) * 100) : cur.score;
+  const pool = getTimewebPool();
+  await pool.query(
+    `update ai_call_script_scores set steps = $2::jsonb, score = $3
+       where call_id = $1
+         and created_at = (select max(created_at) from ai_call_script_scores where call_id = $1)`,
+    [callId, JSON.stringify(steps), score]
+  );
+  return { scriptVersion: cur.scriptVersion, score, steps };
 }
 
 /** Последняя оценка скрипта по звонку (для карточки). */
@@ -174,11 +199,12 @@ export async function getScriptScore(callId: string): Promise<CallScriptScore | 
     const r = rows[0];
     if (!r) return null;
     const steps = Array.isArray(r.steps)
-      ? (r.steps as Array<{ key?: string; title?: string; completed?: boolean; reason?: string | null }>).map((s) => ({
+      ? (r.steps as Array<{ key?: string; title?: string; completed?: boolean; reason?: string | null; overridden?: boolean }>).map((s) => ({
           key: s.key || "",
           title: s.title || "",
           completed: !!s.completed,
           reason: s.reason ?? null,
+          overridden: !!s.overridden,
         }))
       : [];
     return { scriptVersion: r.script_version, score: r.score, steps };
