@@ -1674,8 +1674,62 @@ function TopList({ title, rows, max }: { title: string; rows: Array<{ label: str
   );
 }
 
-function Insights() {
+const RESULT_COLOR: Record<string, string> = {
+  agreed: '#16a34a', meeting_set: '#0ea5e9', send_quote: '#029cda', callback: '#f59e0b',
+  not_agreed: '#ef4444', not_interested: '#9ca3af', no_contact: '#6b7280', other: '#cbd5e1',
+};
+
+/** Сегментированная полоса-пропорция результатов звонков (наглядно, в одну строку). */
+function ResultBar({ rows }: { rows: Array<{ type: string; count: number }> }) {
+  const total = rows.reduce((n, r) => n + r.count, 0);
+  if (!total) return <p className="text-gray-400 text-sm">Нет данных.</p>;
+  const sorted = [...rows].sort((a, b) => b.count - a.count);
+  return (
+    <div>
+      <div className="flex h-4 w-full rounded-full overflow-hidden">
+        {sorted.map((r) => (
+          <div key={r.type} title={`${RESULT_LABEL[r.type] || r.type}: ${r.count} (${Math.round((r.count / total) * 100)}%)`}
+            style={{ width: `${(r.count / total) * 100}%`, background: RESULT_COLOR[r.type] || '#cbd5e1' }} />
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs">
+        {sorted.map((r) => (
+          <span key={r.type} className="inline-flex items-center gap-1.5 text-gray-600">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: RESULT_COLOR[r.type] || '#cbd5e1' }} />
+            {RESULT_LABEL[r.type] || r.type} · <b className="text-gray-800">{r.count}</b> ({Math.round((r.count / total) * 100)}%)
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Слабые этапы отдела с цветовым кодом балла (красный <5, жёлтый <7). */
+function WeakCriteria({ rows }: { rows: Array<{ key: string; avg: number }> }) {
+  if (!rows.length) return <p className="text-gray-400 text-sm">Нет данных.</p>;
+  const color = (v: number) => (v < 5 ? '#ef4444' : v < 7 ? '#f59e0b' : '#16a34a');
+  return (
+    <div className="space-y-2">
+      {rows.map((c) => (
+        <div key={c.key} className="text-sm">
+          <div className="flex justify-between gap-2">
+            <span className="text-gray-700">{CRIT_LABEL[c.key] || c.key}</span>
+            <span className="font-medium shrink-0" style={{ color: color(c.avg) }}>{c.avg}/10</span>
+          </div>
+          <div className="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${Math.round((c.avg / 10) * 100)}%`, background: color(c.avg) }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface RecoBuckets { critical: RecoItem[]; risk: RecoItem[] }
+
+function Insights({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<InsightsData | null>(null);
+  const [reco, setReco] = useState<RecoBuckets | null>(null);
   const [period, setPeriod] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
@@ -1683,10 +1737,15 @@ function Insights() {
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const r = await fetch(`/api/ai-sales/insights?${periodQS(period)}`);
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || 'Ошибка');
-      setData(j);
+      const [ri, rr] = await Promise.all([
+        fetch(`/api/ai-sales/insights?${periodQS(period)}`),
+        fetch(`/api/ai-sales/recommendations?${periodQS(period)}`),
+      ]);
+      const ji = await ri.json();
+      if (!ri.ok) throw new Error(ji.error || 'Ошибка');
+      setData(ji);
+      if (rr.ok) { const jr = await rr.json(); setReco({ critical: jr.critical || [], risk: jr.risk || [] }); }
+      else setReco({ critical: [], risk: [] });
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
   }, [period]);
@@ -1695,13 +1754,14 @@ function Insights() {
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
   const maxOf = (arr: Array<{ count: number }>) => arr.reduce((m, x) => Math.max(m, x.count), 0);
+  const problems = reco ? [...reco.critical, ...reco.risk] : [];
 
   return (
     <div>
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">AI Insights</h2>
-          <p className="text-sm text-gray-500 mb-4">Агрегаты по разборам звонков за период.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Отчёты по отделу</h2>
+          <p className="text-sm text-gray-500 mb-4">Что происходит за период и по каким сделкам проблемы. Клик по сделке — открыть карточку.</p>
         </div>
         <ExportButton period={period} />
       </div>
@@ -1716,19 +1776,53 @@ function Insights() {
           )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Kpi label="Проанализировано" value={data.totalAnalyzed} />
+            <Kpi label="Проблемных сделок" value={problems.length} sub="требуют внимания" />
             <Kpi label="Без обсуждения бюджета" value={data.budgetNotDiscussedRate != null ? `${data.budgetNotDiscussedRate}%` : '—'} sub="в состоявшихся звонках" />
             <Kpi label="Упоминаний закупок" value={data.procurementMentions} sub="44-ФЗ/223-ФЗ/тендер" />
-            <Kpi label="Возражений (типов)" value={data.topObjections.length} />
           </div>
+
+          {/* Проблемные сделки — сразу видно, по какой сделке что не так */}
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <p className="font-semibold text-gray-800 mb-3">Проблемные сделки за период ({problems.length})</p>
+            {problems.length === 0 ? <p className="text-gray-400 text-sm">Проблемных сделок нет — чисто 👌</p> : (
+              <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+                {problems.map((d) => (
+                  <button key={`${d.severity}-${d.bitrixDealId}`} onClick={() => onOpen(d.bitrixDealId)}
+                    className="w-full text-left rounded-xl border border-gray-100 p-3 hover:border-[#029cda]/40 hover:shadow-sm transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-medium text-gray-900 text-sm">{d.company || d.title || `Сделка #${d.bitrixDealId}`}</span>
+                      <span className="flex items-center gap-2 shrink-0">
+                        <span className={`h-2 w-2 rounded-full ${d.severity === 'critical' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                        {d.temperature && <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[d.temperature] || ''}`}>{tempRu(d.temperature)}</span>}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{d.reason}</p>
+                    <div className="flex gap-3 text-xs text-gray-400 mt-1 flex-wrap">
+                      {d.manager && <span>{d.manager}</span>}
+                      {d.dealScore != null && <span>{d.dealScore}/100</span>}
+                      {d.daysSinceCall != null && <span>{d.daysSinceCall} дн. назад</span>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Результаты звонков — сегментированная полоса */}
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <p className="font-semibold text-gray-800 mb-3">Результаты звонков</p>
+            <ResultBar rows={data.resultDistribution} />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <TopList title="Частые возражения" max={maxOf(data.topObjections)} rows={data.topObjections.map((o) => ({ label: o.text, count: o.count, extra: o.unhandled ? `${o.unhandled} не отработано` : undefined }))} />
+            <div className="bg-white rounded-xl border border-gray-100 p-4">
+              <p className="font-semibold text-gray-800 mb-3">Слабые этапы отдела</p>
+              <WeakCriteria rows={data.managerWeakCriteria} />
+            </div>
             <TopList title="Востребованные продукты" max={maxOf(data.topProducts)} rows={data.topProducts.map((p) => ({ label: p.name, count: p.count }))} />
             <TopList title="Боли клиентов" max={maxOf(data.topPainPoints)} rows={data.topPainPoints.map((p) => ({ label: p.name, count: p.count }))} />
-            <TopList title="Частые возражения" max={maxOf(data.topObjections)} rows={data.topObjections.map((o) => ({ label: o.text, count: o.count, extra: o.unhandled ? `${o.unhandled} не отработано` : undefined }))} />
             <TopList title="Конкуренты" max={maxOf(data.topCompetitors)} rows={data.topCompetitors.map((c) => ({ label: c.name, count: c.count }))} />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <TopList title="Слабые места менеджеров (ниже балл)" max={10} rows={data.managerWeakCriteria.map((c) => ({ label: CRIT_LABEL[c.key] || c.key, count: c.avg }))} />
-            <TopList title="Результаты звонков" max={maxOf(data.resultDistribution)} rows={data.resultDistribution.map((r) => ({ label: RESULT_LABEL[r.type] || r.type, count: r.count }))} />
           </div>
         </div>
       )}
@@ -3134,7 +3228,7 @@ export default function AiSalesSection() {
     if (view === 'scripts') return <Scripts />;
     if (view === 'prompts') return <Prompts />;
     if (view === 'settings') return <Settings />;
-    if (view === 'insights') return <Insights />;
+    if (view === 'insights') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Insights onOpen={setOpenDeal} />;
     if (view === 'followups') return <FollowUps />;
     if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <LostDeals onOpen={setOpenDeal} />;
     if (view === 'rop') return <Rop onNavigate={nav} />;
