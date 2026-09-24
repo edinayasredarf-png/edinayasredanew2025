@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import nodemailer, { Transporter } from "nodemailer";
 
 /**
@@ -55,7 +56,9 @@ function config(account?: SmtpAccount): MailConfig {
       port: account.port || 465,
       secure: account.secure,
       user: account.user?.trim(),
-      pass: account.pass,
+      // Тримим пароль: частая причина «неверный пароль» — перенос строки/пробел
+      // при копировании из письма/менеджера паролей.
+      pass: account.pass?.trim(),
       from: account.from?.trim() || account.user?.trim(),
       helo: (account.user?.split("@")[1] || "").trim() || undefined,
     };
@@ -77,7 +80,10 @@ function getTransporter(account?: SmtpAccount): Transporter {
       "SMTP не настроен: укажите хост, логин и пароль ящика (или SMTP_HOST/SMTP_USER/SMTP_PASS)"
     );
   }
-  const key = `${c.host}:${c.port}:${c.secure}:${c.user}`;
+  // Ключ кэша включает хэш пароля: иначе после исправления опечатки в пароле
+  // повторная проверка брала бы старый (неверный) транспортёр и снова падала 535.
+  const passHash = createHash("sha1").update(c.pass || "").digest("hex").slice(0, 12);
+  const key = `${c.host}:${c.port}:${c.secure}:${c.user}:${passHash}`;
   const cached = transporters.get(key);
   if (cached) return cached;
   const t = nodemailer.createTransport({

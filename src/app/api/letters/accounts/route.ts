@@ -84,8 +84,15 @@ export async function POST(request: NextRequest) {
         await verifyMailer(account);
         return NextResponse.json({ ok: true, verified: true });
       } catch (e) {
+        let error = e instanceof Error ? e.message : "Не удалось подключиться";
+        // 535 — сервер отверг логин/пароль: подсказываем типичные причины.
+        if (/535|authentication failed|Invalid login|Invalid user or password/i.test(error)) {
+          error += ". Проверьте: 1) логин = ПОЛНЫЙ адрес ящика (offer@домен), а не только имя; " +
+            "2) это пароль именно почтового ящика (для некоторых провайдеров нужен отдельный пароль для внешних приложений); " +
+            "3) в пароле нет лишних пробелов; 4) порт/шифрование: 465 = SSL (secure вкл.), 587 = STARTTLS (secure выкл.).";
+        }
         return NextResponse.json(
-          { ok: false, verified: false, error: e instanceof Error ? e.message : "Не удалось подключиться" },
+          { ok: false, verified: false, error },
           { status: 200 }
         );
       }
