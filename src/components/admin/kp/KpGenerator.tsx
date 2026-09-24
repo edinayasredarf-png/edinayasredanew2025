@@ -873,7 +873,7 @@ function CreateTab(p: CreateProps) {
   const [mailSubject, setMailSubject] = React.useState('Коммерческое предложение');
   const [mailMessage, setMailMessage] = React.useState('Здравствуйте!\n\nНаправляем коммерческое предложение во вложении. Будем рады сотрудничеству.');
   const [mailAccountId, setMailAccountId] = React.useState('default');
-  const [mailAsPdf, setMailAsPdf] = React.useState(false);
+  const [mailAsPdf, setMailAsPdf] = React.useState(true); // по умолчанию отправляем PDF
   const [mailPerOrg, setMailPerOrg] = React.useState(false);
   const [mailFiles, setMailFiles] = React.useState<File[]>([]);
   const [mailLibIds, setMailLibIds] = React.useState<number[]>([]);
