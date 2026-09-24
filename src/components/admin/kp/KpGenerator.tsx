@@ -167,6 +167,9 @@ export default function KpGenerator() {
   const [dealId, setDealId] = useState('');
   const [uploadToBitrix, setUploadToBitrix] = useState(false);
   const [clientCompanyId, setClientCompanyId] = useState(''); // выбранная компания Bitrix (для контактов)
+  // «Замок» привязки: если включён — переименование НЕ сбрасывает связь со сделкой/компанией
+  // Bitrix (менеджер поправил название, а файл всё равно улетит в сделку).
+  const [lockBinding, setLockBinding] = useState(false);
 
   const loadDeals = async (companyId: string) => {
     try {
@@ -181,13 +184,16 @@ export default function KpGenerator() {
   const onPickCompany = (it: { id?: string; title: string }) => {
     setClientOrgFull(it.title);
     setClientCompanyId(it.id || '');
+    setLockBinding(!!it.id); // выбрали компанию из Bitrix — привязку по умолчанию фиксируем
     if (it.id) loadDeals(it.id);
     else { setDeals([]); setDealId(''); }
   };
-  // Ручное изменение названия компании сбрасывает привязку к компании Bitrix.
+  // Ручное изменение названия. Пустое поле — всегда отвязываем. Иначе связь сбрасываем
+  // ТОЛЬКО если «замок» выключен (иначе менеджер может спокойно переименовать).
   const onChangeCompany = (v: string) => {
     setClientOrgFull(v);
-    if (clientCompanyId) { setClientCompanyId(''); setDeals([]); setDealId(''); }
+    if (!v.trim()) { setClientCompanyId(''); setDeals([]); setDealId(''); setLockBinding(false); return; }
+    if (clientCompanyId && !lockBinding) { setClientCompanyId(''); setDeals([]); setDealId(''); }
   };
   // «Красивый вид»: убрать КАПС/кривые кавычки, НЕ сбрасывая привязку к Bitrix.
   const beautifyCompany = () => setClientOrgFull((v) => normalizeCompanyName(v));
@@ -721,7 +727,7 @@ export default function KpGenerator() {
             clientOrgFull, onChangeCompany, beautifyCompany, clientCompanyId, orgFullError, fioError,
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
-            onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
+            onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
             kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
@@ -802,7 +808,7 @@ function CreateTab(p: CreateProps) {
     clientOrgFull, onChangeCompany, beautifyCompany, clientCompanyId, orgFullError, fioError,
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
-    onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix,
+    onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
     kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
@@ -826,6 +832,7 @@ function CreateTab(p: CreateProps) {
     onPickCompany: (it: { id?: string; title: string }) => void;
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
+    lockBinding: boolean; setLockBinding: (v: boolean) => void;
     kpDate: string; setKpDate: (v: string) => void; kpNumber: string; setKpNumber: (v: string) => void;
     recordRegistry: boolean; setRecordRegistry: (v: boolean) => void;
     requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
@@ -967,6 +974,14 @@ function CreateTab(p: CreateProps) {
                 </button>
               </div>
               {orgFullError && <div className="text-xs text-red-500 mt-1">Поле обязательно для заполнения</div>}
+              {clientCompanyId && (
+                <label className="mt-1.5 flex items-start gap-2 text-xs cursor-pointer select-none">
+                  <input type="checkbox" checked={lockBinding} onChange={(e) => setLockBinding(e.target.checked)} className="mt-0.5 accent-[#029cda]" />
+                  <span className={lockBinding ? 'text-[#0b5c7d]' : 'text-gray-500'}>
+                    🔗 Связать с этой компанией/сделкой Bitrix — {lockBinding ? 'привязка сохранится при переименовании' : 'иначе переименование сбросит привязку'}
+                  </span>
+                </label>
+              )}
             </div>
             <div className="md:flex-1 min-w-0">
               {fieldLabel('Полное ФИО клиента', `${clientCompanyId ? 'Контакты выбранной компании (из её сделок).' : 'Подсказки по всем контактам Bitrix24.'} «Иванов И.И.» / «Иванову И.И.» и обращение — автоматически. Кнопка «Aa» убирает КАПС.`, true)}
