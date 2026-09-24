@@ -234,8 +234,8 @@ export default function AdminPanel() {
     return (
       <div key={item.id} className="group relative">
         <button type="button" onClick={() => setActiveTab(item.id)}
-          className={`w-full flex items-center gap-3 pl-3 pr-8 py-2.5 rounded-[14px] text-sm transition ${active ? 'bg-[var(--es-tile)] text-[var(--es-ink)] font-semibold' : 'text-[var(--es-ink-2)] hover:bg-[var(--es-tile)]'}`}>
-          <Ic className={`w-5 h-5 shrink-0 ${active ? 'text-[var(--es-accent)]' : ''}`} />
+          className={`w-full flex items-center gap-3.5 pl-3.5 pr-8 py-3 rounded-2xl text-[15px] transition ${active ? 'bg-[var(--es-tile)] text-[var(--es-ink)] font-semibold' : 'text-[var(--es-ink)] font-medium hover:bg-[var(--es-tile)]'}`}>
+          <Ic className={`w-[22px] h-[22px] shrink-0 ${active ? 'text-[var(--es-accent)]' : 'text-[var(--es-ink)]'}`} />
           <span className="truncate">{item.label}</span>
         </button>
         <button type="button" title={fav ? 'Убрать из избранного' : 'В избранное'}
@@ -256,27 +256,23 @@ export default function AdminPanel() {
             <Image src="/img/es_logo_blue.svg" alt="Единая среда" width={140} height={38} className="h-9 w-auto" priority />
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-1 space-y-1">
-            {/* Избранное */}
+          <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-1">
+            {/* Избранное — единственная подпись; остальное плоским списком, как у Яндекса */}
             {favorites.length > 0 && (
-              <div className="mb-1">
-                <div className="flex items-center gap-2 px-3 pt-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[var(--es-ink-3)]">
+              <>
+                <div className="flex items-center gap-2 px-3.5 pt-1 pb-0.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[var(--es-ink-3)]">
                   <IconStar className="w-3.5 h-3.5" filled /> Избранное
                 </div>
                 {favorites.map((id) => {
                   const item = NAV_FLAT.find((i) => i.id === id);
                   return item ? menuRow(item) : null;
                 })}
-              </div>
+                <div className="h-px bg-[var(--es-line)] mx-3.5 my-1.5" />
+              </>
             )}
 
-            {/* Группы навигации */}
-            {NAV.map((section) => (
-              <div key={section.group}>
-                <div className="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[var(--es-ink-3)]">{section.group}</div>
-                {section.items.map((item) => menuRow(item))}
-              </div>
-            ))}
+            {/* Плоский список пунктов */}
+            {NAV_FLAT.map((item) => menuRow(item))}
           </div>
 
           {/* Профиль — внизу меню (перенесён из хедера, с меню) */}
