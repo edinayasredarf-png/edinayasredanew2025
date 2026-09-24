@@ -4,6 +4,28 @@
 	--background: #ffffff;
 	--foreground: #171717;
 	color-scheme: light;
+
+	/* ── Дизайн-система админки (спокойный «Яндекс-ID» вид) ───────────────
+	   Единый источник токенов. Использовать в компонентах как bg-[var(--es-…)] */
+	--es-bg: #ffffff;          /* белый фон */
+	--es-tile: #f4f5f7;        /* мягкая серая плитка/панель */
+	--es-tile-2: #eceef1;      /* плитка потемнее (треки сегментов) */
+	--es-tile-hover: #eef0f3;
+	--es-ink: #1b2029;         /* основной текст */
+	--es-ink-2: #6b7480;       /* приглушённый */
+	--es-ink-3: #9aa2ad;       /* подписи/плейсхолдеры */
+	--es-line: #edeef1;        /* тонкие разделители */
+	--es-black: #1c1b19;       /* тёмная главная кнопка */
+	--es-accent: #029cda;      /* бренд-акцент */
+	--es-accent-ink: #0480b1;
+	--es-accent-soft: #e6f4fb;
+	--es-good: #1f9d57; --es-good-soft: #e8f6ee;
+	--es-warn: #d98600; --es-warn-soft: #fbf1db;
+	--es-bad: #e24a41;  --es-bad-soft: #fcecea;
+	--es-cold: #3d86c9; --es-cold-soft: #e9f2fb;
+	--es-r: 22px; --es-r-md: 16px; --es-r-sm: 12px;
+	--es-shadow: 0 2px 4px rgba(23,30,42,.03), 0 12px 32px rgba(23,30,42,.06);
+	--es-shadow-sm: 0 1px 3px rgba(23,30,42,.06);
 }
 
 @theme inline {
