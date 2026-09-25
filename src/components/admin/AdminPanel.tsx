@@ -25,6 +25,7 @@ const mkIcon = (d: string) => function Icon({ className }: IconProps) {
   );
 };
 const IconGrid = mkIcon('M4 4h6v6H4Z M14 4h6v6h-6Z M4 14h6v6H4Z M14 14h6v6h-6Z');
+const IconSearch = mkIcon('M11 18a7 7 0 100-14 7 7 0 000 14Z M20.5 20.5L16 16');
 const IconNews = mkIcon('M4 5h16v14H4Z M8 9h8 M8 13h8 M8 17h4');
 const IconLink = mkIcon('M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1 M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1');
 const IconMail = mkIcon('M4 6h16v12H4Z M4 7l8 6 8-6');
@@ -126,6 +127,23 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
 ];
 const NAV_FLAT = NAV.flatMap((s) => s.items);
 
+/** Индекс глобального поиска: разделы + частые действия/настройки → открывают вкладку. */
+type SearchEntry = { label: string; tab: TabId; kind: string; icon?: (p: IconProps) => React.ReactElement };
+const SEARCH_INDEX: SearchEntry[] = [
+  ...NAV_FLAT.map((i): SearchEntry => ({ label: i.label, tab: i.id, kind: 'Раздел', icon: i.icon })),
+  { label: 'Сгенерировать КП', tab: 'kp', kind: 'Действие' },
+  { label: 'Отправить КП на почту', tab: 'kp', kind: 'Действие' },
+  { label: 'Шаблоны КП', tab: 'kp', kind: 'Настройки' },
+  { label: 'Загрузка КП в сделку Bitrix', tab: 'kp', kind: 'Настройки' },
+  { label: 'Речевая аналитика — Сигналы', tab: 'ai-analytics', kind: 'Раздел' },
+  { label: 'Отчёты по чек-листам', tab: 'ai-analytics', kind: 'Отчёт' },
+  { label: 'Конверсия по менеджерам', tab: 'ai-analytics', kind: 'Отчёт' },
+  { label: 'Возражения по менеджерам', tab: 'ai-analytics', kind: 'Отчёт' },
+  { label: 'База знаний', tab: 'ai-analytics', kind: 'Раздел' },
+  { label: 'Настройки AI / провайдер', tab: 'ai-analytics', kind: 'Настройки' },
+  { label: 'Почтовые ящики для рассылок', tab: 'letters', kind: 'Настройки' },
+];
+
 export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -136,6 +154,13 @@ export default function AdminPanel() {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const results = query.trim()
+    ? SEARCH_INDEX.filter((e) => e.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
+    : [];
+  const openResult = (tab: TabId) => { setActiveTab(tab); setQuery(''); setSearchOpen(false); };
 
   useEffect(() => {
     try {
@@ -161,7 +186,10 @@ export default function AdminPanel() {
   }, [activeTab]);
 
   useEffect(() => {
-    const h = (e: MouseEvent) => { if (!profileRef.current?.contains(e.target as Node)) setShowProfileMenu(false); };
+    const h = (e: MouseEvent) => {
+      if (!profileRef.current?.contains(e.target as Node)) setShowProfileMenu(false);
+      if (!searchRef.current?.contains(e.target as Node)) setSearchOpen(false);
+    };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
@@ -274,36 +302,66 @@ export default function AdminPanel() {
             {/* Плоский список пунктов */}
             {NAV_FLAT.map((item) => menuRow(item))}
           </div>
-
-          {/* Профиль — внизу меню (перенесён из хедера, с меню) */}
-          <div ref={profileRef} className="mt-3 relative">
-            <button type="button" onClick={() => setShowProfileMenu((v) => !v)}
-              className="w-full bg-[var(--es-tile)] rounded-2xl p-2.5 flex items-center gap-3 hover:bg-[var(--es-tile-hover)] transition text-left">
-              <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#029cda]/10 text-[#029cda] font-semibold flex items-center justify-center shrink-0">
-                {avatarUrl ? <Image src={avatarUrl} alt="Профиль" width={36} height={36} className="w-full h-full object-cover" /> : 'ЕС'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-gray-800 truncate">Профиль</div>
-                <div className="text-xs text-gray-400">Администратор</div>
-              </div>
-              <span className="text-gray-400 text-xs">{showProfileMenu ? '▾' : '▸'}</span>
-            </button>
-            {showProfileMenu && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl border border-gray-200 py-1 z-40">
-                <a href="/profile" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#F6F7F9] text-gray-800 text-sm">
-                  <Image src="/icons/profile.svg" alt="" width={16} height={16} /> Профиль
-                </a>
-                <button type="button" onClick={async () => { await authStore.signOut(); window.location.reload(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#F6F7F9] text-red-500 text-sm">
-                  <Image src="/icons/sign_out.svg" alt="" width={16} height={16} /> Выход
-                </button>
-              </div>
-            )}
-          </div>
         </aside>
 
         {/* Контент */}
         <div className="flex-1 min-w-0">
+          {/* Верхняя панель: глобальный поиск + профиль справа (как у Яндекса) */}
+          <div className="flex items-center gap-3 mb-5">
+            <div ref={searchRef} className="relative flex-1 max-w-xl ml-auto">
+              <div className="flex items-center gap-2.5 bg-[var(--es-tile)] rounded-full px-4 py-2.5 text-[var(--es-ink-3)]">
+                <IconSearch className="w-[18px] h-[18px] shrink-0" />
+                <input value={query}
+                  onChange={(e) => { setQuery(e.target.value); setSearchOpen(true); }}
+                  onFocus={() => setSearchOpen(true)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) openResult(results[0].tab); if (e.key === 'Escape') setSearchOpen(false); }}
+                  placeholder="Поиск по разделам, действиям, настройкам"
+                  className="w-full bg-transparent outline-none text-[var(--es-ink)] placeholder:text-[var(--es-ink-3)] text-sm" />
+              </div>
+              {searchOpen && query.trim() && (
+                <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-[var(--es-shadow)] p-1.5 z-50 max-h-[60vh] overflow-y-auto">
+                  {results.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-[var(--es-ink-3)]">Ничего не найдено</div>
+                  ) : results.map((r, i) => {
+                    const Ic = r.icon;
+                    return (
+                      <button key={i} type="button" onClick={() => openResult(r.tab)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[var(--es-tile)] transition">
+                        <span className="w-9 h-9 rounded-[11px] bg-[var(--es-tile)] grid place-items-center shrink-0 text-[var(--es-ink)]">
+                          {Ic ? <Ic className="w-5 h-5" /> : <IconSearch className="w-[18px] h-[18px]" />}
+                        </span>
+                        <span className="min-w-0 flex-1"><span className="block text-sm font-medium text-[var(--es-ink)] truncate">{r.label}</span></span>
+                        <span className="text-[11px] font-medium text-[var(--es-ink-3)] shrink-0">{r.kind}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div ref={profileRef} className="relative shrink-0">
+              <button type="button" onClick={() => setShowProfileMenu((v) => !v)}
+                className="w-11 h-11 rounded-full overflow-hidden bg-[#029cda]/10 text-[#029cda] font-semibold grid place-items-center hover:ring-2 hover:ring-[var(--es-tile-2)] transition">
+                {avatarUrl ? <Image src={avatarUrl} alt="Профиль" width={44} height={44} className="w-full h-full object-cover" /> : 'ЕС'}
+              </button>
+              {showProfileMenu && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-[var(--es-shadow)] py-1.5 z-50">
+                  <div className="px-4 py-2 border-b border-[var(--es-line)] mb-1">
+                    <div className="text-sm font-semibold text-[var(--es-ink)]">Профиль</div>
+                    <div className="text-xs text-[var(--es-ink-3)]">Администратор</div>
+                  </div>
+                  <a href="/profile" className="flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--es-tile)] text-[var(--es-ink)] text-sm rounded-xl mx-1">
+                    <Image src="/icons/profile.svg" alt="" width={16} height={16} /> Открыть профиль
+                  </a>
+                  <button type="button" onClick={async () => { await authStore.signOut(); window.location.reload(); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--es-bad-soft)] text-[var(--es-bad)] text-sm rounded-xl mx-1">
+                    <Image src="/icons/sign_out.svg" alt="" width={16} height={16} /> Выйти
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Мобильная навигация */}
           <div className="lg:hidden -mx-3 px-3 mb-4 overflow-x-auto">
             <div className="flex gap-2 min-w-max">
