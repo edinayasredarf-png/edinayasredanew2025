@@ -127,21 +127,55 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
 ];
 const NAV_FLAT = NAV.flatMap((s) => s.items);
 
-/** Индекс глобального поиска: разделы + частые действия/настройки → открывают вкладку. */
-type SearchEntry = { label: string; tab: TabId; kind: string; icon?: (p: IconProps) => React.ReactElement };
+/** Индекс глобального поиска: разделы, под-разделы, действия и настройки.
+ *  view — под-раздел речевой аналитики (открывается через ?asv= в AiSalesSection). */
+type SearchEntry = { label: string; tab: TabId; kind: string; view?: string; icon?: (p: IconProps) => React.ReactElement };
+
+// Под-разделы модуля «Речевая аналитика» (значения view = как в AiSalesSection).
+const AI_SUBVIEWS: Array<{ label: string; view: string; kind: string }> = [
+  { label: 'Речевая аналитика — Обзор', view: 'dashboard', kind: 'Раздел' },
+  { label: 'Сигналы РОП', view: 'signals', kind: 'Раздел' },
+  { label: 'AI РОП', view: 'rop', kind: 'Раздел' },
+  { label: 'Динамика (тренды)', view: 'trends', kind: 'Отчёт' },
+  { label: 'Follow-up (обещания)', view: 'followups', kind: 'Раздел' },
+  { label: 'Коммуникации (звонки)', view: 'calls', kind: 'Раздел' },
+  { label: 'Поиск по звонкам', view: 'search', kind: 'Раздел' },
+  { label: 'Сделки (AI)', view: 'deals', kind: 'Раздел' },
+  { label: 'Контроль качества (QC)', view: 'qc', kind: 'Раздел' },
+  { label: 'Ассистент по базе знаний', view: 'assistant', kind: 'Раздел' },
+  { label: 'Менеджеры (перформанс)', view: 'managers', kind: 'Отчёт' },
+  { label: 'Отчёты по отделу', view: 'insights', kind: 'Отчёт' },
+  { label: 'Чек-листы: соблюдение по шагам', view: 'checklists', kind: 'Отчёт' },
+  { label: 'Средний балл по чек-листам', view: 'checklists', kind: 'Отчёт' },
+  { label: 'Конверсия по менеджерам', view: 'checklists', kind: 'Отчёт' },
+  { label: 'Возражения по менеджерам', view: 'checklists', kind: 'Отчёт' },
+  { label: 'Проигрыши (причины)', view: 'lost', kind: 'Отчёт' },
+  { label: 'Разметка звонков', view: 'tags', kind: 'Раздел' },
+  { label: 'Отделы', view: 'departments', kind: 'Настройки' },
+  { label: 'Скрипт продаж', view: 'scripts', kind: 'Настройки' },
+  { label: 'База знаний (документы)', view: 'kb', kind: 'Раздел' },
+  { label: 'Промты AI', view: 'prompts', kind: 'Настройки' },
+  { label: 'Настройки AI / провайдер', view: 'settings', kind: 'Настройки' },
+];
+
 const SEARCH_INDEX: SearchEntry[] = [
   ...NAV_FLAT.map((i): SearchEntry => ({ label: i.label, tab: i.id, kind: 'Раздел', icon: i.icon })),
-  { label: 'Сгенерировать КП', tab: 'kp', kind: 'Действие' },
-  { label: 'Отправить КП на почту', tab: 'kp', kind: 'Действие' },
-  { label: 'Шаблоны КП', tab: 'kp', kind: 'Настройки' },
-  { label: 'Загрузка КП в сделку Bitrix', tab: 'kp', kind: 'Настройки' },
-  { label: 'Речевая аналитика — Сигналы', tab: 'ai-analytics', kind: 'Раздел' },
-  { label: 'Отчёты по чек-листам', tab: 'ai-analytics', kind: 'Отчёт' },
-  { label: 'Конверсия по менеджерам', tab: 'ai-analytics', kind: 'Отчёт' },
-  { label: 'Возражения по менеджерам', tab: 'ai-analytics', kind: 'Отчёт' },
-  { label: 'База знаний', tab: 'ai-analytics', kind: 'Раздел' },
-  { label: 'Настройки AI / провайдер', tab: 'ai-analytics', kind: 'Настройки' },
-  { label: 'Почтовые ящики для рассылок', tab: 'letters', kind: 'Настройки' },
+  ...AI_SUBVIEWS.map((s): SearchEntry => ({ label: s.label, tab: 'ai-analytics', view: s.view, kind: s.kind, icon: IconWave })),
+  { label: 'Сгенерировать КП', tab: 'kp', kind: 'Действие', icon: IconPencil },
+  { label: 'Отправить КП на почту', tab: 'kp', kind: 'Действие', icon: IconMail },
+  { label: 'Шаблоны КП', tab: 'kp', kind: 'Настройки', icon: IconPencil },
+  { label: 'Загрузка КП в сделку Bitrix', tab: 'kp', kind: 'Настройки', icon: IconPencil },
+  { label: 'Почтовые ящики для рассылок', tab: 'letters', kind: 'Настройки', icon: IconMail },
+];
+
+/** Частые запросы — показываются сразу при открытии пустого поиска. */
+const FREQUENT: SearchEntry[] = [
+  { label: 'Генератор КП', tab: 'kp', kind: 'Раздел', icon: IconPencil },
+  { label: 'Сигналы РОП', tab: 'ai-analytics', view: 'signals', kind: 'Раздел', icon: IconWave },
+  { label: 'Чек-листы: соблюдение по шагам', tab: 'ai-analytics', view: 'checklists', kind: 'Отчёт', icon: IconWave },
+  { label: 'Коммуникации (звонки)', tab: 'ai-analytics', view: 'calls', kind: 'Раздел', icon: IconWave },
+  { label: 'Отчёты по отделу', tab: 'ai-analytics', view: 'insights', kind: 'Отчёт', icon: IconWave },
+  { label: 'Почтовые ящики для рассылок', tab: 'letters', kind: 'Настройки', icon: IconMail },
 ];
 
 export default function AdminPanel() {
@@ -160,7 +194,19 @@ export default function AdminPanel() {
   const results = query.trim()
     ? SEARCH_INDEX.filter((e) => e.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
     : [];
-  const openResult = (tab: TabId) => { setActiveTab(tab); setQuery(''); setSearchOpen(false); };
+  const openResult = (e: SearchEntry) => {
+    // Под-раздел речевой аналитики: пробрасываем ?asv= и будим AiSalesSection.
+    if (e.view) {
+      try {
+        const p = new URLSearchParams(window.location.search);
+        p.set('tab', 'ai-analytics'); p.set('asv', e.view);
+        window.history.replaceState(null, '', `?${p}`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      } catch { /* нет URL */ }
+    }
+    setActiveTab(e.tab);
+    setQuery(''); setSearchOpen(false);
+  };
 
   useEffect(() => {
     try {
@@ -307,34 +353,42 @@ export default function AdminPanel() {
         {/* Контент */}
         <div className="flex-1 min-w-0">
           {/* Верхняя панель: глобальный поиск + профиль справа (как у Яндекса) */}
-          <div className="flex items-center gap-3 mb-5">
-            <div ref={searchRef} className="relative flex-1 max-w-xl ml-auto">
-              <div className="flex items-center gap-2.5 bg-[var(--es-tile)] rounded-full px-4 py-2.5 text-[var(--es-ink-3)]">
-                <IconSearch className="w-[18px] h-[18px] shrink-0" />
+          <div className="flex items-center justify-end gap-3 mb-5">
+            <div ref={searchRef} className={`relative transition-[width] duration-300 ease-out ${searchOpen ? 'w-[min(560px,60vw)]' : 'w-[220px]'}`}>
+              <div className={`flex items-center h-11 rounded-full pl-4 pr-3 transition-colors duration-200 ${searchOpen ? 'bg-white ring-1 ring-[var(--es-line)] shadow-[var(--es-shadow-sm)]' : 'bg-[var(--es-tile)]'}`}>
                 <input value={query}
                   onChange={(e) => { setQuery(e.target.value); setSearchOpen(true); }}
                   onFocus={() => setSearchOpen(true)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) openResult(results[0].tab); if (e.key === 'Escape') setSearchOpen(false); }}
-                  placeholder="Поиск по разделам, действиям, настройкам"
+                  onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) openResult(results[0]); if (e.key === 'Escape') { setSearchOpen(false); (e.target as HTMLInputElement).blur(); } }}
+                  placeholder="Поиск"
                   className="w-full bg-transparent outline-none text-[var(--es-ink)] placeholder:text-[var(--es-ink-3)] text-sm" />
+                <IconSearch className="w-[18px] h-[18px] shrink-0 text-[var(--es-ink-3)] ml-2" />
               </div>
-              {searchOpen && query.trim() && (
-                <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-[var(--es-shadow)] p-1.5 z-50 max-h-[60vh] overflow-y-auto">
-                  {results.length === 0 ? (
-                    <div className="px-4 py-3 text-sm text-[var(--es-ink-3)]">Ничего не найдено</div>
-                  ) : results.map((r, i) => {
-                    const Ic = r.icon;
-                    return (
-                      <button key={i} type="button" onClick={() => openResult(r.tab)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[var(--es-tile)] transition">
-                        <span className="w-9 h-9 rounded-[11px] bg-[var(--es-tile)] grid place-items-center shrink-0 text-[var(--es-ink)]">
-                          {Ic ? <Ic className="w-5 h-5" /> : <IconSearch className="w-[18px] h-[18px]" />}
-                        </span>
-                        <span className="min-w-0 flex-1"><span className="block text-sm font-medium text-[var(--es-ink)] truncate">{r.label}</span></span>
-                        <span className="text-[11px] font-medium text-[var(--es-ink-3)] shrink-0">{r.kind}</span>
-                      </button>
-                    );
-                  })}
+              {searchOpen && (
+                <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-[var(--es-shadow)] p-1.5 z-50 max-h-[64vh] overflow-y-auto">
+                  {query.trim() && results.length === 0 ? (
+                    <div className="flex items-center gap-3 px-4 py-4 text-[var(--es-ink-2)]">
+                      <span className="text-2xl leading-none">👻</span>
+                      <span className="text-sm">Ничего не нашлось — попробуйте изменить запрос</span>
+                    </div>
+                  ) : (
+                    <>
+                      {!query.trim() && <div className="px-3 pt-2 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[var(--es-ink-3)]">Частые запросы</div>}
+                      {(query.trim() ? results : FREQUENT).map((r, i) => {
+                        const Ic = r.icon;
+                        return (
+                          <button key={i} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => openResult(r)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[var(--es-tile)] transition">
+                            <span className="w-9 h-9 rounded-[11px] bg-[var(--es-tile)] grid place-items-center shrink-0 text-[var(--es-ink)]">
+                              {Ic ? <Ic className="w-5 h-5" /> : <IconSearch className="w-[18px] h-[18px]" />}
+                            </span>
+                            <span className="min-w-0 flex-1"><span className="block text-sm font-medium text-[var(--es-ink)] truncate">{r.label}</span></span>
+                            <span className="text-[11px] font-medium text-[var(--es-ink-3)] shrink-0">{r.kind}</span>
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               )}
             </div>
