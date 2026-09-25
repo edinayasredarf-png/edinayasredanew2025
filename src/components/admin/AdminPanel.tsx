@@ -308,8 +308,8 @@ export default function AdminPanel() {
     return (
       <div key={item.id} className="group relative">
         <button type="button" onClick={() => setActiveTab(item.id)}
-          className={`w-full flex items-center gap-3.5 pl-3.5 pr-8 py-3 rounded-2xl text-[15px] transition ${active ? 'bg-[var(--es-tile)] text-[var(--es-ink)] font-semibold' : 'text-[var(--es-ink)] font-medium hover:bg-[var(--es-tile)]'}`}>
-          <Ic className={`w-[22px] h-[22px] shrink-0 ${active ? 'text-[var(--es-accent)]' : 'text-[var(--es-ink)]'}`} />
+          className={`w-full flex items-center gap-3 pl-3 pr-7 py-2.5 rounded-2xl text-[15px] font-medium text-[var(--es-ink)] transition ${active ? 'bg-[var(--es-tile)]' : 'hover:bg-[var(--es-tile)]'}`}>
+          <Ic className="w-[21px] h-[21px] shrink-0 text-[var(--es-ink)]" />
           <span className="truncate">{item.label}</span>
         </button>
         <button type="button" title={fav ? 'Убрать из избранного' : 'В избранное'}
@@ -323,9 +323,9 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="w-full max-w-[1900px] mx-auto px-3 sm:px-4 lg:px-6 py-4 lg:py-6 flex gap-4 lg:gap-6">
+      <div className="w-full max-w-[1900px] mx-auto px-3 sm:px-4 lg:px-5 py-4 lg:py-6 flex gap-4 lg:gap-8">
         {/* Боковое меню — серые карточки-группы (Timeweb-стиль) */}
-        <aside className="hidden lg:flex flex-col w-64 shrink-0 sticky top-6 h-[calc(100vh-48px)]">
+        <aside className="hidden lg:flex flex-col w-[212px] shrink-0 sticky top-6 h-[calc(100vh-48px)]">
           <div className="px-2 mb-4">
             <Image src="/img/es_logo_blue.svg" alt="Единая среда" width={140} height={38} className="h-9 w-auto" priority />
           </div>
