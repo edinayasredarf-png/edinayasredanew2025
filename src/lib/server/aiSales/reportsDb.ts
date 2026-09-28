@@ -316,3 +316,79 @@ export async function getObjectionCalls(
     };
   });
 }
+
+/* ─── Триггеры (§ речевая аналитика по этапам — внешние поводы к сделке) ─── */
+
+export interface TriggerRow {
+  callId: string;
+  startedAt: string | null;
+  managerName: string | null;
+  clientTitle: string | null;
+  dealUrl: string | null;
+  leadUrl: string | null;
+  pipeline: string | null; // lead | sales | service | project
+  stageLabel: string | null;
+  triggerType: string;
+  description: string | null;
+  quote: string | null;
+}
+
+/** Все звонки с найденным триггером (trigger.present=true) — хронологически, новые сверху. */
+export async function getTriggers(
+  managerBitrixId: string | null,
+  triggerType: string | null,
+  range?: DateRange
+): Promise<TriggerRow[]> {
+  const pool = getTimewebPool();
+  const params: unknown[] = [];
+  const where: string[] = [`(l.data->'trigger'->>'present') = 'true'`];
+  if (managerBitrixId) { params.push(managerBitrixId); where.push(`c.bitrix_user_id = $${params.length}`); }
+  if (triggerType) { params.push(triggerType); where.push(`(l.data->'trigger'->>'type') = $${params.length}`); }
+  const rSql = rangeSql(range, params);
+
+  const { rows } = await pool.query<{
+    call_id: string; started_at: Date | null; manager_name: string | null;
+    client_title: string | null; bitrix_deal_id: string | null; bitrix_lead_id: string | null;
+    pipeline: string | null; stage_label: string | null;
+    trigger_type: string | null; description: string | null; quote: string | null;
+  }>(
+    `with latest as (
+       select distinct on (a.call_id) a.call_id, a.data
+         from ai_call_analysis a
+         order by a.call_id, a.created_at desc
+     )
+     select c.id call_id, c.started_at, m.full_name as manager_name,
+            coalesce(co.title, ct.full_name, c.client_title) as client_title,
+            c.bitrix_deal_id, c.bitrix_lead_id,
+            l.data->'dealStage'->>'pipeline' as pipeline,
+            l.data->'dealStage'->>'label' as stage_label,
+            l.data->'trigger'->>'type' as trigger_type,
+            l.data->'trigger'->>'description' as description,
+            l.data->'trigger'->>'quote' as quote
+       from latest l
+       join ai_calls c on c.id = l.call_id
+       left join ai_managers m on m.bitrix_user_id = c.bitrix_user_id
+       left join ai_deals d on d.bitrix_deal_id = c.bitrix_deal_id
+       left join ai_companies co on co.bitrix_company_id = coalesce(c.bitrix_company_id, d.bitrix_company_id)
+       left join ai_contacts ct on ct.bitrix_contact_id = coalesce(c.bitrix_contact_id, d.bitrix_contact_id)
+      where ${where.join(" and ")}${rSql}
+      order by c.started_at desc nulls last
+      limit 300`,
+    params
+  );
+
+  const origin = bitrixPortalOrigin();
+  return rows.map((r) => ({
+    callId: r.call_id,
+    startedAt: r.started_at ? r.started_at.toISOString() : null,
+    managerName: r.manager_name,
+    clientTitle: r.client_title,
+    dealUrl: r.bitrix_deal_id && origin ? `${origin}/crm/deal/details/${r.bitrix_deal_id}/` : null,
+    leadUrl: r.bitrix_lead_id && origin ? `${origin}/crm/lead/details/${r.bitrix_lead_id}/` : null,
+    pipeline: r.pipeline,
+    stageLabel: r.stage_label,
+    triggerType: r.trigger_type || "other",
+    description: r.description,
+    quote: r.quote,
+  }));
+}

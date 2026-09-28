@@ -15,7 +15,7 @@ const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'От
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -3189,6 +3189,78 @@ interface QcDataT {
   rows: QcRowT[];
 }
 
+/* ─────────── Триггеры (внешние поводы, найденные во всех звонках) ─────────── */
+interface TriggerRowT {
+  callId: string; startedAt: string | null; managerName: string | null; clientTitle: string | null;
+  dealUrl: string | null; leadUrl: string | null; pipeline: string | null; stageLabel: string | null;
+  triggerType: string; description: string | null; quote: string | null;
+}
+
+function Triggers({ onOpen }: { onOpen: (callId: string) => void }) {
+  const [items, setItems] = useState<TriggerRowT[]>([]);
+  const [period, setPeriod] = usePersistentPeriod();
+  const [type, setType] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const qs = periodQS(period);
+      if (type) qs.set('type', type);
+      const r = await fetch(`/api/ai-sales/triggers?${qs}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setItems(j.items || []);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [period, type]);
+  useEffect(() => { load(); }, [load]);
+
+  const typeOptions = Object.entries(TRIGGER_TYPE_LABEL_UI).filter(([k]) => k !== 'none');
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 className="text-xl font-bold text-gray-900">Триггеры <span className="text-gray-400 text-base font-normal">({items.length})</span></h2>
+        <Select value={type} onChange={setType} className="w-full sm:w-[280px]" ariaLabel="Тип триггера"
+          options={[{ value: '', label: 'Все типы' }, ...typeOptions.map(([k, label]) => ({ value: k, label }))]} />
+      </div>
+      <p className="text-sm text-gray-500 mb-3">Звонки, где клиент назвал внешний повод обратиться сейчас или повод для движения сделки (прокуратура, смена руководителя, новый закон, бюджет, закупка и т.п.) — со слов клиента, найдено ИИ при анализе звонка.</p>
+      <PeriodBar value={period} onChange={setPeriod} />
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
+      {loading ? <LoadingBlock /> : items.length === 0 ? (
+        <p className="text-sm text-gray-400 mt-4">Триггеров за период не найдено.</p>
+      ) : (
+        <div className="space-y-2 mt-4">
+          {items.map((it) => (
+            <div key={it.callId} onClick={() => onOpen(it.callId)}
+              className="bg-white rounded-xl border border-gray-100 p-4 cursor-pointer hover:bg-sky-50/60">
+              <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-gray-800">{it.startedAt ? new Date(it.startedAt).toLocaleString('ru-RU') : '—'}</span>
+                  <span className="text-sm text-gray-500">{it.clientTitle || '—'}</span>
+                  {it.managerName && <span className="text-xs text-gray-400">· {it.managerName}</span>}
+                </div>
+                <div className="flex items-center gap-2">
+                  {it.pipeline && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{PIPELINE_LABEL_UI[it.pipeline] || it.pipeline}{it.stageLabel ? ` — ${it.stageLabel}` : ''}</span>}
+                  {(it.dealUrl || it.leadUrl) && (
+                    <a href={it.dealUrl || it.leadUrl || '#'} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+                      className="text-xs text-[#029cda] hover:underline">{it.dealUrl ? 'Сделка' : 'Лид'} в Bitrix</a>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-1">{TRIGGER_TYPE_LABEL_UI[it.triggerType] || it.triggerType}</p>
+              {it.description && <p className="text-sm text-gray-700">{it.description}</p>}
+              {it.quote && <p className="text-sm text-gray-500 italic mt-1">«{it.quote}»</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
   const [data, setData] = useState<QcDataT | null>(null);
   const [err, setErr] = useState('');
@@ -4117,6 +4189,7 @@ const GROUPS: NavGroup[] = [
     { view: 'calls', label: 'Коммуникации' },
     { view: 'search', label: 'Поиск' },
     { view: 'deals', label: 'Сделки' },
+    { view: 'triggers', label: 'Триггеры' },
     { view: 'qc', label: 'Контроль качества' },
     { view: 'assistant', label: 'Ассистент' },
   ] },
@@ -4191,6 +4264,7 @@ export default function AiSalesSection() {
     if (view === 'trends') return <Trends />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
     if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
+    if (view === 'triggers') return <Triggers onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'assistant') return <Assistant />;
     if (view === 'kb') return <KnowledgeBase />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
