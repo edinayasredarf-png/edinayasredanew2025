@@ -18,6 +18,7 @@ export interface Organization {
   mailAccountKey: string;
   mailSubject: string;
   mailBody: string;
+  fontFamily: string;
   isActive: boolean;
   sortOrder: number;
 }

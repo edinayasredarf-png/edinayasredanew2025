@@ -45,6 +45,7 @@ export interface KpOrganization {
   mailAccountKey: string; // id ящика для рассылки (mailAccountsDb), '' = основной
   mailSubject: string; // тема письма при рассылке (пусто = общая)
   mailBody: string; // текст письма при рассылке (пусто = общий)
+  fontFamily: string; // шрифт документа КП и письма этой организации, '' = общий (docStyle.fontFamily)
   isActive: boolean;
   sortOrder: number;
 }
@@ -137,7 +138,20 @@ async function ensureTablesImpl(): Promise<void> {
       add column if not exists write_kp_number boolean not null default true,
       add column if not exists mail_account_key text not null default '',
       add column if not exists mail_subject text not null default '',
-      add column if not exists mail_body text not null default ''
+      add column if not exists mail_body text not null default '',
+      add column if not exists font_family text not null default ''
+  `);
+  // Шрифт по умолчанию для уже существующих организаций (не трогает то, что
+  // руководитель мог уже сам выставить в настройках — только пустые значения).
+  await pool.query(`
+    update kp_organizations set font_family = case key
+      when 'ekostroy' then 'Calibri'
+      when 'kushnareva' then 'Arial'
+      when 'sfera' then 'Times New Roman'
+      when 'lesnoe' then 'Georgia'
+      when 'statov' then 'Verdana'
+    end
+    where font_family = '' and key in ('ekostroy', 'kushnareva', 'sfera', 'lesnoe', 'statov')
   `);
 
   // Библиотека вложений для рассылки (прайсы, презентации и т.п.).
@@ -968,18 +982,21 @@ async function seedDefaults(pool: ReturnType<typeof getTimewebPool>): Promise<vo
   if ((rows[0]?.n ?? 0) > 0) return; // уже засеяно / отредактировано вручную
 
   // Организации (полные названия — из скриншотов текущего сервиса).
+  // fontFamily — по просьбе руководителя (Экострой=Calibri, Кушнарева=Arial,
+  // Сфера=Times New Roman как и общий дефолт); Лесное дело/Статов не
+  // называли явно — выбраны отдельные шрифты, чтобы не путались визуально.
   const orgs: Array<Partial<KpOrganization> & { key: string; name: string; shortName: string }> = [
-    { key: "ekostroy", name: 'ООО "Экострой"', shortName: "Экострой", directorRole: "Директор", sortOrder: 1 },
-    { key: "sfera", name: 'ООО "Сфера"', shortName: "Сфера", directorRole: "Директор", sortOrder: 2 },
-    { key: "lesnoe", name: 'ООО "Лесное дело"', shortName: "Лесное дело", directorRole: "Директор", sortOrder: 3 },
-    { key: "kushnareva", name: "ИП Кушнарева", shortName: "Кушнарева", directorRole: "Индивидуальный предприниматель", sortOrder: 4 },
-    { key: "statov", name: "ИП Статов", shortName: "Статов", directorRole: "Индивидуальный предприниматель", sortOrder: 5 },
+    { key: "ekostroy", name: 'ООО "Экострой"', shortName: "Экострой", directorRole: "Директор", sortOrder: 1, fontFamily: "Calibri" },
+    { key: "sfera", name: 'ООО "Сфера"', shortName: "Сфера", directorRole: "Директор", sortOrder: 2, fontFamily: "Times New Roman" },
+    { key: "lesnoe", name: 'ООО "Лесное дело"', shortName: "Лесное дело", directorRole: "Директор", sortOrder: 3, fontFamily: "Georgia" },
+    { key: "kushnareva", name: "ИП Кушнарева", shortName: "Кушнарева", directorRole: "Индивидуальный предприниматель", sortOrder: 4, fontFamily: "Arial" },
+    { key: "statov", name: "ИП Статов", shortName: "Статов", directorRole: "Индивидуальный предприниматель", sortOrder: 5, fontFamily: "Verdana" },
   ];
   for (const o of orgs) {
     await pool.query(
-      `insert into kp_organizations (key, name, short_name, director_role, sort_order)
-       values ($1,$2,$3,$4,$5) on conflict (key) do nothing`,
-      [o.key, o.name, o.shortName, o.directorRole || "Директор", o.sortOrder || 0]
+      `insert into kp_organizations (key, name, short_name, director_role, sort_order, font_family)
+       values ($1,$2,$3,$4,$5,$6) on conflict (key) do nothing`,
+      [o.key, o.name, o.shortName, o.directorRole || "Директор", o.sortOrder || 0, o.fontFamily || ""]
     );
   }
 
@@ -1038,6 +1055,7 @@ function mapOrg(r: Record<string, unknown>): KpOrganization {
     mailAccountKey: String(r.mail_account_key ?? ""),
     mailSubject: String(r.mail_subject ?? ""),
     mailBody: String(r.mail_body ?? ""),
+    fontFamily: String(r.font_family ?? ""),
     isActive: Boolean(r.is_active),
     sortOrder: Number(r.sort_order ?? 0),
   };
@@ -1066,8 +1084,8 @@ export async function dbUpsertOrganization(o: KpOrganization): Promise<void> {
     `insert into kp_organizations
        (key, name, short_name, director_role, director_fio, requisites, phone, email,
         header_image, header_text, stamp_image, signature_image, write_kp_number,
-        mail_account_id, mail_account_key, mail_subject, mail_body, is_active, sort_order, updated_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, now())
+        mail_account_id, mail_account_key, mail_subject, mail_body, font_family, is_active, sort_order, updated_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20, now())
      on conflict (key) do update set
        name=excluded.name, short_name=excluded.short_name, director_role=excluded.director_role,
        director_fio=excluded.director_fio, requisites=excluded.requisites, phone=excluded.phone,
@@ -1075,11 +1093,12 @@ export async function dbUpsertOrganization(o: KpOrganization): Promise<void> {
        stamp_image=excluded.stamp_image, signature_image=excluded.signature_image,
        write_kp_number=excluded.write_kp_number, mail_account_id=excluded.mail_account_id,
        mail_account_key=excluded.mail_account_key, mail_subject=excluded.mail_subject, mail_body=excluded.mail_body,
+       font_family=excluded.font_family,
        is_active=excluded.is_active, sort_order=excluded.sort_order, updated_at=now()`,
     [
       o.key, o.name, o.shortName, o.directorRole, o.directorFio, o.requisites, o.phone, o.email,
       o.headerImage, o.headerText, o.stampImage, o.signatureImage, o.writeKpNumber,
-      o.mailAccountId, o.mailAccountKey || "", o.mailSubject || "", o.mailBody || "", o.isActive, o.sortOrder,
+      o.mailAccountId, o.mailAccountKey || "", o.mailSubject || "", o.mailBody || "", o.fontFamily || "", o.isActive, o.sortOrder,
     ]
   );
 }

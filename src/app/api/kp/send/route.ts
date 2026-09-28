@@ -5,7 +5,7 @@ import { buildKpDocuments, type KpGenerateRequest } from "@/lib/server/kp/kpBuil
 import { convertDocxToPdf, isPdfConfigured } from "@/lib/server/kp/kpPdf";
 import { sendLetterEmail, isMailerConfigured, type SmtpAccount } from "@/lib/server/mailer";
 import { dbGetMailAccountSecret } from "@/lib/server/mailAccountsDb";
-import { dbGetAttachmentData, dbGetOrganization, dbInsertHistory } from "@/lib/server/kp/kpDb";
+import { dbGetAttachmentData, dbGetOrganization, dbGetDocStyle, dbInsertHistory } from "@/lib/server/kp/kpDb";
 import { dbLogLetterSend } from "@/lib/server/letterSendsDb";
 import { randomUUID } from "node:crypto";
 
@@ -45,6 +45,13 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/** Оборачивает готовый HTML тела письма в шрифт организации (или общий). */
+function withFont(html: string, font: string): string {
+  const safe = (font || "").replace(/["'<>]/g, "").trim();
+  if (!safe) return html;
+  return `<div style="font-family:'${safe}', Arial, sans-serif;">${html}</div>`;
 }
 
 /** Рассылка сгенерированных КП на почту клиента (вложения — DOCX или PDF). */
@@ -132,7 +139,8 @@ export async function POST(request: NextRequest) {
 
   const subject = (body.subject || "").trim() || "Коммерческое предложение";
   const messageText = (body.message || "").trim() || "Здравствуйте!\n\nНаправляем коммерческое предложение во вложении.";
-  const html = messageText.split(/\n/).map((l) => escapeHtml(l)).join("<br>");
+  const docStyle = await dbGetDocStyle();
+  const html = withFont(messageText.split(/\n/).map((l) => escapeHtml(l)).join("<br>"), docStyle.fontFamily);
 
   const editor = getEditorFromRequest(request);
   const createdBy = editor?.email || "admin";
@@ -181,7 +189,7 @@ export async function POST(request: NextRequest) {
       // Тема/текст письма — из шаблона компании, если заданы (иначе общий из формы).
       const orgSubject = (org?.mailSubject || "").trim() || subject;
       const orgBody = (org?.mailBody || "").trim() || messageText;
-      const orgHtml = orgBody.split(/\n/).map((l) => escapeHtml(l)).join("<br>");
+      const orgHtml = withFont(orgBody.split(/\n/).map((l) => escapeHtml(l)).join("<br>"), org?.fontFamily || docStyle.fontFamily);
       // Вложения этой организации: её КП + доп. файлы + библиотека.
       const orgAttach = [attachments[i], ...attachments.slice(docs.length)];
       const token = `kp_${randomUUID()}`;

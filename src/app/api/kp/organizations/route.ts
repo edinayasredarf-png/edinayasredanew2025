@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     mailAccountKey: org.mailAccountKey ?? "",
     mailSubject: org.mailSubject ?? "",
     mailBody: org.mailBody ?? "",
+    fontFamily: org.fontFamily ?? "",
     isActive: org.isActive ?? true,
     sortOrder: org.sortOrder ?? 0,
   };

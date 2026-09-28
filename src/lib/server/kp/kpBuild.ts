@@ -199,7 +199,7 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         !template.skipAutoBlocks, // авто-шапка/подписант, если шаблон их не содержит
         docStyle.headerAliases ? headerLayout : null, // авто-шапка с реквизитами/адресатом (лево/центр/право)
         ctx.tableAlias, // {{<алиас таблицы>}} тоже заменяется на таблицу
-        docStyle.forceFont ? docStyle.fontFamily : "" // единый шрифт всего документа
+        docStyle.forceFont ? (org.fontFamily || docStyle.fontFamily) : "" // единый шрифт: свой у организации, иначе общий
       );
       docs.push({
         orgKey,

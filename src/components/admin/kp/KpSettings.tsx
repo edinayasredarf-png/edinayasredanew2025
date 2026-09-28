@@ -9,6 +9,7 @@ import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout
 
 const input = inputClass();
 const label = 'block text-xs font-medium text-gray-500 mb-1';
+const FONTS = ['Times New Roman', 'Arial', 'Calibri', 'PT Astra Serif', 'PT Serif', 'Georgia', 'Verdana'];
 
 async function uploadImage(file: File): Promise<string> {
   const fd = new FormData();
@@ -24,7 +25,7 @@ function emptyOrg(sort: number): Organization {
     key: '', name: '', shortName: '', directorRole: 'Директор', directorFio: '',
     requisites: '', phone: '', email: '', headerImage: '', headerText: '',
     stampImage: '', signatureImage: '', writeKpNumber: true, mailAccountId: null,
-    mailAccountKey: '', mailSubject: '', mailBody: '', isActive: true, sortOrder: sort,
+    mailAccountKey: '', mailSubject: '', mailBody: '', fontFamily: '', isActive: true, sortOrder: sort,
   };
 }
 
@@ -465,6 +466,13 @@ function OrgEditor({
         <div className="text-[11px] text-gray-400 mt-1">Используется при рассылке «от каждой организации отдельно».</div>
       </div>
 
+      <div className="sm:max-w-xs">
+        <div className={label}>Шрифт документа и письма этой организации</div>
+        <Select value={d.fontFamily || ''} onChange={(v) => set({ fontFamily: v })} placeholder="Общий (из «Оформление документа»)"
+          options={[{ value: '', label: 'Общий (из «Оформление документа»)' }, ...(FONTS.includes(d.fontFamily || '') ? FONTS : d.fontFamily ? [d.fontFamily, ...FONTS] : FONTS).map((f) => ({ value: f, label: f }))]} />
+        <div className="text-[11px] text-gray-400 mt-1">Применяется к шапке, тексту и таблице КП (если включён «Единый шрифт для всего документа») и к телу письма при рассылке «от каждой организации отдельно».</div>
+      </div>
+
       <div>
         <div className={label}>Тема письма при рассылке (пусто = общая)</div>
         <input value={d.mailSubject || ''} onChange={(e) => set({ mailSubject: e.target.value })} className={input} placeholder="Коммерческое предложение — АИС «Единая среда»" />
@@ -527,8 +535,6 @@ function DocStyleEditor({
       setBusy(false);
     }
   };
-
-  const FONTS = ['Times New Roman', 'Arial', 'Calibri', 'PT Astra Serif', 'PT Serif', 'Georgia', 'Verdana'];
 
   return (
     <div>
