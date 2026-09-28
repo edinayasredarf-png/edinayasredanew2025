@@ -1,23 +1,34 @@
 /**
- * Канонические воронки продаж «Единой среды» — единый источник правды для
- * речевой аналитики. В Bitrix у компании ТРИ разных воронки, и звонок нужно
+ * Канонические воронки «Единой среды» — единый источник правды для речевой
+ * аналитики. В Bitrix у компании ЧЕТЫРЕ разных воронки, и звонок нужно
  * анализировать по-разному в зависимости от того, в какой из них находится
  * сделка/лид на момент звонка:
  *
- *   1. ЛИД (Bitrix-сущность Lead, до конвертации в сделку) — 8 стадий:
+ *   1. ЛИД (Bitrix-сущность Lead, до конвертации в сделку) — 8 статусов:
  *      Новый лид → Первичный контакт → Нет ответа/Квалификация/Спам/
  *      Отложенный спрос → Качественный лид (успех) / Некачественный лид (отказ).
- *   2. СДЕЛКА — «Отдел продаж» (воронка первичной продажи) — 14 стадий:
- *      Заявка получена → ... → Успешно реализовано / Закрыто и не реализовано.
- *   3. СДЕЛКА — «Обслуживание сервиса» (пост-продажное сопровождение:
- *      онбординг, обучение, активное использование, пролонгация) — 17 стадий.
+ *   2. СДЕЛКА — «Отдел продаж» (первичная продажа, дефолтная категория 0) —
+ *      14 стадий: Заявка получена → ... → Успешно реализовано / Закрыто и не
+ *      реализовано.
+ *   3. СДЕЛКА — «Обслуживание сервиса» (категория C1, пост-продажное
+ *      сопровождение: онбординг, обучение, активное использование,
+ *      пролонгация) — 17 стадий.
+ *   4. СДЕЛКА — «Управление проектами» (категория C5, исполнение уже
+ *      подписанного контракта: производство/сдача работ, оплата,
+ *      просроченная задолженность) — 9 стадий.
  *
- * Составлено по скриншотам настроек воронок Bitrix и документу РОП
- * «Воронка продаж.xlsx» (для воронки «Отдел продаж» — там же подробные
- * рабочие инструкции по каждой стадии).
+ * STAGE_ID/STATUS_ID у Bitrix НЕ переводится в читаемое название и может
+ * повторяться между категориями со сходным смыслом (напр. NEW/WON/LOSE), но
+ * при этом Bitrix одинаковые ПО СМЫСЛУ названия («Закрыто и не реализовано»)
+ * в разных категориях кодирует РАЗНЫМИ STAGE_ID — поэтому канонический
+ * источник правды здесь BITRIX_DEAL_STAGE_MAP/BITRIX_LEAD_STATUS_MAP
+ * (получены напрямую от РОП — коды стадий Bitrix для всех 4 воронок), а
+ * сопоставление по тексту названия (matchStageInPipeline/
+ * classifyDealCategoryPipeline) — лишь резервный способ для стадий, которых
+ * ещё нет в этой карте (например, если в Bitrix позже добавят новую стадию).
  */
 
-export type PipelineKey = "lead" | "sales" | "service";
+export type PipelineKey = "lead" | "sales" | "service" | "project";
 
 export type LeadStageKey =
   | "lead_new"
@@ -64,7 +75,18 @@ export type ServiceStageKey =
   | "service_application_fulfilled"
   | "service_closed_not_realized";
 
-export type StageKey = LeadStageKey | SalesStageKey | ServiceStageKey | "unknown";
+export type ProjectStageKey =
+  | "project_new"
+  | "project_in_progress"
+  | "project_contracts_es_2025"
+  | "project_contracts_es_2026"
+  | "project_prolongations_2026"
+  | "project_delivered_unpaid"
+  | "project_overdue_debt"
+  | "project_successful"
+  | "project_closed_not_realized";
+
+export type StageKey = LeadStageKey | SalesStageKey | ServiceStageKey | ProjectStageKey | "unknown";
 
 export interface StageInfo {
   key: StageKey;
@@ -154,10 +176,24 @@ export const SERVICE_STAGES: StageInfo[] = [
   },
 ];
 
-export const ALL_STAGES: StageInfo[] = [...LEAD_STAGES, ...SALES_STAGES, ...SERVICE_STAGES];
+// ── Воронка 4: СДЕЛКА — «Управление проектами» (исполнение подписанного контракта) ──
+export const PROJECT_STAGES: StageInfo[] = [
+  { key: "project_new", pipeline: "project", label: "Новые", callable: false, aliases: ["новые"] },
+  { key: "project_in_progress", pipeline: "project", label: "В работе", callable: true, aliases: ["в работе"] },
+  { key: "project_contracts_es_2025", pipeline: "project", label: "Контракты по ЕС 2025", callable: true, aliases: ["контракты по ес 2025"] },
+  { key: "project_contracts_es_2026", pipeline: "project", label: "Контракты по ЕС 2026", callable: true, aliases: ["контракты по ес 2026"] },
+  { key: "project_prolongations_2026", pipeline: "project", label: "Пролонгации 2026", callable: true, aliases: ["пролонгации 2026"] },
+  { key: "project_delivered_unpaid", pipeline: "project", label: "Сданные, но неоплаченные", callable: true, aliases: ["сданные но неоплаченные", "сданные, но неоплаченные"] },
+  { key: "project_overdue_debt", pipeline: "project", label: "Просроченная задолженность", callable: true, aliases: ["просроченная задолженность"] },
+  { key: "project_successful", pipeline: "project", label: "Успешно", callable: false, aliases: ["успешно"] },
+  { key: "project_closed_not_realized", pipeline: "project", label: "Закрыто и не реализовано", callable: false, aliases: ["закрыто и не реализовано"] },
+];
+
+export const ALL_STAGES: StageInfo[] = [...LEAD_STAGES, ...SALES_STAGES, ...SERVICE_STAGES, ...PROJECT_STAGES];
 
 export const PIPELINE_LABEL: Record<PipelineKey, string> = {
   lead: "Лид",
+  project: "Управление проектами",
   sales: "Отдел продаж",
   service: "Обслуживание сервиса",
 };
@@ -185,10 +221,17 @@ export function normalizeStageName(s: string): string {
  * спрос», «Закрыто и не реализовано» и т.п.) встречается в разных воронках
  * с разным смыслом — резолвится всегда в контексте одной воронки.
  */
+const STAGES_BY_PIPELINE: Record<PipelineKey, StageInfo[]> = {
+  lead: LEAD_STAGES,
+  sales: SALES_STAGES,
+  service: SERVICE_STAGES,
+  project: PROJECT_STAGES,
+};
+
 export function matchStageInPipeline(pipeline: PipelineKey, bitrixStageName: string | null | undefined): StageKey {
   const norm = normalizeStageName(bitrixStageName || "");
   if (!norm) return "unknown";
-  const stages = pipeline === "lead" ? LEAD_STAGES : pipeline === "sales" ? SALES_STAGES : SERVICE_STAGES;
+  const stages = STAGES_BY_PIPELINE[pipeline];
   for (const s of stages) {
     if (s.aliases.some((a) => normalizeStageName(a) === norm)) return s.key;
   }
@@ -199,23 +242,102 @@ export function matchStageInPipeline(pipeline: PipelineKey, bitrixStageName: str
 }
 
 /**
- * Определить, какой из ДВУХ воронок сделок («Отдел продаж» или
- * «Обслуживание сервиса») соответствует категории Bitrix — по набору
- * названий её стадий (у Bitrix в crm.deal.list нет прямого признака, к
- * какой из наших смысловых воронок относится кастомная категория).
- * Считаем очки совпадений с каждой воронкой, выбираем большую; при
+ * Определить, какой из ТРЁХ воронок сделок («Отдел продаж», «Обслуживание
+ * сервиса» или «Управление проектами») соответствует категории Bitrix — по
+ * набору названий её стадий (у Bitrix в crm.deal.list нет прямого признака,
+ * к какой из наших смысловых воронок относится кастомная категория).
+ * Считаем очки совпадений с каждой воронкой, выбираем наибольшую; при
  * отсутствии явного перевеса — "unknown" (стадии этой категории не
  * распознаются, но и не путаются с чужой воронкой).
+ *
+ * РЕЗЕРВНЫЙ способ — основной источник истины для уже известных категорий
+ * (0, C1, C5) — BITRIX_DEAL_STAGE_MAP ниже (точные коды от РОП), сюда
+ * попадают только категории, которых там нет (например, если в Bitrix
+ * позже заведут новую категорию).
  */
-export function classifyDealCategoryPipeline(stageNames: string[]): "sales" | "service" | "unknown" {
-  let salesScore = 0;
-  let serviceScore = 0;
+export function classifyDealCategoryPipeline(stageNames: string[]): "sales" | "service" | "project" | "unknown" {
+  const scores: Record<"sales" | "service" | "project", number> = { sales: 0, service: 0, project: 0 };
   for (const name of stageNames) {
-    if (matchStageInPipeline("sales", name) !== "unknown") salesScore++;
-    if (matchStageInPipeline("service", name) !== "unknown") serviceScore++;
+    for (const p of ["sales", "service", "project"] as const) {
+      if (matchStageInPipeline(p, name) !== "unknown") scores[p]++;
+    }
   }
-  if (salesScore === 0 && serviceScore === 0) return "unknown";
-  return salesScore >= serviceScore ? "sales" : "service";
+  const best = (["sales", "service", "project"] as const).reduce((a, b) => (scores[b] > scores[a] ? b : a));
+  return scores[best] === 0 ? "unknown" : best;
+}
+
+/**
+ * Точные коды STAGE_ID сделки → канонический ключ. Получены напрямую от
+ * РОП (не автоматически) — основной источник истины для резолвера
+ * (см. resolveDealStage в src/lib/server/bitrix/dealStages.ts), сопоставление
+ * по названию используется только как резерв для стадий, которых здесь нет.
+ *
+ * "Отдел продаж" — дефолтная категория Bitrix (0), коды без префикса.
+ * "Обслуживание сервиса" — категория C1. "Управление проектами" — C5.
+ */
+export const BITRIX_DEAL_STAGE_MAP: Record<string, StageKey> = {
+  // Отдел продаж (категория 0)
+  NEW: "sales_application_received",
+  UC_2G5Q1G: "sales_no_answer",
+  EXECUTING: "sales_clarification",
+  UC_SY8BG2: "sales_quote_pending",
+  "1": "sales_quote_sent",
+  "2": "sales_quote_read",
+  FINAL_INVOICE: "sales_deferred_demand",
+  "4": "sales_contract_sent",
+  "5": "sales_contract_signed",
+  UC_TXE0Y0: "sales_vcs_decision_maker",
+  UC_1H3H39: "sales_inventory_done_elsewhere",
+  UC_SQ0KOH: "sales_competitor_probe",
+  WON: "sales_successfully_done",
+  LOSE: "sales_closed_lost",
+
+  // Обслуживание сервиса (категория C1)
+  "C1:UC_D6V08Y": "service_demo_access",
+  "C1:NEW": "service_application_accepted",
+  "C1:AMO_94DD234A": "service_access_granted",
+  "C1:PREPARATION": "service_training_assigned",
+  "C1:PREPAYMENT_INVOICE": "service_working_with_client",
+  "C1:UC_52AT6C": "service_data_loading",
+  "C1:UC_5H1KN8": "service_ip_access",
+  "C1:UC_1HFQPQ": "service_confirmed_user",
+  "C1:UC_496NPW": "service_active_user",
+  "C1:UC_RV9YKV": "service_needs_prolongation",
+  "C1:UC_5LQY3E": "service_prolonged",
+  "C1:UC_23N1KN": "service_volunteers",
+  "C1:UC_JDD0F1": "service_switched_other_software",
+  "C1:UC_HKYS1J": "service_closed_unrealized",
+  "C1:UC_IVXYE3": "service_no_prolongation",
+  "C1:WON": "service_application_fulfilled",
+  "C1:LOSE": "service_closed_not_realized",
+
+  // Управление проектами (категория C5)
+  "C5:NEW": "project_new",
+  "C5:EXECUTING": "project_in_progress",
+  "C5:UC_1Q2N96": "project_contracts_es_2025",
+  "C5:UC_YIFVAT": "project_contracts_es_2026",
+  "C5:UC_JQT38V": "project_prolongations_2026",
+  "C5:FINAL_INVOICE": "project_delivered_unpaid",
+  "C5:UC_H9PW1N": "project_overdue_debt",
+  "C5:WON": "project_successful",
+  "C5:LOSE": "project_closed_not_realized",
+};
+
+/** Точные коды STATUS_ID лида → канонический ключ (получены от РОП). */
+export const BITRIX_LEAD_STATUS_MAP: Record<string, StageKey> = {
+  NEW: "lead_new",
+  "1": "lead_first_contact",
+  UC_FN9966: "lead_no_answer",
+  UC_X9PO25: "lead_qualification",
+  UC_LQQIQ3: "lead_spam",
+  UC_35KIVN: "lead_deferred_demand",
+  CONVERTED: "lead_qualified",
+  JUNK: "lead_unqualified",
+};
+
+/** Воронка канонического ключа стадии (для пары с BITRIX_*_MAP, где pipeline не хранится отдельно). */
+export function pipelineOfStageKey(key: StageKey): PipelineKey | "unknown" {
+  return ALL_STAGES.find((s) => s.key === key)?.pipeline ?? "unknown";
 }
 
 /**

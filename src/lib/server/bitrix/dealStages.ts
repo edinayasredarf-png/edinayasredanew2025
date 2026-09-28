@@ -5,6 +5,10 @@ import { getAllSettings, setSetting } from "@/lib/server/aiSales/settingsDb";
 import {
   matchStageInPipeline,
   classifyDealCategoryPipeline,
+  pipelineOfStageKey,
+  BITRIX_DEAL_STAGE_MAP,
+  BITRIX_LEAD_STATUS_MAP,
+  STAGE_LABEL,
   type StageKey,
   type PipelineKey,
 } from "@/lib/ai/dealStages";
@@ -20,11 +24,13 @@ import {
  * в ai_settings — во время самого анализа звонка Bitrix уже не дёргаем
  * (см. analysisService.ts).
  *
- * У сделок несколько категорий (пайплайнов) в Bitrix — какая из них «Отдел
- * продаж», а какая «Обслуживание сервиса», Bitrix напрямую не сообщает.
- * Определяем автоматически по набору названий стадий категории
- * (classifyDealCategoryPipeline) — при необходимости можно переопределить
- * вручную через aiSales.stageOverrides.
+ * Основной источник истины для каждого STAGE_ID/STATUS_ID —
+ * BITRIX_DEAL_STAGE_MAP/BITRIX_LEAD_STATUS_MAP (src/lib/ai/dealStages.ts,
+ * точные коды получены от РОП). Автосопоставление по названию
+ * (classifyDealCategoryPipeline/matchStageInPipeline) — только резерв для
+ * стадий, которых там ещё нет (например, если в Bitrix позже добавят
+ * новую категорию/стадию) — при необходимости можно переопределить вручную
+ * через aiSales.stageOverrides.
  *
  * Обновление: автоматически после полной синхронизации сделок/лидов
  * (bitrixSyncService.ts), либо вручную — кнопка в разделе «Настройки».
@@ -103,26 +109,39 @@ export async function refreshDealStageDictionary(): Promise<StageDictionary> {
   const dealStages: Record<string, StageDictionaryEntry> = {};
   const categoryPipeline: Record<string, PipelineKey | "unknown"> = {};
   for (const cat of categories) {
-    const pipeline = classifyDealCategoryPipeline(cat.stages.map((s) => s.name));
-    categoryPipeline[cat.categoryId] = pipeline;
+    // Резервная классификация категории по названиям — только для стадий
+    // без точного кода в BITRIX_DEAL_STAGE_MAP (см. ниже).
+    const fallbackPipeline = classifyDealCategoryPipeline(cat.stages.map((s) => s.name));
+    let knownPipeline: PipelineKey | null = null;
     for (const s of cat.stages) {
-      dealStages[s.stageId] = {
-        name: s.name,
-        categoryId: cat.categoryId,
-        pipeline,
-        canonicalKey: pipeline === "unknown" ? "unknown" : matchStageInPipeline(pipeline, s.name),
-      };
+      const hardcoded = BITRIX_DEAL_STAGE_MAP[s.stageId];
+      if (hardcoded) {
+        const pipeline = pipelineOfStageKey(hardcoded);
+        if (pipeline !== "unknown") knownPipeline = pipeline;
+        dealStages[s.stageId] = { name: s.name, categoryId: cat.categoryId, pipeline, canonicalKey: hardcoded };
+      } else {
+        dealStages[s.stageId] = {
+          name: s.name,
+          categoryId: cat.categoryId,
+          pipeline: fallbackPipeline,
+          canonicalKey: fallbackPipeline === "unknown" ? "unknown" : matchStageInPipeline(fallbackPipeline, s.name),
+        };
+      }
     }
+    // Воронка категории для отображения — по точным кодам, если хоть один
+    // известен в этой категории, иначе по эвристике названий.
+    categoryPipeline[cat.categoryId] = knownPipeline ?? fallbackPipeline;
   }
 
   const leadStatusesRaw = await fetchLeadStatuses();
   const leadStatuses: Record<string, StageDictionaryEntry> = {};
   for (const s of leadStatusesRaw) {
+    const hardcoded = BITRIX_LEAD_STATUS_MAP[s.statusId];
     leadStatuses[s.statusId] = {
       name: s.name,
       categoryId: "",
       pipeline: "lead",
-      canonicalKey: matchStageInPipeline("lead", s.name),
+      canonicalKey: hardcoded ?? matchStageInPipeline("lead", s.name),
     };
   }
 
@@ -155,17 +174,25 @@ export interface ResolvedStage {
 const UNRESOLVED = (id: string | null): ResolvedStage => ({ id, key: "unknown", pipeline: "unknown", label: null, matched: false });
 
 /**
- * Определить канонический этап воронки «Отдел продаж»/«Обслуживание
- * сервиса» по сырому STAGE_ID сделки. Не обращается к Bitrix — только к
- * закэшированным данным (быстро и безопасно дёргать на каждый анализ звонка).
+ * Определить канонический этап (лид/«Отдел продаж»/«Обслуживание сервиса»/
+ * «Управление проектами») по сырому STAGE_ID сделки. Не обращается к Bitrix
+ * — только к точным кодам (BITRIX_DEAL_STAGE_MAP) и закэшированным данным
+ * (быстро и безопасно дёргать на каждый анализ звонка).
+ * Порядок: ручное переопределение → точный код → справочник (имя из
+ * Bitrix, резерв для стадий, которых нет в точной карте) → неизвестно.
  */
 export async function resolveDealStage(stageId: string | null | undefined): Promise<ResolvedStage> {
   if (!stageId) return UNRESOLVED(null);
   const [overrides, dict] = await Promise.all([getStageOverrides(), getDealStageDictionary()]);
+  const label = dict?.dealStages[stageId]?.name ?? null;
 
   const override = overrides[`deal:${stageId}`];
   if (override) {
-    return { id: stageId, key: override, pipeline: dict?.dealStages[stageId]?.pipeline ?? "unknown", label: dict?.dealStages[stageId]?.name ?? null, matched: true };
+    return { id: stageId, key: override, pipeline: pipelineOfStageKey(override), label: label ?? STAGE_LABEL[override] ?? null, matched: true };
+  }
+  const hardcoded = BITRIX_DEAL_STAGE_MAP[stageId];
+  if (hardcoded) {
+    return { id: stageId, key: hardcoded, pipeline: pipelineOfStageKey(hardcoded), label: label ?? STAGE_LABEL[hardcoded] ?? null, matched: true };
   }
   const entry = dict?.dealStages[stageId];
   if (entry) {
@@ -174,14 +201,19 @@ export async function resolveDealStage(stageId: string | null | undefined): Prom
   return UNRESOLVED(stageId);
 }
 
-/** Определить канонический этап воронки ЛИДА по сырому STATUS_ID лида. */
+/** Определить канонический этап воронки ЛИДА по сырому STATUS_ID лида. Тот же порядок приоритетов, что и resolveDealStage. */
 export async function resolveLeadStage(statusId: string | null | undefined): Promise<ResolvedStage> {
   if (!statusId) return UNRESOLVED(null);
   const [overrides, dict] = await Promise.all([getStageOverrides(), getDealStageDictionary()]);
+  const label = dict?.leadStatuses[statusId]?.name ?? null;
 
   const override = overrides[`lead:${statusId}`];
   if (override) {
-    return { id: statusId, key: override, pipeline: "lead", label: dict?.leadStatuses[statusId]?.name ?? null, matched: true };
+    return { id: statusId, key: override, pipeline: "lead", label: label ?? STAGE_LABEL[override] ?? null, matched: true };
+  }
+  const hardcoded = BITRIX_LEAD_STATUS_MAP[statusId];
+  if (hardcoded) {
+    return { id: statusId, key: hardcoded, pipeline: "lead", label: label ?? STAGE_LABEL[hardcoded] ?? null, matched: true };
   }
   const entry = dict?.leadStatuses[statusId];
   if (entry) {

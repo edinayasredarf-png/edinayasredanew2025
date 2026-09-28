@@ -13,7 +13,7 @@ import { STAGE_KEYS, DEFERRED_DEMAND_REASON_KEYS, TRIGGER_TYPE_KEYS } from "@/li
  * поле (undefined), поэтому явные `.default()` не нужны. Инференс типа стабилен.
  */
 
-export const ANALYSIS_VERSION = "call-analysis-v4";
+export const ANALYSIS_VERSION = "call-analysis-v5";
 
 // ── Толерантные примитивы ──
 const nstr = z.string().nullable().catch(null); // string | null
@@ -163,21 +163,21 @@ const ManagerPerformance = z
   })
   .catch({ overall: null, criteria: [], didWell: [], mistakes: [], improveNextTime: [], exampleBetterResponse: null });
 
-// ── Этап сделки/лида (§ речевая аналитика по трём воронкам) ──
+// ── Этап сделки/лида (§ речевая аналитика по четырём воронкам) ──
 // dealStage — служебное поле: заполняется КОДОМ по STAGE_ID сделки/STATUS_ID
 // лида из CRM (см. resolveDealStage/resolveLeadStage в analysisService.ts),
 // а не LLM — модель его не заполняет, значение из ответа LLM перезаписывается
 // сервером перед сохранением. Оставлено в схеме, чтобы поле было частью
 // одного объекта анализа (data), а не отдельной колонкой. Название поля
-// историческое — покрывает все три воронки (лид/отдел продаж/сервис), не
-// только сделки.
+// историческое — покрывает все четыре воронки (лид/отдел продаж/сервис/
+// управление проектами), не только сделки.
 const DealStage = z
   .object({
     key: z.enum(STAGE_KEYS).catch("unknown"),
     label: nstr,
-    // Какая из трёх воронок: lead (Bitrix Lead) | sales (Отдел продаж) |
-    // service (Обслуживание сервиса) | unknown.
-    pipeline: z.enum(["lead", "sales", "service", "unknown"]).catch("unknown"),
+    // Какая из четырёх воронок: lead (Bitrix Lead) | sales (Отдел продаж) |
+    // service (Обслуживание сервиса) | project (Управление проектами) | unknown.
+    pipeline: z.enum(["lead", "sales", "service", "project", "unknown"]).catch("unknown"),
     source: z.enum(["crm", "unknown"]).catch("unknown"),
   })
   .catch({ key: "unknown", label: null, pipeline: "unknown", source: "unknown" });
@@ -281,6 +281,19 @@ const ServiceUsageDetails = z
   .nullable()
   .catch(null);
 
+// Воронка «Управление проектами» (исполнение подписанного контракта):
+// производство/сдача работ, оплата, просроченная задолженность.
+const ProjectDeliveryDetails = z
+  .object({
+    paymentStatus: z.enum(["unpaid", "partially_paid", "paid", "overdue"]).nullable().catch(null),
+    overdueDays: z.number().int().nullable().catch(null), // если клиент/менеджер назвал срок просрочки
+    invoiceSentDate: nstr, // YYYY-MM-DD, если известно
+    blockers: strArr, // что мешает оплате/сдаче
+    reasonNote: nstr, // причина просрочки/спора по приёмке, если прозвучала
+  })
+  .nullable()
+  .catch(null);
+
 // Подробности по ТЕКУЩЕМУ этапу (dealStage.key). Заполняется ТОЛЬКО группа,
 // соответствующая этапу из КОНТЕКСТА промпта — остальные остаются null
 // (часть этапов lead/sales-воронок отдельной группы не имеет — там
@@ -294,10 +307,11 @@ const StageDetails = z
     successfullyDone: SuccessfullyDoneDetails,
     vcsDm: VcsDmDetails,
     serviceUsage: ServiceUsageDetails,
+    projectDelivery: ProjectDeliveryDetails,
   })
   .catch({
     quoteSent: null, deferredDemand: null, contractSent: null,
-    contractSigned: null, successfullyDone: null, vcsDm: null, serviceUsage: null,
+    contractSigned: null, successfullyDone: null, vcsDm: null, serviceUsage: null, projectDelivery: null,
   });
 
 const NextStageSuggestion = z

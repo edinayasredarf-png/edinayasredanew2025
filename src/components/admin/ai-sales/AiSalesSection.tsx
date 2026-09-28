@@ -9,7 +9,7 @@ import { DatePicker } from '@/components/admin/ui/DatePicker';
 import { STAGE_LABEL as DEAL_STAGE_LABEL_UI } from '@/lib/ai/dealStages';
 /** Название этапа воронки по ключу (строка из API — не сужена до StageKey на фронте). */
 const stageLabelOf = (key: string): string => (DEAL_STAGE_LABEL_UI as Record<string, string>)[key] || key;
-const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'Отдел продаж', service: 'Обслуживание сервиса', unknown: 'не распознано' };
+const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'Отдел продаж', service: 'Обслуживание сервиса', project: 'Управление проектами', unknown: 'не распознано' };
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -115,6 +115,10 @@ const CONTRACT_STATUS_LABEL: Record<string, string> = {
   on_approval: 'На согласовании', has_remarks: 'Есть замечания',
   awaiting_edits: 'Ожидаются правки', approved: 'Согласован',
   ready_to_sign: 'Готов к подписанию', signed: 'Подписан', other: 'Другое',
+};
+
+const PAYMENT_STATUS_LABEL: Record<string, string> = {
+  unpaid: 'Не оплачено', partially_paid: 'Оплачено частично', paid: 'Оплачено', overdue: 'Просрочено',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -909,6 +913,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
       successfullyDone?: { confirmed?: boolean | null; serviceDelivered?: string | null; additionalNeedsFound?: string[] } | null;
       vcsDm?: { decisionMakerPresent?: boolean | null; relevantToClientPains?: boolean | null; dealProgressed?: boolean | null } | null;
       serviceUsage?: { accessGranted?: boolean | null; trainingCompleted?: boolean | null; activelyUsing?: boolean | null; prolongationInterest?: string; churnRisk?: string | null; blockers?: string[]; reasonNote?: string | null } | null;
+      projectDelivery?: { paymentStatus?: string | null; overdueDays?: number | null; invoiceSentDate?: string | null; blockers?: string[]; reasonNote?: string | null } | null;
     };
     nextStageSuggestion?: { suggested?: string | null; reasoning?: string | null; confidence?: number };
   };
@@ -1102,6 +1107,18 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                   )}
                   {a.stageDetails.serviceUsage.reasonNote && <p className="text-gray-600">{a.stageDetails.serviceUsage.reasonNote}</p>}
                   {a.stageDetails.serviceUsage.blockers?.length ? <p className="text-red-600">Мешает: {a.stageDetails.serviceUsage.blockers.join(', ')}</p> : null}
+                </div>
+              )}
+
+              {a.stageDetails?.projectDelivery && (
+                <div className="rounded-xl bg-[#F6F7F9] p-3 text-sm space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Управление проектами</p>
+                  {a.stageDetails.projectDelivery.paymentStatus && (
+                    <p className="text-gray-800">Оплата: <b>{PAYMENT_STATUS_LABEL[a.stageDetails.projectDelivery.paymentStatus] || a.stageDetails.projectDelivery.paymentStatus}</b>
+                      {a.stageDetails.projectDelivery.overdueDays != null ? ` · просрочка: ${a.stageDetails.projectDelivery.overdueDays} дн.` : ''}</p>
+                  )}
+                  {a.stageDetails.projectDelivery.reasonNote && <p className="text-gray-600">{a.stageDetails.projectDelivery.reasonNote}</p>}
+                  {a.stageDetails.projectDelivery.blockers?.length ? <p className="text-red-600">Мешает: {a.stageDetails.projectDelivery.blockers.join(', ')}</p> : null}
                 </div>
               )}
 
