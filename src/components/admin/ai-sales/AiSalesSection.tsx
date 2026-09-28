@@ -6,7 +6,8 @@ import { Select } from '@/components/admin/ui/Select';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
 import { ExcelIcon } from '@/components/admin/ui/FileIcons';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
-import { STAGE_LABEL as DEAL_STAGE_LABEL_UI } from '@/lib/ai/dealStages';
+import { STAGE_LABEL as DEAL_STAGE_LABEL_UI, ALL_STAGES } from '@/lib/ai/dealStages';
+import { getStagePromptBlock } from '@/lib/ai/prompts/dealStagePrompts';
 /** Название этапа воронки по ключу (строка из API — не сужена до StageKey на фронте). */
 const stageLabelOf = (key: string): string => (DEAL_STAGE_LABEL_UI as Record<string, string>)[key] || key;
 const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'Отдел продаж', service: 'Обслуживание сервиса', project: 'Управление проектами', unknown: 'не распознано' };
@@ -3738,6 +3739,47 @@ function Prompts() {
           );
         })}
         {depts.length === 0 && <p className="text-sm text-gray-400">Сначала создайте отделы во вкладке «Отделы».</p>}
+      </div>
+
+      <StagePromptsPanel />
+    </div>
+  );
+}
+
+/* ─────────── Промты по этапам воронки (только чтение, dealStagePrompts.ts) ─────────── */
+const PIPELINE_ORDER = ['lead', 'sales', 'service', 'project'] as const;
+
+function StagePromptsPanel() {
+  return (
+    <div className="mt-8">
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Промты по этапам воронки</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Добавляются поверх стандартного промта в зависимости от текущего этапа сделки/лида (не применяется, если у отдела задан свой промт выше — отдел тогда полностью управляет содержанием). Только для чтения — правится в коде, src/lib/ai/prompts/dealStagePrompts.ts.
+      </p>
+      <div className="space-y-3">
+        {PIPELINE_ORDER.map((pipeline) => {
+          const pipelineStages = ALL_STAGES.filter((s) => s.pipeline === pipeline);
+          return (
+            <details key={pipeline} className="bg-[#F6F7F9] rounded-xl p-4">
+              <summary className="cursor-pointer font-semibold text-gray-800">
+                {PIPELINE_LABEL_UI[pipeline]} <span className="text-xs text-gray-400 font-normal">({pipelineStages.length} этапов)</span>
+              </summary>
+              <div className="mt-3 space-y-2">
+                {pipelineStages.map((s) => {
+                  const block = getStagePromptBlock(s.key);
+                  return (
+                    <details key={s.key} className="bg-white rounded-lg border border-gray-100 p-3">
+                      <summary className="cursor-pointer text-sm font-medium text-gray-700">
+                        {s.label}{!block && <span className="text-xs text-gray-400 font-normal"> — нет отдельного промта (используется только стандартный)</span>}
+                      </summary>
+                      {block && <pre className="mt-2 text-xs text-gray-600 whitespace-pre-wrap">{block}</pre>}
+                    </details>
+                  );
+                })}
+              </div>
+            </details>
+          );
+        })}
       </div>
     </div>
   );
