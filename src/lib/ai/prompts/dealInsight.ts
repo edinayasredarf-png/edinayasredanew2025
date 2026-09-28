@@ -1,4 +1,4 @@
-export const DEAL_INSIGHT_PROMPT_VERSION = "deal-insight-v1";
+export const DEAL_INSIGHT_PROMPT_VERSION = "deal-insight-v2";
 
 export const DEAL_INSIGHT_SYSTEM = `Ты — руководитель отдела продаж компании «Единая среда» (цифровизация территорий: инвентаризация зелёных насаждений, кладбищ, ЖКХ, лесоустройство, цифровые двойники).
 
@@ -11,7 +11,8 @@ export const DEAL_INSIGHT_SYSTEM = `Ты — руководитель отдел
 4. nextBestAction — конкретное следующее действие менеджера по сделке (позвонить и уточнить бюджет, отправить КП, назначить демо, выяснить ЛПР и т.п.).
 5. risks — реальные риски потери сделки (нет бюджета, нет следующего шага, конкурент, зависла и т.п.).
 6. Ничего не выдумывай — опирайся только на разборы звонков. Отвечай на русском.
-7. Верни СТРОГО валидный JSON по схеме, без пояснений.`;
+7. Верни СТРОГО валидный JSON по схеме, без пояснений.
+8. stageRecommendation — сверь ТЕКУЩИЙ этап сделки (указан в КОНТЕКСТЕ) с тем, что фактически происходило в последних звонках. Если по разговорам сделка явно продвинулась дальше (например, клиент подтвердил получение и согласование договора, а в CRM всё ещё «КП отправлено») — укажи это как рекомендацию перевести сделку на актуальный этап воронки, с кратким обоснованием. Если этап и разговоры согласуются — так и напиши («соответствует текущему этапу»), не выдумывай расхождение. Не определяй это по одной последней фразе — только по совокупности звонков.`;
 
 export interface DealCallDigestItem {
   date: string | null;
@@ -22,15 +23,17 @@ export interface DealCallDigestItem {
   dealScore: number | null;
   temperature: string | null;
   summary: string;
+  dealStageLabel: string | null; // этап воронки на момент ЭТОГО звонка (мог измениться с тех пор)
 }
 
 export function buildDealInsightUser(
   digest: DealCallDigestItem[],
-  ctx?: { companyTitle?: string | null; dealTitle?: string | null }
+  ctx?: { companyTitle?: string | null; dealTitle?: string | null; currentStageLabel?: string | null }
 ): string {
   const head: string[] = [];
   if (ctx?.companyTitle) head.push(`Компания: ${ctx.companyTitle}`);
   if (ctx?.dealTitle) head.push(`Сделка: ${ctx.dealTitle}`);
+  head.push(`Текущий этап сделки (CRM, сейчас): ${ctx?.currentStageLabel || "не определён"}`);
   head.push(`Всего звонков: ${digest.length}`);
 
   const lines = digest.map((c, i) => {
@@ -38,6 +41,7 @@ export function buildDealInsightUser(
       `#${i + 1}`,
       c.date ? new Date(c.date).toLocaleString("ru-RU") : "без даты",
       `тип: ${c.callType}`,
+      c.dealStageLabel ? `этап на тот момент: ${c.dealStageLabel}` : "",
       c.connected ? "состоялся" : "НЕ состоялся",
       c.managerScoreApplicable ? "показательный" : "краткий",
       c.managerScore != null ? `оценка менеджера: ${c.managerScore}/10` : "оценка менеджера: —",

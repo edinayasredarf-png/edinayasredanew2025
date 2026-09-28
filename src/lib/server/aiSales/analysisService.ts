@@ -23,6 +23,8 @@ import { createFollowUpsFromAnalysis } from "@/lib/server/aiSales/followupsDb";
 import { saveCallTags } from "@/lib/server/aiSales/tagsDb";
 import { getAiConfig } from "@/lib/server/aiSales/settingsDb";
 import { getDepartmentPromptForManager } from "@/lib/server/aiSales/departmentsDb";
+import { resolveDealStage } from "@/lib/server/bitrix/dealStages";
+import { getStagePromptBlock } from "@/lib/ai/prompts/dealStagePrompts";
 
 /**
  * Анализ звонка через Claude (§45 ТЗ). Классификация/скоринг — LLM; агрегация и
@@ -93,6 +95,7 @@ interface CallContext {
   companyTitle: string | null;
   dealTitle: string | null;
   managerName: string | null;
+  dealStageId: string | null;
 }
 
 async function loadContext(call: {
@@ -106,8 +109,8 @@ async function loadContext(call: {
       ? pool.query<{ title: string | null }>(`select title from ai_companies where bitrix_company_id = $1`, [call.bitrix_company_id])
       : Promise.resolve({ rows: [] as { title: string | null }[] }),
     call.bitrix_deal_id
-      ? pool.query<{ title: string | null }>(`select title from ai_deals where bitrix_deal_id = $1`, [call.bitrix_deal_id])
-      : Promise.resolve({ rows: [] as { title: string | null }[] }),
+      ? pool.query<{ title: string | null; stage_id: string | null }>(`select title, stage_id from ai_deals where bitrix_deal_id = $1`, [call.bitrix_deal_id])
+      : Promise.resolve({ rows: [] as { title: string | null; stage_id: string | null }[] }),
     call.bitrix_user_id
       ? pool.query<{ full_name: string | null }>(`select full_name from ai_managers where bitrix_user_id = $1`, [call.bitrix_user_id])
       : Promise.resolve({ rows: [] as { full_name: string | null }[] }),
@@ -116,6 +119,7 @@ async function loadContext(call: {
     companyTitle: company.rows[0]?.title ?? null,
     dealTitle: deal.rows[0]?.title ?? null,
     managerName: manager.rows[0]?.full_name ?? null,
+    dealStageId: deal.rows[0]?.stage_id ?? null,
   };
 }
 
@@ -143,16 +147,25 @@ export async function runAnalysis(
   const provider = await getAiProvider();
   const model = provider.defaultModel;
 
+  const ctx = await loadContext(call);
+  // Этап сделки — из зеркала Bitrix (ai_deals.stage_id), уже засинхронного
+  // фоновой синхронизацией. Резолвится по закэшированному справочнику стадий
+  // (без обращения к Bitrix в моменте анализа — см. resolveDealStage).
+  const stage = await resolveDealStage(ctx.dealStageId);
+
   // Промт анализа — свой у каждого отдела (по менеджеру звонка). Если у отдела
-  // задан кастомный промт — используем его как системный, иначе дефолтный.
+  // задан кастомный промт — используем его как системный (без этап-специфичных
+  // блоков — отдел сам управляет содержанием своего промпта), иначе дефолтный
+  // + инструкция по текущему этапу воронки (§ речевая аналитика по этапам).
   const dept = await getDepartmentPromptForManager(call.bitrix_user_id);
   const customPrompt = dept?.analysisPrompt?.trim() || null;
-  const systemPrompt = customPrompt || CALL_ANALYSIS_SYSTEM;
-  // Версия промта в кэш-ключе: смена промта отдела инвалидирует кэш и даёт
-  // повторный анализ этого звонка новым промтом.
+  const stageBlock = getStagePromptBlock(stage.key);
+  const systemPrompt = customPrompt || (stageBlock ? `${CALL_ANALYSIS_SYSTEM}\n\n${stageBlock}` : CALL_ANALYSIS_SYSTEM);
+  // Версия промта в кэш-ключе: смена промта отдела/этапа инвалидирует кэш и
+  // даёт повторный анализ этого звонка новым промтом.
   const promptVersion = customPrompt
     ? `${CALL_ANALYSIS_PROMPT_VERSION}+dept:${dept!.departmentId.slice(0, 8)}`
-    : CALL_ANALYSIS_PROMPT_VERSION;
+    : `${CALL_ANALYSIS_PROMPT_VERSION}+stage:${stage.key}`;
   const promptFingerprint = createHash("sha256").update(systemPrompt).digest("hex").slice(0, 12);
 
   const inputHash = createHash("sha256")
@@ -165,9 +178,14 @@ export async function runAnalysis(
 
   await setCallStatus(callId, "ANALYZING");
 
-  const ctx = await loadContext(call);
   const callDate = call.started_at ? new Date(call.started_at).toISOString().slice(0, 10) : null;
-  const user = buildCallAnalysisUser(dialogue, { ...ctx, callDate });
+  const user = buildCallAnalysisUser(dialogue, {
+    companyTitle: ctx.companyTitle,
+    dealTitle: ctx.dealTitle,
+    managerName: ctx.managerName,
+    callDate,
+    dealStageLabel: stage.label,
+  });
 
   const { data } = await provider.generateStructured({
     schema: CallAnalysisSchema,
@@ -176,6 +194,10 @@ export async function runAnalysis(
     cacheSystem: true,
     maxTokens: 16000,
   });
+
+  // dealStage — служебное поле, ставим кодом (не доверяем LLM): источник
+  // истины — CRM-стадия сделки на момент анализа этого звонка.
+  data.dealStage = { key: stage.key, label: stage.label, source: stage.matched ? "crm" : "unknown" };
 
   // Тайм-коды возражений — по совпадению цитаты с транскриптом (§16–17 ТЗ:
   // руководитель кликает возражение и слышит этот момент звонка).

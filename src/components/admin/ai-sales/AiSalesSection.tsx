@@ -6,6 +6,9 @@ import { Select } from '@/components/admin/ui/Select';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
 import { ExcelIcon } from '@/components/admin/ui/FileIcons';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
+import { DEAL_STAGE_LABEL as DEAL_STAGE_LABEL_UI } from '@/lib/ai/dealStages';
+/** Название этапа воронки по ключу (строка из API — не сужена до DealStageKey на фронте). */
+const stageLabelOf = (key: string): string => (DEAL_STAGE_LABEL_UI as Record<string, string>)[key] || key;
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -64,7 +67,53 @@ const CALL_TYPE_LABEL: Record<string, string> = {
   first_contact: 'Первичный контакт', discovery: 'Выявление потребности',
   presentation: 'Презентация', demo: 'Демонстрация', negotiation: 'Переговоры',
   follow_up: 'Перезвон/дожим', clarification: 'Уточнение', closing: 'Закрытие',
-  support: 'Поддержка', other: 'Другое',
+  support: 'Поддержка', system_touch: 'Системное касание', other: 'Другое',
+};
+
+/** Русские подписи причин отложенного спроса (18 пунктов из воронки РОП). */
+const DEFERRED_REASON_LABEL: Record<string, string> = {
+  contract_on_approval: 'Контракт/КП на согласовании',
+  no_money_interested: 'Денег нет, но интерес есть',
+  no_money_no_interest: 'Денег нет, интереса нет',
+  pending_leadership_review: 'На рассмотрении у главы/руководителя',
+  duma_1_month: 'Дума — решение через 1 месяц',
+  duma_3_months: 'Дума — решение через 3 месяца',
+  duma_6_months: 'Дума — решение через 6 месяцев',
+  budget_next_year: 'Закладывают бюджет на следующий год',
+  needs_push_from_above: 'Нужен «пинок» главе от вышестоящего руководства',
+  not_priority: 'Наша услуга не первоочередная',
+  merger_2027: 'Объединение СП в округ в 2027 году',
+  merger_2028: 'Объединение СП в округ в 2028 году',
+  too_expensive: 'Очень дорого',
+  monitoring_market: 'Мониторят рынок',
+  concerned_about_prolongation: 'Смущает наличие пролонгации',
+  has_regional_system: 'Уже есть региональная система',
+  has_competitor_system: 'Есть система конкурентов',
+  own_reason: 'Свой вариант',
+};
+
+/** Русские подписи типов триггера (§ системные касания / заявка получена). */
+const TRIGGER_TYPE_LABEL_UI: Record<string, string> = {
+  prosecutor_order: 'Предписание прокуратуры/контролирующего органа',
+  superior_instruction: 'Поручение вышестоящего органа/руководства',
+  new_legislation: 'Новое/изменившееся законодательство',
+  leadership_change: 'Сменился глава/руководитель',
+  budget_prepared: 'Появился/заложен бюджет',
+  municipal_program: 'Включение в программу/нацпроект',
+  procurement_planned: 'В плане закупок появилась позиция',
+  competitor_contract_ending: 'Заканчивается контракт с конкурентом',
+  media_complaint: 'Жалобы/резонанс в СМИ',
+  merger_completed: 'Завершилось объединение СП в округ',
+  audit_or_inspection: 'Проверка/аудит выявили проблему',
+  other: 'Другой триггер',
+  none: 'Триггер не выявлен',
+};
+
+const CONTRACT_STATUS_LABEL: Record<string, string> = {
+  not_received: 'Не получен', received_not_reviewed: 'Получен, не рассмотрен',
+  on_approval: 'На согласовании', has_remarks: 'Есть замечания',
+  awaiting_edits: 'Ожидаются правки', approved: 'Согласован',
+  ready_to_sign: 'Готов к подписанию', signed: 'Подписан', other: 'Другое',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -432,6 +481,7 @@ interface CallItem {
   bitrixDealId: string | null; dealUrl: string | null; durationSec: number | null; product: string | null;
   dealScore: number | null; managerScore: number | null; temperature: string | null;
   resultType: string | null; nextStep: string | null; status: string;
+  dealStageKey: string | null; dealStageLabel: string | null; callType: string | null;
 }
 
 function Calls({ initialTemperature, initialTag }: { initialTemperature?: string; initialTag?: string }) {
@@ -513,6 +563,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
         product: sorted.find((c) => c.product && c.product.trim())?.product ?? null, // первый заполненный
         dealScore: maxNum(sorted.map((c) => c.dealScore)),                       // максимальный score
         managerScore: maxNum(sorted.map((c) => c.managerScore)),                 // максимальные баллы
+        stageLabel: sorted[0]?.dealStageLabel ?? null,                           // этап на момент последнего звонка
       };
     });
     out.sort((a, b) => sort === 'desc'
@@ -556,13 +607,13 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                     onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}>
                   Дата {sort === 'desc' ? '↓' : '↑'}
                 </th>
-                {['Менеджер', 'Клиент', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
+                {['Менеджер', 'Клиент', 'Этап', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
                   <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             {groups.length === 0 ? (
-              <tbody><tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">Звонков нет за выбранный период.</td></tr></tbody>
+              <tbody><tr><td colSpan={10} className="px-3 py-8 text-center text-gray-400">Звонков нет за выбранный период.</td></tr></tbody>
             ) : groups.map((g) => {
               const single = g.count === 1;
               const one = g.calls[0];
@@ -585,6 +636,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                       <div>{g.client || '—'}</div>
                       {g.phone && <div className="text-xs text-gray-400">{g.phone}</div>}
                     </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{(single ? one.dealStageLabel : g.stageLabel) || '—'}</td>
                     <td className="px-3 py-2">{fmtDur(single ? one.durationSec : g.duration)}</td>
                     <td className="px-3 py-2">{(single ? one.product : g.product) || '—'}</td>
                     <td className="px-3 py-2 font-medium">{(single ? one.dealScore : g.dealScore) ?? '—'}</td>
@@ -602,7 +654,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
 
                   {/* Один звонок — раскрытие карточки прямо тут */}
                   {single && groupOpen && (
-                    <tr><td colSpan={9} className="p-4 bg-[#FAFBFC] border-t border-gray-100">
+                    <tr><td colSpan={10} className="p-4 bg-[#FAFBFC] border-t border-gray-100">
                       <CallDetail id={one.id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
                     </td></tr>
                   )}
@@ -617,6 +669,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">{c.managerName || '—'}</td>
                         <td className="px-3 py-2">{c.companyTitle || '—'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{c.dealStageLabel || '—'}</td>
                         <td className="px-3 py-2">{fmtDur(c.durationSec)}</td>
                         <td className="px-3 py-2">{c.product || '—'}</td>
                         <td className="px-3 py-2 font-medium">{c.dealScore ?? '—'}</td>
@@ -625,7 +678,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                         <td className="px-3 py-2 whitespace-nowrap text-gray-600">{STATUS_LABEL[c.status] || c.status}</td>
                       </tr>
                       {expandedCall === c.id && (
-                        <tr><td colSpan={9} className="p-4 bg-[#FAFBFC] border-t border-gray-100">
+                        <tr><td colSpan={10} className="p-4 bg-[#FAFBFC] border-t border-gray-100">
                           <CallDetail id={c.id} onBack={() => setExpandedCall(null)} backLabel="▲ Свернуть" />
                         </td></tr>
                       )}
@@ -845,6 +898,17 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
     managerPerformance?: { overall?: number | null; didWell?: string[]; mistakes?: string[]; improveNextTime?: string[]; exampleBetterResponse?: string | null; criteria?: Array<{ key?: string; score?: number; comment?: string | null }> };
     products?: Array<{ name: string; confidence: number }>;
     objections?: Array<{ text?: string; quote?: string | null; raisedBy?: string; handled?: boolean; managerResponse?: string | null; responseQuality?: string | null; recommendation?: string | null; startMs?: number | null; endMs?: number | null }>;
+    dealStage?: { key?: string; label?: string | null };
+    trigger?: { present?: boolean; type?: string; description?: string | null; quote?: string | null };
+    stageDetails?: {
+      deferredDemand?: { reason?: string | null; reasonNote?: string | null; whatChangedSinceLastContact?: string | null; expectedDecisionDate?: string | null; nextContactNotBefore?: string | null; whoMakesDecision?: string | null; whatMustChange?: string | null } | null;
+      quoteSent?: { received?: boolean | null; understoodPrice?: boolean | null; hasQuestions?: boolean | null; progressedToNextStep?: boolean | null } | null;
+      contractSent?: { status?: string | null; blockers?: string[]; whoIsReviewing?: string | null } | null;
+      contractSigned?: { confirmed?: boolean | null; signedBy?: string | null; allDocsReceived?: boolean | null; additionalOpportunities?: string[] } | null;
+      successfullyDone?: { confirmed?: boolean | null; serviceDelivered?: string | null; additionalNeedsFound?: string[] } | null;
+      vcsDm?: { decisionMakerPresent?: boolean | null; relevantToClientPains?: boolean | null; dealProgressed?: boolean | null } | null;
+    };
+    nextStageSuggestion?: { suggested?: string | null; reasoning?: string | null; confidence?: number };
   };
 
   return (
@@ -950,9 +1014,14 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
             </div>
           ) : (
             <div className="space-y-4 text-sm">
-              {a.callType && a.callType !== 'other' && (
-                <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{CALL_TYPE_LABEL[a.callType] || a.callType}</span>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {a.callType && a.callType !== 'other' && (
+                  <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{CALL_TYPE_LABEL[a.callType] || a.callType}</span>
+                )}
+                {a.dealStage?.label && (
+                  <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[#029cda]/10 text-[#029cda]">Этап: {a.dealStage.label}</span>
+                )}
+              </div>
               {a.dealScore && (
                 <div className="flex items-center gap-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs ${TEMP_BADGE[a.dealScore.temperature || ''] || ''}`}>{tempRu(a.dealScore.temperature)}</span>
@@ -967,6 +1036,58 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
               {a.summary && <p className="text-gray-700">{a.summary}</p>}
               {a.nextStep?.action && (
                 <div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Следующий шаг</p><p className="text-gray-800">{a.nextStep.action}</p></div>
+              )}
+
+              {a.trigger?.present && (
+                <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-1">Триггер: {TRIGGER_TYPE_LABEL_UI[a.trigger.type || ''] || a.trigger.type}</p>
+                  {a.trigger.description && <p className="text-gray-800">{a.trigger.description}</p>}
+                  {a.trigger.quote && <p className="text-gray-500 italic mt-1">«{a.trigger.quote}»</p>}
+                </div>
+              )}
+
+              {a.stageDetails?.deferredDemand && (
+                <div className="rounded-xl bg-[#F6F7F9] p-3 space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Отложенный спрос</p>
+                  {a.stageDetails.deferredDemand.reason && (
+                    <p className="text-gray-800">Причина: <b>{DEFERRED_REASON_LABEL[a.stageDetails.deferredDemand.reason] || a.stageDetails.deferredDemand.reason}</b></p>
+                  )}
+                  {a.stageDetails.deferredDemand.reasonNote && <p className="text-gray-600">{a.stageDetails.deferredDemand.reasonNote}</p>}
+                  {a.stageDetails.deferredDemand.whatChangedSinceLastContact && (
+                    <p className="text-gray-700">Что изменилось: {a.stageDetails.deferredDemand.whatChangedSinceLastContact}</p>
+                  )}
+                  {a.stageDetails.deferredDemand.whatMustChange && (
+                    <p className="text-gray-700">Что должно произойти для движения сделки: {a.stageDetails.deferredDemand.whatMustChange}</p>
+                  )}
+                  <div className="flex flex-wrap gap-x-4 text-xs text-gray-500">
+                    {a.stageDetails.deferredDemand.whoMakesDecision && <span>Решает: {a.stageDetails.deferredDemand.whoMakesDecision}</span>}
+                    {a.stageDetails.deferredDemand.expectedDecisionDate && <span>Ожидаемое решение: {a.stageDetails.deferredDemand.expectedDecisionDate}</span>}
+                    {a.stageDetails.deferredDemand.nextContactNotBefore && <span>Не раньше: {a.stageDetails.deferredDemand.nextContactNotBefore}</span>}
+                  </div>
+                </div>
+              )}
+
+              {a.stageDetails?.quoteSent && (a.stageDetails.quoteSent.received != null || a.stageDetails.quoteSent.hasQuestions != null) && (
+                <div className="rounded-xl bg-[#F6F7F9] p-3 text-xs text-gray-600 flex flex-wrap gap-x-4">
+                  <span>КП получено: {a.stageDetails.quoteSent.received == null ? '—' : a.stageDetails.quoteSent.received ? 'да' : 'нет'}</span>
+                  <span>Цена понятна: {a.stageDetails.quoteSent.understoodPrice == null ? '—' : a.stageDetails.quoteSent.understoodPrice ? 'да' : 'нет'}</span>
+                  <span>Есть вопросы: {a.stageDetails.quoteSent.hasQuestions == null ? '—' : a.stageDetails.quoteSent.hasQuestions ? 'да' : 'нет'}</span>
+                </div>
+              )}
+
+              {a.stageDetails?.contractSent && a.stageDetails.contractSent.status && (
+                <div className="rounded-xl bg-[#F6F7F9] p-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Договор</p>
+                  <p className="text-gray-800">Статус: <b>{CONTRACT_STATUS_LABEL[a.stageDetails.contractSent.status] || a.stageDetails.contractSent.status}</b></p>
+                  {a.stageDetails.contractSent.blockers?.length ? <p className="text-red-600 mt-1">Мешает: {a.stageDetails.contractSent.blockers.join(', ')}</p> : null}
+                </div>
+              )}
+
+              {a.nextStageSuggestion?.suggested && (
+                <div className="text-xs text-gray-500">
+                  Возможный следующий этап: <b className="text-gray-700">{stageLabelOf(a.nextStageSuggestion.suggested)}</b>
+                  {a.nextStageSuggestion.reasoning ? ` — ${a.nextStageSuggestion.reasoning}` : ''}
+                </div>
               )}
               {a.dealScore?.factors && a.dealScore.factors.filter((f) => f.reason?.trim()).length > 0 && (
                 <div>
@@ -1164,7 +1285,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
 
 /* ─────────── Карточка сделки ─────────── */
 interface DealDetailData {
-  deal: { bitrixDealId: string; title: string | null; companyTitle: string | null; managerName: string | null; dealUrl: string | null };
+  deal: { bitrixDealId: string; title: string | null; companyTitle: string | null; managerName: string | null; dealUrl: string | null; stageKey: string | null; stageLabel: string | null };
   insight: null | {
     summary?: string;
     dealScore?: { score?: number; temperature?: string; factors?: Array<{ factor: string; points: number; reason: string }> };
@@ -1224,6 +1345,9 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
         <span>Сделка: <b>{data.deal.title || `#${data.deal.bitrixDealId}`}</b></span>
         <span>Менеджер: <b>{data.deal.managerName || '—'}</b></span>
         <span>Звонков: <b>{data.calls.length}</b></span>
+        {data.deal.stageLabel && (
+          <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[#029cda]/10 text-[#029cda]">Этап: {data.deal.stageLabel}</span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -2518,6 +2642,90 @@ function Settings() {
       <div className="flex items-center gap-3 mt-4">
         <button onClick={save} disabled={busy} className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Сохранить</button>
         {msg && <span className="text-sm text-gray-600">{msg}</span>}
+      </div>
+
+      <StageDictionaryPanel />
+    </div>
+  );
+}
+
+/* ─────────── Справочник этапов воронки (STAGE_ID Bitrix → этап РОП) ─────────── */
+interface StageDictEntry { name: string; categoryId: string; canonicalKey: string }
+function StageDictionaryPanel() {
+  const [dict, setDict] = useState<{ updatedAt: string; stages: Record<string, StageDictEntry> } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/stage-dictionary');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setDict(j.dictionary);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const refresh = async () => {
+    setBusy(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/stage-dictionary', { method: 'POST' });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setDict(j.dictionary);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setBusy(false); }
+  };
+
+  const entries = dict ? Object.entries(dict.stages) : [];
+  const unmatched = entries.filter(([, v]) => v.canonicalKey === 'unknown');
+
+  return (
+    <div className="max-w-2xl mt-8">
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Этапы воронки</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Сопоставление стадий Bitrix с этапами воронки продаж — по нему речевая аналитика понимает, на каком этапе сделки идёт звонок, и какой промпт-чеклист применять.
+      </p>
+      {err && <div className="mb-3 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
+      <div className="bg-white rounded-xl border border-gray-100 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-gray-400">{dict ? `Обновлено: ${new Date(dict.updatedAt).toLocaleString('ru-RU')}` : 'Справочник ещё не собран'}</span>
+          <button onClick={refresh} disabled={busy} className="px-3 py-1.5 rounded-xl text-xs bg-[#029cda] text-white disabled:opacity-50">
+            {busy ? 'Обновляю…' : 'Обновить из Bitrix'}
+          </button>
+        </div>
+        {entries.length === 0 ? (
+          <p className="text-sm text-gray-400">Справочник пуст — нажмите «Обновить из Bitrix» (нужен настроенный BITRIX24_WEBHOOK_URL).</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-xs">
+              <thead className="text-gray-500"><tr>
+                <th className="text-left font-medium py-1 pr-3">STAGE_ID</th>
+                <th className="text-left font-medium py-1 pr-3">Название в Bitrix</th>
+                <th className="text-left font-medium py-1">Этап воронки</th>
+              </tr></thead>
+              <tbody>
+                {entries.map(([stageId, v]) => (
+                  <tr key={stageId} className="border-t border-gray-50">
+                    <td className="py-1 pr-3 text-gray-400 whitespace-nowrap">{stageId}</td>
+                    <td className="py-1 pr-3 text-gray-700 whitespace-nowrap">{v.name}</td>
+                    <td className="py-1">
+                      {v.canonicalKey === 'unknown'
+                        ? <span className="text-amber-600">не распознано</span>
+                        : <span className="text-gray-700">{stageLabelOf(v.canonicalKey)}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {unmatched.length > 0 && (
+              <p className="text-xs text-amber-600 mt-3">
+                {unmatched.length} стади{unmatched.length === 1 ? 'я' : 'и'} не распознано автоматически — можно переопределить вручную ключом aiSales.stageOverrides через API настроек.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ import {
   saveDealInsight,
 } from "@/lib/server/aiSales/dealsDb";
 import { getTimewebPool } from "@/lib/timewebPg";
+import { resolveDealStage } from "@/lib/server/bitrix/dealStages";
 
 /**
  * Агрегированный разбор сделки по всем звонкам (§21,§33 ТЗ). Оценка менеджера —
@@ -21,15 +22,17 @@ import { getTimewebPool } from "@/lib/timewebPg";
  * Кэш по input_hash дайджеста звонков: если звонки не менялись — LLM не гоняем.
  */
 
-async function loadDealContext(bitrixDealId: string): Promise<{ companyTitle: string | null; dealTitle: string | null }> {
+async function loadDealContext(
+  bitrixDealId: string
+): Promise<{ companyTitle: string | null; dealTitle: string | null; stageId: string | null }> {
   const pool = getTimewebPool();
-  const { rows } = await pool.query<{ title: string | null; company_title: string | null }>(
-    `select d.title, co.title as company_title
+  const { rows } = await pool.query<{ title: string | null; company_title: string | null; stage_id: string | null }>(
+    `select d.title, co.title as company_title, d.stage_id
        from ai_deals d left join ai_companies co on co.bitrix_company_id = d.bitrix_company_id
       where d.bitrix_deal_id = $1`,
     [bitrixDealId]
   );
-  return { dealTitle: rows[0]?.title ?? null, companyTitle: rows[0]?.company_title ?? null };
+  return { dealTitle: rows[0]?.title ?? null, companyTitle: rows[0]?.company_title ?? null, stageId: rows[0]?.stage_id ?? null };
 }
 
 export interface DealAnalyzeOptions {
@@ -46,23 +49,25 @@ export async function runDealInsight(
   const provider = await getAiProvider();
   const model = provider.defaultModel;
 
-  // Хэш дайджеста → кэш. Меняются звонки/оценки → меняется хэш → пересчёт.
+  const ctx = await loadDealContext(bitrixDealId);
+  const stage = await resolveDealStage(ctx.stageId);
+
+  // Хэш дайджеста → кэш. Меняются звонки/оценки/текущий этап → меняется хэш → пересчёт.
   const digestKey = JSON.stringify(
-    digest.items.map((c) => [c.date, c.callType, c.connected, c.managerScoreApplicable, c.managerScore, c.dealScore, c.temperature, c.summary])
+    digest.items.map((c) => [c.date, c.callType, c.connected, c.managerScoreApplicable, c.managerScore, c.dealScore, c.temperature, c.summary, c.dealStageLabel])
   );
   const inputHash = createHash("sha256")
-    .update(`${DEAL_INSIGHT_PROMPT_VERSION}|${model}|${digestKey}`)
+    .update(`${DEAL_INSIGHT_PROMPT_VERSION}|${model}|${stage.key}|${digestKey}`)
     .digest("hex");
 
   if (!opts.force && (await getDealInsightHash(bitrixDealId)) === inputHash) {
     return { cached: true };
   }
 
-  const ctx = await loadDealContext(bitrixDealId);
   const { data } = await provider.generateStructured({
     schema: DealInsightSchema,
     system: DEAL_INSIGHT_SYSTEM,
-    user: buildDealInsightUser(digest.items, ctx),
+    user: buildDealInsightUser(digest.items, { companyTitle: ctx.companyTitle, dealTitle: ctx.dealTitle, currentStageLabel: stage.label }),
     maxTokens: 8000,
   });
 

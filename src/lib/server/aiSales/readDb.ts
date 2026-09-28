@@ -176,6 +176,9 @@ export interface CallListItem {
   resultType: string | null;
   nextStep: string | null;
   status: string;
+  dealStageKey: string | null;
+  dealStageLabel: string | null;
+  callType: string | null;
 }
 
 export interface CallListFilters {
@@ -235,11 +238,15 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
     bitrix_deal_id: string | null; bitrix_lead_id: string | null; duration_sec: number | null; product: string | null;
     deal_score: number | null; manager_score: string | null; deal_temperature: string | null;
     result_type: string | null; next_step: string | null; status: string;
+    deal_stage_key: string | null; deal_stage_label: string | null; call_type: string | null;
   }>(
     `select c.id, c.started_at, m.full_name as manager_name, co.title as company_title,
             ct.full_name as contact_name, c.client_title, c.phone_number,
             c.bitrix_deal_id, c.bitrix_lead_id, c.duration_sec, c.product,
-            a.deal_score, a.manager_score, a.deal_temperature, a.result_type, a.next_step, c.status
+            a.deal_score, a.manager_score, a.deal_temperature, a.result_type, a.next_step, c.status,
+            a.data->'dealStage'->>'key' as deal_stage_key,
+            a.data->'dealStage'->>'label' as deal_stage_label,
+            a.data->>'callType' as call_type
        from ai_calls c ${CALL_JOINS}
       where ${whereSql}
       order by c.started_at ${sort} nulls last
@@ -267,6 +274,9 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
       resultType: r.result_type,
       nextStep: r.next_step,
       status: r.status,
+      dealStageKey: r.deal_stage_key,
+      dealStageLabel: r.deal_stage_label,
+      callType: r.call_type,
     })),
   };
 }

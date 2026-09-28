@@ -1,5 +1,6 @@
 // zod/v4 — соответствует zodOutputFormat из @anthropic-ai/sdk (импортирует zod/v4).
 import * as z from "zod/v4";
+import { DEAL_STAGE_KEYS, DEFERRED_DEMAND_REASON_KEYS, TRIGGER_TYPE_KEYS } from "@/lib/ai/dealStages";
 
 /**
  * Схема AI-анализа звонка (§47 ТЗ). ТОЛЕРАНТНАЯ: недостающие/невалидные поля не
@@ -12,7 +13,7 @@ import * as z from "zod/v4";
  * поле (undefined), поэтому явные `.default()` не нужны. Инференс типа стабилен.
  */
 
-export const ANALYSIS_VERSION = "call-analysis-v2";
+export const ANALYSIS_VERSION = "call-analysis-v3";
 
 // ── Толерантные примитивы ──
 const nstr = z.string().nullable().catch(null); // string | null
@@ -162,6 +163,131 @@ const ManagerPerformance = z
   })
   .catch({ overall: null, criteria: [], didWell: [], mistakes: [], improveNextTime: [], exampleBetterResponse: null });
 
+// ── Этап сделки (§ речевая аналитика по этапам воронки) ──
+// dealStage — служебное поле: заполняется КОДОМ по STAGE_ID сделки из CRM
+// (см. resolveDealStage в analysisService.ts), а не LLM — модель его не
+// заполняет, значение из ответа LLM перезаписывается сервером перед
+// сохранением. Оставлено в схеме, чтобы поле было частью одного объекта
+// анализа (data), а не отдельной колонкой.
+const DealStage = z
+  .object({
+    key: z.enum(DEAL_STAGE_KEYS).catch("unknown"),
+    label: nstr,
+    source: z.enum(["crm", "unknown"]).catch("unknown"),
+  })
+  .catch({ key: "unknown", label: null, source: "unknown" });
+
+// Триггер — «что подтолкнуло клиента обратиться именно сейчас» (этап
+// «Заявка получена») или «что изменилось с прошлого касания» (этап
+// «Отложенный спрос»/системное касание). Заполняется ТОЛЬКО если клиент
+// реально об этом сказал — не выдумывать.
+const Trigger = z
+  .object({
+    present: z.boolean().catch(false),
+    type: z.enum(TRIGGER_TYPE_KEYS).catch("none"),
+    description: nstr,
+    quote: nstr, // дословная фраза клиента про триггер, если есть
+  })
+  .catch({ present: false, type: "none", description: null, quote: null });
+
+const QuoteSentDetails = z
+  .object({
+    received: z.boolean().nullable().catch(null),
+    understoodPrice: z.boolean().nullable().catch(null),
+    hasQuestions: z.boolean().nullable().catch(null),
+    additionalServicesOffered: z.boolean().catch(false),
+    progressedToNextStep: z.boolean().nullable().catch(null),
+  })
+  .nullable()
+  .catch(null);
+
+const DeferredDemandDetails = z
+  .object({
+    reason: z.enum(DEFERRED_DEMAND_REASON_KEYS).nullable().catch(null),
+    reasonNote: nstr, // текстовое пояснение, особенно важно для "own_reason"
+    whatChangedSinceLastContact: nstr,
+    expectedDecisionDate: nstr, // YYYY-MM-DD или null — не придумывать, если не названо
+    nextContactNotBefore: nstr, // YYYY-MM-DD или null
+    whoMakesDecision: nstr,
+    whatMustChange: nstr, // какое событие должно произойти, чтобы клиент был готов
+  })
+  .nullable()
+  .catch(null);
+
+const ContractSentDetails = z
+  .object({
+    status: z
+      .enum([
+        "not_received", "received_not_reviewed", "on_approval", "has_remarks",
+        "awaiting_edits", "approved", "ready_to_sign", "signed", "other",
+      ])
+      .nullable()
+      .catch(null),
+    blockers: strArr, // что мешает подписанию прямо сейчас
+    whoIsReviewing: nstr,
+  })
+  .nullable()
+  .catch(null);
+
+const ContractSignedDetails = z
+  .object({
+    confirmed: z.boolean().nullable().catch(null),
+    signedBy: nstr,
+    allDocsReceived: z.boolean().nullable().catch(null),
+    handedToProjectTeam: z.boolean().nullable().catch(null),
+    additionalOpportunities: strArr, // доп. возможности, всплывшие в разговоре
+  })
+  .nullable()
+  .catch(null);
+
+const SuccessfullyDoneDetails = z
+  .object({
+    confirmed: z.boolean().nullable().catch(null),
+    serviceDelivered: nstr,
+    additionalNeedsFound: strArr,
+    nextContactPlanned: z.boolean().nullable().catch(null),
+  })
+  .nullable()
+  .catch(null);
+
+const VcsDmDetails = z
+  .object({
+    decisionMakerPresent: z.boolean().nullable().catch(null),
+    relevantToClientPains: z.boolean().nullable().catch(null),
+    dealProgressed: z.boolean().nullable().catch(null),
+  })
+  .nullable()
+  .catch(null);
+
+// Подробности по ТЕКУЩЕМУ этапу сделки (dealStage.key). Заполняется ТОЛЬКО
+// группа, соответствующая этапу из КОНТЕКСТА промпта — остальные остаются
+// null (этапы lead_received/clarification/no_answer/competitor_probe
+// отдельной группы не имеют — там достаточно универсальных полей выше:
+// trigger, needs, commitments, nextStep).
+const StageDetails = z
+  .object({
+    quoteSent: QuoteSentDetails,
+    deferredDemand: DeferredDemandDetails,
+    contractSent: ContractSentDetails,
+    contractSigned: ContractSignedDetails,
+    successfullyDone: SuccessfullyDoneDetails,
+    vcsDm: VcsDmDetails,
+  })
+  .catch({
+    quoteSent: null, deferredDemand: null, contractSent: null,
+    contractSigned: null, successfullyDone: null, vcsDm: null,
+  });
+
+const NextStageSuggestion = z
+  .object({
+    // null, если данных недостаточно (§ «не определяй по последней фразе» —
+    // только по совокупности сигналов разговора).
+    suggested: z.enum(DEAL_STAGE_KEYS).nullable().catch(null),
+    reasoning: nstr,
+    confidence: conf,
+  })
+  .catch({ suggested: null, reasoning: null, confidence: 0 });
+
 export const CallAnalysisSchema = z.object({
   summary: str,
 
@@ -171,10 +297,13 @@ export const CallAnalysisSchema = z.object({
   noContactReason: nstr, // 'автоответчик' | 'голосовой помощник' | 'не ответили' | 'сброс' | ...
 
   // Тип звонка — для группировки и справедливой оценки.
+  // system_touch — системное касание по сделке в «Отложенном спросе»: не
+  // клиент инициировал контакт, а менеджер звонит планово проверить, не
+  // изменились ли обстоятельства (бюджет/ЛПР/сроки/триггер).
   callType: z
     .enum([
       "first_contact", "discovery", "presentation", "demo", "negotiation",
-      "follow_up", "clarification", "closing", "support", "other",
+      "follow_up", "clarification", "closing", "support", "system_touch", "other",
     ])
     .catch("other"),
   // Показателен ли звонок для оценки НАВЫКОВ менеджера. false — краткий/уточняющий/
@@ -224,6 +353,11 @@ export const CallAnalysisSchema = z.object({
 
   dealScore: DealScore,
   managerPerformance: ManagerPerformance,
+
+  dealStage: DealStage,
+  trigger: Trigger,
+  stageDetails: StageDetails,
+  nextStageSuggestion: NextStageSuggestion,
 
   confidence: z
     .object({

@@ -39,6 +39,10 @@ export const EDITABLE_KEYS = new Set<string>([
   "bitrix.auto_write",
   "bitrix.auto_create_tasks",
   "retention.transcript_days",
+  // Ручные переопределения авто-сопоставления STAGE_ID → этап воронки
+  // (src/lib/server/bitrix/dealStages.ts), на случай нетипичной формулировки
+  // названия стадии в Bitrix.
+  "aiSales.stageOverrides",
 ]);
 
 /* ── Типизованные геттеры для сервисов (с фолбэком на env) ── */

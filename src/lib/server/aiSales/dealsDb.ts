@@ -4,6 +4,7 @@ import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 import type { DealInsight } from "@/lib/ai/schemas/dealInsight";
 import type { DealCallDigestItem } from "@/lib/ai/prompts/dealInsight";
+import { resolveDealStage } from "@/lib/server/bitrix/dealStages";
 
 /** Разбор звонков сделки (последний анализ по каждому звонку) + код-агрегаты. */
 export interface DealCallDigest {
@@ -26,8 +27,9 @@ export async function getDealCallDigest(bitrixDealId: string): Promise<DealCallD
     call_type: string | null;
     connected: string | null;
     msa: string | null;
+    deal_stage_label: string | null;
   }>(
-    `select started_at, summary, deal_score, deal_temperature, manager_score, call_type, connected, msa
+    `select started_at, summary, deal_score, deal_temperature, manager_score, call_type, connected, msa, deal_stage_label
        from (
          select distinct on (c.id)
                 c.id, c.started_at,
@@ -35,6 +37,7 @@ export async function getDealCallDigest(bitrixDealId: string): Promise<DealCallD
                 a.data->>'callType' as call_type,
                 a.data->>'connected' as connected,
                 a.data->>'managerScoreApplicable' as msa,
+                a.data->'dealStage'->>'label' as deal_stage_label,
                 a.created_at
            from ai_calls c
            join ai_call_analysis a on a.call_id = c.id
@@ -54,6 +57,7 @@ export async function getDealCallDigest(bitrixDealId: string): Promise<DealCallD
     dealScore: r.deal_score,
     temperature: r.deal_temperature,
     summary: (r.summary || "").trim(),
+    dealStageLabel: r.deal_stage_label ?? null,
   }));
 
   const scored = items.filter((i) => i.connected && i.managerScoreApplicable && i.managerScore != null);
@@ -212,6 +216,8 @@ export interface DealDetailData {
     companyTitle: string | null;
     managerName: string | null;
     dealUrl: string | null;
+    stageKey: string | null;
+    stageLabel: string | null;
   };
   insight: Record<string, unknown> | null;
   managerScore: number | null;
@@ -234,8 +240,9 @@ export async function getDealDetail(bitrixDealId: string): Promise<DealDetailDat
 
   const dr = await pool.query<{
     bitrix_deal_id: string; title: string | null; company_title: string | null; manager_name: string | null;
+    stage_id: string | null;
   }>(
-    `select d.bitrix_deal_id, d.title, co.title as company_title, m.full_name as manager_name
+    `select d.bitrix_deal_id, d.title, co.title as company_title, m.full_name as manager_name, d.stage_id
        from ai_deals d
        left join ai_companies co on co.bitrix_company_id = d.bitrix_company_id
        left join ai_managers m on m.bitrix_user_id = d.bitrix_user_id
@@ -244,6 +251,7 @@ export async function getDealDetail(bitrixDealId: string): Promise<DealDetailDat
   );
   const deal = dr.rows[0];
   if (!deal) return null;
+  const stage = await resolveDealStage(deal.stage_id);
 
   const ir = await pool.query<{ data: Record<string, unknown>; manager_score: string | null }>(
     `select data, manager_score from ai_deal_insights where bitrix_deal_id = $1`,
@@ -276,6 +284,8 @@ export async function getDealDetail(bitrixDealId: string): Promise<DealDetailDat
       companyTitle: deal.company_title,
       managerName: deal.manager_name,
       dealUrl: origin ? `${origin}/crm/deal/details/${deal.bitrix_deal_id}/` : null,
+      stageKey: stage.key,
+      stageLabel: stage.label,
     },
     insight: ir.rows[0]?.data ?? null,
     managerScore: ir.rows[0]?.manager_score != null ? Number(ir.rows[0].manager_score) : null,

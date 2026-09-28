@@ -15,6 +15,7 @@ import {
   setSyncState,
   type SyncEntity,
 } from "@/lib/server/aiSales/syncDb";
+import { refreshDealStageDictionary } from "@/lib/server/bitrix/dealStages";
 
 /**
  * Синхронизация Bitrix → зеркала AI Sales, ЧАНКАМИ ПО СТРАНИЦАМ (§61 ТЗ,
@@ -102,6 +103,15 @@ export async function syncEntityPage(
   // Последняя страница — отметить полную синхронизацию завершённой.
   if (next === null) {
     await setSyncState(entity, { fullSyncDone: true, stats: { total } });
+    // Справочник стадий (для речевой аналитики по этапам сделки) обновляем
+    // заодно с полной синхронизацией сделок — дёшево, и STAGE_ID новых
+    // стадий воронки подхватываются без ручного вмешательства.
+    if (entity === "deals") {
+      await refreshDealStageDictionary().catch(() => {
+        // Не роняем синхронизацию сделок из-за недоступности справочника —
+        // резолвер стадий сам корректно откатится на "unknown".
+      });
+    }
   }
   return { entity, start, upserted, next, total };
 }
