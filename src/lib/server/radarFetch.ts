@@ -1,5 +1,6 @@
 import "server-only";
 
+import { parse as parseHtml } from "node-html-parser";
 import {
   dbListTriggers,
   dbRadarCleanup,
@@ -9,12 +10,22 @@ import {
 import { classifyText, type RadarCategory, type RadarItem, type RadarTrigger } from "@/lib/radarTypes";
 
 const GOOGLE_NEWS_SEARCH = "https://news.google.com/rss/search";
+/** Открытый веб-просмотр публичного Telegram-канала — не требует бота/токена. */
+const TELEGRAM_PREVIEW = "https://t.me/s";
 
 /** URL RSS-ленты для триггера: Google News по ключевым словам либо прямой RSS. */
 function feedUrl(t: RadarTrigger): string {
   if (t.kind === "rss") return t.query.trim();
   const q = encodeURIComponent(t.query);
   return `${GOOGLE_NEWS_SEARCH}?q=${q}&hl=ru&gl=RU&ceid=RU:ru`;
+}
+
+/** Имя канала из query: принимает и «name», и «@name», и полную ссылку t.me/name. */
+function telegramUsername(query: string): string {
+  return query.trim().replace(/^@/, "").replace(/^https?:\/\/t\.me\//i, "").replace(/\/+$/, "");
+}
+function telegramUrl(query: string): string {
+  return `${TELEGRAM_PREVIEW}/${encodeURIComponent(telegramUsername(query))}`;
 }
 
 function decodeEntities(s: string): string {
@@ -83,6 +94,42 @@ function parseFeed(xml: string): ParsedItem[] {
   return items;
 }
 
+/**
+ * Разбор открытого веб-просмотра публичного Telegram-канала (t.me/s/<name>).
+ * Отдаёт до ~20 последних постов на странице — этого достаточно для опроса
+ * по расписанию. Работает только для публичных каналов без ограничения по
+ * возрасту контента/входу.
+ */
+function parseTelegramChannel(html: string, username: string): ParsedItem[] {
+  const root = parseHtml(html);
+  const posts = root.querySelectorAll(".tgme_widget_message_wrap");
+  const items: ParsedItem[] = [];
+
+  for (const post of posts) {
+    const textEl = post.querySelector(".tgme_widget_message_text");
+    const timeEl = post.querySelector(".tgme_widget_message_date time");
+    const linkEl = post.querySelector(".tgme_widget_message_date");
+    if (!textEl) continue;
+
+    const text = textEl.text.replace(/\s+/g, " ").trim();
+    if (!text) continue;
+
+    const datetime = timeEl?.getAttribute("datetime");
+    const parsed = datetime ? Date.parse(datetime) : NaN;
+    const published_at = Number.isNaN(parsed) ? Date.now() : parsed;
+    const link = linkEl?.getAttribute("href") || `${TELEGRAM_PREVIEW}/${username}`;
+
+    items.push({
+      title: text.length > 140 ? `${text.slice(0, 140)}…` : text,
+      link,
+      source: `Telegram: @${username}`,
+      snippet: text.slice(0, 400),
+      published_at,
+    });
+  }
+  return items;
+}
+
 async function fetchFeed(url: string): Promise<string> {
   const res = await fetch(url, {
     headers: {
@@ -115,12 +162,20 @@ export async function refreshRadar(perFeedLimit = 30): Promise<RadarRefreshResul
 
   for (const t of triggers) {
     try {
-      const xml = await fetchFeed(feedUrl(t));
-      const parsed = parseFeed(xml);
+      let parsed: ParsedItem[];
+      if (t.kind === "telegram") {
+        const username = telegramUsername(t.query);
+        const html = await fetchFeed(telegramUrl(t.query));
+        parsed = parseTelegramChannel(html, username);
+      } else {
+        const xml = await fetchFeed(feedUrl(t));
+        parsed = parseFeed(xml);
+      }
 
-      // Ключевые слова (Google News) — запрос уже отфильтровал, берём как есть.
-      // Общие RSS-ленты СМИ — фильтруем по нашим темам и категоризируем.
-      const candidates: { p: (typeof parsed)[number]; category: RadarCategory }[] = [];
+      // Ключевые слова (Google News) и Telegram-каналы — источник уже сам по
+      // себе целевой (курируется вручную), берём как есть с категорией триггера.
+      // Общие RSS-ленты СМИ — фильтруем по нашим темам и категоризируем сами.
+      const candidates: { p: ParsedItem; category: RadarCategory }[] = [];
       if (t.kind === "rss") {
         for (const p of parsed) {
           const cat = classifyText(`${p.title} ${p.snippet}`);

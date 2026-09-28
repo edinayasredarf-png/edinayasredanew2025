@@ -366,7 +366,7 @@ function TriggersView(props: {
   notify: (m: { kind: 'ok' | 'err'; text: string }) => void;
 }) {
   const { triggers, reload, notify } = props;
-  const empty = { label: '', category: 'other' as RadarCategory, kind: 'keyword' as 'keyword' | 'rss', query: '', enabled: true };
+  const empty = { label: '', category: 'other' as RadarCategory, kind: 'keyword' as 'keyword' | 'rss' | 'telegram', query: '', enabled: true };
   const [draft, setDraft] = useState<Partial<RadarTrigger>>(empty);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -477,7 +477,7 @@ function TriggersView(props: {
                       <div className="font-medium text-gray-900 text-sm flex items-center gap-2">
                         {t.label}
                         <span className="text-[11px] text-gray-400 font-normal">
-                          {t.kind === 'rss' ? 'RSS' : 'ключевые слова'}
+                          {t.kind === 'rss' ? 'RSS' : t.kind === 'telegram' ? 'Telegram-канал' : 'ключевые слова'}
                         </span>
                       </div>
                       <div className="text-[12px] text-gray-500 mt-0.5 break-words">{t.query}</div>
@@ -529,13 +529,17 @@ function TriggersView(props: {
             <label className="block text-xs text-gray-500 mb-1">Тип</label>
             <Select
               value={draft.kind ?? 'keyword'}
-              onChange={(v) => setDraft((d) => ({ ...d, kind: v as 'keyword' | 'rss' }))}
-              options={[{ value: 'keyword', label: 'Ключевые слова (Google News)' }, { value: 'rss', label: 'RSS-лента (URL)' }]}
+              onChange={(v) => setDraft((d) => ({ ...d, kind: v as 'keyword' | 'rss' | 'telegram' }))}
+              options={[
+                { value: 'keyword', label: 'Ключевые слова (Google News)' },
+                { value: 'rss', label: 'RSS-лента (URL)' },
+                { value: 'telegram', label: 'Telegram-канал (публичный)' },
+              ]}
             />
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              {draft.kind === 'rss' ? 'URL RSS-ленты' : 'Ключевые слова / фраза'}
+              {draft.kind === 'rss' ? 'URL RSS-ленты' : draft.kind === 'telegram' ? 'Имя канала' : 'Ключевые слова / фраза'}
             </label>
             <textarea
               value={draft.query ?? ''}
@@ -545,12 +549,19 @@ function TriggersView(props: {
               placeholder={
                 draft.kind === 'rss'
                   ? 'https://example.ru/rss'
+                  : draft.kind === 'telegram'
+                  ? 'zakupki44fz (без @, можно вставить и ссылку t.me/...)'
                   : '"инвентаризация захоронений" OR "реестр кладбищ"'
               }
             />
-            {draft.kind !== 'rss' && (
+            {draft.kind === 'keyword' && (
               <p className="text-[11px] text-gray-400 mt-1">
                 Поддерживаются кавычки для точных фраз и OR между вариантами.
+              </p>
+            )}
+            {draft.kind === 'telegram' && (
+              <p className="text-[11px] text-gray-400 mt-1">
+                Только публичные каналы (без вступления/подписки). Берутся посты с открытой веб-версии t.me/s/.
               </p>
             )}
           </div>

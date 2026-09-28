@@ -31,12 +31,12 @@ export const RADAR_STATUSES: { key: RadarStatus; label: string }[] = [
   { key: 'dismissed', label: 'Скрыто' },
 ];
 
-export type RadarTriggerKind = 'keyword' | 'rss';
+export type RadarTriggerKind = 'keyword' | 'rss' | 'telegram';
 
 export interface RadarTrigger {
   id: string;
   kind: RadarTriggerKind;
-  /** Ключевая фраза (для Google News) либо URL RSS-ленты */
+  /** Ключевая фраза (для Google News), URL RSS-ленты, либо имя Telegram-канала без @ (для kind='telegram') */
   query: string;
   label: string;
   category: RadarCategory;
@@ -203,6 +203,35 @@ export const ADDITIONAL_RADAR_TRIGGERS: Omit<RadarTrigger, 'id' | 'created_at'>[
     kind: 'keyword', category: 'digital', enabled: true,
     label: 'Government Technology',
     query: 'site:govtech.com (municipal OR smart city OR GIS OR local government)',
+  },
+];
+
+/**
+ * Публичные Telegram-каналы контент-завода. `query` — имя канала без @/t.me,
+ * контент тянется с https://t.me/s/<query> (открытый веб-просмотр Telegram,
+ * без токена бота и без Telethon) — см. radarFetch.ts. Идемпотентно
+ * добавляются в БД в dbEnsureAdditionalTriggers(), как и ADDITIONAL_RADAR_TRIGGERS.
+ */
+export const TELEGRAM_RADAR_TRIGGERS: Omit<RadarTrigger, 'id' | 'created_at'>[] = [
+  {
+    kind: 'telegram', category: 'budget', enabled: true,
+    label: 'Telegram — Закупки 44-ФЗ',
+    query: 'zakupki44fz',
+  },
+  {
+    kind: 'telegram', category: 'digital', enabled: true,
+    label: 'Telegram — ЕИС Закупки (Казначейство)',
+    query: 'gis_eiszakupki',
+  },
+  {
+    kind: 'telegram', category: 'staff', enabled: true,
+    label: 'Telegram — Незыгарь',
+    query: 'russica2',
+  },
+  {
+    kind: 'telegram', category: 'municipal', enabled: true,
+    label: 'Telegram — Кремлёвский безБашенник',
+    query: 'kremlebezBashennik',
   },
 ];
 

@@ -6,6 +6,7 @@ import {
   ADDITIONAL_RADAR_TRIGGERS,
   DEFAULT_RADAR_FEEDS,
   DEFAULT_RADAR_TRIGGERS,
+  TELEGRAM_RADAR_TRIGGERS,
   type RadarItem,
   type RadarStatus,
   type RadarTrigger,
@@ -75,7 +76,7 @@ async function seedDefaultTriggersIfEmpty(): Promise<void> {
 async function ensureAdditionalTriggers(): Promise<void> {
   const pool = getTimewebPool();
   const now = Date.now();
-  for (const t of ADDITIONAL_RADAR_TRIGGERS) {
+  for (const t of [...ADDITIONAL_RADAR_TRIGGERS, ...TELEGRAM_RADAR_TRIGGERS]) {
     await pool.query(
       `insert into radar_triggers (id, kind, query, label, category, enabled, created_at)
        values ($1,$2,$3,$4,$5,$6,$7) on conflict (id) do nothing`,
