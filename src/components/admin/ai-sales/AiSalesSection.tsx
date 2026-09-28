@@ -3746,33 +3746,98 @@ function Prompts() {
   );
 }
 
-/* ─────────── Промты по этапам воронки (только чтение, dealStagePrompts.ts) ─────────── */
+/* ─────────── Промты по этапам воронки (редактируются, переопределения хранятся в ai_settings) ─────────── */
 const PIPELINE_ORDER = ['lead', 'sales', 'service', 'project'] as const;
 
 function StagePromptsPanel() {
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [busyKey, setBusyKey] = useState('');
+  const [savedKey, setSavedKey] = useState('');
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/settings');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      const ov = (j.settings?.['aiSales.stagePromptOverrides'] as Record<string, string>) || {};
+      setOverrides(ov);
+      setDrafts(Object.fromEntries(ALL_STAGES.map((s) => [s.key, ov[s.key] || ''])));
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const saveValue = async (key: string, value: string) => {
+    setBusyKey(key); setErr('');
+    const next = { ...overrides };
+    const v = value.trim();
+    if (v) next[key] = v; else delete next[key];
+    try {
+      const r = await fetch('/api/ai-sales/settings', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates: { 'aiSales.stagePromptOverrides': next } }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setOverrides(next);
+      setSavedKey(key); setTimeout(() => setSavedKey(''), 2500);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка сохранения'); }
+    finally { setBusyKey(''); }
+  };
+
+  if (loading) return <LoadingBlock />;
+
   return (
     <div className="mt-8">
       <h2 className="text-xl font-bold text-gray-900 mb-1">Промты по этапам воронки</h2>
       <p className="text-sm text-gray-500 mb-4">
-        Добавляются поверх стандартного промта в зависимости от текущего этапа сделки/лида (не применяется, если у отдела задан свой промт выше — отдел тогда полностью управляет содержанием). Только для чтения — правится в коде, src/lib/ai/prompts/dealStagePrompts.ts.
+        Добавляются поверх стандартного промта в зависимости от текущего этапа сделки/лида (не применяется, если у отдела задан свой промт выше — отдел тогда полностью управляет содержанием). Пусто — используется стандартный промт этапа (код, src/lib/ai/prompts/dealStagePrompts.ts).
       </p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       <div className="space-y-3">
         {PIPELINE_ORDER.map((pipeline) => {
           const pipelineStages = ALL_STAGES.filter((s) => s.pipeline === pipeline);
+          const customCount = pipelineStages.filter((s) => (overrides[s.key] || '').trim()).length;
           return (
             <details key={pipeline} className="bg-[#F6F7F9] rounded-xl p-4">
               <summary className="cursor-pointer font-semibold text-gray-800">
-                {PIPELINE_LABEL_UI[pipeline]} <span className="text-xs text-gray-400 font-normal">({pipelineStages.length} этапов)</span>
+                {PIPELINE_LABEL_UI[pipeline]} <span className="text-xs text-gray-400 font-normal">({pipelineStages.length} этапов{customCount ? `, ${customCount} свой промт` : ''})</span>
               </summary>
               <div className="mt-3 space-y-2">
                 {pipelineStages.map((s) => {
-                  const block = getStagePromptBlock(s.key);
+                  const defaultBlock = getStagePromptBlock(s.key);
+                  const custom = (overrides[s.key] || '').trim().length > 0;
+                  const draft = drafts[s.key] ?? '';
                   return (
                     <details key={s.key} className="bg-white rounded-lg border border-gray-100 p-3">
-                      <summary className="cursor-pointer text-sm font-medium text-gray-700">
-                        {s.label}{!block && <span className="text-xs text-gray-400 font-normal"> — нет отдельного промта (используется только стандартный)</span>}
+                      <summary className="cursor-pointer text-sm font-medium text-gray-700 flex items-center gap-2">
+                        {s.label}
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${custom ? 'bg-[#029cda]/10 text-[#029cda]' : 'bg-gray-100 text-gray-500'}`}>
+                          {custom ? 'свой промт' : 'стандартный'}
+                        </span>
                       </summary>
-                      {block && <pre className="mt-2 text-xs text-gray-600 whitespace-pre-wrap">{block}</pre>}
+                      <div className="mt-2">
+                        <div className="flex items-center gap-2 mb-1">
+                          <button onClick={() => setDrafts((p) => ({ ...p, [s.key]: defaultBlock }))}
+                            className="text-xs text-gray-500 hover:text-[#029cda]">Вставить стандартный</button>
+                          <button onClick={() => setDrafts((p) => ({ ...p, [s.key]: '' }))}
+                            className="text-xs text-gray-500 hover:text-red-500">Очистить</button>
+                        </div>
+                        <textarea value={draft} onChange={(e) => setDrafts((p) => ({ ...p, [s.key]: e.target.value }))}
+                          rows={8} placeholder="Пусто — используется стандартный промт этапа"
+                          className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-mono bg-white outline-none focus:border-[#029cda]" />
+                        <div className="flex items-center gap-3 mt-2">
+                          <button onClick={() => saveValue(s.key, draft)} disabled={busyKey === s.key}
+                            className="px-3 py-1.5 rounded-xl text-xs bg-[#029cda] text-white disabled:opacity-50">
+                            {busyKey === s.key ? 'Сохраняю…' : 'Сохранить'}
+                          </button>
+                          {savedKey === s.key && <span className="text-xs text-green-600">✓ Сохранено</span>}
+                        </div>
+                      </div>
                     </details>
                   );
                 })}

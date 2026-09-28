@@ -43,6 +43,10 @@ export const EDITABLE_KEYS = new Set<string>([
   // (src/lib/server/bitrix/dealStages.ts), на случай нетипичной формулировки
   // названия стадии в Bitrix.
   "aiSales.stageOverrides",
+  // Ручные переопределения промта анализа по этапу воронки (замена блока из
+  // src/lib/ai/prompts/dealStagePrompts.ts) — Record<StageKey, string>,
+  // пусто/отсутствует значение = используется стандартный промт этапа.
+  "aiSales.stagePromptOverrides",
 ]);
 
 /* ── Типизованные геттеры для сервисов (с фолбэком на env) ── */

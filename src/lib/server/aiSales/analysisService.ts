@@ -25,6 +25,7 @@ import { getAiConfig } from "@/lib/server/aiSales/settingsDb";
 import { getDepartmentPromptForManager } from "@/lib/server/aiSales/departmentsDb";
 import { resolveCallStage } from "@/lib/server/aiSales/callStage";
 import { getStagePromptBlock } from "@/lib/ai/prompts/dealStagePrompts";
+import { getStagePromptOverride } from "@/lib/server/aiSales/stagePromptOverrides";
 
 /**
  * Анализ звонка через Claude (§45 ТЗ). Классификация/скоринг — LLM; агрегация и
@@ -156,10 +157,12 @@ export async function runAnalysis(
   // Промт анализа — свой у каждого отдела (по менеджеру звонка). Если у отдела
   // задан кастомный промт — используем его как системный (без этап-специфичных
   // блоков — отдел сам управляет содержанием своего промпта), иначе дефолтный
-  // + инструкция по текущему этапу воронки (§ речевая аналитика по этапам).
+  // + инструкция по текущему этапу воронки (§ речевая аналитика по этапам):
+  // ручное переопределение этапа (админка → Промты) в приоритете над
+  // стандартным блоком из dealStagePrompts.ts.
   const dept = await getDepartmentPromptForManager(call.bitrix_user_id);
   const customPrompt = dept?.analysisPrompt?.trim() || null;
-  const stageBlock = getStagePromptBlock(stage.key);
+  const stageBlock = (await getStagePromptOverride(stage.key)) || getStagePromptBlock(stage.key);
   const systemPrompt = customPrompt || (stageBlock ? `${CALL_ANALYSIS_SYSTEM}\n\n${stageBlock}` : CALL_ANALYSIS_SYSTEM);
   // Версия промта в кэш-ключе: смена промта отдела/этапа инвалидирует кэш и
   // даёт повторный анализ этого звонка новым промтом.
