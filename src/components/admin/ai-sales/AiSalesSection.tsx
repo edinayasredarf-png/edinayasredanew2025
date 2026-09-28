@@ -3907,6 +3907,7 @@ function Scripts() {
   if (loading) return <LoadingBlock />;
 
   const stageLabelOfScript = (key: string) => stages.find((s) => s.key === key)?.label;
+  const topScripts = scripts.filter((s) => !(s.departmentId === null && s.stageKey));
 
   return (
     <div>
@@ -3924,7 +3925,9 @@ function Scripts() {
       </div>
 
       <div className="space-y-6">
-        {scripts.map((s) => {
+        {/* Общие скрипты по этапу (departmentId=null, stageKey!='') управляются
+            отдельной панелью ниже (сгруппированы по воронке) — здесь не дублируем. */}
+        {topScripts.map((s) => {
           const d = drafts[s.id] || { name: s.name, steps: [] };
           return (
             <div key={s.id} className="bg-[#F6F7F9] rounded-xl p-4">
@@ -3969,7 +3972,130 @@ function Scripts() {
             </div>
           );
         })}
-        {scripts.length === 0 && <p className="text-sm text-gray-400">Скриптов пока нет — создайте общий скрипт выше.</p>}
+        {topScripts.length === 0 && <p className="text-sm text-gray-400">Скриптов пока нет — создайте общий скрипт выше.</p>}
+      </div>
+
+      <StageScriptsPanel />
+    </div>
+  );
+}
+
+/* ─────────── Чек-листы скрипта по этапам воронки (общие, departmentId=null) ─────────── */
+function StageScriptsPanel() {
+  const [scripts, setScripts] = useState<SalesScriptT[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, ScriptStepT[]>>({});
+  const [loading, setLoading] = useState(true);
+  const [busyKey, setBusyKey] = useState('');
+  const [savedKey, setSavedKey] = useState('');
+  const [err, setErr] = useState('');
+
+  const callableStages = ALL_STAGES.filter((s) => s.callable);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/ai-sales/scripts');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      const list = (j.scripts as SalesScriptT[]) || [];
+      setScripts(list);
+      setDrafts(Object.fromEntries(callableStages.map((s) => {
+        const existing = list.find((sc) => sc.departmentId === null && sc.stageKey === s.key);
+        return [s.key, existing ? existing.steps.map((st) => ({ ...st })) : []];
+      })));
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const setStep = (stageKey: string, idx: number, title: string) =>
+    setDrafts((p) => ({ ...p, [stageKey]: p[stageKey].map((s, i) => (i === idx ? { ...s, title } : s)) }));
+  const addStep = (stageKey: string) =>
+    setDrafts((p) => ({ ...p, [stageKey]: [...(p[stageKey] || []), { key: '', title: '' }] }));
+  const removeStep = (stageKey: string, idx: number) =>
+    setDrafts((p) => ({ ...p, [stageKey]: p[stageKey].filter((_, i) => i !== idx) }));
+
+  const save = async (stageKey: string) => {
+    setBusyKey(stageKey); setErr('');
+    try {
+      const steps = (drafts[stageKey] || []).filter((s) => s.title.trim());
+      const existing = scripts.find((s) => s.departmentId === null && s.stageKey === stageKey);
+      if (existing) {
+        await jsonPost(`/api/ai-sales/scripts/${existing.id}`, { steps }, 'PATCH');
+      } else {
+        const stageInfo = ALL_STAGES.find((s) => s.key === stageKey);
+        const r = await jsonPost('/api/ai-sales/scripts', { departmentId: null, stageKey, name: stageInfo?.label || 'Скрипт продаж' });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка создания');
+        await jsonPost(`/api/ai-sales/scripts/${j.id}`, { steps }, 'PATCH');
+      }
+      setSavedKey(stageKey); setTimeout(() => setSavedKey(''), 2500);
+      await load();
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка сохранения'); }
+    finally { setBusyKey(''); }
+  };
+
+  if (loading) return <LoadingBlock />;
+
+  return (
+    <div className="mt-8">
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Чек-листы по этапам воронки</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Общий (вне отдела) чек-лист под конкретный этап — приоритетнее общего скрипта выше, но уступает скрипту отдела для этой же комбинации, если такой заведён. Пусто — берётся общий скрипт. Показаны только показательные этапы (техническим/финальным чек-лист не нужен).
+      </p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
+      <div className="space-y-3">
+        {PIPELINE_ORDER.map((pipeline) => {
+          const pipelineStages = callableStages.filter((s) => s.pipeline === pipeline);
+          if (!pipelineStages.length) return null;
+          const withChecklist = pipelineStages.filter((s) => scripts.some((sc) => sc.departmentId === null && sc.stageKey === s.key)).length;
+          return (
+            <details key={pipeline} className="bg-[#F6F7F9] rounded-xl p-4">
+              <summary className="cursor-pointer font-semibold text-gray-800">
+                {PIPELINE_LABEL_UI[pipeline]} <span className="text-xs text-gray-400 font-normal">({pipelineStages.length} этапов{withChecklist ? `, ${withChecklist} с чек-листом` : ''})</span>
+              </summary>
+              <div className="mt-3 space-y-2">
+                {pipelineStages.map((s) => {
+                  const existing = scripts.find((sc) => sc.departmentId === null && sc.stageKey === s.key);
+                  const steps = drafts[s.key] || [];
+                  return (
+                    <details key={s.key} className="bg-white rounded-lg border border-gray-100 p-3">
+                      <summary className="cursor-pointer text-sm font-medium text-gray-700 flex items-center gap-2">
+                        {s.label}
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${existing ? 'bg-[#029cda]/10 text-[#029cda]' : 'bg-gray-100 text-gray-500'}`}>
+                          {existing ? `есть, v${existing.version}` : 'нет чек-листа'}
+                        </span>
+                      </summary>
+                      <div className="mt-2">
+                        <ol className="space-y-2 mb-2">
+                          {steps.map((st, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <span className="text-xs text-gray-400 w-5 text-right">{idx + 1}.</span>
+                              <input value={st.title} onChange={(e) => setStep(s.key, idx, e.target.value)}
+                                placeholder="Название шага…"
+                                className="flex-1 bg-white px-2 py-1 rounded border border-gray-200 focus:border-[#029cda] text-xs outline-none" />
+                              <button onClick={() => removeStep(s.key, idx)} title="Удалить шаг" className="text-gray-300 hover:text-red-500 px-1">✕</button>
+                            </li>
+                          ))}
+                        </ol>
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => addStep(s.key)} className="text-xs text-[#029cda] hover:underline">+ Добавить шаг</button>
+                          <div className="flex-1" />
+                          {savedKey === s.key && <span className="text-xs text-green-600">✓ Сохранено</span>}
+                          <button onClick={() => save(s.key)} disabled={busyKey === s.key}
+                            className="px-3 py-1.5 rounded-xl text-xs bg-[#029cda] text-white disabled:opacity-50">
+                            {busyKey === s.key ? 'Сохраняю…' : 'Сохранить'}
+                          </button>
+                        </div>
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            </details>
+          );
+        })}
       </div>
     </div>
   );
