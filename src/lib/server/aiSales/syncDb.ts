@@ -6,6 +6,7 @@ import type {
   BxCompany,
   BxContact,
   BxDeal,
+  BxLead,
 } from "@/lib/server/bitrix/entities";
 
 /**
@@ -118,9 +119,39 @@ export async function upsertDeals(deals: BxDeal[]): Promise<number> {
   return n;
 }
 
+export async function upsertLeads(leads: BxLead[]): Promise<number> {
+  if (!leads.length) return 0;
+  const pool = getTimewebPool();
+  let n = 0;
+  for (const l of leads) {
+    await pool.query(
+      `insert into ai_leads (
+         bitrix_lead_id, title, bitrix_company_id, bitrix_contact_id, bitrix_user_id,
+         status_id, is_converted, bitrix_created_at, bitrix_updated_at, raw, updated_at
+       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb, now())
+       on conflict (bitrix_lead_id) do update set
+         title = excluded.title,
+         bitrix_company_id = excluded.bitrix_company_id,
+         bitrix_contact_id = excluded.bitrix_contact_id,
+         bitrix_user_id = excluded.bitrix_user_id,
+         status_id = excluded.status_id,
+         is_converted = excluded.is_converted,
+         bitrix_updated_at = excluded.bitrix_updated_at,
+         raw = excluded.raw,
+         updated_at = now()`,
+      [
+        l.bitrixLeadId, l.title, l.bitrixCompanyId, l.bitrixContactId, l.bitrixUserId,
+        l.statusId, l.isConverted, l.bitrixCreatedAt, l.bitrixUpdatedAt, JSON.stringify(l.raw),
+      ]
+    );
+    n++;
+  }
+  return n;
+}
+
 /* ── Состояние синхронизации (курсоры по DATE_MODIFY) ── */
 
-export type SyncEntity = "users" | "companies" | "contacts" | "deals" | "calls" | "activities";
+export type SyncEntity = "users" | "companies" | "contacts" | "deals" | "leads" | "calls" | "activities";
 
 export interface SyncState {
   entity: SyncEntity;

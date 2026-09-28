@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  * GET — статус синхронизации; POST — поставить задачу (?entity=all|deals|...).
  */
 
-const ENTITIES: SyncEntity[] = ["users", "companies", "contacts", "deals"];
+const ENTITIES: SyncEntity[] = ["users", "companies", "contacts", "deals", "leads"];
 
 export async function GET(request: NextRequest) {
   try {

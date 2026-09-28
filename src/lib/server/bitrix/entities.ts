@@ -163,6 +163,35 @@ export function mapDeal(r: Record<string, unknown>): BxDeal {
   };
 }
 
+export interface BxLead {
+  bitrixLeadId: string;
+  title: string | null;
+  bitrixCompanyId: string | null;
+  bitrixContactId: string | null;
+  bitrixUserId: string | null;
+  statusId: string | null;
+  isConverted: boolean | null; // STATUS_ID = 'CONVERTED' (лид стал сделкой)
+  bitrixCreatedAt: Date | null;
+  bitrixUpdatedAt: Date | null;
+  raw: Record<string, unknown>;
+}
+
+export function mapLead(r: Record<string, unknown>): BxLead {
+  const statusId = bxStr(r.STATUS_ID) || null;
+  return {
+    bitrixLeadId: bxStr(r.ID),
+    title: bxStr(r.TITLE) || null,
+    bitrixCompanyId: bxStr(r.COMPANY_ID) || null,
+    bitrixContactId: bxStr(r.CONTACT_ID) || null,
+    bitrixUserId: bxStr(r.ASSIGNED_BY_ID) || null,
+    statusId,
+    isConverted: statusId ? statusId === "CONVERTED" : null,
+    bitrixCreatedAt: bxDate(r.DATE_CREATE),
+    bitrixUpdatedAt: bxDate(r.DATE_MODIFY),
+    raw: r,
+  };
+}
+
 /**
  * Данные звонка из CRM-активности (подход из рабочего n8n-пайплайна клиента):
  * запись лежит как файл активности (FILES[0]), скачивается через disk.file.get,

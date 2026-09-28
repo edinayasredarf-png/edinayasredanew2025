@@ -1,6 +1,6 @@
 // zod/v4 — соответствует zodOutputFormat из @anthropic-ai/sdk (импортирует zod/v4).
 import * as z from "zod/v4";
-import { DEAL_STAGE_KEYS, DEFERRED_DEMAND_REASON_KEYS, TRIGGER_TYPE_KEYS } from "@/lib/ai/dealStages";
+import { STAGE_KEYS, DEFERRED_DEMAND_REASON_KEYS, TRIGGER_TYPE_KEYS } from "@/lib/ai/dealStages";
 
 /**
  * Схема AI-анализа звонка (§47 ТЗ). ТОЛЕРАНТНАЯ: недостающие/невалидные поля не
@@ -13,7 +13,7 @@ import { DEAL_STAGE_KEYS, DEFERRED_DEMAND_REASON_KEYS, TRIGGER_TYPE_KEYS } from 
  * поле (undefined), поэтому явные `.default()` не нужны. Инференс типа стабилен.
  */
 
-export const ANALYSIS_VERSION = "call-analysis-v3";
+export const ANALYSIS_VERSION = "call-analysis-v4";
 
 // ── Толерантные примитивы ──
 const nstr = z.string().nullable().catch(null); // string | null
@@ -163,19 +163,24 @@ const ManagerPerformance = z
   })
   .catch({ overall: null, criteria: [], didWell: [], mistakes: [], improveNextTime: [], exampleBetterResponse: null });
 
-// ── Этап сделки (§ речевая аналитика по этапам воронки) ──
-// dealStage — служебное поле: заполняется КОДОМ по STAGE_ID сделки из CRM
-// (см. resolveDealStage в analysisService.ts), а не LLM — модель его не
-// заполняет, значение из ответа LLM перезаписывается сервером перед
-// сохранением. Оставлено в схеме, чтобы поле было частью одного объекта
-// анализа (data), а не отдельной колонкой.
+// ── Этап сделки/лида (§ речевая аналитика по трём воронкам) ──
+// dealStage — служебное поле: заполняется КОДОМ по STAGE_ID сделки/STATUS_ID
+// лида из CRM (см. resolveDealStage/resolveLeadStage в analysisService.ts),
+// а не LLM — модель его не заполняет, значение из ответа LLM перезаписывается
+// сервером перед сохранением. Оставлено в схеме, чтобы поле было частью
+// одного объекта анализа (data), а не отдельной колонкой. Название поля
+// историческое — покрывает все три воронки (лид/отдел продаж/сервис), не
+// только сделки.
 const DealStage = z
   .object({
-    key: z.enum(DEAL_STAGE_KEYS).catch("unknown"),
+    key: z.enum(STAGE_KEYS).catch("unknown"),
     label: nstr,
+    // Какая из трёх воронок: lead (Bitrix Lead) | sales (Отдел продаж) |
+    // service (Обслуживание сервиса) | unknown.
+    pipeline: z.enum(["lead", "sales", "service", "unknown"]).catch("unknown"),
     source: z.enum(["crm", "unknown"]).catch("unknown"),
   })
-  .catch({ key: "unknown", label: null, source: "unknown" });
+  .catch({ key: "unknown", label: null, pipeline: "unknown", source: "unknown" });
 
 // Триггер — «что подтолкнуло клиента обратиться именно сейчас» (этап
 // «Заявка получена») или «что изменилось с прошлого касания» (этап
@@ -259,11 +264,27 @@ const VcsDmDetails = z
   .nullable()
   .catch(null);
 
-// Подробности по ТЕКУЩЕМУ этапу сделки (dealStage.key). Заполняется ТОЛЬКО
-// группа, соответствующая этапу из КОНТЕКСТА промпта — остальные остаются
-// null (этапы lead_received/clarification/no_answer/competitor_probe
-// отдельной группы не имеют — там достаточно универсальных полей выше:
-// trigger, needs, commitments, nextStep).
+// Воронка «Обслуживание сервиса» (пост-продажа): онбординг/обучение/
+// активность/риск непролонгации — единая компактная группа вместо одной
+// группы на каждую из 17 стадий (большинство различий между её стадиями —
+// это прогресс по одним и тем же осям, а не разные вопросы).
+const ServiceUsageDetails = z
+  .object({
+    accessGranted: z.boolean().nullable().catch(null),
+    trainingCompleted: z.boolean().nullable().catch(null),
+    activelyUsing: z.boolean().nullable().catch(null),
+    prolongationInterest: z.enum(["yes", "no", "undecided", "unknown"]).catch("unknown"),
+    churnRisk: z.enum(["low", "medium", "high"]).nullable().catch(null),
+    blockers: strArr, // что мешает пользоваться системой/принять решение о пролонгации
+    reasonNote: nstr, // причина непролонгации/перехода на другое ПО, если прозвучала
+  })
+  .nullable()
+  .catch(null);
+
+// Подробности по ТЕКУЩЕМУ этапу (dealStage.key). Заполняется ТОЛЬКО группа,
+// соответствующая этапу из КОНТЕКСТА промпта — остальные остаются null
+// (часть этапов lead/sales-воронок отдельной группы не имеет — там
+// достаточно универсальных полей выше: trigger, needs, commitments, nextStep).
 const StageDetails = z
   .object({
     quoteSent: QuoteSentDetails,
@@ -272,17 +293,18 @@ const StageDetails = z
     contractSigned: ContractSignedDetails,
     successfullyDone: SuccessfullyDoneDetails,
     vcsDm: VcsDmDetails,
+    serviceUsage: ServiceUsageDetails,
   })
   .catch({
     quoteSent: null, deferredDemand: null, contractSent: null,
-    contractSigned: null, successfullyDone: null, vcsDm: null,
+    contractSigned: null, successfullyDone: null, vcsDm: null, serviceUsage: null,
   });
 
 const NextStageSuggestion = z
   .object({
     // null, если данных недостаточно (§ «не определяй по последней фразе» —
     // только по совокупности сигналов разговора).
-    suggested: z.enum(DEAL_STAGE_KEYS).nullable().catch(null),
+    suggested: z.enum(STAGE_KEYS).nullable().catch(null),
     reasoning: nstr,
     confidence: conf,
   })

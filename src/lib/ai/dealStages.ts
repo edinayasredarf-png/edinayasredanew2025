@@ -1,83 +1,172 @@
 /**
- * Каноническая воронка продаж «Единой среды» — единый источник правды для
- * речевой аналитики. Составлено по документу РОП «Воронка продаж.xlsx»
- * (лист «воронка»): реальные названия стадий Bitrix, 18 причин отложенного
- * спроса, правило частоты касания.
+ * Канонические воронки продаж «Единой среды» — единый источник правды для
+ * речевой аналитики. В Bitrix у компании ТРИ разных воронки, и звонок нужно
+ * анализировать по-разному в зависимости от того, в какой из них находится
+ * сделка/лид на момент звонка:
  *
- * Зачем отдельный "канонический" ключ, а не сырой Bitrix STAGE_ID:
- * STAGE_ID у кастомных воронок Bitrix (вида "C2:UC_XXXX") ничего не говорит
- * о смысле стадии и может отличаться между порталами/пересозданием воронки.
- * Сопоставление STAGE_ID → канонический ключ делается по человекочитаемому
- * названию стадии (см. src/lib/server/bitrix/dealStages.ts).
+ *   1. ЛИД (Bitrix-сущность Lead, до конвертации в сделку) — 8 стадий:
+ *      Новый лид → Первичный контакт → Нет ответа/Квалификация/Спам/
+ *      Отложенный спрос → Качественный лид (успех) / Некачественный лид (отказ).
+ *   2. СДЕЛКА — «Отдел продаж» (воронка первичной продажи) — 14 стадий:
+ *      Заявка получена → ... → Успешно реализовано / Закрыто и не реализовано.
+ *   3. СДЕЛКА — «Обслуживание сервиса» (пост-продажное сопровождение:
+ *      онбординг, обучение, активное использование, пролонгация) — 17 стадий.
+ *
+ * Составлено по скриншотам настроек воронок Bitrix и документу РОП
+ * «Воронка продаж.xlsx» (для воронки «Отдел продаж» — там же подробные
+ * рабочие инструкции по каждой стадии).
  */
 
-export type DealStageKey =
-  | "lead_received" // Заявка получена
-  | "no_answer" // Не дозвон
-  | "clarification" // Уточняющий диалог
-  | "quote_pending" // Отправить КП (обычно без звонка)
-  | "quote_sent" // КП Отправлено
-  | "vcs_decision_maker" // ВКС / выход на ЛПР
-  | "deferred_demand" // Отложенный спрос (+ системные касания)
-  | "contract_sent" // Договор отправлен
-  | "contract_signed" // Договор подписан
-  | "successfully_done" // Успешно реализовано
-  | "inventory_done_elsewhere" // Инвентаризация проведена (без нас)
-  | "competitor_probe" // Потенциальный партнёр → конкурент (прощупывает закупку)
-  | "closed_lost" // Закрыто не реализовано
-  | "unknown"; // не удалось сопоставить с воронкой
+export type PipelineKey = "lead" | "sales" | "service";
 
-export interface DealStageInfo {
-  key: DealStageKey;
+export type LeadStageKey =
+  | "lead_new"
+  | "lead_first_contact"
+  | "lead_no_answer"
+  | "lead_qualification"
+  | "lead_spam"
+  | "lead_deferred_demand"
+  | "lead_qualified"
+  | "lead_unqualified";
+
+export type SalesStageKey =
+  | "sales_application_received"
+  | "sales_no_answer"
+  | "sales_clarification"
+  | "sales_quote_pending"
+  | "sales_quote_sent"
+  | "sales_quote_read"
+  | "sales_deferred_demand"
+  | "sales_contract_sent"
+  | "sales_contract_signed"
+  | "sales_vcs_decision_maker"
+  | "sales_inventory_done_elsewhere"
+  | "sales_competitor_probe"
+  | "sales_successfully_done"
+  | "sales_closed_lost";
+
+export type ServiceStageKey =
+  | "service_demo_access"
+  | "service_application_accepted"
+  | "service_access_granted"
+  | "service_training_assigned"
+  | "service_working_with_client"
+  | "service_data_loading"
+  | "service_ip_access"
+  | "service_confirmed_user"
+  | "service_active_user"
+  | "service_needs_prolongation"
+  | "service_prolonged"
+  | "service_volunteers"
+  | "service_switched_other_software"
+  | "service_closed_unrealized"
+  | "service_no_prolongation"
+  | "service_application_fulfilled"
+  | "service_closed_not_realized";
+
+export type StageKey = LeadStageKey | SalesStageKey | ServiceStageKey | "unknown";
+
+export interface StageInfo {
+  key: StageKey;
+  pipeline: PipelineKey;
   label: string;
-  /** Показательный ли этап для полноценного звонка-разбора (не технический). */
+  /** Показательна ли стадия для полноценного разбора звонка (не техническая/финальная). */
   callable: boolean;
-  /** Строки названия стадии в Bitrix, по которым её узнаём (нормализуются при сравнении). */
   aliases: string[];
 }
 
-// Порядок — как в воронке РОП (для сортировки в отчётах/выпадающих списках).
-export const DEAL_STAGES: DealStageInfo[] = [
-  { key: "lead_received", label: "Заявка получена", callable: true, aliases: ["заявка получена"] },
-  { key: "no_answer", label: "Не дозвон", callable: false, aliases: ["не дозвон"] },
-  { key: "clarification", label: "Уточняющий диалог", callable: true, aliases: ["уточняющий диалог"] },
-  { key: "quote_pending", label: "Отправить КП", callable: false, aliases: ["отправить кп"] },
-  { key: "quote_sent", label: "КП отправлено", callable: true, aliases: ["кп отправлено", "кп отправлен"] },
+// ── Воронка 1: ЛИД (Bitrix Lead, entityId=STATUS) ──
+export const LEAD_STAGES: StageInfo[] = [
+  { key: "lead_new", pipeline: "lead", label: "Новый лид", callable: true, aliases: ["новый лид"] },
+  { key: "lead_first_contact", pipeline: "lead", label: "Первичный контакт", callable: true, aliases: ["первичный контакт"] },
+  { key: "lead_no_answer", pipeline: "lead", label: "Нет ответа", callable: false, aliases: ["нет ответа"] },
+  { key: "lead_qualification", pipeline: "lead", label: "Квалификация", callable: true, aliases: ["квалификация"] },
+  { key: "lead_spam", pipeline: "lead", label: "Спам", callable: false, aliases: ["спам"] },
+  { key: "lead_deferred_demand", pipeline: "lead", label: "Отложенный спрос", callable: true, aliases: ["отложенный спрос"] },
+  { key: "lead_qualified", pipeline: "lead", label: "Качественный лид", callable: false, aliases: ["качественный лид"] },
+  { key: "lead_unqualified", pipeline: "lead", label: "Некачественный лид", callable: false, aliases: ["некачественный лид"] },
+];
+
+// ── Воронка 2: СДЕЛКА — «Отдел продаж» ──
+export const SALES_STAGES: StageInfo[] = [
+  { key: "sales_application_received", pipeline: "sales", label: "Заявка получена", callable: true, aliases: ["заявка получена"] },
+  { key: "sales_no_answer", pipeline: "sales", label: "Недозвон", callable: false, aliases: ["недозвон", "не дозвон"] },
+  { key: "sales_clarification", pipeline: "sales", label: "Уточняющий диалог", callable: true, aliases: ["уточняющий диалог"] },
+  { key: "sales_quote_pending", pipeline: "sales", label: "Отправить КП", callable: false, aliases: ["отправить кп"] },
+  { key: "sales_quote_sent", pipeline: "sales", label: "КП отправлено", callable: true, aliases: ["кп отправлено", "кп отправлен"] },
+  { key: "sales_quote_read", pipeline: "sales", label: "КП прочитано", callable: true, aliases: ["кп прочитано", "кп прочитан"] },
+  { key: "sales_deferred_demand", pipeline: "sales", label: "Отложенный спрос", callable: true, aliases: ["отложенный спрос"] },
+  { key: "sales_contract_sent", pipeline: "sales", label: "Договор отправлен", callable: true, aliases: ["договор отправлен"] },
+  { key: "sales_contract_signed", pipeline: "sales", label: "Договор подписан", callable: false, aliases: ["договор подписан"] },
   {
-    key: "vcs_decision_maker",
+    key: "sales_vcs_decision_maker",
+    pipeline: "sales",
     label: "ВКС / выход на ЛПР",
     callable: true,
     aliases: ["вкс выход на лпр", "вкс / выход на лпр", "выход на лпр", "вкс"],
   },
-  { key: "deferred_demand", label: "Отложенный спрос", callable: true, aliases: ["отложенный спрос"] },
-  { key: "contract_sent", label: "Договор отправлен", callable: true, aliases: ["договор отправлен"] },
-  { key: "contract_signed", label: "Договор подписан", callable: false, aliases: ["договор подписан"] },
-  { key: "successfully_done", label: "Успешно реализовано", callable: false, aliases: ["успешно реализовано"] },
+  { key: "sales_inventory_done_elsewhere", pipeline: "sales", label: "Инвентаризация проведена (без нас)", callable: false, aliases: ["инвентаризация проведена"] },
   {
-    key: "inventory_done_elsewhere",
-    label: "Инвентаризация проведена (без нас)",
-    callable: false,
-    aliases: ["инвентаризация проведена"],
-  },
-  {
-    key: "competitor_probe",
+    key: "sales_competitor_probe",
+    pipeline: "sales",
     label: "Потенциальный партнёр / конкурент",
     callable: true,
     aliases: ["потенциальный партнер", "потенциальный партнёр", "конкурент"],
   },
-  { key: "closed_lost", label: "Закрыто не реализовано", callable: false, aliases: ["закрыто не реализовано"] },
+  { key: "sales_successfully_done", pipeline: "sales", label: "Успешно реализовано", callable: false, aliases: ["успешно реализовано"] },
+  {
+    key: "sales_closed_lost",
+    pipeline: "sales",
+    label: "Закрыто и не реализовано",
+    callable: false,
+    aliases: ["закрыто и не реализовано", "закрыто не реализовано"],
+  },
 ];
 
-export const DEAL_STAGE_LABEL: Record<DealStageKey, string> = Object.fromEntries(
-  DEAL_STAGES.map((s) => [s.key, s.label])
-) as Record<DealStageKey, string>;
-DEAL_STAGE_LABEL.unknown = "Этап не определён";
-
-/** Все канонические ключи стадий (включая "unknown") — для z.enum() в схеме анализа. */
-export const DEAL_STAGE_KEYS = [...DEAL_STAGES.map((s) => s.key), "unknown"] as unknown as [
-  DealStageKey,
-  ...DealStageKey[],
+// ── Воронка 3: СДЕЛКА — «Обслуживание сервиса» (пост-продажа) ──
+// Названия стадий здесь говорят сами за себя чуть меньше, чем в «Отделе
+// продаж» (для него есть подробная инструкция РОП) — блоки промпта по этой
+// воронке в dealStagePrompts.ts составлены по смыслу названия стадии и
+// заведомо грубее; стоит уточнить у РОП/руководителя сервиса и доработать.
+export const SERVICE_STAGES: StageInfo[] = [
+  { key: "service_demo_access", pipeline: "service", label: "Демо-доступ", callable: true, aliases: ["демо доступ", "демо-доступ"] },
+  { key: "service_application_accepted", pipeline: "service", label: "Заявка принята", callable: true, aliases: ["заявка принята"] },
+  { key: "service_access_granted", pipeline: "service", label: "Выдан доступ", callable: true, aliases: ["выдан доступ"] },
+  { key: "service_training_assigned", pipeline: "service", label: "Назначено обучение", callable: true, aliases: ["назначено обучение"] },
+  { key: "service_working_with_client", pipeline: "service", label: "Работа с клиентом", callable: true, aliases: ["работа с клиентом"] },
+  { key: "service_data_loading", pipeline: "service", label: "Загрузка данных производством", callable: false, aliases: ["загрузка данных производством"] },
+  { key: "service_ip_access", pipeline: "service", label: "Доступ ИП", callable: true, aliases: ["доступ ип"] },
+  { key: "service_confirmed_user", pipeline: "service", label: "Подтверждённый пользователь", callable: true, aliases: ["подтвержденный пользователь", "подтверждённый пользователь"] },
+  { key: "service_active_user", pipeline: "service", label: "Активный пользователь", callable: true, aliases: ["активный пользователь"] },
+  { key: "service_needs_prolongation", pipeline: "service", label: "Нужна пролонгация", callable: true, aliases: ["нужна пролонгация"] },
+  { key: "service_prolonged", pipeline: "service", label: "Пролонгирован", callable: false, aliases: ["пролонгирован"] },
+  { key: "service_volunteers", pipeline: "service", label: "Волонтёры", callable: true, aliases: ["волонтеры", "волонтёры"] },
+  { key: "service_switched_other_software", pipeline: "service", label: "Перешли на др. ПО", callable: true, aliases: ["перешли на др по", "перешли на другое по"] },
+  { key: "service_closed_unrealized", pipeline: "service", label: "Закрыто и нереализовано", callable: false, aliases: ["закрыто и нереализовано"] },
+  { key: "service_no_prolongation", pipeline: "service", label: "Без пролонгации", callable: true, aliases: ["без пролонгации"] },
+  { key: "service_application_fulfilled", pipeline: "service", label: "Заявка выполнена", callable: false, aliases: ["заявка выполнена"] },
+  {
+    key: "service_closed_not_realized",
+    pipeline: "service",
+    label: "Закрыто и не реализовано",
+    callable: false,
+    aliases: ["закрыто и не реализовано"],
+  },
 ];
+
+export const ALL_STAGES: StageInfo[] = [...LEAD_STAGES, ...SALES_STAGES, ...SERVICE_STAGES];
+
+export const PIPELINE_LABEL: Record<PipelineKey, string> = {
+  lead: "Лид",
+  sales: "Отдел продаж",
+  service: "Обслуживание сервиса",
+};
+
+export const STAGE_LABEL: Record<string, string> = Object.fromEntries(ALL_STAGES.map((s) => [s.key, s.label]));
+STAGE_LABEL.unknown = "Этап не определён";
+
+/** Все ключи стадий (все три воронки + "unknown") — для z.enum() в схеме анализа. */
+export const STAGE_KEYS = [...ALL_STAGES.map((s) => s.key), "unknown"] as unknown as [StageKey, ...StageKey[]];
 
 /** Нормализация для сопоставления названий стадий (регистр/ё/пробелы/пунктуация). */
 export function normalizeStageName(s: string): string {
@@ -91,25 +180,50 @@ export function normalizeStageName(s: string): string {
 
 /**
  * Сопоставить человекочитаемое название стадии Bitrix с каноническим ключом
- * воронки. Сначала точное совпадение, затем — по вхождению алиаса.
+ * ВНУТРИ конкретной воронки. Сначала точное совпадение, затем — по вхождению
+ * алиаса. Воронка передаётся явно, т.к. одно и то же название («Отложенный
+ * спрос», «Закрыто и не реализовано» и т.п.) встречается в разных воронках
+ * с разным смыслом — резолвится всегда в контексте одной воронки.
  */
-export function matchStageByName(bitrixStageName: string | null | undefined): DealStageKey {
+export function matchStageInPipeline(pipeline: PipelineKey, bitrixStageName: string | null | undefined): StageKey {
   const norm = normalizeStageName(bitrixStageName || "");
   if (!norm) return "unknown";
-  for (const s of DEAL_STAGES) {
+  const stages = pipeline === "lead" ? LEAD_STAGES : pipeline === "sales" ? SALES_STAGES : SERVICE_STAGES;
+  for (const s of stages) {
     if (s.aliases.some((a) => normalizeStageName(a) === norm)) return s.key;
   }
-  for (const s of DEAL_STAGES) {
+  for (const s of stages) {
     if (s.aliases.some((a) => norm.includes(normalizeStageName(a)))) return s.key;
   }
   return "unknown";
 }
 
 /**
- * 18 причин отложенного спроса (ровно как в документе РОП). `exempt` —
- * причина входит в список исключений из правила «без контакта не больше
- * месяца» (пункты 3,6,7,8,9,10,11,12,17 воронки) — по таким сделкам системное
- * касание может планироваться реже раза в месяц.
+ * Определить, какой из ДВУХ воронок сделок («Отдел продаж» или
+ * «Обслуживание сервиса») соответствует категории Bitrix — по набору
+ * названий её стадий (у Bitrix в crm.deal.list нет прямого признака, к
+ * какой из наших смысловых воронок относится кастомная категория).
+ * Считаем очки совпадений с каждой воронкой, выбираем большую; при
+ * отсутствии явного перевеса — "unknown" (стадии этой категории не
+ * распознаются, но и не путаются с чужой воронкой).
+ */
+export function classifyDealCategoryPipeline(stageNames: string[]): "sales" | "service" | "unknown" {
+  let salesScore = 0;
+  let serviceScore = 0;
+  for (const name of stageNames) {
+    if (matchStageInPipeline("sales", name) !== "unknown") salesScore++;
+    if (matchStageInPipeline("service", name) !== "unknown") serviceScore++;
+  }
+  if (salesScore === 0 && serviceScore === 0) return "unknown";
+  return salesScore >= serviceScore ? "sales" : "service";
+}
+
+/**
+ * 18 причин отложенного спроса (ровно как в документе РОП). Общие для
+ * стадии «Отложенный спрос» и в воронке лида, и в воронке «Отдел продаж».
+ * `exempt` — причина входит в список исключений из правила «без контакта
+ * не больше месяца» (пункты 3,6,7,8,9,10,11,12,17 воронки «Отдел продаж») —
+ * по таким сделкам системное касание может планироваться реже раза в месяц.
  */
 export const DEFERRED_DEMAND_REASONS = [
   { key: "contract_on_approval", label: "Контракт/КП на согласовании", exempt: false },
@@ -149,9 +263,10 @@ export const DEFERRED_DEMAND_EXEMPT_KEYS = new Set(
 
 /**
  * Таксономия триггеров — «что подтолкнуло клиента обратиться именно сейчас»
- * (этап «Заявка получена») и «что изменилось с прошлого касания» (этап
- * «Отложенный спрос» / системное касание). Единый список, т.к. по сути это
- * один и тот же набор внешних событий, меняющих готовность клиента к сделке.
+ * (этапы «Новый лид»/«Заявка получена») и «что изменилось с прошлого
+ * касания» (этапы «Отложенный спрос» / системное касание). Единый список,
+ * т.к. по сути это один и тот же набор внешних событий, меняющих готовность
+ * клиента к сделке.
  *
  * Сегодня триггер фиксируется LLM только со слов клиента в разговоре (поле
  * `trigger` в callAnalysis.ts). Этот же справочник типов рассчитан на будущую

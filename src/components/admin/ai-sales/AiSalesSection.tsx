@@ -6,9 +6,10 @@ import { Select } from '@/components/admin/ui/Select';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
 import { ExcelIcon } from '@/components/admin/ui/FileIcons';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
-import { DEAL_STAGE_LABEL as DEAL_STAGE_LABEL_UI } from '@/lib/ai/dealStages';
-/** Название этапа воронки по ключу (строка из API — не сужена до DealStageKey на фронте). */
+import { STAGE_LABEL as DEAL_STAGE_LABEL_UI } from '@/lib/ai/dealStages';
+/** Название этапа воронки по ключу (строка из API — не сужена до StageKey на фронте). */
 const stageLabelOf = (key: string): string => (DEAL_STAGE_LABEL_UI as Record<string, string>)[key] || key;
+const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'Отдел продаж', service: 'Обслуживание сервиса', unknown: 'не распознано' };
 
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
@@ -898,7 +899,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
     managerPerformance?: { overall?: number | null; didWell?: string[]; mistakes?: string[]; improveNextTime?: string[]; exampleBetterResponse?: string | null; criteria?: Array<{ key?: string; score?: number; comment?: string | null }> };
     products?: Array<{ name: string; confidence: number }>;
     objections?: Array<{ text?: string; quote?: string | null; raisedBy?: string; handled?: boolean; managerResponse?: string | null; responseQuality?: string | null; recommendation?: string | null; startMs?: number | null; endMs?: number | null }>;
-    dealStage?: { key?: string; label?: string | null };
+    dealStage?: { key?: string; label?: string | null; pipeline?: string };
     trigger?: { present?: boolean; type?: string; description?: string | null; quote?: string | null };
     stageDetails?: {
       deferredDemand?: { reason?: string | null; reasonNote?: string | null; whatChangedSinceLastContact?: string | null; expectedDecisionDate?: string | null; nextContactNotBefore?: string | null; whoMakesDecision?: string | null; whatMustChange?: string | null } | null;
@@ -907,6 +908,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
       contractSigned?: { confirmed?: boolean | null; signedBy?: string | null; allDocsReceived?: boolean | null; additionalOpportunities?: string[] } | null;
       successfullyDone?: { confirmed?: boolean | null; serviceDelivered?: string | null; additionalNeedsFound?: string[] } | null;
       vcsDm?: { decisionMakerPresent?: boolean | null; relevantToClientPains?: boolean | null; dealProgressed?: boolean | null } | null;
+      serviceUsage?: { accessGranted?: boolean | null; trainingCompleted?: boolean | null; activelyUsing?: boolean | null; prolongationInterest?: string; churnRisk?: string | null; blockers?: string[]; reasonNote?: string | null } | null;
     };
     nextStageSuggestion?: { suggested?: string | null; reasoning?: string | null; confidence?: number };
   };
@@ -1019,7 +1021,10 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                   <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{CALL_TYPE_LABEL[a.callType] || a.callType}</span>
                 )}
                 {a.dealStage?.label && (
-                  <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[#029cda]/10 text-[#029cda]">Этап: {a.dealStage.label}</span>
+                  <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[#029cda]/10 text-[#029cda]">
+                    {a.dealStage.pipeline && PIPELINE_LABEL_UI[a.dealStage.pipeline] ? `${PIPELINE_LABEL_UI[a.dealStage.pipeline]}: ` : 'Этап: '}
+                    {a.dealStage.label}
+                  </span>
                 )}
               </div>
               {a.dealScore && (
@@ -1080,6 +1085,23 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
                   <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Договор</p>
                   <p className="text-gray-800">Статус: <b>{CONTRACT_STATUS_LABEL[a.stageDetails.contractSent.status] || a.stageDetails.contractSent.status}</b></p>
                   {a.stageDetails.contractSent.blockers?.length ? <p className="text-red-600 mt-1">Мешает: {a.stageDetails.contractSent.blockers.join(', ')}</p> : null}
+                </div>
+              )}
+
+              {a.stageDetails?.serviceUsage && (
+                <div className="rounded-xl bg-[#F6F7F9] p-3 text-sm space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Обслуживание сервиса</p>
+                  <div className="flex flex-wrap gap-x-4 text-xs text-gray-600">
+                    {a.stageDetails.serviceUsage.accessGranted != null && <span>Доступ выдан: {a.stageDetails.serviceUsage.accessGranted ? 'да' : 'нет'}</span>}
+                    {a.stageDetails.serviceUsage.trainingCompleted != null && <span>Обучение пройдено: {a.stageDetails.serviceUsage.trainingCompleted ? 'да' : 'нет'}</span>}
+                    {a.stageDetails.serviceUsage.activelyUsing != null && <span>Активно пользуется: {a.stageDetails.serviceUsage.activelyUsing ? 'да' : 'нет'}</span>}
+                  </div>
+                  {a.stageDetails.serviceUsage.prolongationInterest && a.stageDetails.serviceUsage.prolongationInterest !== 'unknown' && (
+                    <p className="text-gray-800">Интерес к пролонгации: <b>{{ yes: 'да', no: 'нет', undecided: 'не определился' }[a.stageDetails.serviceUsage.prolongationInterest] || a.stageDetails.serviceUsage.prolongationInterest}</b>
+                      {a.stageDetails.serviceUsage.churnRisk ? ` · риск оттока: ${{ low: 'низкий', medium: 'средний', high: 'высокий' }[a.stageDetails.serviceUsage.churnRisk] || a.stageDetails.serviceUsage.churnRisk}` : ''}</p>
+                  )}
+                  {a.stageDetails.serviceUsage.reasonNote && <p className="text-gray-600">{a.stageDetails.serviceUsage.reasonNote}</p>}
+                  {a.stageDetails.serviceUsage.blockers?.length ? <p className="text-red-600">Мешает: {a.stageDetails.serviceUsage.blockers.join(', ')}</p> : null}
                 </div>
               )}
 
@@ -2650,9 +2672,56 @@ function Settings() {
 }
 
 /* ─────────── Справочник этапов воронки (STAGE_ID Bitrix → этап РОП) ─────────── */
-interface StageDictEntry { name: string; categoryId: string; canonicalKey: string }
+interface StageDictEntry { name: string; categoryId: string; pipeline: string; canonicalKey: string }
+interface StageDictionary {
+  updatedAt: string;
+  dealStages: Record<string, StageDictEntry>;
+  leadStatuses: Record<string, StageDictEntry>;
+  categoryPipeline: Record<string, string>;
+}
+function StageDictTable({ title, idLabel, entries, groupByCategory }: {
+  title: string; idLabel: string; entries: Array<[string, StageDictEntry]>; groupByCategory?: boolean;
+}) {
+  const unmatched = entries.filter(([, v]) => v.canonicalKey === 'unknown');
+  if (entries.length === 0) return null;
+  return (
+    <div className="mt-4 first:mt-0">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">{title}</p>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-xs">
+          <thead className="text-gray-500"><tr>
+            <th className="text-left font-medium py-1 pr-3">{idLabel}</th>
+            {groupByCategory && <th className="text-left font-medium py-1 pr-3">Воронка</th>}
+            <th className="text-left font-medium py-1 pr-3">Название в Bitrix</th>
+            <th className="text-left font-medium py-1">Этап</th>
+          </tr></thead>
+          <tbody>
+            {entries.map(([id, v]) => (
+              <tr key={id} className="border-t border-gray-50">
+                <td className="py-1 pr-3 text-gray-400 whitespace-nowrap">{id}</td>
+                {groupByCategory && <td className="py-1 pr-3 text-gray-500 whitespace-nowrap">{PIPELINE_LABEL_UI[v.pipeline] || v.pipeline}</td>}
+                <td className="py-1 pr-3 text-gray-700 whitespace-nowrap">{v.name}</td>
+                <td className="py-1">
+                  {v.canonicalKey === 'unknown'
+                    ? <span className="text-amber-600">не распознано</span>
+                    : <span className="text-gray-700">{stageLabelOf(v.canonicalKey)}</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {unmatched.length > 0 && (
+          <p className="text-xs text-amber-600 mt-2">
+            {unmatched.length} не распознано автоматически — можно переопределить вручную ключом aiSales.stageOverrides через API настроек.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function StageDictionaryPanel() {
-  const [dict, setDict] = useState<{ updatedAt: string; stages: Record<string, StageDictEntry> } | null>(null);
+  const [dict, setDict] = useState<StageDictionary | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
@@ -2678,14 +2747,14 @@ function StageDictionaryPanel() {
     finally { setBusy(false); }
   };
 
-  const entries = dict ? Object.entries(dict.stages) : [];
-  const unmatched = entries.filter(([, v]) => v.canonicalKey === 'unknown');
+  const dealEntries = dict ? Object.entries(dict.dealStages) : [];
+  const leadEntries = dict ? Object.entries(dict.leadStatuses) : [];
 
   return (
-    <div className="max-w-2xl mt-8">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Этапы воронки</h2>
+    <div className="max-w-3xl mt-8">
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Этапы воронок</h2>
       <p className="text-sm text-gray-500 mb-4">
-        Сопоставление стадий Bitrix с этапами воронки продаж — по нему речевая аналитика понимает, на каком этапе сделки идёт звонок, и какой промпт-чеклист применять.
+        Сопоставление стадий/статусов Bitrix (лид, сделка «Отдел продаж», сделка «Обслуживание сервиса») с этапами наших воронок — по нему речевая аналитика понимает, на каком этапе идёт звонок, и какой промпт-чеклист применять.
       </p>
       {err && <div className="mb-3 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       <div className="bg-white rounded-xl border border-gray-100 p-4">
@@ -2695,36 +2764,13 @@ function StageDictionaryPanel() {
             {busy ? 'Обновляю…' : 'Обновить из Bitrix'}
           </button>
         </div>
-        {entries.length === 0 ? (
+        {dealEntries.length === 0 && leadEntries.length === 0 ? (
           <p className="text-sm text-gray-400">Справочник пуст — нажмите «Обновить из Bitrix» (нужен настроенный BITRIX24_WEBHOOK_URL).</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-xs">
-              <thead className="text-gray-500"><tr>
-                <th className="text-left font-medium py-1 pr-3">STAGE_ID</th>
-                <th className="text-left font-medium py-1 pr-3">Название в Bitrix</th>
-                <th className="text-left font-medium py-1">Этап воронки</th>
-              </tr></thead>
-              <tbody>
-                {entries.map(([stageId, v]) => (
-                  <tr key={stageId} className="border-t border-gray-50">
-                    <td className="py-1 pr-3 text-gray-400 whitespace-nowrap">{stageId}</td>
-                    <td className="py-1 pr-3 text-gray-700 whitespace-nowrap">{v.name}</td>
-                    <td className="py-1">
-                      {v.canonicalKey === 'unknown'
-                        ? <span className="text-amber-600">не распознано</span>
-                        : <span className="text-gray-700">{stageLabelOf(v.canonicalKey)}</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {unmatched.length > 0 && (
-              <p className="text-xs text-amber-600 mt-3">
-                {unmatched.length} стади{unmatched.length === 1 ? 'я' : 'и'} не распознано автоматически — можно переопределить вручную ключом aiSales.stageOverrides через API настроек.
-              </p>
-            )}
-          </div>
+          <>
+            <StageDictTable title="Сделки (Отдел продаж / Обслуживание сервиса)" idLabel="STAGE_ID" entries={dealEntries} groupByCategory />
+            <StageDictTable title="Лиды" idLabel="STATUS_ID" entries={leadEntries} />
+          </>
         )}
       </div>
     </div>

@@ -6,12 +6,14 @@ import {
   mapCompany,
   mapContact,
   mapDeal,
+  mapLead,
 } from "@/lib/server/bitrix/entities";
 import {
   upsertManagers,
   upsertCompanies,
   upsertContacts,
   upsertDeals,
+  upsertLeads,
   setSyncState,
   type SyncEntity,
 } from "@/lib/server/aiSales/syncDb";
@@ -96,6 +98,17 @@ export async function syncEntityPage(
       total = p.total;
       break;
     }
+    case "leads": {
+      const p = await bitrixListPage<Row>("crm.lead.list", {
+        select: ["ID", "TITLE", "COMPANY_ID", "CONTACT_ID", "ASSIGNED_BY_ID", "STATUS_ID", "DATE_CREATE", "DATE_MODIFY"],
+        order: { ID: "ASC" },
+        start,
+      });
+      upserted = await upsertLeads(p.rows.map(mapLead));
+      next = p.next;
+      total = p.total;
+      break;
+    }
     default:
       throw new Error(`Неизвестная сущность синхронизации: ${entity}`);
   }
@@ -103,12 +116,12 @@ export async function syncEntityPage(
   // Последняя страница — отметить полную синхронизацию завершённой.
   if (next === null) {
     await setSyncState(entity, { fullSyncDone: true, stats: { total } });
-    // Справочник стадий (для речевой аналитики по этапам сделки) обновляем
-    // заодно с полной синхронизацией сделок — дёшево, и STAGE_ID новых
-    // стадий воронки подхватываются без ручного вмешательства.
-    if (entity === "deals") {
+    // Справочник стадий (для речевой аналитики по этапам сделки/лида)
+    // обновляем заодно с полной синхронизацией сделок/лидов — дёшево, и
+    // новые STAGE_ID/STATUS_ID подхватываются без ручного вмешательства.
+    if (entity === "deals" || entity === "leads") {
       await refreshDealStageDictionary().catch(() => {
-        // Не роняем синхронизацию сделок из-за недоступности справочника —
+        // Не роняем синхронизацию из-за недоступности справочника —
         // резолвер стадий сам корректно откатится на "unknown".
       });
     }
@@ -116,4 +129,4 @@ export async function syncEntityPage(
   return { entity, start, upserted, next, total };
 }
 
-export const SYNC_ENTITIES: SyncEntity[] = ["users", "companies", "contacts", "deals"];
+export const SYNC_ENTITIES: SyncEntity[] = ["users", "companies", "contacts", "deals", "leads"];
