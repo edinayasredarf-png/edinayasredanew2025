@@ -7,11 +7,12 @@ import { getCallById, getTranscript } from "@/lib/server/aiSales/callsDb";
 import { buildDialogue } from "@/lib/server/aiSales/analysisService";
 import { getDepartmentPromptForManager } from "@/lib/server/aiSales/departmentsDb";
 import {
-  getActiveScriptForDepartment,
+  getActiveScript,
   saveScriptScore,
   scriptScoreExists,
   type SalesScript,
 } from "@/lib/server/aiSales/scriptsDb";
+import { resolveCallStage } from "@/lib/server/aiSales/callStage";
 
 /**
  * Анализатор №6 (§18 ТЗ): оценка соблюдения скрипта продаж по звонку.
@@ -19,7 +20,7 @@ import {
  * скрипт/модель и пересчитывать. Промт содержит шаги скрипта из БД (не зашит).
  */
 
-export const SCRIPT_SCORE_PROMPT_VERSION = "script-score-v1";
+export const SCRIPT_SCORE_PROMPT_VERSION = "script-score-v2";
 
 const StepResult = z
   .object({
@@ -43,9 +44,10 @@ const SYSTEM = `Ты — методолог отдела продаж. Тебе 
 4. reason — короткое обоснование (1 предложение) на русском: что именно было/не было сделано.
 5. Верни массив steps строго по заданным ключам (key), по одному объекту на каждый шаг скрипта.`;
 
-function buildUser(dialogue: string, script: SalesScript): string {
+function buildUser(dialogue: string, script: SalesScript, stageLabel: string | null): string {
   const steps = script.steps.map((s, i) => `${i + 1}. [${s.key}] ${s.title}`).join("\n");
-  return `ШАГИ СКРИПТА «${script.name}» (версия ${script.version}):\n${steps}\n\nТРАНСКРИПТ РАЗГОВОРА:\n${dialogue}\n\nОцени соблюдение КАЖДОГО шага по ключу.`;
+  const stageLine = stageLabel ? `Этап сделки/лида на момент звонка: ${stageLabel}\n\n` : "";
+  return `${stageLine}ШАГИ СКРИПТА «${script.name}» (версия ${script.version}):\n${steps}\n\nТРАНСКРИПТ РАЗГОВОРА:\n${dialogue}\n\nОцени соблюдение КАЖДОГО шага по ключу.`;
 }
 
 export interface ScriptScoreOptions {
@@ -63,9 +65,15 @@ export async function runScriptScoring(
   const call = await getCallById(callId);
   if (!call) return { skipped: "call not found" };
 
-  // Скрипт отдела менеджера (или общий).
+  // Этап (лид/сделка) — та же логика, что и в основном анализе звонка
+  // (analysisService.ts), чтобы выбрать ЧЕК-ЛИСТ, соответствующий этапу
+  // (см. timeweb_ai_scripts_stage.sql): «Заявка получена» и «Просроченная
+  // задолженность» оцениваются по разным шагам, а не одним общим списком.
+  const stage = await resolveCallStage(call);
+
+  // Скрипт отдела менеджера + этапа (или общий, если для этой комбинации своего нет).
   const dept = await getDepartmentPromptForManager(call.bitrix_user_id);
-  const script = await getActiveScriptForDepartment(dept?.departmentId ?? null);
+  const script = await getActiveScript(dept?.departmentId ?? null, stage.key);
   if (!script || script.steps.length === 0) return { skipped: "no active script" };
 
   const transcript = await getTranscript(callId);
@@ -78,7 +86,7 @@ export async function runScriptScoring(
   const model = provider.defaultModel;
   const stepsKey = script.steps.map((s) => s.key).join(",");
   const inputHash = createHash("sha256")
-    .update(`${SCRIPT_SCORE_PROMPT_VERSION}|${script.id}|v${script.version}|${stepsKey}|${model}|${dialogue}`)
+    .update(`${SCRIPT_SCORE_PROMPT_VERSION}|${script.id}|v${script.version}|${stepsKey}|${stage.key}|${model}|${dialogue}`)
     .digest("hex");
 
   if (!opts.force && (await scriptScoreExists(callId, inputHash))) {
@@ -88,7 +96,7 @@ export async function runScriptScoring(
   const { data } = await provider.generateStructured({
     schema: ScriptScoreSchema,
     system: SYSTEM,
-    user: buildUser(dialogue, script),
+    user: buildUser(dialogue, script, stage.label),
     cacheSystem: true,
     maxTokens: 4000,
   });

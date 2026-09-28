@@ -4,7 +4,10 @@ import { getTimewebPool } from "@/lib/timewebPg";
 
 /**
  * Скрипты продаж (§18 ТЗ): хранятся в БД, версионируются, у каждого отдела свой
- * (department_id=NULL — общий скрипт по умолчанию). Оценка соблюдения скрипта по
+ * (department_id=NULL — общий скрипт по умолчанию), и теперь ещё и по ЭТАПУ
+ * воронки (stage_key='' — общий вне зависимости от этапа, см.
+ * timeweb_ai_scripts_stage.sql) — чек-лист «Заявка получена» отличается от
+ * чек-листа «Просроченная задолженность». Оценка соблюдения скрипта по
  * звонку — отдельным анализатором (scriptScoreService), результат в ai_call_script_scores.
  */
 
@@ -17,6 +20,7 @@ export interface SalesScript {
   id: string;
   departmentId: string | null;
   departmentName: string | null;
+  stageKey: string; // '' — применяется вне зависимости от этапа
   name: string;
   version: number;
   steps: ScriptStep[];
@@ -44,19 +48,20 @@ function slugifyStep(title: string, i: number): string {
 export async function listScripts(): Promise<SalesScript[]> {
   const pool = getTimewebPool();
   const { rows } = await pool.query<{
-    id: string; department_id: string | null; department_name: string | null;
+    id: string; department_id: string | null; department_name: string | null; stage_key: string;
     name: string; version: number; steps: unknown; is_active: boolean;
   }>(
-    `select s.id, s.department_id, d.name as department_name, s.name, s.version, s.steps, s.is_active
+    `select s.id, s.department_id, d.name as department_name, s.stage_key, s.name, s.version, s.steps, s.is_active
        from ai_sales_scripts s
        left join ai_departments d on d.id = s.department_id
       where s.is_active
-      order by (s.department_id is null) desc, d.sort asc nulls first, d.name asc`
+      order by (s.department_id is null) desc, d.sort asc nulls first, d.name asc, s.stage_key asc`
   );
   return rows.map((r) => ({
     id: r.id,
     departmentId: r.department_id,
     departmentName: r.department_name,
+    stageKey: r.stage_key ?? "",
     name: r.name,
     version: r.version,
     steps: normSteps(r.steps),
@@ -64,26 +69,33 @@ export async function listScripts(): Promise<SalesScript[]> {
   }));
 }
 
-/** Активный скрипт для отдела (или общий, если у отдела своего нет). */
-export async function getActiveScriptForDepartment(
-  departmentId: string | null
+/**
+ * Активный скрипт для (отдел, этап) — приоритет по убыванию точности:
+ * (отдел+этап) → (отдел, любой этап) → (общий+этап) → (общий, любой этап).
+ * stageKey='' — вызывающий код не знает/не применяет этап (тогда как раньше).
+ */
+export async function getActiveScript(
+  departmentId: string | null,
+  stageKey: string
 ): Promise<SalesScript | null> {
   const pool = getTimewebPool();
   try {
     const { rows } = await pool.query<{
-      id: string; department_id: string | null; name: string; version: number; steps: unknown;
+      id: string; department_id: string | null; stage_key: string; name: string; version: number; steps: unknown;
     }>(
-      `select id, department_id, name, version, steps
+      `select id, department_id, stage_key, name, version, steps
          from ai_sales_scripts
-        where is_active and (department_id = $1 or department_id is null)
-        order by (department_id = $1) desc nulls last
+        where is_active
+          and (department_id = $1 or department_id is null)
+          and (stage_key = $2 or stage_key = '')
+        order by (department_id = $1) desc nulls last, (stage_key = $2) desc
         limit 1`,
-      [departmentId]
+      [departmentId, stageKey]
     );
     const r = rows[0];
     if (!r) return null;
     return {
-      id: r.id, departmentId: r.department_id, departmentName: null,
+      id: r.id, departmentId: r.department_id, departmentName: null, stageKey: r.stage_key ?? "",
       name: r.name, version: r.version, steps: normSteps(r.steps), isActive: true,
     };
   } catch {
@@ -92,19 +104,19 @@ export async function getActiveScriptForDepartment(
   }
 }
 
-/** Создать скрипт для отдела (или общий, departmentId=null). */
-export async function createScript(departmentId: string | null, name: string): Promise<string> {
+/** Создать скрипт для (отдел, этап) — departmentId=null общий, stageKey='' вне зависимости от этапа. */
+export async function createScript(departmentId: string | null, name: string, stageKey = ""): Promise<string> {
   const pool = getTimewebPool();
   // Существующий активный для этого scope — деактивируем (частичный uniq-индекс).
   await pool.query(
     `update ai_sales_scripts set is_active = false, updated_at = now()
-      where is_active and department_id is not distinct from $1`,
-    [departmentId]
+      where is_active and department_id is not distinct from $1 and stage_key = $2`,
+    [departmentId, stageKey]
   );
   const { rows } = await pool.query<{ id: string }>(
-    `insert into ai_sales_scripts (department_id, name, version, is_active, steps)
-     values ($1, $2, 1, true, '[]'::jsonb) returning id`,
-    [departmentId, name.trim() || "Скрипт продаж"]
+    `insert into ai_sales_scripts (department_id, stage_key, name, version, is_active, steps)
+     values ($1, $2, $3, 1, true, '[]'::jsonb) returning id`,
+    [departmentId, stageKey, name.trim() || "Скрипт продаж"]
   );
   return rows[0].id;
 }

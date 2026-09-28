@@ -3745,15 +3745,18 @@ function Prompts() {
 
 /* ─────────── Скрипты продаж (редактор + версии) ─────────── */
 interface ScriptStepT { key: string; title: string }
-interface SalesScriptT { id: string; departmentId: string | null; departmentName: string | null; name: string; version: number; steps: ScriptStepT[] }
+interface SalesScriptT { id: string; departmentId: string | null; departmentName: string | null; stageKey: string; name: string; version: number; steps: ScriptStepT[] }
+interface StageOptionT { key: string; label: string }
 
 function Scripts() {
   const [scripts, setScripts] = useState<SalesScriptT[]>([]);
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([]);
+  const [stages, setStages] = useState<StageOptionT[]>([]);
   const [drafts, setDrafts] = useState<Record<string, { name: string; steps: ScriptStepT[] }>>({});
   const [loading, setLoading] = useState(true);
   const [savedId, setSavedId] = useState('');
   const [newScope, setNewScope] = useState('');
+  const [newStage, setNewStage] = useState('');
   const [err, setErr] = useState('');
 
   const load = useCallback(async () => {
@@ -3762,7 +3765,7 @@ function Scripts() {
       const r = await fetch('/api/ai-sales/scripts');
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
-      setScripts(j.scripts); setDepartments(j.departments || []);
+      setScripts(j.scripts); setDepartments(j.departments || []); setStages(j.stages || []);
       setDrafts(Object.fromEntries((j.scripts as SalesScriptT[]).map((s) => [s.id, { name: s.name, steps: s.steps.map((st) => ({ ...st })) }])));
     } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
@@ -3777,10 +3780,18 @@ function Scripts() {
     load();
   };
   const createFor = async () => {
-    const departmentId = newScope === 'global' ? null : newScope || null;
     if (!newScope) return;
-    await jsonPost('/api/ai-sales/scripts', { departmentId, name: 'Скрипт продаж' });
-    setNewScope(''); load();
+    const departmentId = newScope === 'global' ? null : newScope;
+    if (scripts.some((s) => s.departmentId === departmentId && s.stageKey === newStage)) {
+      setErr('Для этого отдела/этапа уже есть активный скрипт'); return;
+    }
+    setErr('');
+    const r = await jsonPost('/api/ai-sales/scripts', { departmentId, stageKey: newStage, name: 'Скрипт продаж' });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      setErr(j.error || 'Ошибка создания'); return;
+    }
+    setNewScope(''); setNewStage(''); load();
   };
 
   const setDraft = (id: string, patch: Partial<{ name: string; steps: ScriptStepT[] }>) =>
@@ -3788,28 +3799,22 @@ function Scripts() {
 
   if (loading) return <LoadingBlock />;
 
-  // Scope'ы без активного скрипта (для кнопки создания).
-  const usedDeptIds = new Set(scripts.map((s) => s.departmentId));
-  const hasGlobal = scripts.some((s) => s.departmentId === null);
-  const missingScopes = [
-    ...(!hasGlobal ? [{ id: 'global', name: 'Общий (по умолчанию)' }] : []),
-    ...departments.filter((d) => !usedDeptIds.has(d.id)),
-  ];
+  const stageLabelOfScript = (key: string) => stages.find((s) => s.key === key)?.label;
 
   return (
     <div>
       <h2 className="text-xl font-bold text-gray-900 mb-1">Скрипт продаж</h2>
-      <p className="text-sm text-gray-500 mb-5">Чек-лист шагов, по которому LLM оценивает каждый звонок. Общий скрипт применяется, если у отдела нет своего. Изменение шагов повышает версию.</p>
+      <p className="text-sm text-gray-500 mb-5">Чек-лист шагов, по которому LLM оценивает каждый звонок. Можно завести отдельный чек-лист под конкретный этап воронки (напр. «Заявка получена» ≠ «Просроченная задолженность») — иначе применяется общий/отдела вне зависимости от этапа. Изменение шагов повышает версию.</p>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
-      {missingScopes.length > 0 && (
-        <div className="flex gap-2 mb-5">
-          <Select value={newScope} onChange={setNewScope} placeholder="Добавить скрипт для…" className="w-full sm:w-[240px]" ariaLabel="Скрипт для отдела"
-            options={[{ value: '', label: 'Добавить скрипт для…' }, ...missingScopes.map((s) => ({ value: s.id, label: s.name }))]} />
-          <button onClick={createFor} disabled={!newScope}
-            className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Создать</button>
-        </div>
-      )}
+      <div className="flex flex-wrap gap-2 mb-5">
+        <Select value={newScope} onChange={setNewScope} placeholder="Отдел…" className="w-full sm:w-[220px]" ariaLabel="Скрипт для отдела"
+          options={[{ value: '', label: 'Отдел…' }, { value: 'global', label: 'Общий (по умолчанию)' }, ...departments.map((d) => ({ value: d.id, label: d.name }))]} />
+        <Select value={newStage} onChange={setNewStage} className="w-full sm:w-[280px]" ariaLabel="Этап воронки"
+          options={[{ value: '', label: 'Все этапы (вне зависимости)' }, ...stages.map((s) => ({ value: s.key, label: s.label }))]} />
+        <button onClick={createFor} disabled={!newScope}
+          className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">Создать</button>
+      </div>
 
       <div className="space-y-6">
         {scripts.map((s) => {
@@ -3821,6 +3826,11 @@ function Scripts() {
                   <span className={`text-xs px-2 py-0.5 rounded-full ${s.departmentId ? 'bg-[#029cda]/10 text-[#029cda]' : 'bg-gray-200 text-gray-600'}`}>
                     {s.departmentName || 'Общий'}
                   </span>
+                  {s.stageKey && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                      {stageLabelOfScript(s.stageKey) || s.stageKey}
+                    </span>
+                  )}
                   <input value={d.name} onChange={(e) => setDraft(s.id, { name: e.target.value })}
                     className="flex-1 max-w-xs bg-white px-2 py-1 rounded border border-gray-200 focus:border-[#029cda] text-sm outline-none" />
                   <span className="text-xs text-gray-400">v{s.version}</span>
