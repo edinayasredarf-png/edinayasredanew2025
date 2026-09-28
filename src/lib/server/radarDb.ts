@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { getTimewebPool } from "@/lib/timewebPg";
 import {
+  ADDITIONAL_RADAR_TRIGGERS,
   DEFAULT_RADAR_FEEDS,
   DEFAULT_RADAR_TRIGGERS,
   type RadarItem,
@@ -65,9 +66,28 @@ async function seedDefaultTriggersIfEmpty(): Promise<void> {
   }
 }
 
+/**
+ * Идемпотентно добавляет кураторский пул источников контент-завода (РФ
+ * официальные/нормативные, СНГ, международные) — в отличие от
+ * seedDefaultTriggersIfEmpty() выполняется всегда, а не только на пустой
+ * таблице, чтобы новые источники появились и в уже работающей БД.
+ */
+async function ensureAdditionalTriggers(): Promise<void> {
+  const pool = getTimewebPool();
+  const now = Date.now();
+  for (const t of ADDITIONAL_RADAR_TRIGGERS) {
+    await pool.query(
+      `insert into radar_triggers (id, kind, query, label, category, enabled, created_at)
+       values ($1,$2,$3,$4,$5,$6,$7) on conflict (id) do nothing`,
+      [triggerId(t.kind, t.query), t.kind, t.query, t.label, t.category, t.enabled, now]
+    );
+  }
+}
+
 export async function dbListTriggers(): Promise<RadarTrigger[]> {
   await dbEnsureRadarTables();
   await seedDefaultTriggersIfEmpty();
+  await ensureAdditionalTriggers();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
     "select * from radar_triggers order by category asc, label asc"

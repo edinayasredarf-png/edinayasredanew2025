@@ -107,6 +107,105 @@ export const DEFAULT_RADAR_TRIGGERS: Omit<RadarTrigger, 'id' | 'created_at'>[] =
   },
 ];
 
+/**
+ * Дополнительный пул источников по кураторскому списку контент-завода
+ * (источники-мониторинга.md): официальные РФ/нормативные, СНГ, международные.
+ * Все — через Google News (`kind:'keyword'`, `site:` в запросе), так как
+ * многие ведомственные/зарубежные сайты не публикуют собственный RSS,
+ * а Google News индексирует их публикации и так. Идемпотентно добавляются
+ * в БД в dbEnsureAdditionalTriggers() — не только при первом посеве.
+ */
+export const ADDITIONAL_RADAR_TRIGGERS: Omit<RadarTrigger, 'id' | 'created_at'>[] = [
+  // РФ — официальные и нормативные
+  {
+    kind: 'keyword', category: 'staff', enabled: true,
+    label: 'Кремль — указы и поручения',
+    query: 'site:kremlin.ru (указ OR поручение) (местное самоуправление OR муниципал OR сокращение чиновников OR цифровизация)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'Правительство РФ — постановления',
+    query: 'site:government.ru (постановление OR программа) (благоустройство OR ЖКХ OR городское хозяйство OR муниципал)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'pravo.gov.ru — официальные публикации НПА',
+    query: 'site:pravo.gov.ru (ФЗ-131 OR ФЗ-33 OR ФЗ-8 OR Лесной кодекс OR инвентаризация)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'Госдума — законопроекты',
+    query: 'site:duma.gov.ru законопроект (местное самоуправление OR благоустройство OR кладбищ OR зелёные насаждения OR лесоустройство)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'Гарант — обзоры изменений',
+    query: 'site:garant.ru (ФЗ-131 OR ФЗ-8 OR инвентаризация кладбищ OR зелёные насаждения OR благоустройство)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'КонсультантПлюс — обзоры изменений',
+    query: 'site:consultant.ru (ФЗ-131 OR ФЗ-8 OR инвентаризация кладбищ OR зелёные насаждения OR благоустройство)',
+  },
+  {
+    kind: 'keyword', category: 'digital', enabled: true,
+    label: 'Минстрой РФ',
+    query: 'site:minstroyrf.gov.ru (благоустройство OR ЖКХ OR городская среда OR цифровизация)',
+  },
+  {
+    kind: 'keyword', category: 'digital', enabled: true,
+    label: 'Росреестр — кадастр и цифровизация земли',
+    query: 'site:rosreestr.gov.ru (кадастр OR инвентаризация OR цифровизация)',
+  },
+  {
+    kind: 'keyword', category: 'other', enabled: true,
+    label: 'Происшествия — учёт мог бы предотвратить',
+    query: '"обрушение дерева" OR "провал грунта на кладбище" OR "разрушение памятника" OR "трагедия из-за отсутствия учёта" OR "обрушение аллеи"',
+  },
+  // СНГ
+  {
+    kind: 'keyword', category: 'digital', enabled: true,
+    label: 'Казахстан — электронное правительство',
+    query: 'site:egov.kz (цифровизация OR электронное правительство OR муниципал)',
+  },
+  {
+    kind: 'keyword', category: 'digital', enabled: true,
+    label: 'Беларусь — электронные услуги',
+    query: 'site:nces.by (электронные услуги OR цифровизация OR муниципал)',
+  },
+  // Международные — тренды и технологии
+  {
+    kind: 'keyword', category: 'digital', enabled: true,
+    label: 'Smart Cities World',
+    query: 'site:smartcitiesworld.net (smart city OR digital twin OR municipal OR GIS)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'UN-Habitat',
+    query: 'site:unhabitat.org (local government OR municipal OR urban management)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'Eurocities',
+    query: 'site:eurocities.eu (municipal OR urban management OR local government)',
+  },
+  {
+    kind: 'keyword', category: 'municipal', enabled: true,
+    label: 'Совет Европы — местное самоуправление',
+    query: 'site:coe.int (local self-government OR local authorities OR Congress of Local Authorities)',
+  },
+  {
+    kind: 'keyword', category: 'digital', enabled: true,
+    label: 'Apolitical — GovTech',
+    query: 'site:apolitical.co (govtech OR municipal OR local government OR AI government)',
+  },
+  {
+    kind: 'keyword', category: 'digital', enabled: true,
+    label: 'Government Technology',
+    query: 'site:govtech.com (municipal OR smart city OR GIS OR local government)',
+  },
+];
+
 export function radarCategoryLabel(key: string): string {
   return RADAR_CATEGORIES.find((c) => c.key === key)?.label ?? 'Другое';
 }
