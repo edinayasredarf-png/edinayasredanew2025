@@ -4,15 +4,18 @@
 **отложен** по решению владельца (2026-09-29); везде ниже помечен
 `[ОТЛОЖЕНО]`, место под него оставлено, но не проектируется в деталях.
 
+**Обновление 2026-09-29:** допущение №1 (Local LLM) закрыто явным решением
+владельца — см. таблицу ниже. Остальные допущения (2, 4-10) пока в силе.
+
 ## Допущения по открытым вопросам аудита
 
 Не все 10 пунктов REQUIRED INPUT получили явный ответ. Чтобы не блокировать
 Phase 1 целиком, беру дефолт по каждому — везде самый дешёвый/обратимый
 вариант, который не мешает потом перейти на более тяжёлый:
 
-| # | Вопрос | Дефолт на Phase 1 | Почему обратимо |
+| # | Вопрос | Решение | Комментарий |
 |---|---|---|---|
-| 1 | Local LLM обязателен? | **Нет** — только внешний API (Claude, уже работает), как прямо требует §12 более полного и позднего из двух присланных ТЗ | AI Gateway (§ниже) абстрагирует провайдера — добавить local-adapter позже = новый adapter, не переписывание Core |
+| 1 | Local LLM обязателен? | **Решено (2026-09-29): гибрид.** Локально — GigaChat-20B-A3B-instruct-v1.5 (self-hosted, новый VPS, `OpenAiCompatProvider`, уже есть в коде). Облако — Claude (уже работает) для задач, где локальной модели не хватит качества, и как fallback | Router (§2 ниже) решает какую задачу куда — не new-adapter «на будущее», а рабочая схема с первого дня |
 | 2 | Судьба `cf_*` | **Не трогаю до Phase 2** | Чтение/запись через него не меняются, пока не спроектирована новая схема |
 | 3 | Email-провайдер | `[ОТЛОЖЕНО]` целиком | — |
 | 4 | Статус speech/pdf-service | Считаю «где-то развёрнуты, детали неизвестны» — новый VPS проектирую независимо от них | Полная изоляция и так была требованием (§1 ТЗ) |
@@ -73,37 +76,59 @@ interface AiProvider {
 }
 ```
 
-**Model Router** (§55 ТЗ) — при допущении «внешний API only» (см. таблицу
-допущений) вырождается в простую **task→provider конфигурацию**, не в
-полноценный router с local/external ветвлением:
+**Model Router** (§55 ТЗ) — реальный local/external router с первого дня
+(допущение №1 закрыто 2026-09-29: гибрид). `local` — уже существующий
+`OpenAiCompatProvider` (`SELFHOSTED_LLM_URL` → GigaChat-20B-A3B-instruct-v1.5
+на новом VPS), не новый класс. Задачи распределены по сложности: дешёвые/
+массовые — на local, задачи, где важно качество или нет уверенности в
+локальной модели — на Claude:
 
 ```ts
 // src/lib/ai/router.ts (новый файл)
-const TASK_MODEL: Record<ContentOsTask, { provider: 'anthropic'; model: string }> = {
-  topic_classification: { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
-  duplicate_detection:  { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' }, // + embed()
-  brand_check:          { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
-  first_draft:          { provider: 'anthropic', model: 'claude-sonnet-5' },
-  research_synthesis:   { provider: 'anthropic', model: 'claude-opus-5' },
-  final_editorial:      { provider: 'anthropic', model: 'claude-opus-5' },
-  seo_check:            { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
-  fact_check:           { provider: 'anthropic', model: 'claude-sonnet-5' }, // + web research pack, см. §7
+type Provider = 'anthropic' | 'local';
+const TASK_MODEL: Record<ContentOsTask, { provider: Provider; model?: string; fallback?: Provider }> = {
+  topic_classification: { provider: 'local', fallback: 'anthropic' },       // дешёвая, массовая — GigaChat
+  duplicate_detection:  { provider: 'local', fallback: 'anthropic' },       // + embed(), тоже массовая
+  brand_check:          { provider: 'local', fallback: 'anthropic' },       // проверка правил — не творческая задача
+  first_draft:          { provider: 'local', fallback: 'anthropic' },      // ЧЕРНОВИК статьи/поста — local, но обязательно AI Writer QA-этап на выходе (§9 architecture)
+  channel_adaptation:   { provider: 'local', fallback: 'anthropic' },       // адаптация под платформу — тоже пробуем local первым
+  research_synthesis:   { provider: 'anthropic', model: 'claude-opus-5' },  // сложный синтез — сразу облако, не тестируем local
+  final_editorial:      { provider: 'anthropic', model: 'claude-opus-5' },  // финальная правка перед публикацией — облако
+  seo_check:            { provider: 'local', fallback: 'anthropic' },
+  fact_check:           { provider: 'anthropic', model: 'claude-sonnet-5' }, // + web research pack, см. §7 — требует точности
 };
 ```
 
-Если позже допущение №1 изменится (владелец подтвердит обязательный local
-LLM) — здесь добавляется `provider: 'local'` вариант и `LocalOllamaProvider
-implements AiProvider`, без изменения кода, который **вызывает** router
-(бизнес-логика Content OS обращается только к `getContentOsProvider(task)`,
-никогда напрямую к Anthropic SDK — это и есть требование §54 ТЗ: business
-logic не знает, где физически работает модель).
+`fallback` — обязательное поле, не опция: если `local` недоступен
+(`SELFHOSTED_LLM_URL` не настроен, таймаут, невалидный JSON, VPS лежит) —
+автоматически уходим на `anthropic`, событие логируется в `content_ai_runs`
+(`status='fallback'`, database.md §7) — ровно требование §60 исходного
+ТЗ про Local LLM (fallback configurable/logged/observable). Пока GigaChat
+физически не развёрнут (VPS ещё не куплен) — **все** задачи фактически
+идут через fallback на Claude, и это нормально: код с первого дня пишется
+под гибрид, переключение произойдёт само, когда появится `SELFHOSTED_LLM_URL`,
+без правок бизнес-логики.
 
-**Privacy routing (§61–62 ТЗ)** — держим как поле на каждый AI-вызов
-(`dataClassification: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL'`) с самого
-начала, даже при external-only API: `CONFIDENTIAL` вызовы логируются
-отдельно и подлежат ревью, если/когда появится local-провайдер — тогда
-роутинг для `CONFIDENTIAL` переключится на него автоматически без
-изменения вызывающего кода.
+**Какие задачи не пробуем на local и почему:** `research_synthesis`,
+`final_editorial`, `fact_check` — сразу на Claude. Это осознанное решение,
+не временное: 20B/3.3B-активных модель в кванте — не тот класс, где стоит
+рисковать качеством на задачах, где ошибка (неверный факт, слабая финальная
+редактура) публикуется от имени компании. Для `first_draft`/
+`channel_adaptation`/`brand_check`/классификации риск ниже — есть
+человеческое утверждение (Human Approval, §7) после AI в любом случае.
+
+**Бенчмарк перед боевым использованием (§67 исходного ТЗ):** прежде чем
+переключить `first_draft` на `local` по умолчанию в проде — прогнать
+реальные темы через GigaChat и Claude параллельно, сравнить вручную.
+Router технически готов сразу, но дефолт для `first_draft` первое время
+может стоять на `anthropic` с `local` только по явному флагу — переключение
+дефолта на `local` после того, как качество подтверждено, а не наоборот.
+
+**Privacy routing (§61–62 ТЗ)** — поле `dataClassification: 'PUBLIC' |
+'INTERNAL' | 'CONFIDENTIAL'` на каждом AI-вызове с первого дня. Пока не
+влияет на маршрут (все каналы контента — не конфиденциальные данные), но
+задел готов на будущее (например, если сюда же когда-то подключат анализ
+внутренних документов).
 
 ## 3. Content Cluster — центральная сущность
 
