@@ -13,7 +13,6 @@ import NewsRadar from './NewsRadar';
 import CitizenFeedback from './CitizenFeedback';
 import AiSalesSection from './ai-sales/AiSalesSection';
 import KpGenerator from './kp/KpGenerator';
-import ContentFactory from './content-factory/ContentFactory';
 
 /* ─────────── Иконки навигации (line-стиль, currentColor) ─────────── */
 type IconProps = { className?: string };
@@ -39,7 +38,6 @@ const IconUsers = mkIcon('M16 20v-2a4 4 0 00-8 0v2 M12 12a4 4 0 100-8 4 4 0 000 
 const IconShare = mkIcon('M8 12a3 3 0 10-3-3 3 3 0 003 3 M16 6a3 3 0 10-3-3 3 3 0 003 3 M16 21a3 3 0 10-3-3 3 3 0 003 3 M9 11l6-4 M9 13l6 4');
 const IconPencil = mkIcon('M12 20h9 M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z');
 const IconAds = mkIcon('M4 5h16v14H4Z M4 9h16 M8 13h4 M8 16h6');
-const IconFactory = mkIcon('M3 21V10l6 4v-4l6 4V7l6 4v10H3Z M7 21v-4 M12 21v-4 M17 21v-4');
 const IconStar = ({ className, filled }: IconProps & { filled?: boolean }) => (
   <svg className={className || 'w-5 h-5'} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'}
     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -99,8 +97,8 @@ function AdminLogin() {
   );
 }
 
-type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp' | 'content-factory';
-const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp', 'content-factory'];
+type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp';
+const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp'];
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
@@ -119,9 +117,6 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
   ] },
   { group: 'Мониторинг', items: [
     { id: 'radar', label: 'Новостной радар', icon: IconRadar },
-  ] },
-  { group: 'Контент-завод', items: [
-    { id: 'content-factory', label: 'Контент-завод', icon: IconFactory },
   ] },
   { group: 'Аналитика', items: [
     { id: 'metrika', label: 'Посещаемость', icon: IconChart },
@@ -469,7 +464,6 @@ export default function AdminPanel() {
           {activeTab === 'ads' && <AdsAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
           {activeTab === 'radar' && <NewsRadar />}
-          {activeTab === 'content-factory' && <ContentFactory />}
           {activeTab === 'feedback' && <CitizenFeedback />}
           {(activeTab === 'metrika' || activeTab === 'email' || activeTab === 'leads' || activeTab === 'social') && (
             <AnalyticsDashboard only={activeTab} />
