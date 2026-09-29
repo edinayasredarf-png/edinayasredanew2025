@@ -1,0 +1,228 @@
+# Content OS — PHASE 1: архитектура
+
+Основано на `docs/content-os/audit.md` (Phase 0). Email как канал —
+**отложен** по решению владельца (2026-09-29); везде ниже помечен
+`[ОТЛОЖЕНО]`, место под него оставлено, но не проектируется в деталях.
+
+## Допущения по открытым вопросам аудита
+
+Не все 10 пунктов REQUIRED INPUT получили явный ответ. Чтобы не блокировать
+Phase 1 целиком, беру дефолт по каждому — везде самый дешёвый/обратимый
+вариант, который не мешает потом перейти на более тяжёлый:
+
+| # | Вопрос | Дефолт на Phase 1 | Почему обратимо |
+|---|---|---|---|
+| 1 | Local LLM обязателен? | **Нет** — только внешний API (Claude, уже работает), как прямо требует §12 более полного и позднего из двух присланных ТЗ | AI Gateway (§ниже) абстрагирует провайдера — добавить local-adapter позже = новый adapter, не переписывание Core |
+| 2 | Судьба `cf_*` | **Не трогаю до Phase 2** | Чтение/запись через него не меняются, пока не спроектирована новая схема |
+| 3 | Email-провайдер | `[ОТЛОЖЕНО]` целиком | — |
+| 4 | Статус speech/pdf-service | Считаю «где-то развёрнуты, детали неизвестны» — новый VPS проектирую независимо от них | Полная изоляция и так была требованием (§1 ТЗ) |
+| 5 | Хостер нового VPS | Timeweb (тот же, что БД — меньше задержки, единый биллинг) как рабочее предположение | Смена хостера не меняет архитектуру, только IP/DNS |
+| 6 | Токены каналов | Отсутствуют — адаптеры пишутся как интерфейс + мок | §50 ТЗ прямо это разрешает |
+| 7 | Firewall Timeweb DB под новый IP | Уточняется в Phase 3 (когда есть реальный IP) | Не блокирует проектирование |
+| 8 | Толкование §13 (публичный доступ) | «Закрыт для неаутентифицированных запросов», не «недостижим из интернета» — иначе Vercel физически не достучится | Обосновано в audit.md §17 |
+| 9 | n8n больше нигде не запущен | Считаю подтверждённым (нашёл только неразвёрнутую заготовку) | — |
+| 10 | Судьба Telethon-заготовки | **Переиспользовать** `telegram_monitor.py` как референс для реального Telegram-мониторинга на новом VPS (не веб-скрейпинг) — детали в `integrations.md` | Код только читается как образец, не копируется вслепую |
+
+Если что-то из этого неверно — поправьте, пересмотрю соответствующий раздел
+точечно, не весь документ.
+
+## 1. Общий принцип
+
+Content OS **не новое приложение**, а новый раздел существующей админки
+(`/admin/content`) плюс новый VPS для того, что физически не может жить в
+Vercel serverless (долгие процессы, очередь, краулинг, n8n). Данные — та же
+Timeweb Postgres, что и у всего остального сайта. Никакой отдельной CMS,
+отдельного фронтенда, отдельной системы авторизации.
+
+```
+Next.js (Vercel)                         Новый VPS (Timeweb, Docker Compose)
+├── /admin/content/*        ─┐           ├── reverse-proxy (Caddy/nginx)
+│    (существующий admin,    │  HTTPS    ├── n8n            (webhook-триггеры)
+│     та же авторизация)     │◄─────────►├── content-worker (Python/Node)
+├── /api/content-os/*        │  Bearer   ├── crawler         (источники)
+│    (Content API)          ─┘  token    ├── publishing-worker
+└── src/lib/ai (AI Gateway,                └── monitoring (health-check)
+     расширение существующего                        │
+     LLMProvider)                                     │ DATABASE_URL (тот же CA,
+        │                                              │  отдельный пул, см. database.md)
+        └──────────────────────────────────────────────┘
+                              │
+                    Timeweb PostgreSQL
+                (существующая БД сайта, новые таблицы content_*)
+```
+
+Vercel не имеет приватной сети до VPS — весь обмен идёт по публичному
+HTTPS с Bearer-токеном, **тем же паттерном**, что уже проверен в проде для
+`speech-service`/`pdf-service` (см. audit.md §17). Это не компромисс, а
+единственный физически возможный вариант при текущем хостинге Next.js.
+
+## 2. AI Gateway
+
+Не новая система с нуля — **расширение** `src/lib/ai` (`AiProvider`
+интерфейс, `AnthropicProvider`/`YandexGptProvider`/`OpenAiCompatProvider`
+уже существуют и уже используются в AI Sales и в контент-заводе, который
+я строил в этой же сессии).
+
+```ts
+// src/lib/ai/interfaces.ts — уже есть generateStructured(), добавить:
+interface AiProvider {
+  generateStructured<T>(req: StructuredRequest<T>): Promise<StructuredResult<T>>;
+  generateText(req: TextRequest): Promise<TextResult>;      // новое: свободный текст без схемы
+  embed(req: EmbedRequest): Promise<EmbedResult>;           // новое
+  classify<T extends string>(req: ClassifyRequest<T>): Promise<T>; // новое — через generateStructured с enum-схемой, тонкая обёртка
+}
+```
+
+**Model Router** (§55 ТЗ) — при допущении «внешний API only» (см. таблицу
+допущений) вырождается в простую **task→provider конфигурацию**, не в
+полноценный router с local/external ветвлением:
+
+```ts
+// src/lib/ai/router.ts (новый файл)
+const TASK_MODEL: Record<ContentOsTask, { provider: 'anthropic'; model: string }> = {
+  topic_classification: { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
+  duplicate_detection:  { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' }, // + embed()
+  brand_check:          { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
+  first_draft:          { provider: 'anthropic', model: 'claude-sonnet-5' },
+  research_synthesis:   { provider: 'anthropic', model: 'claude-opus-5' },
+  final_editorial:      { provider: 'anthropic', model: 'claude-opus-5' },
+  seo_check:            { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
+  fact_check:           { provider: 'anthropic', model: 'claude-sonnet-5' }, // + web research pack, см. §7
+};
+```
+
+Если позже допущение №1 изменится (владелец подтвердит обязательный local
+LLM) — здесь добавляется `provider: 'local'` вариант и `LocalOllamaProvider
+implements AiProvider`, без изменения кода, который **вызывает** router
+(бизнес-логика Content OS обращается только к `getContentOsProvider(task)`,
+никогда напрямую к Anthropic SDK — это и есть требование §54 ТЗ: business
+logic не знает, где физически работает модель).
+
+**Privacy routing (§61–62 ТЗ)** — держим как поле на каждый AI-вызов
+(`dataClassification: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL'`) с самого
+начала, даже при external-only API: `CONFIDENTIAL` вызовы логируются
+отдельно и подлежат ревью, если/когда появится local-провайдер — тогда
+роутинг для `CONFIDENTIAL` переключится на него автоматически без
+изменения вызывающего кода.
+
+## 3. Content Cluster — центральная сущность
+
+```
+Topic (из Topic Hunter ИЛИ создана вручную)
+   │
+   ▼
+Content Cluster (cluster_id)
+   ├── ARTICLE   (content_item, свой content_id, свой статус)
+   ├── TELEGRAM  (content_item)
+   ├── VK        (content_item)
+   ├── DZEN      (content_item)
+   ├── MAX       (content_item)
+   └── EMAIL     (content_item)  [ОТЛОЖЕНО]
+```
+
+Не каждая тема обязана порождать все каналы — выбор каналов на этапе
+Content Brief (см. §7). Подробная схема — `database.md`.
+
+## 4. Topic Hunter — не с нуля
+
+Радар (`radar_triggers`/`radar_items`, `src/lib/server/radarFetch.ts`) уже
+закрывает часть §19 ТЗ: source → source_item → категоризация → статус.
+Чего не хватает относительно полного Topic Hunter:
+- **дедупликация** (сейчас дедуп только по точному совпадению `link`, не по
+  смыслу) — добавить через `embed()` + косинус (паттерн уже есть в AI Sales
+  KB, см. audit.md §6);
+- **кластеризация** тем в Content Cluster (сейчас каждый `radar_item` —
+  независимая запись, у Content OS темы должны группироваться);
+- **scoring по нескольким критериям** (сейчас только `relevance`/`popularity`
+  вручную у топика в `cf_topics`, у радара вообще нет popularity) —
+  собрать формулу: релевантность + популярность + свежесть + доверие
+  источника + соответствие фокусной теме, как в требованиях исходного
+  контент-завода (`ТРЕБОВАНИЯ-V2.md`, п.1).
+
+Решение: **расширять радар**, не строить Topic Hunter параллельно с нуля —
+он уже на проде, уже собирает RSS/Google News/Telegram (см. audit §7).
+Добавляемые поля — в `database.md`.
+
+## 5. Brand Knowledge Base
+
+Переиспользовать паттерн `ai_kb_documents`/`ai_kb_chunks` (jsonb-эмбеддинги,
+косинус в коде, без pgvector) — уже в проде для AI Sales, тот же масштаб
+задачи (бренд-документы, примеры, правила). Отдельная таблица под Content
+OS (`content_brand_documents`/`content_brand_chunks`) **с той же структурой**,
+не общая с AI Sales (разные домены знаний, разный контроль доступа).
+Коллекции по §65 ТЗ (`brand/products/company/editorial/seo/research/legal`)
+— поле `category` на документе, как уже сделано в `ai_kb_documents.category`.
+
+pgvector — не блокирует старт (см. audit §6). Пересмотреть, если объём
+базы вырастет настолько, что косинус в коде станет заметно медленным
+(измерить, не гадать).
+
+## 6. Очередь и оркестрация
+
+**Не Redis+BullMQ по умолчанию.** У проекта уже работает Postgres-очередь
+(`ai_jobs`, `FOR UPDATE SKIP LOCKED`, дренаж кнопкой или внешним
+планировщиком — см. audit §14, `docs/ai-sales/architecture.md`) — ровно та
+же проблема (Vercel Hobby, 2 крона заняты), то же решение. Для Content OS:
+
+- **Внутри Vercel** (быстрые, короткие операции — CRUD тем, ручная генерация
+  одной версии контента по кнопке): прямой API route, без очереди.
+- **На новом VPS** (n8n + Redis + workers) — для того, что реально долгое/
+  массовое: краулинг источников, пакетная классификация, batch-генерация,
+  email-рендер `[ОТЛОЖЕНО]`. Здесь Redis оправдан именно потому, что это
+  постоянный процесс на VPS, не serverless — ограничение Vercel-очереди тут
+  не действует.
+
+n8n workflows (§31 ТЗ, список из 20) — реализовывать **по мере надобности**,
+не все 20 сразу: MVP реально нужны `01_source_monitoring`,
+`02_topic_extraction`, `06_research`, `08_article_generation`,
+`12_channel_adaptation`, `17_publishing`. Остальные — когда до них дойдёт
+очередь по `implementation-plan.md`.
+
+## 7. Пайплайн производства контента (без email)
+
+```
+Source (RSS/Telegram/RSS — уже есть через радар)
+  → Topic (расширенный радар, см. §4)
+  → Content Brief (человек или AI-черновик брифа: аудитория, угол, каналы)
+  → Research Pack (§22 ТЗ: search → sources → extract → verify → structure;
+     для search — см. интеграции ниже)
+  → AI Writer (генерирует ARTICLE)
+  → Channel Adapter (по каждому выбранному каналу — TELEGRAM/VK/DZEN/MAX;
+     переиспользует бренд-правила + платформенные настройки, почти то же,
+     что я уже сделал в EditorTab.tsx контент-завода — логика адаптации
+     под платформу останется, меняется модель данных вокруг неё)
+  → Quality Control: Brand Check → SEO Check → Fact Check
+  → Human Approval
+  → Publication Engine → Channel (см. integrations.md — не всё сразу умеет
+     публиковать автоматически, для каналов без токена — экспорт готового
+     текста для ручной публикации, чтобы MVP не блокировался токенами)
+  → Analytics
+```
+
+**Research Engine и веб-поиск (§22, §77 ТЗ)** — нужен источник поиска.
+В проекте такого сейчас нет (не «придумывать API», §50 ТЗ) — открытый
+вопрос для `integrations.md`: использовать веб-поиск через Anthropic-
+инструмент (если доступен на используемом тарифе API) или отдельный
+провайдер (Brave Search API, Google Custom Search и т.п.) — решить в
+Phase 4, не блокирует Phase 1.
+
+## 8. Что происходит с уже построенным `/admin` → «Контент-завод»
+
+Не удаляю сейчас (допущение №2 в таблице выше). Практически: новый раздел
+Content OS будет жить по адресу `/admin/content` (§14 ТЗ), старый —
+`/admin` → «Контент-завод» (то, что я построил ранее в этой сессии)
+временно остаётся доступен параллельно. Когда база данных Phase 2 будет
+готова и новый Content Hub (Phase 5) заработает — предложу конкретный план
+переноса/удаления `cf_*`, не раньше.
+
+## 9. Definition of Done — Phase 1
+
+- [x] Архитектурная схема (этот документ).
+- [x] AI Gateway/Model Router спроектированы поверх существующего `src/lib/ai`.
+- [x] Content Cluster модель определена.
+- [x] Явно зафиксированы допущения по нерешённым вопросам аудита.
+- [ ] `database.md` — детальная схема (следующий документ).
+- [ ] `infrastructure.md` — конфигурация VPS.
+- [ ] `integrations.md` — адаптеры каналов + LLM.
+- [ ] `security.md`.
+- [ ] `implementation-plan.md` — и явный стоп перед Phase 2 (первые миграции).
