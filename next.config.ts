@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
   // включаем шрифт письма (Tinos, Times-совместимый) в серверную функцию генерации PDF
   outputFileTracingIncludes: {
     '/api/letters/generate': ['./public/fonts/tinos/**'],
+    // Версионируемые AI-промпты Content OS (§33 ТЗ) — файлы вне src/public,
+    // без этого не попадут в серверless-бандл на Vercel.
+    '/api/content-os/**/*': ['./prompts/**'],
   },
   images: {
     remotePatterns: [

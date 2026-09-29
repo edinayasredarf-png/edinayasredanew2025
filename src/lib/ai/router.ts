@@ -22,7 +22,7 @@ interface TaskRoute { provider: ProviderKey; model?: string; fallback: ProviderK
 // боевым использованием»). Включается флагом после бенчмарка.
 const TRY_LOCAL_FIRST_DRAFT = process.env.CONTENT_OS_FIRST_DRAFT_LOCAL === "true";
 
-const TASK_ROUTES: Record<ContentOsTask, TaskRoute> = {
+export const TASK_ROUTES: Record<ContentOsTask, TaskRoute> = {
   topic_classification: { provider: "local", fallback: "anthropic" },
   duplicate_detection: { provider: "local", fallback: "anthropic" },
   brand_check: { provider: "local", fallback: "anthropic" },
@@ -41,12 +41,15 @@ function buildProvider(key: ProviderKey, model?: string): AiProvider {
 
 export interface ContentOsGenerateOptions<T> extends Pick<StructuredRequest<T>, "schema" | "system" | "user" | "maxTokens" | "cacheSystem"> {
   task: ContentOsTask;
+  /** Версия промпт-файла из prompts/*.md (§33 ТЗ) — для трассировки в content_ai_runs. */
+  promptVersion?: number;
   contentItemId?: string;
   dataClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL";
 }
 
 async function logRun(
   task: ContentOsTask,
+  promptVersion: number | undefined,
   provider: ProviderKey,
   status: "ok" | "fallback",
   model: string,
@@ -58,7 +61,7 @@ async function logRun(
 ): Promise<void> {
   try {
     await dbLogAiRun({
-      task, provider, model, contentItemId: contentItemId ?? null,
+      task, promptVersion: promptVersion ?? null, provider, model, contentItemId: contentItemId ?? null,
       dataClassification: dataClassification ?? "INTERNAL",
       inputTokens: usage.inputTokens, outputTokens: usage.outputTokens,
       latencyMs, status, error: error ?? null,
@@ -80,7 +83,7 @@ export async function generateForTask<T>(opts: ContentOsGenerateOptions<T>): Pro
   const started = Date.now();
   try {
     const result = await primary.generateStructured(req);
-    await logRun(opts.task, route.provider, "ok", result.model, Date.now() - started, result.usage, opts.contentItemId, opts.dataClassification);
+    await logRun(opts.task, opts.promptVersion, route.provider, "ok", result.model, Date.now() - started, result.usage, opts.contentItemId, opts.dataClassification);
     return result;
   } catch (e) {
     if (route.provider === route.fallback) throw e;
@@ -88,7 +91,7 @@ export async function generateForTask<T>(opts: ContentOsGenerateOptions<T>): Pro
     const fbStarted = Date.now();
     const result = await fallback.generateStructured(req);
     await logRun(
-      opts.task, route.fallback, "fallback", result.model, Date.now() - fbStarted, result.usage,
+      opts.task, opts.promptVersion, route.fallback, "fallback", result.model, Date.now() - fbStarted, result.usage,
       opts.contentItemId, opts.dataClassification, e instanceof Error ? e.message : String(e)
     );
     return result;

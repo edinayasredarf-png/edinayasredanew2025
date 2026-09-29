@@ -1,6 +1,5 @@
 // Content OS — общие типы. Без server-only: клиент (админ-UI) и сервер (БД).
-// Схема — docs/content-os/database.md. Первый срез: без SEO/fact-check/
-// publications/analytics (Phase 2b, отдельно).
+// Схема — docs/content-os/database.md, разделы админки — ТЗ §14.
 
 export type ContentOsChannel = "article" | "telegram" | "vk" | "dzen" | "max";
 export const CONTENT_OS_CHANNELS: { key: ContentOsChannel; label: string; icon: string }[] = [
@@ -10,6 +9,7 @@ export const CONTENT_OS_CHANNELS: { key: ContentOsChannel; label: string; icon: 
   { key: "dzen", label: "Яндекс Дзен", icon: "📖" },
   { key: "max", label: "MAX", icon: "💬" },
 ];
+export const SOCIAL_CHANNELS: ContentOsChannel[] = ["telegram", "vk", "dzen", "max"];
 
 export type ContentClusterStatus = "new" | "briefed" | "in_production" | "review" | "done" | "archived";
 export const CONTENT_CLUSTER_STATUSES: { key: ContentClusterStatus; label: string }[] = [
@@ -21,9 +21,12 @@ export const CONTENT_CLUSTER_STATUSES: { key: ContentClusterStatus; label: strin
   { key: "archived", label: "В архиве" },
 ];
 
+/* ─────────── Ideas (темы) ─────────── */
+
 export interface ContentTopic {
   id: string;
   title: string;
+  source_id: string | null;
   radar_item_id: string | null;
   thesis: string;
   relevance: number;
@@ -34,6 +37,33 @@ export interface ContentTopic {
   created_at: number;
   updated_at: number;
 }
+
+/* ─────────── Sources (§19 ТЗ) ─────────── */
+
+export type ContentSourceType = "rss" | "telegram" | "keyword" | "website";
+export const CONTENT_SOURCE_TYPES: { key: ContentSourceType; label: string }[] = [
+  { key: "keyword", label: "Ключевые слова (Google News)" },
+  { key: "rss", label: "RSS-лента" },
+  { key: "telegram", label: "Telegram-канал" },
+  { key: "website", label: "Сайт / парсинг" },
+];
+
+export interface ContentSource {
+  id: string;
+  name: string;
+  type: ContentSourceType;
+  url: string;
+  external_id: string | null;
+  priority: number; // 1-10, вес доверия
+  active: boolean;
+  poll_interval: number; // минуты
+  categories: string[];
+  tags: string[];
+  last_polled_at: number | null;
+  created_at: number;
+}
+
+/* ─────────── Content Cluster / Brief ─────────── */
 
 export interface ContentCluster {
   id: string;
@@ -56,6 +86,8 @@ export interface ContentBrief {
   created_at: number;
 }
 
+/* ─────────── Content Item ─────────── */
+
 export type ContentItemStatus = "draft" | "review" | "approved" | "scheduled" | "published" | "failed";
 export const CONTENT_ITEM_STATUSES: { key: ContentItemStatus; label: string }[] = [
   { key: "draft", label: "Черновик" },
@@ -74,10 +106,16 @@ export interface ContentItem {
   title: string;
   body: string;
   meta: Record<string, unknown>;
+  scheduled_at: number | null;
   approved_by: string | null;
   approved_at: number | null;
   created_at: number;
   updated_at: number;
+}
+
+/** Айтем + заголовок кластера — для списковых экранов (Articles/Social/Content Plan). */
+export interface ContentItemWithCluster extends ContentItem {
+  cluster_title: string;
 }
 
 export interface ContentItemVersion {
@@ -88,6 +126,92 @@ export interface ContentItemVersion {
   note: string;
   created_at: number;
 }
+
+/* ─────────── QC-пайплайн (§27 ТЗ: Brand → SEO → Fact) ─────────── */
+
+export type QcCheckType = "brand" | "seo" | "fact";
+export type QcCheckStatus = "pass" | "review" | "fail";
+export const QC_CHECK_LABELS: Record<QcCheckType, string> = { brand: "Бренд", seo: "SEO", fact: "Факты" };
+
+export interface ContentQcCheck {
+  id: string;
+  content_item_id: string;
+  check_type: QcCheckType;
+  status: QcCheckStatus;
+  notes: string;
+  created_at: number;
+}
+
+/* ─────────── SEO Engine (§23 ТЗ) ─────────── */
+
+export interface ContentSeo {
+  content_item_id: string;
+  intent: string;
+  primary_keyword: string;
+  secondary_keywords: string[];
+  meta_title: string;
+  meta_description: string;
+  h1: string;
+  faq: { question: string; answer: string }[];
+  internal_links: string[];
+  slug: string;
+  updated_at: number;
+}
+
+/* ─────────── Research Engine (§22 ТЗ) ─────────── */
+
+export interface ContentResearchPack {
+  id: string;
+  cluster_id: string;
+  summary: string;
+  created_at: number;
+}
+
+export interface ContentResearchSource {
+  id: string;
+  pack_id: string;
+  url: string;
+  title: string;
+  extracted_text: string;
+  verified: boolean;
+  created_at: number;
+}
+
+export interface ContentFactCheck {
+  id: string;
+  content_item_id: string;
+  claim: string;
+  verdict: "verified" | "unverified" | "false";
+  source_url: string;
+  checked_at: number;
+}
+
+/* ─────────── Publications (§29 ТЗ) ─────────── */
+
+export type PublicationStatus = "pending" | "scheduled" | "published" | "failed";
+export const PUBLICATION_STATUSES: { key: PublicationStatus; label: string }[] = [
+  { key: "pending", label: "Ожидает" },
+  { key: "scheduled", label: "Запланировано" },
+  { key: "published", label: "Опубликовано" },
+  { key: "failed", label: "Ошибка" },
+];
+
+export interface ContentPublication {
+  id: string;
+  content_item_id: string;
+  channel: ContentOsChannel;
+  external_id: string | null;
+  url: string | null;
+  status: PublicationStatus;
+  scheduled_at: number | null;
+  published_at: number | null;
+  error: string | null;
+  retry_count: number;
+  created_at: number;
+  updated_at: number;
+}
+
+/* ─────────── Channel Profiles (Settings) ─────────── */
 
 export type ChannelProfileStatus = "connected" | "setup" | "manual" | "planned";
 export const CHANNEL_PROFILE_STATUSES: { key: ChannelProfileStatus; label: string }[] = [
@@ -120,6 +244,8 @@ export const DEFAULT_CHANNEL_PROFILES: ContentChannelProfile[] = [
   { id: "max", name: "MAX", status: "planned", char_limit: 4096, formality: 40, emoji_level: 2, hashtags: false, hashtag_count: 0, cta: "Напишите нам в MAX", ai_prompt: "Аналогично Telegram.", qa_notes: "", sort_order: 5 },
 ];
 
+/* ─────────── Brand Knowledge Base ─────────── */
+
 export interface ContentBrandDocument {
   id: string;
   title: string;
@@ -129,6 +255,8 @@ export interface ContentBrandDocument {
   created_at: number;
   updated_at: number;
 }
+
+/* ─────────── AI Gateway / промпты (§33-35 ТЗ) ─────────── */
 
 export type ContentOsTask =
   | "topic_classification"
@@ -141,9 +269,29 @@ export type ContentOsTask =
   | "seo_check"
   | "fact_check";
 
+export const CONTENT_OS_TASK_LABELS: Record<ContentOsTask, string> = {
+  topic_classification: "Классификация темы",
+  duplicate_detection: "Поиск дублей",
+  brand_check: "Проверка бренда",
+  first_draft: "Черновик",
+  channel_adaptation: "Адаптация под канал",
+  research_synthesis: "Синтез research",
+  final_editorial: "Финальная редактура",
+  seo_check: "SEO-проверка",
+  fact_check: "Факт-чек",
+};
+
+export interface ContentPromptVersion {
+  task: ContentOsTask;
+  version: number;
+  file_path: string;
+  updated_at: number;
+}
+
 export interface ContentAiRun {
   id: string;
   task: ContentOsTask;
+  prompt_version: number | null;
   provider: "local" | "anthropic";
   model: string;
   content_item_id: string | null;

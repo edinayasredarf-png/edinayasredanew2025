@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getStats, type ContentOsStats } from "@/lib/contentOsStore";
-import { CONTENT_CLUSTER_STATUSES, CONTENT_ITEM_STATUSES } from "@/lib/contentOsTypes";
+import { CONTENT_CLUSTER_STATUSES, CONTENT_ITEM_STATUSES, PUBLICATION_STATUSES } from "@/lib/contentOsTypes";
 
 function Kpi({ label, value, accent }: { label: string; value: React.ReactNode; accent?: string }) {
   return (
@@ -75,12 +75,23 @@ export default function AnalyticsTab() {
             ))}
           </div>
         </div>
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 lg:col-span-2">
+        <div className="bg-white border border-gray-100 rounded-2xl p-5">
           <h3 className="text-sm font-semibold text-gray-800 mb-4">Кластеры по статусам</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {CONTENT_CLUSTER_STATUSES.map((s) => (
               <div key={s.key} className="bg-[#F6F7F9] rounded-xl p-3 text-center">
                 <p className="text-xl font-semibold text-gray-900">{stats.clustersByStatus[s.key] ?? 0}</p>
+                <p className="text-xs text-gray-500 mt-1">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-white border border-gray-100 rounded-2xl p-5">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4">Публикации по статусам</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {PUBLICATION_STATUSES.map((s) => (
+              <div key={s.key} className="bg-[#F6F7F9] rounded-xl p-3 text-center">
+                <p className="text-xl font-semibold text-gray-900">{stats.publicationsByStatus[s.key] ?? 0}</p>
                 <p className="text-xs text-gray-500 mt-1">{s.label}</p>
               </div>
             ))}

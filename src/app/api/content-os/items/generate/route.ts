@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
-import { dbListBrandDocuments, dbListChannelProfiles } from "@/lib/server/contentOsDb";
+import { dbGetResearchPack, dbListBrandDocuments, dbListChannelProfiles, dbListItemsByCluster } from "@/lib/server/contentOsDb";
 import { generateForTask } from "@/lib/ai/router";
+import { promptVersion } from "@/lib/ai/promptFiles";
 import { ContentOsDraftSchema } from "@/lib/ai/schemas/contentOs";
-import { buildContentOsSystemPrompt, buildContentOsUserPrompt } from "@/lib/ai/prompts/contentOs";
+import {
+  buildChannelSystemPrompt,
+  buildChannelUserPrompt,
+  buildWriterSystemPrompt,
+  buildWriterUserPrompt,
+} from "@/lib/ai/prompts/contentOs";
 import type { ContentOsChannel } from "@/lib/contentOsTypes";
 
 export const runtime = "nodejs";
@@ -38,23 +44,48 @@ export async function POST(request: NextRequest) {
 
   if (!body.topicTitle?.trim()) return NextResponse.json({ error: "Укажите тему" }, { status: 400 });
   if (!body.channel) return NextResponse.json({ error: "Укажите канал" }, { status: 400 });
+  if (!body.clusterId) return NextResponse.json({ error: "Укажите кластер" }, { status: 400 });
 
-  const [channels, brandDocs] = await Promise.all([dbListChannelProfiles(), dbListBrandDocuments()]);
+  const [channels, brandDocs, existingItems, researchPack] = await Promise.all([
+    dbListChannelProfiles(),
+    dbListBrandDocuments(),
+    dbListItemsByCluster(body.clusterId),
+    dbGetResearchPack(body.clusterId),
+  ]);
   const channel = channels.find((c) => c.id === body.channel);
   if (!channel) return NextResponse.json({ error: "Канал не найден" }, { status: 404 });
 
+  const audience = body.audience || "Широкая аудитория";
+  const angle = body.angle || "";
+
   try {
-    const system = buildContentOsSystemPrompt(channel, brandDocs);
-    const user = buildContentOsUserPrompt({
-      topicTitle: body.topicTitle,
-      thesis: body.thesis,
-      audience: body.audience || "Широкая аудитория",
-      angle: body.angle || "",
-      requirements: body.requirements,
-    });
+    let system: string;
+    let user: string;
+    let promptFile: string;
+    let task: "first_draft" | "channel_adaptation";
+
+    if (body.channel === "article") {
+      task = "first_draft";
+      promptFile = "writer";
+      system = buildWriterSystemPrompt(brandDocs);
+      user = buildWriterUserPrompt({
+        topicTitle: body.topicTitle, thesis: body.thesis, audience, angle,
+        requirements: body.requirements, researchSummary: researchPack?.summary,
+      });
+    } else {
+      task = "channel_adaptation";
+      promptFile = body.channel;
+      const baseArticle = existingItems.find((i) => i.channel === "article" && i.body.trim());
+      system = buildChannelSystemPrompt(channel, brandDocs);
+      user = buildChannelUserPrompt({
+        topicTitle: body.topicTitle, thesis: body.thesis, audience, angle,
+        requirements: body.requirements, baseArticleBody: baseArticle?.body,
+      });
+    }
 
     const result = await generateForTask({
-      task: "first_draft",
+      task,
+      promptVersion: promptVersion(promptFile),
       schema: ContentOsDraftSchema,
       system,
       user,
