@@ -13,6 +13,7 @@ import NewsRadar from './NewsRadar';
 import CitizenFeedback from './CitizenFeedback';
 import AiSalesSection from './ai-sales/AiSalesSection';
 import KpGenerator from './kp/KpGenerator';
+import ContentOs from './content-os/ContentOs';
 
 /* ─────────── Иконки навигации (line-стиль, currentColor) ─────────── */
 type IconProps = { className?: string };
@@ -32,6 +33,7 @@ const IconMail = mkIcon('M4 6h16v12H4Z M4 7l8 6 8-6');
 const IconChat = mkIcon('M21 12a8 8 0 01-11.5 7.2L4 20l1-4.5A8 8 0 1121 12Z');
 const IconWave = mkIcon('M6 9v6 M10 5v14 M14 8v8 M18 10v4 M2 11v2 M22 11v2');
 const IconRadar = mkIcon('M5 19a1 1 0 100-2 1 1 0 000 2 M4 11a9 9 0 019 9 M4 5a15 15 0 0115 15');
+const IconContentOs = mkIcon('M4 4h16v16H4Z M4 9h16 M9 9v11 M13 13h4 M13 16h4');
 const IconChart = mkIcon('M4 20V10 M10 20V4 M16 20v-8 M22 20H2');
 const IconMailOpen = mkIcon('M4 9l8-5 8 5v9H4Z M4 9l8 5 8-5');
 const IconUsers = mkIcon('M16 20v-2a4 4 0 00-8 0v2 M12 12a4 4 0 100-8 4 4 0 000 8 M22 20v-2a4 4 0 00-3-3.8');
@@ -97,8 +99,8 @@ function AdminLogin() {
   );
 }
 
-type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp';
-const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp'];
+type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp' | 'content-os';
+const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp', 'content-os'];
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
@@ -117,6 +119,9 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
   ] },
   { group: 'Мониторинг', items: [
     { id: 'radar', label: 'Новостной радар', icon: IconRadar },
+  ] },
+  { group: 'Content OS', items: [
+    { id: 'content-os', label: 'Content OS', icon: IconContentOs },
   ] },
   { group: 'Аналитика', items: [
     { id: 'metrika', label: 'Посещаемость', icon: IconChart },
@@ -464,6 +469,7 @@ export default function AdminPanel() {
           {activeTab === 'ads' && <AdsAdmin />}
           {activeTab === 'letters' && <LettersAdmin />}
           {activeTab === 'radar' && <NewsRadar />}
+          {activeTab === 'content-os' && <ContentOs />}
           {activeTab === 'feedback' && <CitizenFeedback />}
           {(activeTab === 'metrika' || activeTab === 'email' || activeTab === 'leads' || activeTab === 'social') && (
             <AnalyticsDashboard only={activeTab} />

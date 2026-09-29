@@ -1,0 +1,461 @@
+import "server-only";
+
+import { randomUUID } from "node:crypto";
+import { getTimewebPool } from "@/lib/timewebPg";
+import {
+  DEFAULT_CHANNEL_PROFILES,
+  type ContentBrandDocument,
+  type ContentBrief,
+  type ContentChannelProfile,
+  type ContentCluster,
+  type ContentItem,
+  type ContentItemVersion,
+  type ContentOsChannel,
+  type ContentOsTask,
+  type ContentTopic,
+} from "@/lib/contentOsTypes";
+
+export async function dbEnsureContentOsTables(): Promise<void> {
+  const pool = getTimewebPool();
+
+  // Расширение радара — темы Content OS (не пересоздаёт radar_items, только добавляет поля).
+  await pool.query(`alter table if exists radar_items add column if not exists popularity int`);
+  await pool.query(`alter table if exists radar_items add column if not exists trust_weight int`);
+
+  await pool.query(`
+    create table if not exists content_topics (
+      id text primary key,
+      title text not null default '',
+      radar_item_id text,
+      thesis text not null default '',
+      relevance int not null default 5,
+      popularity int not null default 50,
+      score numeric,
+      status text not null default 'new',
+      created_by text,
+      created_at bigint not null,
+      updated_at bigint not null
+    )
+  `);
+
+  await pool.query(`
+    create table if not exists content_clusters (
+      id text primary key,
+      title text not null default '',
+      primary_topic_id text references content_topics(id),
+      status text not null default 'new',
+      created_by text,
+      created_at bigint not null,
+      updated_at bigint not null
+    )
+  `);
+
+  await pool.query(`
+    create table if not exists content_briefs (
+      id text primary key,
+      cluster_id text not null references content_clusters(id) on delete cascade,
+      audience text not null default '',
+      angle text not null default '',
+      requirements text not null default '',
+      channels jsonb not null default '[]',
+      created_by text,
+      created_at bigint not null
+    )
+  `);
+
+  await pool.query(`
+    create table if not exists content_items (
+      id text primary key,
+      cluster_id text not null references content_clusters(id) on delete cascade,
+      channel text not null,
+      status text not null default 'draft',
+      title text not null default '',
+      body text not null default '',
+      meta jsonb not null default '{}',
+      approved_by text,
+      approved_at bigint,
+      created_at bigint not null,
+      updated_at bigint not null
+    )
+  `);
+  await pool.query(`create index if not exists content_items_cluster_idx on content_items (cluster_id)`);
+
+  await pool.query(`
+    create table if not exists content_item_versions (
+      id text primary key,
+      content_item_id text not null references content_items(id) on delete cascade,
+      body text not null,
+      edited_by text,
+      note text not null default '',
+      created_at bigint not null
+    )
+  `);
+  await pool.query(`create index if not exists content_item_versions_item_idx on content_item_versions (content_item_id, created_at desc)`);
+
+  await pool.query(`
+    create table if not exists content_channel_profiles (
+      id text primary key,
+      name text not null,
+      status text not null default 'setup',
+      char_limit int not null default 4096,
+      formality int not null default 50,
+      emoji_level int not null default 1,
+      hashtags boolean not null default false,
+      hashtag_count int not null default 0,
+      cta text not null default '',
+      ai_prompt text not null default '',
+      qa_notes text not null default '',
+      sort_order int not null default 0
+    )
+  `);
+
+  await pool.query(`
+    create table if not exists content_brand_documents (
+      id uuid primary key default gen_random_uuid(),
+      title text not null,
+      category text not null default 'brand',
+      content text not null default '',
+      is_active boolean not null default true,
+      created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
+    )
+  `);
+
+  await pool.query(`
+    create table if not exists content_ai_runs (
+      id text primary key,
+      task text not null,
+      provider text not null,
+      model text not null,
+      content_item_id text,
+      data_classification text not null default 'INTERNAL',
+      input_tokens int,
+      output_tokens int,
+      latency_ms int,
+      cost numeric,
+      status text not null default 'ok',
+      error text,
+      created_at bigint not null
+    )
+  `);
+  await pool.query(`create index if not exists content_ai_runs_task_idx on content_ai_runs (task, created_at desc)`);
+}
+
+async function seedChannelProfilesIfEmpty(): Promise<void> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select count(*)::int as n from content_channel_profiles");
+  if ((rows[0]?.n ?? 0) > 0) return;
+  for (const p of DEFAULT_CHANNEL_PROFILES) {
+    await pool.query(
+      `insert into content_channel_profiles (id, name, status, char_limit, formality, emoji_level, hashtags, hashtag_count, cta, ai_prompt, qa_notes, sort_order)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) on conflict (id) do nothing`,
+      [p.id, p.name, p.status, p.char_limit, p.formality, p.emoji_level, p.hashtags, p.hashtag_count, p.cta, p.ai_prompt, p.qa_notes, p.sort_order]
+    );
+  }
+}
+
+async function ready(): Promise<void> {
+  await dbEnsureContentOsTables();
+  await seedChannelProfilesIfEmpty();
+}
+
+/* ─────────── Темы ─────────── */
+
+export async function dbListTopics(opts: { status?: string } = {}): Promise<ContentTopic[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const where: string[] = [];
+  const params: unknown[] = [];
+  if (opts.status) { params.push(opts.status); where.push(`status = $${params.length}`); }
+  const sql = `select * from content_topics ${where.length ? "where " + where.join(" and ") : ""} order by created_at desc`;
+  const { rows } = await pool.query(sql, params);
+  return rows as ContentTopic[];
+}
+
+export async function dbGetTopic(id: string): Promise<ContentTopic | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_topics where id = $1", [id]);
+  return (rows[0] as ContentTopic) ?? null;
+}
+
+export async function dbUpsertTopic(t: Partial<ContentTopic> & { id?: string }): Promise<string> {
+  await ready();
+  const pool = getTimewebPool();
+  const now = Date.now();
+  const id = t.id || randomUUID();
+  const existing = t.id ? await dbGetTopic(t.id) : null;
+  if (!existing) {
+    await pool.query(
+      `insert into content_topics (id, title, radar_item_id, thesis, relevance, popularity, status, created_by, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [id, t.title ?? "", t.radar_item_id ?? null, t.thesis ?? "", t.relevance ?? 5, t.popularity ?? 50, t.status ?? "new", t.created_by ?? null, now, now]
+    );
+  } else {
+    await pool.query(
+      `update content_topics set title=$2, thesis=$3, relevance=$4, popularity=$5, status=$6, updated_at=$7 where id=$1`,
+      [id, t.title ?? existing.title, t.thesis ?? existing.thesis, t.relevance ?? existing.relevance, t.popularity ?? existing.popularity, t.status ?? existing.status, now]
+    );
+  }
+  return id;
+}
+
+export async function dbDeleteTopic(id: string): Promise<number> {
+  const pool = getTimewebPool();
+  const { rowCount } = await pool.query("delete from content_topics where id = $1", [id]);
+  return rowCount ?? 0;
+}
+
+/* ─────────── Кластеры и брифы ─────────── */
+
+export async function dbListClusters(): Promise<ContentCluster[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_clusters order by created_at desc");
+  return rows as ContentCluster[];
+}
+
+export async function dbGetCluster(id: string): Promise<ContentCluster | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_clusters where id = $1", [id]);
+  return (rows[0] as ContentCluster) ?? null;
+}
+
+export async function dbUpsertCluster(c: Partial<ContentCluster> & { id?: string }): Promise<string> {
+  await ready();
+  const pool = getTimewebPool();
+  const now = Date.now();
+  const id = c.id || randomUUID();
+  const existing = c.id ? await dbGetCluster(c.id) : null;
+  if (!existing) {
+    await pool.query(
+      `insert into content_clusters (id, title, primary_topic_id, status, created_by, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7)`,
+      [id, c.title ?? "", c.primary_topic_id ?? null, c.status ?? "new", c.created_by ?? null, now, now]
+    );
+  } else {
+    await pool.query(
+      `update content_clusters set title=$2, status=$3, updated_at=$4 where id=$1`,
+      [id, c.title ?? existing.title, c.status ?? existing.status, now]
+    );
+  }
+  return id;
+}
+
+export async function dbDeleteCluster(id: string): Promise<number> {
+  const pool = getTimewebPool();
+  const { rowCount } = await pool.query("delete from content_clusters where id = $1", [id]);
+  return rowCount ?? 0;
+}
+
+export async function dbGetBrief(clusterId: string): Promise<ContentBrief | null> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "select * from content_briefs where cluster_id = $1 order by created_at desc limit 1",
+    [clusterId]
+  );
+  if (!rows[0]) return null;
+  return { ...rows[0], channels: rows[0].channels ?? [] } as ContentBrief;
+}
+
+export async function dbSaveBrief(b: {
+  cluster_id: string;
+  audience: string;
+  angle: string;
+  requirements: string;
+  channels: ContentOsChannel[];
+  created_by?: string | null;
+}): Promise<string> {
+  await ready();
+  const pool = getTimewebPool();
+  const id = randomUUID();
+  await pool.query(
+    `insert into content_briefs (id, cluster_id, audience, angle, requirements, channels, created_by, created_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8)`,
+    [id, b.cluster_id, b.audience, b.angle, b.requirements, JSON.stringify(b.channels), b.created_by ?? null, Date.now()]
+  );
+  await pool.query("update content_clusters set status = 'briefed', updated_at = $2 where id = $1 and status = 'new'", [b.cluster_id, Date.now()]);
+  return id;
+}
+
+/* ─────────── Контент-айтемы и версии ─────────── */
+
+export async function dbListItemsByCluster(clusterId: string): Promise<ContentItem[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_items where cluster_id = $1 order by created_at asc", [clusterId]);
+  return rows.map((r) => ({ ...r, meta: r.meta ?? {} })) as ContentItem[];
+}
+
+export async function dbGetItem(id: string): Promise<ContentItem | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_items where id = $1", [id]);
+  if (!rows[0]) return null;
+  return { ...rows[0], meta: rows[0].meta ?? {} } as ContentItem;
+}
+
+export async function dbUpsertItem(it: Partial<ContentItem> & { id?: string; cluster_id: string; channel: ContentOsChannel }): Promise<string> {
+  await ready();
+  const pool = getTimewebPool();
+  const now = Date.now();
+  const existing = it.id ? await dbGetItem(it.id) : null;
+  if (!existing) {
+    const id = it.id || randomUUID();
+    await pool.query(
+      `insert into content_items (id, cluster_id, channel, status, title, body, meta, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [id, it.cluster_id, it.channel, it.status ?? "draft", it.title ?? "", it.body ?? "", JSON.stringify(it.meta ?? {}), now, now]
+    );
+    await pool.query("update content_clusters set status = 'in_production', updated_at = $2 where id = $1 and status in ('new','briefed')", [it.cluster_id, now]);
+    return id;
+  }
+  await pool.query(
+    `update content_items set status=$2, title=$3, body=$4, meta=$5, approved_by=$6, approved_at=$7, updated_at=$8 where id=$1`,
+    [existing.id, it.status ?? existing.status, it.title ?? existing.title, it.body ?? existing.body,
+      JSON.stringify(it.meta ?? existing.meta), it.approved_by ?? existing.approved_by, it.approved_at ?? existing.approved_at, now]
+  );
+  return existing.id;
+}
+
+export async function dbDeleteItem(id: string): Promise<number> {
+  const pool = getTimewebPool();
+  const { rowCount } = await pool.query("delete from content_items where id = $1", [id]);
+  return rowCount ?? 0;
+}
+
+export async function dbAddItemVersion(v: { content_item_id: string; body: string; edited_by?: string | null; note?: string }): Promise<string> {
+  await ready();
+  const pool = getTimewebPool();
+  const id = randomUUID();
+  await pool.query(
+    `insert into content_item_versions (id, content_item_id, body, edited_by, note, created_at) values ($1,$2,$3,$4,$5,$6)`,
+    [id, v.content_item_id, v.body, v.edited_by ?? null, v.note ?? "", Date.now()]
+  );
+  return id;
+}
+
+export async function dbListItemVersions(contentItemId: string): Promise<ContentItemVersion[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "select * from content_item_versions where content_item_id = $1 order by created_at desc limit 20",
+    [contentItemId]
+  );
+  return rows as ContentItemVersion[];
+}
+
+/* ─────────── Каналы ─────────── */
+
+export async function dbListChannelProfiles(): Promise<ContentChannelProfile[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_channel_profiles order by sort_order asc");
+  return rows as ContentChannelProfile[];
+}
+
+export async function dbUpsertChannelProfile(p: Partial<ContentChannelProfile> & { id: string }): Promise<void> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_channel_profiles where id = $1", [p.id]);
+  const existing = rows[0] as ContentChannelProfile | undefined;
+  if (!existing) {
+    await pool.query(
+      `insert into content_channel_profiles (id, name, status, char_limit, formality, emoji_level, hashtags, hashtag_count, cta, ai_prompt, qa_notes, sort_order)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [p.id, p.name ?? p.id, p.status ?? "setup", p.char_limit ?? 4096, p.formality ?? 50, p.emoji_level ?? 1,
+        p.hashtags ?? false, p.hashtag_count ?? 0, p.cta ?? "", p.ai_prompt ?? "", p.qa_notes ?? "", p.sort_order ?? 0]
+    );
+    return;
+  }
+  await pool.query(
+    `update content_channel_profiles set name=$2, status=$3, char_limit=$4, formality=$5, emoji_level=$6,
+      hashtags=$7, hashtag_count=$8, cta=$9, ai_prompt=$10, qa_notes=$11 where id=$1`,
+    [p.id, p.name ?? existing.name, p.status ?? existing.status, p.char_limit ?? existing.char_limit,
+      p.formality ?? existing.formality, p.emoji_level ?? existing.emoji_level, p.hashtags ?? existing.hashtags,
+      p.hashtag_count ?? existing.hashtag_count, p.cta ?? existing.cta, p.ai_prompt ?? existing.ai_prompt, p.qa_notes ?? existing.qa_notes]
+  );
+}
+
+/* ─────────── Бренд-документы (RAG, без pgvector — см. audit.md §6) ─────────── */
+
+export async function dbListBrandDocuments(): Promise<ContentBrandDocument[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_brand_documents where is_active = true order by created_at desc");
+  return rows.map((r) => ({
+    ...r,
+    created_at: new Date(r.created_at).getTime(),
+    updated_at: new Date(r.updated_at).getTime(),
+  })) as ContentBrandDocument[];
+}
+
+export async function dbUpsertBrandDocument(d: { id?: string; title: string; category: string; content: string }): Promise<string> {
+  await ready();
+  const pool = getTimewebPool();
+  if (!d.id) {
+    const { rows } = await pool.query(
+      `insert into content_brand_documents (title, category, content) values ($1,$2,$3) returning id`,
+      [d.title, d.category, d.content]
+    );
+    return rows[0].id as string;
+  }
+  await pool.query(
+    `update content_brand_documents set title=$2, category=$3, content=$4, updated_at=now() where id=$1`,
+    [d.id, d.title, d.category, d.content]
+  );
+  return d.id;
+}
+
+export async function dbDeleteBrandDocument(id: string): Promise<number> {
+  const pool = getTimewebPool();
+  const { rowCount } = await pool.query("update content_brand_documents set is_active = false where id = $1", [id]);
+  return rowCount ?? 0;
+}
+
+/* ─────────── AI observability ─────────── */
+
+export async function dbLogAiRun(r: {
+  task: ContentOsTask;
+  provider: "local" | "anthropic";
+  model: string;
+  contentItemId?: string | null;
+  dataClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL";
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  latencyMs?: number | null;
+  status: "ok" | "error" | "fallback";
+  error?: string | null;
+}): Promise<void> {
+  await dbEnsureContentOsTables();
+  const pool = getTimewebPool();
+  await pool.query(
+    `insert into content_ai_runs (id, task, provider, model, content_item_id, data_classification, input_tokens, output_tokens, latency_ms, status, error, created_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+    [randomUUID(), r.task, r.provider, r.model, r.contentItemId ?? null, r.dataClassification ?? "INTERNAL",
+      r.inputTokens ?? null, r.outputTokens ?? null, r.latencyMs ?? null, r.status, r.error ?? null, Date.now()]
+  );
+}
+
+export interface ContentOsStats {
+  runsByProvider: { provider: string; n: number }[];
+  runsByStatus: { status: string; n: number }[];
+  fallbackRate: number;
+  itemsByStatus: Record<string, number>;
+  clustersByStatus: Record<string, number>;
+}
+
+export async function dbContentOsStats(): Promise<ContentOsStats> {
+  await dbEnsureContentOsTables();
+  const pool = getTimewebPool();
+  const runsByProvider = (await pool.query("select provider, count(*)::int as n from content_ai_runs group by provider")).rows as { provider: string; n: number }[];
+  const runsByStatus = (await pool.query("select status, count(*)::int as n from content_ai_runs group by status")).rows as { status: string; n: number }[];
+  const total = runsByStatus.reduce((a, r) => a + r.n, 0);
+  const fallback = runsByStatus.find((r) => r.status === "fallback")?.n ?? 0;
+  const itemsByStatusRows = (await pool.query("select status, count(*)::int as n from content_items group by status")).rows as { status: string; n: number }[];
+  const itemsByStatus: Record<string, number> = {};
+  for (const r of itemsByStatusRows) itemsByStatus[r.status] = r.n;
+  const clustersByStatusRows = (await pool.query("select status, count(*)::int as n from content_clusters group by status")).rows as { status: string; n: number }[];
+  const clustersByStatus: Record<string, number> = {};
+  for (const r of clustersByStatusRows) clustersByStatus[r.status] = r.n;
+  return { runsByProvider, runsByStatus, fallbackRate: total > 0 ? fallback / total : 0, itemsByStatus, clustersByStatus };
+}
