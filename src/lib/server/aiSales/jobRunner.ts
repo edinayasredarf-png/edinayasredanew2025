@@ -57,9 +57,13 @@ export interface JobEvent {
 export async function drainQueue(
   timeBudgetMs = 40_000,
   types?: AiJobType[],
-  onJob?: (event: JobEvent) => void
+  onJob?: (event: JobEvent) => void,
+  reapMaxMinutes = 3
 ): Promise<DrainReport> {
-  const reaped = await reapStuckJobs(3);
+  // `types` тут же передаём в reapStuckJobs — иначе дренаж с фильтром типов
+  // (см. claimBatch) всё равно реапил бы ЧУЖИЕ типы, попавшие в RUNNING
+  // дольше reapMaxMinutes, включая ещё выполняющиеся у другого воркера.
+  const reaped = await reapStuckJobs(reapMaxMinutes, types);
   const report: DrainReport = {
     reaped,
     claimed: 0,

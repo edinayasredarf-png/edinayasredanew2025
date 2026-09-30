@@ -79,9 +79,22 @@ export async function enqueueJob(input: EnqueueInput): Promise<string> {
  * Вернуть в очередь задачи, застрявшие в RUNNING дольше maxMinutes (функция была
  * убита по таймауту serverless до completeJob/failJob). Без этого одна убитая
  * функция навсегда блокирует задачу. Вызывается перед claimBatch в дренаже.
+ *
+ * `types` — тот же фильтр, что и в claimBatch. Обязателен для Vercel-дренажа:
+ * без него Vercel (дренаж каждые ~минуту по cron-job.org) реапил бы чужие
+ * call.roles/call.analyze/deal.analyze прямо во время их обработки VPS-
+ * воркером — self-hosted LLM на CPU легитимно занимает несколько минут на
+ * задачу, что больше старого порога в 3 минуты (проверено на практике:
+ * реап рвал ещё выполняющиеся задачи ровно так).
  */
-export async function reapStuckJobs(maxMinutes = 3): Promise<number> {
+export async function reapStuckJobs(maxMinutes = 3, types?: AiJobType[]): Promise<number> {
   const pool = getTimewebPool();
+  const params: unknown[] = [String(maxMinutes)];
+  let typeFilter = "";
+  if (types && types.length > 0) {
+    params.push(types);
+    typeFilter = `and type = any($2::text[])`;
+  }
   const { rowCount } = await pool.query(
     `update ai_jobs
         set status = case when attempts < max_attempts then 'RETRY_PENDING' else 'FAILED' end,
@@ -89,8 +102,9 @@ export async function reapStuckJobs(maxMinutes = 3): Promise<number> {
             run_after = now(),
             updated_at = now()
       where status = 'RUNNING'
-        and locked_at < now() - ($1 || ' minutes')::interval`,
-    [String(maxMinutes)]
+        and locked_at < now() - ($1 || ' minutes')::interval
+        ${typeFilter}`,
+    params
   );
   return rowCount ?? 0;
 }
