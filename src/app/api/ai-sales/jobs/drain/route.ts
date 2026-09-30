@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { drainQueue } from "@/lib/server/aiSales/jobRunner";
-import { queueStats, type AiJobType } from "@/lib/server/aiSales/jobsDb";
+import { queueStats } from "@/lib/server/aiSales/jobsDb";
 import { registerAllHandlers } from "@/lib/server/aiSales/handlers";
+import { getVercelDrainJobTypes } from "@/lib/server/aiSales/settingsDb";
 
 /**
- * call.roles/call.analyze/deal.analyze НЕ дренируются отсюда — при
- * self-hosted провайдере локальная модель на CPU не укладывается в
- * 60с Vercel Hobby (см. docs/content-os/ и переписку про GigaChat).
- * Их забирает отдельный процесс на VPS (scripts/ai-worker), без лимита
- * времени, тем же кодом обработчиков. Если провайдер анализа не
- * self-hosted (Claude/YandexGPT — быстрые) и VPS-воркер не запущен,
- * эти задачи просто не будут обработаны — включите воркер или
- * верните их сюда, убрав фильтр.
+ * call.roles/call.analyze/deal.analyze при self-hosted (GigaChat на VPS) не
+ * дренируются здесь — CPU-инференс не укладывается в 60с Hobby. Их забирает
+ * scripts/ai-worker. При YandexGPT/Claude те же задачи идут через Vercel
+ * (ключи из env Vercel), VPS-воркер их не трогает — см. getVercelDrainJobTypes.
  */
-const VERCEL_JOB_TYPES: AiJobType[] = ["bitrix.sync", "call.ingest", "call.transcribe", "call.diarize"];
 
 // Регистрируем обработчики при загрузке модуля (до дренажа очереди).
 registerAllHandlers();
@@ -57,7 +53,8 @@ async function handle(request: NextRequest) {
   try {
     // ~25с бюджета — укладываемся в тайм-аут внешних планировщиков (cron-job.org
     // = 30с) и в Hobby maxDuration. За вызов прожёвываем десятки страниц.
-    const report = await drainQueue(25_000, VERCEL_JOB_TYPES);
+    const jobTypes = await getVercelDrainJobTypes();
+    const report = await drainQueue(25_000, jobTypes);
     const stats = await queueStats();
 
     // Самопродолжение: одна пачка тянет следующую, пока очередь не опустеет —

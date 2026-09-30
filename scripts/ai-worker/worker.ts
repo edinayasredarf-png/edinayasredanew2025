@@ -10,9 +10,8 @@
  */
 import { registerAllHandlers } from "@/lib/server/aiSales/handlers";
 import { drainQueue, type JobEvent } from "@/lib/server/aiSales/jobRunner";
-import { reapStuckJobs, type AiJobType } from "@/lib/server/aiSales/jobsDb";
-
-const LOCAL_JOB_TYPES: AiJobType[] = ["call.roles", "call.analyze", "deal.analyze"];
+import { reapStuckJobs } from "@/lib/server/aiSales/jobsDb";
+import { getVpsWorkerJobTypes } from "@/lib/server/aiSales/settingsDb";
 const POLL_INTERVAL_MS = 5_000;
 const DRAIN_BUDGET_MS = 6 * 60 * 60 * 1000; // drainQueue сам выходит, когда очередь опустеет — это просто верхний потолок на «зависшую» пачку
 // Self-hosted LLM на CPU: одна задача легитимно занимает несколько минут
@@ -48,11 +47,21 @@ async function main(): Promise<void> {
   // или крашем) процесс, не наша текущая работа. Чистим сразу коротким
   // порогом, а не ждём до REAP_MAX_MINUTES — иначе такая запись «висит»
   // призраком в админке (Выполняется: N) до получаса после каждого рестарта.
-  const reapedOnStart = await reapStuckJobs(1, LOCAL_JOB_TYPES);
-  log(`started, watching: ${LOCAL_JOB_TYPES.join(", ")}${reapedOnStart > 0 ? ` (очищено зависших от прошлого процесса: ${reapedOnStart})` : ""}`);
+  let jobTypes = await getVpsWorkerJobTypes();
+  const reapedOnStart = jobTypes.length ? await reapStuckJobs(1, jobTypes) : 0;
+  log(
+    jobTypes.length
+      ? `started, watching: ${jobTypes.join(", ")}${reapedOnStart > 0 ? ` (очищено зависших от прошлого процесса: ${reapedOnStart})` : ""}`
+      : "started, ai.provider — облако (YandexGPT/Claude): анализ на Vercel, VPS idle"
+  );
   while (!stopping) {
     try {
-      const report = await drainQueue(DRAIN_BUDGET_MS, LOCAL_JOB_TYPES, onJob, REAP_MAX_MINUTES);
+      jobTypes = await getVpsWorkerJobTypes();
+      if (!jobTypes.length) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+        continue;
+      }
+      const report = await drainQueue(DRAIN_BUDGET_MS, jobTypes, onJob, REAP_MAX_MINUTES);
       if (report.claimed > 0) {
         log(`batch: claimed=${report.claimed} completed=${report.completed} failed=${report.failed} reaped=${report.reaped}`);
       }

@@ -1,13 +1,14 @@
 # AI Sales VPS-воркер
 
 Отдельный Node-процесс на VPS (не Vercel), который обрабатывает
-`call.roles` / `call.analyze` / `deal.analyze` — задачи, требующие
-self-hosted LLM (GigaChat на llama.cpp) без ограничения времени
-выполнения. На Vercel Hobby у функций жёсткий `maxDuration = 60`
-секунд, а CPU-инференс большой структурированной схемы анализа звонка
-на этом железе занимает несколько минут — поэтому эти три типа задач
-исключены из Vercel-дренажа (`VERCEL_JOB_TYPES` в
-`src/app/api/ai-sales/jobs/drain/route.ts`) и забираются только отсюда.
+`call.roles` / `call.analyze` / `deal.analyze`, **только если** в
+`ai_settings.ai.provider` выбран self-hosted LLM (GigaChat на llama.cpp).
+На Vercel Hobby у функций жёсткий `maxDuration = 60` секунд, а CPU-
+инференс на VPS занимает минуты — поэтому при self-hosted эти типы не
+идут через Vercel-дренаж. При **YandexGPT / Claude** провайдер
+облачный: те же задачи дренирует Vercel (ключи в env Vercel), VPS-
+воркер простаивает — не нужно дублировать Yandex-ключи в
+`/opt/ai-worker/.env`.
 
 Использует тот же код обработчиков, что и Vercel
 (`src/lib/server/aiSales/*`), просто выполняется через `tsx` напрямую

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getTimewebPool } from "@/lib/timewebPg";
+import type { AiJobType } from "@/lib/server/aiSales/jobsDb";
 
 /**
  * Настройки AI Sales (§84-85 ТЗ) — таблица ai_settings (key → jsonb value).
@@ -75,4 +76,34 @@ export async function getAiConfig(): Promise<{ provider: string; analysisModel: 
     getSetting<boolean>("ai.analysis_enabled", true),
   ]);
   return { provider, analysisModel, analysisEnabled: enabled !== false };
+}
+
+/** Задачи разметки ролей и LLM-анализа — долго на self-hosted CPU, быстро в облаке. */
+export const ANALYSIS_JOB_TYPES: AiJobType[] = ["call.roles", "call.analyze", "deal.analyze"];
+
+const VERCEL_BASE_JOB_TYPES: AiJobType[] = [
+  "bitrix.sync",
+  "call.ingest",
+  "call.transcribe",
+  "call.diarize",
+];
+
+/** Провайдер анализа через свой OpenAI-совместимый сервер (GigaChat на VPS). */
+export function isSelfHostedAiProvider(provider: string): boolean {
+  const p = provider.trim().toLowerCase();
+  return p === "selfhosted" || p === "local" || p === "openai";
+}
+
+/** Типы задач для Vercel-дренажа: облачный AI — анализ здесь (env Vercel), self-hosted — только на VPS. */
+export async function getVercelDrainJobTypes(): Promise<AiJobType[]> {
+  const { provider } = await getAiConfig();
+  if (isSelfHostedAiProvider(provider)) return [...VERCEL_BASE_JOB_TYPES];
+  return [...VERCEL_BASE_JOB_TYPES, ...ANALYSIS_JOB_TYPES];
+}
+
+/** Типы для VPS-воркера: только когда в настройках выбран self-hosted LLM. */
+export async function getVpsWorkerJobTypes(): Promise<AiJobType[]> {
+  const { provider } = await getAiConfig();
+  if (isSelfHostedAiProvider(provider)) return [...ANALYSIS_JOB_TYPES];
+  return [];
 }
