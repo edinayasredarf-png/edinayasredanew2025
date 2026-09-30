@@ -37,8 +37,12 @@ export interface DrainReport {
  * прожёвывает много мелких задач (страниц синхронизации), укладываясь в лимит
  * времени serverless (Vercel Hobby ~60с). claim(1) + SKIP LOCKED → параллельные
  * дренажи не берут одну задачу дважды, зависших RUNNING не остаётся.
+ *
+ * `types` — см. claimBatch: белый список типов задач для этого вызова.
+ * Vercel-дренаж передаёт быстрые типы, VPS-воркер (scripts/ai-worker) —
+ * call.roles/call.analyze/deal.analyze с большим timeBudgetMs.
  */
-export async function drainQueue(timeBudgetMs = 40_000): Promise<DrainReport> {
+export async function drainQueue(timeBudgetMs = 40_000, types?: AiJobType[]): Promise<DrainReport> {
   const reaped = await reapStuckJobs(3);
   const report: DrainReport = {
     reaped,
@@ -50,7 +54,7 @@ export async function drainQueue(timeBudgetMs = 40_000): Promise<DrainReport> {
 
   const deadline = Date.now() + timeBudgetMs;
   while (Date.now() < deadline) {
-    const [job] = await claimBatch(1);
+    const [job] = await claimBatch(1, types);
     if (!job) break; // очередь пуста
     report.claimed += 1;
 

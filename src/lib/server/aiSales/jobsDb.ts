@@ -98,9 +98,21 @@ export async function reapStuckJobs(maxMinutes = 3): Promise<number> {
 /**
  * Атомарно забрать пачку готовых задач и пометить RUNNING.
  * SKIP LOCKED гарантирует, что параллельные воркеры/дренажи не пересекутся.
+ *
+ * `types` — опциональный фильтр (белый список). Используется, чтобы развести
+ * Vercel-дренаж (быстрые задачи, ограничен 60с на Hobby) и VPS-воркер
+ * (call.roles/call.analyze/deal.analyze — долгая локальная модель, без лимита
+ * времени) так, чтобы они не претендовали на одни и те же задачи — см.
+ * scripts/ai-worker/README.md.
  */
-export async function claimBatch(limit = 5): Promise<AiJobRow[]> {
+export async function claimBatch(limit = 5, types?: AiJobType[]): Promise<AiJobRow[]> {
   const pool = getTimewebPool();
+  const params: unknown[] = [limit];
+  let typeFilter = "";
+  if (types && types.length > 0) {
+    params.push(types);
+    typeFilter = `and type = any($2::text[])`;
+  }
   const { rows } = await pool.query<AiJobRow>(
     `update ai_jobs j
         set status = 'RUNNING', locked_at = now(), attempts = attempts + 1, updated_at = now()
@@ -108,12 +120,13 @@ export async function claimBatch(limit = 5): Promise<AiJobRow[]> {
         select id from ai_jobs
          where status in ('PENDING','RETRY_PENDING')
            and run_after <= now()
+           ${typeFilter}
          order by priority asc, run_after asc
          limit $1
          for update skip locked
       )
       returning j.*`,
-    [limit]
+    params
   );
   return rows;
 }
