@@ -41,8 +41,24 @@ export interface DrainReport {
  * `types` — см. claimBatch: белый список типов задач для этого вызова.
  * Vercel-дренаж передаёт быстрые типы, VPS-воркер (scripts/ai-worker) —
  * call.roles/call.analyze/deal.analyze с большим timeBudgetMs.
+ *
+ * `onJob` — опциональный хук на старт/финиш каждой отдельной задачи (не только
+ * итог всей партии). Не передаётся из Vercel-роута (там счёт на тысячи мелких
+ * задач вроде bitrix.sync — лишний шум в логах), но передаётся VPS-воркером,
+ * где задачи единичные и медленные (минуты на CPU-инференс) — иначе со стороны
+ * кажется, что процесс завис.
  */
-export async function drainQueue(timeBudgetMs = 40_000, types?: AiJobType[]): Promise<DrainReport> {
+export interface JobEvent {
+  job: AiJobRow;
+  phase: "start" | "completed" | "failed" | "skipped";
+  error?: string;
+}
+
+export async function drainQueue(
+  timeBudgetMs = 40_000,
+  types?: AiJobType[],
+  onJob?: (event: JobEvent) => void
+): Promise<DrainReport> {
   const reaped = await reapStuckJobs(3);
   const report: DrainReport = {
     reaped,
@@ -57,21 +73,26 @@ export async function drainQueue(timeBudgetMs = 40_000, types?: AiJobType[]): Pr
     const [job] = await claimBatch(1, types);
     if (!job) break; // очередь пуста
     report.claimed += 1;
+    onJob?.({ job, phase: "start" });
 
     const handler = handlers.get(job.type);
     if (!handler) {
-      await failJob(job, `Нет обработчика для типа задачи: ${job.type}`);
+      const error = `Нет обработчика для типа задачи: ${job.type}`;
+      await failJob(job, error);
       report.skipped += 1;
+      onJob?.({ job, phase: "skipped", error });
       continue;
     }
     try {
       const result = await handler(job);
       await completeJob(job.id, result);
       report.completed += 1;
+      onJob?.({ job, phase: "completed" });
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       await failJob(job, message);
       report.failed += 1;
+      onJob?.({ job, phase: "failed", error: message });
     }
   }
   return report;
