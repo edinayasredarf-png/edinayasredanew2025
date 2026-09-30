@@ -31,18 +31,53 @@ interface OpenAiChatResponse {
   };
 }
 
-/** Убрать блоки рассуждений thinking-моделей и markdown-ограждения, достать {...}. */
+/**
+ * Убрать блоки рассуждений thinking-моделей и markdown-ограждения, достать {...}.
+ *
+ * Берём ПЕРВЫЙ полностью сбалансированный (по глубине скобок, вне строк) JSON-
+ * объект, а не наивный срез "первая { — последняя }": младшие/квантованные
+ * модели (напр. self-hosted GigaChat Q3_K_M) нередко закрывают валидный JSON,
+ * а затем сами себя "поправляют" и начинают второй, уже незаконченный —
+ * naive-срез либо ловил в результат этот хвостовой мусор, либо не находил
+ * валидного объекта вовсе.
+ */
 function extractJson(text: string): unknown | null {
   let t = text.replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "").trim();
   t = t.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   const start = t.indexOf("{");
-  const end = t.lastIndexOf("}");
-  if (start === -1 || end === -1 || end < start) return null;
-  try {
-    return JSON.parse(t.slice(start, end + 1));
-  } catch {
-    return null;
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < t.length; i++) {
+    const ch = t[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\" && inString) {
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        try {
+          return JSON.parse(t.slice(start, i + 1));
+        } catch {
+          return null;
+        }
+      }
+    }
   }
+  return null; // до конца текста скобки не сбалансировались — объект оборван (упёрлись в max_tokens)
 }
 
 export class OpenAiCompatProvider implements AiProvider {
