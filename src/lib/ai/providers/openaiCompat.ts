@@ -140,10 +140,19 @@ export class OpenAiCompatProvider implements AiProvider {
             },
           };
         }
+        // Диагностика: почему конкретно не прошла Zod-валидация — иначе
+        // видно только «попытка N», без понимания что модель вернула не так.
+        console.error(
+          `[openaiCompat] попытка ${attempt + 1}: ответ не прошёл схему: ${JSON.stringify(parsed.error.issues).slice(0, 500)}\n` +
+            `сырой JSON (обрезан): ${JSON.stringify(obj).slice(0, 800)}`
+        );
         lastErr = new AiValidationError(
           `Свой LLM: ответ не прошёл валидацию схемы (попытка ${attempt + 1})`
         );
       } else {
+        console.error(
+          `[openaiCompat] попытка ${attempt + 1}: не удалось извлечь JSON, сырой ответ (обрезан, ${text.length} символов всего): ${text.slice(0, 800)}`
+        );
         lastErr = new AiValidationError(
           `Свой LLM: не удалось извлечь JSON из ответа (попытка ${attempt + 1})`
         );
