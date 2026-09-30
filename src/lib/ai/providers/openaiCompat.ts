@@ -92,6 +92,14 @@ export class OpenAiCompatProvider implements AiProvider {
         res = await fetch(endpoint, {
           method: "POST",
           headers,
+          // Дефолтный таймаут fetch в Node (undici) — 300с. На CPU-инференсе
+          // (~1-9 ток/с на нашей VPS) полный ответ по большой схеме анализа
+          // звонка не укладывается в 5 минут — без explicit signal запрос
+          // обрывался посередине генерации (видно как "cancel task" в логах
+          // llama-server ровно на 300-й секунде).
+          signal: AbortSignal.timeout(
+            Number(process.env.SELFHOSTED_LLM_TIMEOUT_MS) || 20 * 60_000
+          ),
           body: JSON.stringify({
             model,
             temperature: 0.1,
