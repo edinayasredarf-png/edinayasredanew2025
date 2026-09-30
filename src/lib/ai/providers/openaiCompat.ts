@@ -23,6 +23,10 @@ import {
  * достаём JSON из ответа, валидируем Zod-схемой, при провале — ретрай.
  */
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 interface OpenAiChatResponse {
   choices?: Array<{ message?: { content?: string } }>;
   usage?: {
@@ -148,6 +152,10 @@ export class OpenAiCompatProvider implements AiProvider {
         });
       } catch (e) {
         lastErr = new Error(`Свой LLM-сервер недоступен: ${(e as Error).message}`);
+        // Сервер мог как раз перезапускаться (порт ещё не слушает) —
+        // без паузы следующая задача в очереди тут же ловит то же самое и
+        // весь бэклог проваливается пачкой за секунды (уже наблюдалось).
+        await sleep((attempt + 1) * 4000);
         continue;
       }
 
@@ -157,6 +165,9 @@ export class OpenAiCompatProvider implements AiProvider {
           throw new Error(`Свой LLM ${res.status}: ${detail.slice(0, 300)}`);
         }
         lastErr = new Error(`Свой LLM ${res.status}: ${detail.slice(0, 200)}`);
+        // 429/503 — как правило временно (rate limit или модель ещё грузится
+        // после рестарта, ~15-20с у нас на практике); та же причина паузы.
+        await sleep((attempt + 1) * 4000);
         continue;
       }
 
