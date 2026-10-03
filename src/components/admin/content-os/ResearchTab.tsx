@@ -24,7 +24,7 @@ export default function ResearchTab({ clusters, onOpenCluster }: { clusters: Con
       <div className="mb-4">
         <h2 className="text-lg font-bold text-gray-900">Исследования</h2>
         <p className="text-sm text-gray-500">
-          Research pack по каждому кластеру (§22 ТЗ: search → sources → extract → verify → structure). Сбор источников и синтез — внутри кластера (кнопка «Открыть»).
+          Подборка источников и фактов по каждому кластеру — ИИ сверяет материал с реальными источниками перед публикацией. Добавление источников и синтез — внутри кластера (кнопка «Открыть»).
         </p>
       </div>
       {loading && <p className="text-sm text-gray-400 py-8 text-center">Загрузка...</p>}

@@ -54,7 +54,7 @@ export default function BrandTab({ documents, reload }: { documents: ContentBran
         <div>
           <h2 className="text-lg font-bold text-gray-900">База знаний о бренде</h2>
           <p className="text-sm text-gray-500">
-            Подмешивается в промпт при генерации (пока целиком — переход на поиск релевантных фрагментов при росте базы, см. database.md §5).
+            Подмешивается в промпт при генерации целиком — пока база небольшая. Если база вырастет, перейдём на поиск только релевантных фрагментов.
           </p>
         </div>
         <button onClick={openNew} className="px-4 py-2 bg-[#029cda] text-white text-sm font-semibold rounded-xl hover:bg-[#0280b5]">

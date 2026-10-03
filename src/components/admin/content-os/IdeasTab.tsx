@@ -52,7 +52,7 @@ export default function IdeasTab({ topics, reload, onDevelop }: {
         <div>
           <h2 className="text-lg font-bold text-gray-900">Идеи</h2>
           <p className="text-sm text-gray-500">
-            Портфель тем. Source → topic extraction → classification (§19 ТЗ) — «Оценить ИИ» проставляет relevance/popularity.
+            Портфель тем — добавленных вручную или собранных из источников. Кнопка «Оценить ИИ» выставляет релевантность и популярность.
           </p>
         </div>
         <button onClick={() => setShowForm((v) => !v)} className="px-4 py-2 bg-[#029cda] text-white text-sm font-semibold rounded-xl hover:bg-[#0280b5]">

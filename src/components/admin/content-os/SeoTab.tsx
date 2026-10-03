@@ -32,7 +32,7 @@ export default function SeoTab({ onOpenCluster }: { onOpenCluster: (clusterId: s
     <div>
       <div className="mb-4">
         <h2 className="text-lg font-bold text-gray-900">SEO</h2>
-        <p className="text-sm text-gray-500">Заполненность SEO-полей по статьям (§23 ТЗ). Редактирование — внутри материала (кнопка «Открыть»).</p>
+        <p className="text-sm text-gray-500">Заполненность SEO-полей по статьям. Редактирование — внутри материала (кнопка «Открыть»).</p>
       </div>
       {loading && <p className="text-sm text-gray-400 py-8 text-center">Загрузка...</p>}
       {!loading && items.length === 0 && <p className="text-sm text-gray-400 py-8 text-center">Статей пока нет.</p>}

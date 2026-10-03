@@ -49,7 +49,7 @@ export default function ContentPlanTab({ onOpenCluster }: { onOpenCluster: (clus
     <div>
       <div className="mb-4">
         <h2 className="text-lg font-bold text-gray-900">Контент-план</h2>
-        <p className="text-sm text-gray-500">Календарь публикаций по всем каналам (§44 ТЗ). Планировать можно только утверждённые материалы.</p>
+        <p className="text-sm text-gray-500">Календарь публикаций по всем каналам. Планировать можно только утверждённые материалы.</p>
       </div>
 
       <div className="flex items-center gap-3 mb-4">

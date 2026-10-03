@@ -61,6 +61,21 @@ HTTPS с Bearer-токеном, **тем же паттерном**, что уж�
 
 ## 2. AI Gateway
 
+**Обновлено 2026-10-03** — две вещи поменялись относительно первоначального
+решения ниже:
+1. VPS с self-hosted GigaChat удалена (см. `e67b9841` в AI Sales) — «local»
+   провайдер в коде остался тем же классом (`OpenAiCompatProvider`, любой
+   OpenAI-совместимый endpoint), но физически это теперь ожидается облачный
+   шлюз (Timeweb AI Gateway и т.п.), не CPU-сервер. UI называет это «Шлюз»,
+   не «локальная модель» — см. `SettingsTab.tsx`/`AiRoutingPanel.tsx`.
+2. Маршрутизация задач → провайдер/модель больше не только хардкод в
+   `TASK_ROUTES` (`router.ts`) — админ может переопределить на уровне
+   компании через Settings → «Какая модель что пишет» (новая таблица
+   `content_ai_task_routes`, читается в `resolveRoute()` до обращения к
+   дефолту из кода). Список моделей шлюза — динамический, через
+   `GET /api/content-os/settings/gateway-models` (тот же паттерн, что уже
+   работал для AI Sales).
+
 Не новая система с нуля — **расширение** `src/lib/ai` (`AiProvider`
 интерфейс, `AnthropicProvider`/`YandexGptProvider`/`OpenAiCompatProvider`
 уже существуют и уже используются в AI Sales и в контент-заводе, который

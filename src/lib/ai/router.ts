@@ -3,23 +3,35 @@ import "server-only";
 import { AnthropicProvider } from "@/lib/ai/providers/anthropic";
 import { OpenAiCompatProvider } from "@/lib/ai/providers/openaiCompat";
 import type { AiProvider, StructuredRequest, StructuredResult } from "@/lib/ai/interfaces";
-import { dbLogAiRun } from "@/lib/server/contentOsDb";
-import type { ContentOsTask } from "@/lib/contentOsTypes";
+import { dbLogAiRun, dbGetTaskRouteOverride } from "@/lib/server/contentOsDb";
+import { DEFAULT_COMPANY_ID, type ContentOsTask } from "@/lib/contentOsTypes";
 
 /**
- * Content OS Model Router (docs/content-os/architecture.md §2). Задача →
- * провайдер, с обязательным fallback (не опция) — если local недоступен/
- * упал/вернул невалидный JSON, тихо уходим на Claude, событие логируется в
- * content_ai_runs. Пока SELFHOSTED_LLM_URL не настроен (VPS ещё не куплен) —
- * все задачи фактически идут через fallback, это ожидаемо.
+ * Content OS Model Router. Задача → провайдер, с обязательным fallback (не
+ * опция) — если шлюз недоступен/упал/вернул невалидный JSON, тихо уходим на
+ * Claude, событие логируется в content_ai_runs.
+ *
+ * "local" — исторически означало self-hosted CPU-сервер (GigaChat на
+ * отдельной VPS). Та VPS удалена (2026-10, см. git log) — провайдер остался
+ * тем же (OpenAiCompatProvider, любой OpenAI-совместимый endpoint), но
+ * физически это теперь облачный шлюз (напр. Timeweb AI Gateway), адрес и
+ * модель — в SELFHOSTED_LLM_URL/SELFHOSTED_LLM_MODEL. Ключ в коде не
+ * переименован, чтобы не трогать типы везде — UI называет это «Шлюз», не
+ * «локальная модель» (см. SettingsTab.tsx).
+ *
+ * Дефолты ниже — то, что было решено в коде изначально. Админ может
+ * переопределить провайдер/модель на задачу через Settings → сохраняется в
+ * content_ai_task_routes, читается в resolveRoute до обращения к дефолту.
+ * Fallback-провайдер не переопределяется из UI намеренно — это страховка на
+ * случай сбоя, менять её из интерфейса рискованно.
  */
 
 type ProviderKey = "local" | "anthropic";
 interface TaskRoute { provider: ProviderKey; model?: string; fallback: ProviderKey }
 
-// Первое время first_draft — на anthropic по умолчанию (качество local для
-// черновиков ещё не сверено вживую, см. architecture.md §2 «Бенчмарк перед
-// боевым использованием»). Включается флагом после бенчмарка.
+// Первое время first_draft — на anthropic по умолчанию (качество шлюза для
+// черновиков ещё не сверено вживую — бенчмарк перед боевым использованием).
+// Включается флагом после бенчмарка либо вручную через Settings.
 const TRY_LOCAL_FIRST_DRAFT = process.env.CONTENT_OS_FIRST_DRAFT_LOCAL === "true";
 
 export const TASK_ROUTES: Record<ContentOsTask, TaskRoute> = {
@@ -33,6 +45,17 @@ export const TASK_ROUTES: Record<ContentOsTask, TaskRoute> = {
   seo_check: { provider: "local", fallback: "anthropic" },
   fact_check: { provider: "anthropic", model: "claude-sonnet-5", fallback: "anthropic" },
 };
+
+async function resolveRoute(task: ContentOsTask, companyId: string): Promise<TaskRoute> {
+  const base = TASK_ROUTES[task];
+  try {
+    const override = await dbGetTaskRouteOverride(task, companyId);
+    if (!override) return base;
+    return { provider: override.provider, model: override.model ?? undefined, fallback: base.fallback };
+  } catch {
+    return base; // настройки недоступны — работаем на дефолте, не роняем генерацию
+  }
+}
 
 function buildProvider(key: ProviderKey, model?: string): AiProvider {
   if (key === "local") return new OpenAiCompatProvider({ defaultModel: model });
@@ -74,9 +97,9 @@ async function logRun(
   }
 }
 
-/** Генерация по задаче Content OS — единственная точка входа для бизнес-логики (§54 ТЗ). */
+/** Генерация по задаче Content OS — единственная точка входа для бизнес-логики. */
 export async function generateForTask<T>(opts: ContentOsGenerateOptions<T>): Promise<StructuredResult<T>> {
-  const route = TASK_ROUTES[opts.task];
+  const route = await resolveRoute(opts.task, opts.companyId ?? DEFAULT_COMPANY_ID);
   const req: StructuredRequest<T> = {
     schema: opts.schema, system: opts.system, user: opts.user,
     maxTokens: opts.maxTokens, cacheSystem: opts.cacheSystem,

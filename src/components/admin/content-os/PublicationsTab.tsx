@@ -22,7 +22,7 @@ export default function PublicationsTab() {
       <div className="mb-4">
         <h2 className="text-lg font-bold text-gray-900">Публикации</h2>
         <p className="text-sm text-gray-500">
-          История публикаций (§29 ТЗ). Пока без токенов каналов публикация отмечается вручную (внутри материала, кнопка «Отметить опубликованным»).
+          История публикаций. В VK и Telegram можно публиковать автоматически (если в Настройках указаны токены), для остальных каналов — отметка вручную внутри материала.
         </p>
       </div>
       {loading && <p className="text-sm text-gray-400 py-8 text-center">Загрузка...</p>}

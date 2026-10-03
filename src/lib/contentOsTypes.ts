@@ -60,10 +60,12 @@ export interface ContentTopic {
 
 export type ContentSourceType = "rss" | "telegram" | "keyword" | "website";
 export const CONTENT_SOURCE_TYPES: { key: ContentSourceType; label: string }[] = [
-  { key: "keyword", label: "Ключевые слова (Google News)" },
-  { key: "rss", label: "RSS-лента" },
-  { key: "telegram", label: "Telegram-канал" },
-  { key: "website", label: "Сайт / парсинг" },
+  { key: "keyword", label: "Поиск по словам (через Google News)" },
+  { key: "rss", label: "RSS-лента (нужен точный адрес ленты)" },
+  { key: "telegram", label: "Telegram-канал (публичный, без токена)" },
+  // "website" технически работает как rss — произвольного парсинга сайтов
+  // без RSS-ленты не существует, честная подпись вместо обещания "парсинга".
+  { key: "website", label: "Сайт с RSS-лентой" },
 ];
 
 export interface ContentSource {

@@ -40,7 +40,7 @@ import {
 const labelCls = "block text-[13px] font-medium text-[#52555a] mb-1";
 const AUDIENCES = ["Руководители МСУ", "Сотрудники МСУ (ЖКХ, благоустройство)", "Депутаты", "Широкая аудитория"];
 
-interface VersionState { body: string; title: string; generating: boolean; error: string }
+interface VersionState { body: string; title: string; generating: boolean; error: string; model?: string }
 const emptyVersion = (): VersionState => ({ body: "", title: "", generating: false, error: "" });
 
 export default function ClusterDetail({ clusterId, channels, onClose, onChanged }: {
@@ -100,7 +100,7 @@ export default function ClusterDetail({ clusterId, channels, onClose, onChanged 
     try {
       const existing = itemFor(channel);
       const res = await generateDraft({ clusterId, channel, topicTitle: cluster.title, audience, angle, requirements, contentItemId: existing?.id });
-      setDrafts((prev) => ({ ...prev, [channel]: { title: res.title, body: res.body, generating: false, error: "" } }));
+      setDrafts((prev) => ({ ...prev, [channel]: { title: res.title, body: res.body, generating: false, error: "", model: res.model } }));
     } catch (e) {
       setDrafts((prev) => ({ ...prev, [channel]: { ...(prev[channel] || emptyVersion()), generating: false, error: e instanceof Error ? e.message : "Ошибка генерации" } }));
     }
@@ -178,7 +178,10 @@ export default function ClusterDetail({ clusterId, channels, onClose, onChanged 
                 {active && activeDraft && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-400">Лимит: {active.char_limit} символов</span>
+                      <span className="text-xs text-gray-400">
+                        Лимит: {active.char_limit} символов
+                        {activeDraft.model && <> · написано моделью <span className="font-medium text-gray-600">{activeDraft.model}</span></>}
+                      </span>
                       <button onClick={() => generate(active.id)} disabled={activeDraft.generating} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#029cda]/10 text-[#029cda] hover:bg-[#029cda]/15 disabled:opacity-50">
                         {activeDraft.generating ? "Генерация..." : "🤖 Сгенерировать"}
                       </button>
@@ -287,7 +290,7 @@ function QcPanel({ itemId }: { itemId: string }) {
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-100">
-      <p className="text-xs font-semibold text-gray-700 mb-2">🛡️ QC-проверка (§27)</p>
+      <p className="text-xs font-semibold text-gray-700 mb-2">🛡️ Проверка качества</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {(["brand", "seo", "fact"] as QcCheckType[]).map((type) => {
           const check = checks.find((c) => c.check_type === type);
@@ -322,7 +325,7 @@ function SeoPanel({ itemId }: { itemId: string }) {
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-100">
-      <p className="text-xs font-semibold text-gray-700 mb-2">🔍 SEO (§23)</p>
+      <p className="text-xs font-semibold text-gray-700 mb-2">🔍 SEO</p>
       <div className="grid grid-cols-2 gap-2 mb-2">
         <input className={inputClass()} placeholder="Основной keyword" value={seo.primary_keyword || ""} onChange={(e) => setSeo((s) => ({ ...s, primary_keyword: e.target.value }))} />
         <input className={inputClass()} placeholder="URL (слаг)" value={seo.slug || ""} onChange={(e) => setSeo((s) => ({ ...s, slug: e.target.value }))} />

@@ -337,6 +337,20 @@ export async function dbEnsureContentOsTables(): Promise<void> {
   // компании отдельно (внутренняя экономика по клиентам, §10.2 database.md).
   await pool.query(`alter table content_ai_runs add column if not exists company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id)`);
   await pool.query(`create index if not exists content_ai_runs_company_idx on content_ai_runs (company_id, created_at desc)`);
+
+  // Переопределение маршрутизации задач по компаниям — админ выбирает модель
+  // в UI (Settings), вместо жёстко зашитых дефолтов в src/lib/ai/router.ts.
+  // Пустая строка = используется дефолт из кода.
+  await pool.query(`
+    create table if not exists content_ai_task_routes (
+      company_id text not null references content_companies(id),
+      task text not null,
+      provider text not null,
+      model text,
+      updated_at bigint not null,
+      primary key (company_id, task)
+    )
+  `);
 }
 
 /**
@@ -768,6 +782,55 @@ export async function dbDeactivateCompany(id: string): Promise<void> {
   if (id === DEFAULT_COMPANY_ID) throw new Error("Нельзя деактивировать компанию по умолчанию");
   const pool = getTimewebPool();
   await pool.query("update content_companies set is_active = false, updated_at = $2 where id = $1", [id, Date.now()]);
+}
+
+/* ─────────── Маршрутизация AI по задачам (выбор модели в Settings) ─────────── */
+
+export interface ContentAiTaskRouteOverride {
+  task: string;
+  provider: "local" | "anthropic";
+  model: string | null;
+}
+
+export async function dbListTaskRouteOverrides(companyId: string = DEFAULT_COMPANY_ID): Promise<ContentAiTaskRouteOverride[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "select task, provider, model from content_ai_task_routes where company_id = $1",
+    [companyId]
+  );
+  return rows as ContentAiTaskRouteOverride[];
+}
+
+export async function dbGetTaskRouteOverride(task: string, companyId: string = DEFAULT_COMPANY_ID): Promise<ContentAiTaskRouteOverride | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query(
+    "select task, provider, model from content_ai_task_routes where company_id = $1 and task = $2",
+    [companyId, task]
+  );
+  return (rows[0] as ContentAiTaskRouteOverride) ?? null;
+}
+
+export async function dbSetTaskRouteOverride(
+  task: string,
+  provider: "local" | "anthropic",
+  model: string | null,
+  companyId: string = DEFAULT_COMPANY_ID
+): Promise<void> {
+  await ready();
+  const pool = getTimewebPool();
+  await pool.query(
+    `insert into content_ai_task_routes (company_id, task, provider, model, updated_at)
+     values ($1,$2,$3,$4,$5)
+     on conflict (company_id, task) do update set provider = excluded.provider, model = excluded.model, updated_at = excluded.updated_at`,
+    [companyId, task, provider, model, Date.now()]
+  );
+}
+
+/** Сброс на дефолт из кода (router.ts) — удаляет переопределение. */
+export async function dbClearTaskRouteOverride(task: string, companyId: string = DEFAULT_COMPANY_ID): Promise<void> {
+  const pool = getTimewebPool();
+  await pool.query("delete from content_ai_task_routes where company_id = $1 and task = $2", [companyId, task]);
 }
 
 /* ─────────── Каналы ─────────── */

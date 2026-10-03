@@ -51,7 +51,12 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
         <div>
           <h2 className="text-lg font-bold text-gray-900">Источники</h2>
           <p className="text-sm text-gray-500">
-            Источники и сбор новостей для Topic Hunter (§19 ТЗ) — полностью внутри Content OS, свой реестр и своя лента.
+            Источники и сбор новостей для поиска тем — свой реестр и своя лента, не зависит от других разделов сайта.
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Как это работает: «Поиск по словам» ищет упоминания через Google News (надёжнее всего — подходит почти для любой темы);
+            «RSS-лента» читает конкретный адрес ленты напрямую (нужно знать точный URL); «Telegram-канал» читает публичные посты без токена.
+            У сайтов без собственной RSS-ленты прямого парсинга нет — для них используйте «Поиск по словам».
           </p>
         </div>
         <button onClick={() => setShowForm((v) => !v)} className="px-4 py-2 bg-[#029cda] text-white text-sm font-semibold rounded-xl hover:bg-[#0280b5]">
