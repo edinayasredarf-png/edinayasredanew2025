@@ -80,6 +80,13 @@ export const deleteSource = (id: string) => apiFetch(`/sources?id=${encodeURICom
 
 export const pollSources = () =>
   apiFetch("/sources/poll", { method: "POST" }) as Promise<{ sources: number; fetched: number; saved: number; errors: { source: string; error: string }[] }>;
+
+/** Полный автоматический конвейер (сбор → отбор ИИ → черновик) для активной компании — та же логика, что по расписанию. */
+export const autoProcessSources = () =>
+  apiFetch("/cron/auto-process", { method: "POST" }) as Promise<{
+    ok: true;
+    results: { companyId: string; evaluated: number; created: number; dismissed: number; errors: { item: string; error: string }[] }[];
+  }>;
 export const listSourceItems = (opts: { status?: ContentSourceItemStatus; sourceId?: string } = {}) => {
   const sp = new URLSearchParams();
   if (opts.status) sp.set("status", opts.status);

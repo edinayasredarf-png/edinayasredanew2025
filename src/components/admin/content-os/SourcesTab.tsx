@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Select } from "@/components/admin/ui/Select";
 import { inputClass } from "@/components/admin/ui/Field";
-import { convertSourceItemToTopic, deleteSource, dismissSourceItem, listSourceItems, pollSources, upsertSource } from "@/lib/contentOsStore";
+import { autoProcessSources, convertSourceItemToTopic, deleteSource, dismissSourceItem, listSourceItems, pollSources, upsertSource } from "@/lib/contentOsStore";
 import { CONTENT_SOURCE_TYPES, type ContentSource, type ContentSourceItem, type ContentSourceItemStatus, type ContentSourceType } from "@/lib/contentOsTypes";
 
 const labelCls = "block text-[13px] font-medium text-[#52555a] mb-1";
@@ -159,6 +159,7 @@ function SourceFeed() {
   const [items, setItems] = useState<ContentSourceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [polling, setPolling] = useState(false);
+  const [autoRunning, setAutoRunning] = useState(false);
   const [pollMsg, setPollMsg] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -183,6 +184,21 @@ function SourceFeed() {
     }
   };
 
+  const runAuto = async () => {
+    setAutoRunning(true); setPollMsg(null);
+    try {
+      const r = await autoProcessSources();
+      const summary = r.results[0];
+      const errSuffix = summary.errors.length ? `, ошибок: ${summary.errors.length}` : "";
+      setPollMsg(`ИИ оценил ${summary.evaluated} записей: создано материалов — ${summary.created}, отклонено как нерелевантные — ${summary.dismissed}${errSuffix}. Готовые черновики — в статусе «На проверке» внутри своих кластеров.`);
+      load(tab);
+    } catch (e) {
+      setPollMsg(e instanceof Error ? e.message : "Ошибка автообработки");
+    } finally {
+      setAutoRunning(false);
+    }
+  };
+
   const toTopic = async (id: string) => {
     setBusyId(id);
     try { await convertSourceItemToTopic(id); setItems((v) => v.filter((i) => i.id !== id)); }
@@ -202,10 +218,19 @@ function SourceFeed() {
           <h3 className="text-sm font-bold text-gray-900">Лента</h3>
           <p className="text-xs text-gray-500">Собранные записи по активным источникам — отсюда темы уходят в «Идеи».</p>
         </div>
-        <button onClick={poll} disabled={polling} className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 disabled:opacity-60 whitespace-nowrap">
-          {polling ? "Собираем..." : "🔄 Собрать сейчас"}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={poll} disabled={polling || autoRunning} className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 disabled:opacity-60 whitespace-nowrap">
+            {polling ? "Собираем..." : "🔄 Только собрать"}
+          </button>
+          <button onClick={runAuto} disabled={polling || autoRunning} className="px-4 py-2 bg-[#029cda] text-white text-sm font-semibold rounded-xl hover:bg-[#0280b5] disabled:opacity-60 whitespace-nowrap">
+            {autoRunning ? "Работаем..." : "🤖 Собрать и написать автоматически"}
+          </button>
+        </div>
       </div>
+      <p className="text-[11px] text-gray-400 mb-3">
+        «Собрать и написать автоматически» — полный цикл без вашего участия: собирает источники, ИИ сам оценивает релевантность и пишет черновики для подходящих тем.
+        Готовое попадает в статус «На проверке» — публикация всё равно остаётся за вами. То же самое можно настроить по расписанию — спросите, если нужно.
+      </p>
 
       {pollMsg && <p className="text-xs text-gray-600 bg-[#F6F7F9] rounded-lg px-3 py-2 mb-3">{pollMsg}</p>}
 
