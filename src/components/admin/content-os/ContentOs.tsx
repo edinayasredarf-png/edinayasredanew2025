@@ -22,18 +22,18 @@ import { upsertCluster } from "@/lib/contentOsStore";
 type View = "dashboard" | "ideas" | "sources" | "plan" | "articles" | "social" | "brand" | "seo" | "research" | "publications" | "analytics" | "settings";
 
 const TABS: { id: View; label: string; icon: string }[] = [
-  { id: "dashboard", label: "Dashboard", icon: "🏠" },
-  { id: "ideas", label: "Ideas", icon: "💡" },
-  { id: "sources", label: "Sources", icon: "📡" },
-  { id: "plan", label: "Content Plan", icon: "📅" },
-  { id: "articles", label: "Articles", icon: "📄" },
-  { id: "social", label: "Social", icon: "✈️" },
-  { id: "brand", label: "Brand", icon: "🏷️" },
+  { id: "dashboard", label: "Обзор", icon: "🏠" },
+  { id: "ideas", label: "Идеи", icon: "💡" },
+  { id: "sources", label: "Источники", icon: "📡" },
+  { id: "plan", label: "Контент-план", icon: "📅" },
+  { id: "articles", label: "Статьи", icon: "📄" },
+  { id: "social", label: "Соцсети", icon: "✈️" },
+  { id: "brand", label: "Бренд", icon: "🏷️" },
   { id: "seo", label: "SEO", icon: "🔍" },
-  { id: "research", label: "Research", icon: "🔎" },
-  { id: "publications", label: "Publications", icon: "🚀" },
-  { id: "analytics", label: "Analytics", icon: "📊" },
-  { id: "settings", label: "Settings", icon: "⚙️" },
+  { id: "research", label: "Исследования", icon: "🔎" },
+  { id: "publications", label: "Публикации", icon: "🚀" },
+  { id: "analytics", label: "Аналитика", icon: "📊" },
+  { id: "settings", label: "Настройки", icon: "⚙️" },
 ];
 
 export default function ContentOs() {
@@ -107,8 +107,8 @@ export default function ContentOs() {
     <div>
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Content OS</h1>
-          <p className="text-sm text-gray-500">Source → Idea → Cluster → Draft (local/cloud AI) → QC → Approval → Plan → Publication.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Контент</h1>
+          <p className="text-sm text-gray-500">Источник → Идея → Кластер → Черновик (локальный/облачный AI) → Проверка → Утверждение → План → Публикация.</p>
         </div>
         {companies.length > 1 && (
           <div className="flex items-center gap-2">

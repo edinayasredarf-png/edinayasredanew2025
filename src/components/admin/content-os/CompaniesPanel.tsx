@@ -45,7 +45,7 @@ export default function CompaniesPanel({ companies, reload }: { companies: Conte
       <div className="flex items-center justify-between mb-3">
         <div>
           <h3 className="text-sm font-semibold text-gray-800">🏢 Компании</h3>
-          <p className="text-xs text-gray-500 mt-0.5">Бренды/клиенты внутри Content OS — общий доступ команды, без отдельных логинов.</p>
+          <p className="text-xs text-gray-500 mt-0.5">Бренды/клиенты внутри раздела «Контент» — общий доступ команды, без отдельных логинов.</p>
         </div>
         <button onClick={() => setShowForm((v) => !v)} className="px-3 py-1.5 bg-[#029cda] text-white text-xs font-semibold rounded-lg hover:bg-[#0280b5]">
           + Компания

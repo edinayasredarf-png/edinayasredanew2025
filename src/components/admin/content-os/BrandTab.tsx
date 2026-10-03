@@ -14,7 +14,7 @@ const CATEGORIES: { value: ContentBrandDocument["category"]; label: string }[] =
   { value: "company", label: "О компании" },
   { value: "editorial", label: "Редполитика" },
   { value: "seo", label: "SEO" },
-  { value: "research", label: "Research" },
+  { value: "research", label: "Исследования" },
   { value: "legal", label: "Юридическое" },
 ];
 

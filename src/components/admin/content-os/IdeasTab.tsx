@@ -50,7 +50,7 @@ export default function IdeasTab({ topics, reload, onDevelop }: {
     <div>
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Ideas</h2>
+          <h2 className="text-lg font-bold text-gray-900">Идеи</h2>
           <p className="text-sm text-gray-500">
             Портфель тем. Source → topic extraction → classification (§19 ТЗ) — «Оценить ИИ» проставляет relevance/popularity.
           </p>

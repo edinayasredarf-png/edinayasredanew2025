@@ -244,11 +244,11 @@ function ResearchPanel({ clusterId }: { clusterId: string }) {
 
   return (
     <div className="bg-[#F6F7F9] rounded-2xl p-4">
-      <button onClick={load} className="text-sm font-semibold text-gray-800 w-full text-left">🔎 Research {open ? "▲" : "▼"}</button>
+      <button onClick={load} className="text-sm font-semibold text-gray-800 w-full text-left">🔎 Исследования {open ? "▲" : "▼"}</button>
       {open && (
         <div className="mt-3">
           {summary && <div className="text-xs text-gray-600 bg-white rounded-xl p-3 mb-3 whitespace-pre-wrap">{summary}</div>}
-          {!summary && <p className="text-xs text-gray-400 mb-2">Research pack ещё не собран.</p>}
+          {!summary && <p className="text-xs text-gray-400 mb-2">Подборка исследований ещё не собрана.</p>}
           <p className="text-[11px] text-gray-500 mb-2">Добавьте источники (заголовок + текст) — синтез только по ним, без поиска в интернете (см. integrations.md).</p>
           {sources.map((s, i) => (
             <div key={i} className="bg-white rounded-xl p-2 mb-2 space-y-1">
@@ -325,10 +325,10 @@ function SeoPanel({ itemId }: { itemId: string }) {
       <p className="text-xs font-semibold text-gray-700 mb-2">🔍 SEO (§23)</p>
       <div className="grid grid-cols-2 gap-2 mb-2">
         <input className={inputClass()} placeholder="Основной keyword" value={seo.primary_keyword || ""} onChange={(e) => setSeo((s) => ({ ...s, primary_keyword: e.target.value }))} />
-        <input className={inputClass()} placeholder="Slug" value={seo.slug || ""} onChange={(e) => setSeo((s) => ({ ...s, slug: e.target.value }))} />
+        <input className={inputClass()} placeholder="URL (слаг)" value={seo.slug || ""} onChange={(e) => setSeo((s) => ({ ...s, slug: e.target.value }))} />
       </div>
-      <input className={`${inputClass()} mb-2`} placeholder="Meta title" value={seo.meta_title || ""} onChange={(e) => setSeo((s) => ({ ...s, meta_title: e.target.value }))} />
-      <textarea className={`${inputClass()} mb-2`} rows={2} placeholder="Meta description" value={seo.meta_description || ""} onChange={(e) => setSeo((s) => ({ ...s, meta_description: e.target.value }))} />
+      <input className={`${inputClass()} mb-2`} placeholder="Meta-заголовок" value={seo.meta_title || ""} onChange={(e) => setSeo((s) => ({ ...s, meta_title: e.target.value }))} />
+      <textarea className={`${inputClass()} mb-2`} rows={2} placeholder="Meta-описание" value={seo.meta_description || ""} onChange={(e) => setSeo((s) => ({ ...s, meta_description: e.target.value }))} />
       <input className={`${inputClass()} mb-2`} placeholder="H1" value={seo.h1 || ""} onChange={(e) => setSeo((s) => ({ ...s, h1: e.target.value }))} />
       <button onClick={save} disabled={saving} className="px-3 py-1.5 bg-[#029cda] text-white text-xs font-semibold rounded-lg disabled:opacity-60">{saving ? "Сохранение..." : "Сохранить SEO"}</button>
     </div>

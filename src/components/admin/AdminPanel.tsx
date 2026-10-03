@@ -120,8 +120,8 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
   { group: 'Мониторинг', items: [
     { id: 'radar', label: 'Новостной радар', icon: IconRadar },
   ] },
-  { group: 'Content OS', items: [
-    { id: 'content-os', label: 'Content OS', icon: IconContentOs },
+  { group: 'Контент', items: [
+    { id: 'content-os', label: 'Контент', icon: IconContentOs },
   ] },
   { group: 'Аналитика', items: [
     { id: 'metrika', label: 'Посещаемость', icon: IconChart },

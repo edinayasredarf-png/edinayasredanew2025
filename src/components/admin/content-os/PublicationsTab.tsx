@@ -20,7 +20,7 @@ export default function PublicationsTab() {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Publications</h2>
+        <h2 className="text-lg font-bold text-gray-900">Публикации</h2>
         <p className="text-sm text-gray-500">
           История публикаций (§29 ТЗ). Пока без токенов каналов публикация отмечается вручную (внутри материала, кнопка «Отметить опубликованным»).
         </p>

@@ -53,7 +53,7 @@ export default function AnalyticsTab() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Kpi label="AI-вызовов всего" value={totalRuns} accent="#029cda" />
-        <Kpi label="Через local (GigaChat)" value={localRuns} accent="#22c55e" />
+        <Kpi label="Через свою модель" value={localRuns} accent="#22c55e" />
         <Kpi label="Через облако (Claude)" value={cloudRuns} accent="#8b5cf6" />
         <Kpi label="Доля fallback" value={`${Math.round(stats.fallbackRate * 100)}%`} accent="#f59e0b" />
       </div>
@@ -62,7 +62,7 @@ export default function AnalyticsTab() {
         <div className="bg-white border border-gray-100 rounded-2xl p-5">
           <h3 className="text-sm font-semibold text-gray-800 mb-4">Провайдер</h3>
           <div className="space-y-2.5">
-            <BarRow label="Local (GigaChat)" value={localRuns} max={maxProvider} color="#22c55e" />
+            <BarRow label="Своя модель" value={localRuns} max={maxProvider} color="#22c55e" />
             <BarRow label="Облако (Claude)" value={cloudRuns} max={maxProvider} color="#8b5cf6" />
           </div>
           {totalRuns === 0 && <p className="text-xs text-gray-400 mt-3">Вызовов ещё не было — сгенерируйте черновик во вкладке «Контент».</p>}

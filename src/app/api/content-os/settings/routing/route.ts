@@ -9,8 +9,13 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     await requireAdminAccess(request);
+    const localModel = process.env.SELFHOSTED_LLM_MODEL?.trim() || null;
     return NextResponse.json({
       localConfigured: Boolean((process.env.SELFHOSTED_LLM_URL || process.env.SELFHOSTED_LLM_BASE_URL)?.trim()),
+      // Реальное имя модели из окружения, не угадываем бренд в UI —
+      // раньше интерфейс жёстко показывал «GigaChat», хотя фактически
+      // настроена могла быть уже другая модель (или ничего).
+      localModel,
       routes: TASK_ROUTES,
     });
   } catch (e) {

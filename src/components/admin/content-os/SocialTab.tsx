@@ -29,7 +29,7 @@ export default function SocialTab({ onOpenCluster }: { onOpenCluster: (clusterId
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Social</h2>
+        <h2 className="text-lg font-bold text-gray-900">Соцсети</h2>
         <p className="text-sm text-gray-500">Telegram, ВКонтакте, Дзен, MAX — все версии по соцканалам в одном месте.</p>
       </div>
       <div className="flex gap-2 mb-4 flex-wrap">

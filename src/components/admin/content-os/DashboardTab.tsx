@@ -33,8 +33,8 @@ export default function DashboardTab({ onOpenCluster }: { onOpenCluster: (cluste
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Dashboard</h2>
-        <p className="text-sm text-gray-500">Общая сводка по Content OS.</p>
+        <h2 className="text-lg font-bold text-gray-900">Обзор</h2>
+        <p className="text-sm text-gray-500">Общая сводка по разделу «Контент».</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -62,7 +62,7 @@ export default function DashboardTab({ onOpenCluster }: { onOpenCluster: (cluste
           <h3 className="text-sm font-semibold text-gray-800 mb-3">🤖 AI Gateway</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-gray-500">Вызовов всего</span><span className="font-medium text-gray-900">{totalRuns}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Через local (GigaChat)</span><span className="font-medium text-gray-900">{stats.runsByProvider.find((r) => r.provider === "local")?.n ?? 0}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Через свою модель</span><span className="font-medium text-gray-900">{stats.runsByProvider.find((r) => r.provider === "local")?.n ?? 0}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">Через облако (Claude)</span><span className="font-medium text-gray-900">{stats.runsByProvider.find((r) => r.provider === "anthropic")?.n ?? 0}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">Доля fallback</span><span className="font-medium text-gray-900">{Math.round(stats.fallbackRate * 100)}%</span></div>
           </div>

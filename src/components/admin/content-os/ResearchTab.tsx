@@ -22,7 +22,7 @@ export default function ResearchTab({ clusters, onOpenCluster }: { clusters: Con
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Research</h2>
+        <h2 className="text-lg font-bold text-gray-900">Исследования</h2>
         <p className="text-sm text-gray-500">
           Research pack по каждому кластеру (§22 ТЗ: search → sources → extract → verify → structure). Сбор источников и синтез — внутри кластера (кнопка «Открыть»).
         </p>

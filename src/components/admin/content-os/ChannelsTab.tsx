@@ -103,7 +103,7 @@ function ChannelCard({ channel, reload }: { channel: ContentChannelProfile; relo
           ) : (
             <div className="grid grid-cols-2 gap-2">
               <input className={inputClass()} placeholder="Chat ID или @channel" value={c.credentials?.chatId ?? ""} onChange={(e) => setCred("chatId", e.target.value)} />
-              <input className={inputClass()} type="password" placeholder="Bot token" value={c.credentials?.botToken ?? ""} onChange={(e) => setCred("botToken", e.target.value)} />
+              <input className={inputClass()} type="password" placeholder="Токен бота" value={c.credentials?.botToken ?? ""} onChange={(e) => setCred("botToken", e.target.value)} />
             </div>
           )}
           <p className="text-[10px] text-gray-400 mt-1">Хранится в базе как есть, без шифрования — доступ только у админов сайта.</p>

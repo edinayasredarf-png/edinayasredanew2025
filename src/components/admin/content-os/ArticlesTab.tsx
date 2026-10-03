@@ -26,7 +26,7 @@ export default function ArticlesTab({ onOpenCluster }: { onOpenCluster: (cluster
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Articles</h2>
+        <h2 className="text-lg font-bold text-gray-900">Статьи</h2>
         <p className="text-sm text-gray-500">Материалы для сайта (channel=article). SEO-параметры — во вкладке SEO или внутри материала.</p>
       </div>
       {loading && <p className="text-sm text-gray-400 py-8 text-center">Загрузка...</p>}

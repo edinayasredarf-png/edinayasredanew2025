@@ -49,7 +49,7 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
     <div>
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Sources</h2>
+          <h2 className="text-lg font-bold text-gray-900">Источники</h2>
           <p className="text-sm text-gray-500">
             Источники и сбор новостей для Topic Hunter (§19 ТЗ) — полностью внутри Content OS, свой реестр и своя лента.
           </p>
