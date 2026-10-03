@@ -2586,6 +2586,8 @@ function Settings() {
   const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [models, setModels] = useState<string[] | null>(null);
+  const [modelsErr, setModelsErr] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -2597,6 +2599,22 @@ function Settings() {
       } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
     })();
   }, []);
+
+  // Каталог моделей self-hosted/OpenAI-совместимого шлюза — чтобы выбирать
+  // реальный API id, а не переписывать вручную отображаемое имя (один раз
+  // это уже привело к 404 "model not found").
+  useEffect(() => {
+    if (s?.['ai.provider'] !== 'selfhosted') return;
+    if (models != null || modelsErr) return;
+    (async () => {
+      try {
+        const r = await fetch('/api/ai-sales/settings/models');
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        setModels(j.models || []);
+      } catch (e) { setModelsErr(e instanceof Error ? e.message : 'Ошибка'); }
+    })();
+  }, [s, models, modelsErr]);
 
   const set = (k: string, v: unknown) => setS((prev) => ({ ...(prev || {}), [k]: v }));
   const save = async () => {
@@ -2661,14 +2679,30 @@ function Settings() {
           <Select value={str('ai.provider', 'yandex')} onChange={(v) => set('ai.provider', v)} className="w-full" ariaLabel="AI-провайдер"
             options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }, { value: 'selfhosted', label: 'OpenAI-совместимый шлюз (напр. Timeweb AI Gateway)' }]} />
         </Field>
-        <Field label="Модель анализа звонка/сделки" hint="напр. claude-opus-5, deepseek-v4-flash, gemini-3.1-flash-lite — имя модели как её знает выбранный провайдер (для своего сервера/шлюза — id модели из его каталога). Общая модель по умолчанию для всех AI-задач ниже, если для них не задана своя.">
-          <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="claude-opus-5" />
+        {s['ai.provider'] === 'selfhosted' && (
+          <datalist id="ai-model-catalog">
+            {(models || []).map((m) => <option key={m} value={m} />)}
+          </datalist>
+        )}
+        <Field
+          label="Модель анализа звонка/сделки"
+          hint={
+            s['ai.provider'] === 'selfhosted'
+              ? (modelsErr
+                  ? `Не удалось получить каталог моделей шлюза: ${modelsErr}. Впишите id вручную — его можно скопировать со страницы шлюза (не отображаемое имя, а API id, напр. dashscope/qwen3.5-flash).`
+                  : models == null
+                    ? 'Загружаю каталог моделей шлюза…'
+                    : `Каталог шлюза: ${models.length} моделей — начните печатать, появятся подсказки. Общая модель по умолчанию для всех AI-задач ниже, если для них не задана своя.`)
+              : 'напр. claude-opus-5 (Anthropic) или имя модели YandexGPT. Общая модель по умолчанию для всех AI-задач ниже, если для них не задана своя.'
+          }
+        >
+          <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="claude-opus-5" />
         </Field>
         <Field label="Модель для разметки ролей" hint="Менеджер/Клиент по репликам — задача попроще, можно взять модель подешевле. Пусто — используется «Модель анализа звонка/сделки» выше.">
-          <input value={str('ai.model.roles')} onChange={(e) => set('ai.model.roles', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
+          <input value={str('ai.model.roles')} onChange={(e) => set('ai.model.roles', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
         </Field>
         <Field label="Модель для RAG-ассистента" hint="Ответы на вопросы по базе знаний (§31 ТЗ). Пусто — используется «Модель анализа звонка/сделки» выше.">
-          <input value={str('ai.model.rag')} onChange={(e) => set('ai.model.rag', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
+          <input value={str('ai.model.rag')} onChange={(e) => set('ai.model.rag', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
         </Field>
         <Field label="Анализ включён">
           <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>
