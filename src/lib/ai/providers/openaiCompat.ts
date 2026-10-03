@@ -131,13 +131,15 @@ export class OpenAiCompatProvider implements AiProvider {
         res = await fetch(endpoint, {
           method: "POST",
           headers,
-          // Дефолтный таймаут fetch в Node (undici) — 300с. На CPU-инференсе
-          // (~1-9 ток/с на нашей VPS) полный ответ по большой схеме анализа
-          // звонка не укладывается в 5 минут — без explicit signal запрос
-          // обрывался посередине генерации (видно как "cancel task" в логах
-          // llama-server ровно на 300-й секунде).
+          // На Vercel (Hobby maxDuration=60с, жёсткий килл без шанса на catch)
+          // таймаут должен быть заметно короче лимита функции — иначе Vercel
+          // обрывает процесс раньше, чем успевает сработать наш catch, задача
+          // зависает в RUNNING до reapStuckJobs, а 3 попытки подряд (см. ниже)
+          // легко суммарно вылезают за 60с. 15с на попытку — с запасом для
+          // облачного шлюза (Timeweb AI Gateway и т.п.), переопределяемо через
+          // SELFHOSTED_LLM_TIMEOUT_MS для действительно медленного сервера.
           signal: AbortSignal.timeout(
-            Number(process.env.SELFHOSTED_LLM_TIMEOUT_MS) || 20 * 60_000
+            Number(process.env.SELFHOSTED_LLM_TIMEOUT_MS) || 15_000
           ),
           body: JSON.stringify({
             model,
@@ -152,10 +154,12 @@ export class OpenAiCompatProvider implements AiProvider {
         });
       } catch (e) {
         lastErr = new Error(`Свой LLM-сервер недоступен: ${(e as Error).message}`);
-        // Сервер мог как раз перезапускаться (порт ещё не слушает) —
-        // без паузы следующая задача в очереди тут же ловит то же самое и
-        // весь бэклог проваливается пачкой за секунды (уже наблюдалось).
-        await sleep((attempt + 1) * 4000);
+        // Короткая пауза на случай кратковременного сбоя сети/шлюза — не
+        // 4/8/12с (это было рассчитано на рестарт self-hosted VPS-сервера,
+        // которого больше нет): на Vercel (maxDuration=60с) 3 попытки по
+        // 15с таймаута уже съедают почти весь бюджет функции, длинный
+        // бэкофф сверху почти гарантированно вылезет за лимит.
+        await sleep(1_500);
         continue;
       }
 
@@ -165,9 +169,8 @@ export class OpenAiCompatProvider implements AiProvider {
           throw new Error(`Свой LLM ${res.status}: ${detail.slice(0, 300)}`);
         }
         lastErr = new Error(`Свой LLM ${res.status}: ${detail.slice(0, 200)}`);
-        // 429/503 — как правило временно (rate limit или модель ещё грузится
-        // после рестарта, ~15-20с у нас на практике); та же причина паузы.
-        await sleep((attempt + 1) * 4000);
+        // 429 (rate limit) — короткая пауза, та же причина, что выше.
+        await sleep(1_500);
         continue;
       }
 
