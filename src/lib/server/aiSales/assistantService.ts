@@ -2,6 +2,7 @@ import "server-only";
 
 import * as z from "zod/v4";
 import { getAiProvider } from "@/lib/ai";
+import { getTaskModel } from "@/lib/server/aiSales/settingsDb";
 import { searchKnowledge, type KbHit } from "@/lib/server/aiSales/kbDb";
 import { getCallById, getTranscript } from "@/lib/server/aiSales/callsDb";
 import { buildDialogue } from "@/lib/server/aiSales/analysisService";
@@ -81,6 +82,7 @@ export async function askAssistant(question: string, callId?: string | null): Pr
     schema: AnswerSchema,
     system: SYSTEM,
     user,
+    model: await getTaskModel("rag"),
     cacheSystem: true,
     maxTokens: 2000,
   });

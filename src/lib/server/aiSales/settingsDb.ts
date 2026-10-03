@@ -33,6 +33,12 @@ export async function setSetting(key: string, value: unknown, userId?: string | 
 export const EDITABLE_KEYS = new Set<string>([
   "ai.provider",
   "ai.model.analysis",
+  // Отдельные модели для задач, где общая "ai.model.analysis" не подходит —
+  // разметка ролей и RAG-ассистент по базе знаний часто выгоднее решать более
+  // дешёвой/быстрой моделью, чем полный анализ звонка. Пусто — используется
+  // ai.model.analysis (см. getTaskModel).
+  "ai.model.roles",
+  "ai.model.rag",
   "ai.analysis_enabled",
   "ai.confidence_threshold",
   "transcription.provider",
@@ -78,32 +84,35 @@ export async function getAiConfig(): Promise<{ provider: string; analysisModel: 
   return { provider, analysisModel, analysisEnabled: enabled !== false };
 }
 
-/** Задачи разметки ролей и LLM-анализа — долго на self-hosted CPU, быстро в облаке. */
+/**
+ * Модель для конкретной задачи (`ai.model.roles` / `ai.model.rag`), с
+ * фолбэком на общую `ai.model.analysis` — задавать её отдельно нужно только
+ * если для этой задачи явно хочется другую модель (напр. подешевле для
+ * разметки ролей). Передать как `model` в `generateStructured` — пусто
+ * означает "модель по умолчанию у провайдера".
+ */
+export async function getTaskModel(task: "roles" | "rag"): Promise<string | undefined> {
+  const specific = await getSetting<string | undefined>(`ai.model.${task}`, undefined);
+  if (specific?.trim()) return specific.trim();
+  const { analysisModel } = await getAiConfig();
+  return analysisModel?.trim() || undefined;
+}
+
+/**
+ * Задачи разметки ролей и LLM-анализа звонка/сделки. Раньше при self-hosted
+ * провайдере (GigaChat на отдельной VPS, CPU-инференс — минуты на задачу) эти
+ * типы уходили на отдельный воркер (scripts/ai-worker), т.к. не укладывались
+ * в 60с Vercel Hobby. VPS удалена (2026-10), self-hosted теперь означает
+ * облачный OpenAI-совместимый шлюз (Timeweb AI Gateway и т.п.) — обычный
+ * быстрый облачный API, как Yandex/Anthropic. Поэтому все типы задач снова
+ * безусловно идут через Vercel — отдельный воркер не нужен.
+ */
 export const ANALYSIS_JOB_TYPES: AiJobType[] = ["call.roles", "call.analyze", "deal.analyze"];
 
-const VERCEL_BASE_JOB_TYPES: AiJobType[] = [
+export const VERCEL_JOB_TYPES: AiJobType[] = [
   "bitrix.sync",
   "call.ingest",
   "call.transcribe",
   "call.diarize",
+  ...ANALYSIS_JOB_TYPES,
 ];
-
-/** Провайдер анализа через свой OpenAI-совместимый сервер (GigaChat на VPS). */
-export function isSelfHostedAiProvider(provider: string): boolean {
-  const p = provider.trim().toLowerCase();
-  return p === "selfhosted" || p === "local" || p === "openai";
-}
-
-/** Типы задач для Vercel-дренажа: облачный AI — анализ здесь (env Vercel), self-hosted — только на VPS. */
-export async function getVercelDrainJobTypes(): Promise<AiJobType[]> {
-  const { provider } = await getAiConfig();
-  if (isSelfHostedAiProvider(provider)) return [...VERCEL_BASE_JOB_TYPES];
-  return [...VERCEL_BASE_JOB_TYPES, ...ANALYSIS_JOB_TYPES];
-}
-
-/** Типы для VPS-воркера: только когда в настройках выбран self-hosted LLM. */
-export async function getVpsWorkerJobTypes(): Promise<AiJobType[]> {
-  const { provider } = await getAiConfig();
-  if (isSelfHostedAiProvider(provider)) return [...ANALYSIS_JOB_TYPES];
-  return [];
-}

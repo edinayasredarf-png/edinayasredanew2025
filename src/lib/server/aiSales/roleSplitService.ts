@@ -5,6 +5,7 @@ import { getAiProvider } from "@/lib/ai";
 import { RoleSplitSchema } from "@/lib/ai/schemas/roleSplit";
 import { ROLE_SPLIT_SYSTEM, buildRoleSplitUser } from "@/lib/ai/prompts/roleSplit";
 import { getTranscript, updateSegmentRoles } from "@/lib/server/aiSales/callsDb";
+import { getTaskModel } from "@/lib/server/aiSales/settingsDb";
 
 /**
  * Разметка ролей Менеджер/Клиент (§43 ТЗ).
@@ -79,6 +80,7 @@ export async function runRoleSplit(callId: string): Promise<unknown> {
         schema: ManagerDecisionSchema,
         system: MANAGER_DECIDE_SYSTEM,
         user: samples,
+        model: await getTaskModel("roles"),
         maxTokens: 200,
       });
       if (data.manager && speakers.includes(data.manager)) manager = data.manager;
@@ -103,6 +105,7 @@ async function legacyPerSegment(t: NonNullable<Awaited<ReturnType<typeof getTran
     schema: RoleSplitSchema,
     system: ROLE_SPLIT_SYSTEM,
     user: buildRoleSplitUser(t.segments.map((s) => ({ idx: s.idx, text: s.text }))),
+    model: await getTaskModel("roles"),
     maxTokens: 4000,
   });
   const valid = new Set(t.segments.map((s) => s.idx));

@@ -2608,6 +2608,8 @@ function Settings() {
         'diarization.provider': s['diarization.provider'],
         'ai.provider': s['ai.provider'],
         'ai.model.analysis': s['ai.model.analysis'],
+        'ai.model.roles': s['ai.model.roles'],
+        'ai.model.rag': s['ai.model.rag'],
         'ai.analysis_enabled': s['ai.analysis_enabled'],
         'ai.confidence_threshold': Number(s['ai.confidence_threshold']),
         'bitrix.auto_write': s['bitrix.auto_write'],
@@ -2655,12 +2657,18 @@ function Settings() {
           <Select value={str('diarization.provider', 'yandex')} onChange={(v) => set('diarization.provider', v)} className="w-full" ariaLabel="Диаризация"
             options={[{ value: 'yandex', label: 'Yandex (встроенная)' }, { value: 'pyannote', label: 'pyannote (свой сервер, точнее)' }]} />
         </Field>
-        <Field label="AI-провайдер анализа" hint="anthropic (Claude), yandex (YandexGPT) или selfhosted (свой сервер, OpenAI-совместимый: llama.cpp/vLLM). Для своего сервера задайте SELFHOSTED_LLM_URL в env.">
+        <Field label="AI-провайдер анализа" hint="anthropic (Claude), yandex (YandexGPT) или selfhosted — любой OpenAI-совместимый шлюз/сервер (напр. Timeweb AI Gateway). Для selfhosted задайте в env Vercel: SELFHOSTED_LLM_URL, SELFHOSTED_LLM_API_KEY.">
           <Select value={str('ai.provider', 'yandex')} onChange={(v) => set('ai.provider', v)} className="w-full" ariaLabel="AI-провайдер"
-            options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }, { value: 'selfhosted', label: 'Свой сервер (OpenAI-совместимый)' }]} />
+            options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }, { value: 'selfhosted', label: 'OpenAI-совместимый шлюз (напр. Timeweb AI Gateway)' }]} />
         </Field>
-        <Field label="Модель анализа (Claude / свой сервер)" hint="напр. claude-opus-5, или имя модели вашего сервера. Для YandexGPT — в env YANDEX_GPT_MODEL, для своего сервера можно задать SELFHOSTED_LLM_MODEL.">
-          <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" />
+        <Field label="Модель анализа звонка/сделки" hint="напр. claude-opus-5, deepseek-v4-flash, gemini-3.1-flash-lite — имя модели как её знает выбранный провайдер (для своего сервера/шлюза — id модели из его каталога). Общая модель по умолчанию для всех AI-задач ниже, если для них не задана своя.">
+          <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="claude-opus-5" />
+        </Field>
+        <Field label="Модель для разметки ролей" hint="Менеджер/Клиент по репликам — задача попроще, можно взять модель подешевле. Пусто — используется «Модель анализа звонка/сделки» выше.">
+          <input value={str('ai.model.roles')} onChange={(e) => set('ai.model.roles', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
+        </Field>
+        <Field label="Модель для RAG-ассистента" hint="Ответы на вопросы по базе знаний (§31 ТЗ). Пусто — используется «Модель анализа звонка/сделки» выше.">
+          <input value={str('ai.model.rag')} onChange={(e) => set('ai.model.rag', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
         </Field>
         <Field label="Анализ включён">
           <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>

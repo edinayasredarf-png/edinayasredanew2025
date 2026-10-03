@@ -1,17 +1,26 @@
 /**
- * VPS-воркер очереди AI Sales — call.roles / call.analyze / deal.analyze.
- * Тот же код обработчиков, что и Vercel (src/lib/server/aiSales/handlers.ts,
- * скопирован как есть), но без лимита 60с — эти три типа сняты с Vercel-
- * дренажа (см. src/app/api/ai-sales/jobs/drain/route.ts, VERCEL_JOB_TYPES).
+ * ДЕКОММИШЕНЕН (2026-10) — VPS с self-hosted GigaChat удалена, этот воркер
+ * сейчас НИГДЕ не запущен. Код оставлен в репозитории на случай, если
+ * self-hosted CPU-инференс понадобится снова (см. git-историю ветки
+ * cursor/yandex-gpt-drain-routing и scripts/ai-worker/README.md).
  *
- * Обрабатывает задачи строго по одной (llama-server на этом же сервере
- * держит один слот — параллельные запросы только делят ресурсы и роняют
- * всех в timeout, уже проверено на практике).
+ * ВАЖНО если решите поднять заново: src/app/api/ai-sales/jobs/drain/route.ts
+ * сейчас БЕЗУСЛОВНО дренирует все типы задач, включая call.roles/
+ * call.analyze/deal.analyze (т.к. предполагается быстрый облачный провайдер —
+ * YandexGPT/Claude/Timeweb AI Gateway). Если этот воркер снова включат для
+ * ДЕЙСТВИТЕЛЬНО медленного self-hosted CPU-инференса, нужно СНАЧАЛА вернуть
+ * в route.ts условное исключение этих типов (см. git log той ветки — там
+ * было getVercelDrainJobTypes/getVpsWorkerJobTypes, завязанные на ai.provider),
+ * иначе Vercel и этот воркер будут claimBatch'ить одни и те же задачи.
+ *
+ * Обрабатывает задачи строго по одной (у self-hosted llama-server был один
+ * слот генерации — параллельные запросы делили ресурсы и роняли друг друга
+ * в timeout, проверено на практике).
  */
 import { registerAllHandlers } from "@/lib/server/aiSales/handlers";
 import { drainQueue, type JobEvent } from "@/lib/server/aiSales/jobRunner";
 import { reapStuckJobs } from "@/lib/server/aiSales/jobsDb";
-import { getVpsWorkerJobTypes } from "@/lib/server/aiSales/settingsDb";
+import { ANALYSIS_JOB_TYPES } from "@/lib/server/aiSales/settingsDb";
 const POLL_INTERVAL_MS = 5_000;
 const DRAIN_BUDGET_MS = 6 * 60 * 60 * 1000; // drainQueue сам выходит, когда очередь опустеет — это просто верхний потолок на «зависшую» пачку
 // Self-hosted LLM на CPU: одна задача легитимно занимает несколько минут
@@ -47,21 +56,11 @@ async function main(): Promise<void> {
   // или крашем) процесс, не наша текущая работа. Чистим сразу коротким
   // порогом, а не ждём до REAP_MAX_MINUTES — иначе такая запись «висит»
   // призраком в админке (Выполняется: N) до получаса после каждого рестарта.
-  let jobTypes = await getVpsWorkerJobTypes();
-  const reapedOnStart = jobTypes.length ? await reapStuckJobs(1, jobTypes) : 0;
-  log(
-    jobTypes.length
-      ? `started, watching: ${jobTypes.join(", ")}${reapedOnStart > 0 ? ` (очищено зависших от прошлого процесса: ${reapedOnStart})` : ""}`
-      : "started, ai.provider — облако (YandexGPT/Claude): анализ на Vercel, VPS idle"
-  );
+  const reapedOnStart = await reapStuckJobs(1, ANALYSIS_JOB_TYPES);
+  log(`started, watching: ${ANALYSIS_JOB_TYPES.join(", ")}${reapedOnStart > 0 ? ` (очищено зависших от прошлого процесса: ${reapedOnStart})` : ""}`);
   while (!stopping) {
     try {
-      jobTypes = await getVpsWorkerJobTypes();
-      if (!jobTypes.length) {
-        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-        continue;
-      }
-      const report = await drainQueue(DRAIN_BUDGET_MS, jobTypes, onJob, REAP_MAX_MINUTES);
+      const report = await drainQueue(DRAIN_BUDGET_MS, ANALYSIS_JOB_TYPES, onJob, REAP_MAX_MINUTES);
       if (report.claimed > 0) {
         log(`batch: claimed=${report.claimed} completed=${report.completed} failed=${report.failed} reaped=${report.reaped}`);
       }

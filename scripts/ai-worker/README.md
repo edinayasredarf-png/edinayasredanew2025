@@ -1,20 +1,34 @@
-# AI Sales VPS-воркер
+# AI Sales VPS-воркер (ДЕКОММИШЕН, 2026-10)
 
-Отдельный Node-процесс на VPS (не Vercel), который обрабатывает
-`call.roles` / `call.analyze` / `deal.analyze`, **только если** в
-`ai_settings.ai.provider` выбран self-hosted LLM (GigaChat на llama.cpp).
-На Vercel Hobby у функций жёсткий `maxDuration = 60` секунд, а CPU-
-инференс на VPS занимает минуты — поэтому при self-hosted эти типы не
-идут через Vercel-дренаж. При **YandexGPT / Claude** провайдер
-облачный: те же задачи дренирует Vercel (ключи в env Vercel), VPS-
-воркер простаивает — не нужно дублировать Yandex-ключи в
-`/opt/ai-worker/.env`.
+**VPS с self-hosted GigaChat удалена пользователем.** Этот воркер нигде
+не запущен — весь дренаж очереди (включая `call.roles`/`call.analyze`/
+`deal.analyze`) сейчас безусловно идёт через Vercel
+(`src/app/api/ai-sales/jobs/drain/route.ts`, `VERCEL_JOB_TYPES`), т.к.
+`ai.provider = selfhosted` теперь означает облачный OpenAI-совместимый
+шлюз (напр. Timeweb AI Gateway) — такой же быстрый API, как
+YandexGPT/Anthropic, в 60с Vercel Hobby укладывается без проблем.
+
+Код ниже оставлен в репозитории на случай, если понадобится настоящий
+self-hosted CPU-инференс (свой сервер с открытой моделью) — тогда часть
+job-типов снова не будет укладываться в 60с и этот воркер придётся
+поднимать заново (см. важное предупреждение в начале `worker.ts` — туда
+же нужно будет вернуть условную маршрутизацию по `ai.provider`, иначе
+Vercel и воркер будут забирать одни и те же задачи).
+
+---
+
+Исходно: отдельный Node-процесс на VPS (не Vercel), который обрабатывал
+`call.roles` / `call.analyze` / `deal.analyze`, только если в
+`ai_settings.ai.provider` был выбран self-hosted LLM (GigaChat на
+llama.cpp). На Vercel Hobby у функций жёсткий `maxDuration = 60` секунд,
+а CPU-инференс на той VPS занимал минуты — поэтому при self-hosted эти
+типы не шли через Vercel-дренаж.
 
 Использует тот же код обработчиков, что и Vercel
 (`src/lib/server/aiSales/*`), просто выполняется через `tsx` напрямую
 на VPS, а не как часть Next.js-приложения.
 
-## Деплой на VPS (текущее состояние: 201.51.31.67)
+## Деплой на VPS (историческое — сервер 201.51.31.67 удалён)
 
 ```
 /opt/ai-worker/

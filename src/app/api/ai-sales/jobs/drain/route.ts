@@ -3,13 +3,15 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { drainQueue } from "@/lib/server/aiSales/jobRunner";
 import { queueStats } from "@/lib/server/aiSales/jobsDb";
 import { registerAllHandlers } from "@/lib/server/aiSales/handlers";
-import { getVercelDrainJobTypes } from "@/lib/server/aiSales/settingsDb";
+import { VERCEL_JOB_TYPES } from "@/lib/server/aiSales/settingsDb";
 
 /**
- * call.roles/call.analyze/deal.analyze при self-hosted (GigaChat на VPS) не
- * дренируются здесь — CPU-инференс не укладывается в 60с Hobby. Их забирает
- * scripts/ai-worker. При YandexGPT/Claude те же задачи идут через Vercel
- * (ключи из env Vercel), VPS-воркер их не трогает — см. getVercelDrainJobTypes.
+ * Все типы задач дренируются здесь. Раньше call.roles/call.analyze/
+ * deal.analyze при self-hosted AI (GigaChat на отдельной VPS, CPU-инференс —
+ * минуты) не укладывались в 60с Hobby и уходили на отдельный воркер
+ * (scripts/ai-worker). VPS с GigaChat удалена (2026-10) — self-hosted теперь
+ * означает облачный OpenAI-совместимый шлюз (Timeweb AI Gateway и т.п.),
+ * обычный быстрый API, так что отдельный воркер больше не нужен.
  */
 
 // Регистрируем обработчики при загрузке модуля (до дренажа очереди).
@@ -53,8 +55,7 @@ async function handle(request: NextRequest) {
   try {
     // ~25с бюджета — укладываемся в тайм-аут внешних планировщиков (cron-job.org
     // = 30с) и в Hobby maxDuration. За вызов прожёвываем десятки страниц.
-    const jobTypes = await getVercelDrainJobTypes();
-    const report = await drainQueue(25_000, jobTypes);
+    const report = await drainQueue(25_000, VERCEL_JOB_TYPES);
     const stats = await queueStats();
 
     // Самопродолжение: одна пачка тянет следующую, пока очередь не опустеет —
