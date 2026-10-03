@@ -119,8 +119,27 @@ export class OpenAiCompatProvider implements AiProvider {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
 
+    // На Vercel (Hobby maxDuration=60с, жёсткий килл без шанса на catch) сумма
+    // попыток не должна подбираться к 60с — иначе Vercel обрывает процесс
+    // раньше, чем успевает сработать наш catch, задача зависает в RUNNING до
+    // reapStuckJobs. Фиксированный таймаут на попытку плюс фиксированное
+    // число попыток (как было: 3×15с) один раз уже наступил на оба конца
+    // сразу — 15с оказалось мало для больших ответов (call.analyze, до 16000
+    // токенов), а 3 таких попытки гарантированно не укладывались в бюджет.
+    // Вместо этого — один общий дедлайн: первая попытка получает почти весь
+    // бюджет (чтобы у настоящей генерации был шанс), повторная — только если
+    // после первой реально осталось время (значит первая упала быстро, не по
+    // таймауту, и есть смысл пробовать снова).
+    const DEADLINE_MS = Number(process.env.SELFHOSTED_LLM_DEADLINE_MS) || 45_000;
+    const MIN_RETRY_BUDGET_MS = 10_000;
+    const startedAt = Date.now();
+
     let lastErr: unknown;
     for (let attempt = 0; attempt < 3; attempt++) {
+      const remaining = DEADLINE_MS - (Date.now() - startedAt);
+      if (attempt > 0 && remaining < MIN_RETRY_BUDGET_MS) break; // не успеем — не тратим время на заведомо обречённую попытку
+      const attemptTimeout = Math.max(remaining, MIN_RETRY_BUDGET_MS);
+
       const userText =
         attempt === 0
           ? req.user
@@ -131,15 +150,8 @@ export class OpenAiCompatProvider implements AiProvider {
         res = await fetch(endpoint, {
           method: "POST",
           headers,
-          // На Vercel (Hobby maxDuration=60с, жёсткий килл без шанса на catch)
-          // таймаут должен быть заметно короче лимита функции — иначе Vercel
-          // обрывает процесс раньше, чем успевает сработать наш catch, задача
-          // зависает в RUNNING до reapStuckJobs, а 3 попытки подряд (см. ниже)
-          // легко суммарно вылезают за 60с. 15с на попытку — с запасом для
-          // облачного шлюза (Timeweb AI Gateway и т.п.), переопределяемо через
-          // SELFHOSTED_LLM_TIMEOUT_MS для действительно медленного сервера.
           signal: AbortSignal.timeout(
-            Number(process.env.SELFHOSTED_LLM_TIMEOUT_MS) || 15_000
+            Number(process.env.SELFHOSTED_LLM_TIMEOUT_MS) || attemptTimeout
           ),
           body: JSON.stringify({
             model,
@@ -154,11 +166,9 @@ export class OpenAiCompatProvider implements AiProvider {
         });
       } catch (e) {
         lastErr = new Error(`Свой LLM-сервер недоступен: ${(e as Error).message}`);
-        // Короткая пауза на случай кратковременного сбоя сети/шлюза — не
-        // 4/8/12с (это было рассчитано на рестарт self-hosted VPS-сервера,
-        // которого больше нет): на Vercel (maxDuration=60с) 3 попытки по
-        // 15с таймаута уже съедают почти весь бюджет функции, длинный
-        // бэкофф сверху почти гарантированно вылезет за лимит.
+        // Короткая пауза на случай кратковременного сбоя сети/шлюза — общий
+        // дедлайн выше и так не даст уйти в повторную попытку, если времени
+        // не осталось.
         await sleep(1_500);
         continue;
       }
