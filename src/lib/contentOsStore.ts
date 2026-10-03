@@ -5,6 +5,7 @@ import type {
   ContentBrief,
   ContentChannelProfile,
   ContentCluster,
+  ContentCompany,
   ContentFactCheck,
   ContentItem,
   ContentItemVersion,
@@ -16,6 +17,8 @@ import type {
   ContentResearchSource,
   ContentSeo,
   ContentSource,
+  ContentSourceItem,
+  ContentSourceItemStatus,
   ContentTopic,
   PublicationStatus,
   QcCheckType,
@@ -37,17 +40,57 @@ async function apiFetch(path: string, init: RequestInit = {}): Promise<unknown> 
   return JSON.parse(text) as unknown;
 }
 
+/**
+ * Активная компания — cookie, не параметр apiFetch (см.
+ * src/lib/server/contentOsCompany.ts: apiFetch уже шлёт credentials:
+ * "include", cookie едет автоматически на каждый запрос без правки всех
+ * ~25 функций ниже и их вызовов в 13 вкладках).
+ */
+const CONTENT_OS_COMPANY_COOKIE = "content_os_company";
+
+export function getActiveCompanyIdClient(): string {
+  if (typeof document === "undefined") return "";
+  const m = document.cookie.match(new RegExp(`(?:^|; )${CONTENT_OS_COMPANY_COOKIE}=([^;]*)`));
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
+export function setActiveCompanyIdClient(id: string): void {
+  document.cookie = `${CONTENT_OS_COMPANY_COOKIE}=${encodeURIComponent(id)}; path=/; max-age=31536000; samesite=lax`;
+}
+
 /* ─────────── Ideas (темы) ─────────── */
 export const listTopics = (status?: string) => apiFetch(`/topics${status ? `?status=${status}` : ""}`) as Promise<ContentTopic[]>;
 export const upsertTopic = (t: Partial<ContentTopic>) => apiFetch("/topics", { method: "POST", body: JSON.stringify(t) }) as Promise<{ id: string }>;
 export const deleteTopic = (id: string) => apiFetch(`/topics?id=${encodeURIComponent(id)}`, { method: "DELETE" });
 export const classifyTopic = (id: string) => apiFetch(`/topics/${encodeURIComponent(id)}/classify`, { method: "POST" }) as Promise<{ relevance: number; popularity: number; angle: string }>;
 
-/* ─────────── Sources ─────────── */
+/* ─────────── Компании/бренды ─────────── */
+export const listCompanies = (includeInactive = false) =>
+  apiFetch(`/companies${includeInactive ? "?includeInactive=1" : ""}`) as Promise<ContentCompany[]>;
+export const upsertCompany = (c: Partial<ContentCompany> & { name: string }) =>
+  apiFetch("/companies", { method: "POST", body: JSON.stringify(c) }) as Promise<{ id: string }>;
+export const deactivateCompany = (id: string) =>
+  apiFetch(`/companies?id=${encodeURIComponent(id)}`, { method: "DELETE" }) as Promise<{ ok: true }>;
+
+/* ─────────── Sources (собственная лента Content OS, без «Новостного радара») ─────────── */
 export const listSources = () => apiFetch("/sources") as Promise<ContentSource[]>;
 export const upsertSource = (s: Partial<ContentSource> & { name: string; type: ContentSource["type"]; url: string }) =>
   apiFetch("/sources", { method: "POST", body: JSON.stringify(s) }) as Promise<{ id: string }>;
 export const deleteSource = (id: string) => apiFetch(`/sources?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+
+export const pollSources = () =>
+  apiFetch("/sources/poll", { method: "POST" }) as Promise<{ sources: number; fetched: number; saved: number; errors: { source: string; error: string }[] }>;
+export const listSourceItems = (opts: { status?: ContentSourceItemStatus; sourceId?: string } = {}) => {
+  const sp = new URLSearchParams();
+  if (opts.status) sp.set("status", opts.status);
+  if (opts.sourceId) sp.set("sourceId", opts.sourceId);
+  const qs = sp.toString();
+  return apiFetch(`/sources/items${qs ? `?${qs}` : ""}`) as Promise<ContentSourceItem[]>;
+};
+export const convertSourceItemToTopic = (id: string) =>
+  apiFetch(`/sources/items/${encodeURIComponent(id)}/topic`, { method: "POST" }) as Promise<{ id: string }>;
+export const dismissSourceItem = (id: string) =>
+  apiFetch(`/sources/items/${encodeURIComponent(id)}/dismiss`, { method: "POST" }) as Promise<{ ok: true }>;
 
 /* ─────────── Кластеры / брифы ─────────── */
 export const listClusters = () => apiFetch("/clusters") as Promise<ContentCluster[]>;
@@ -115,6 +158,12 @@ export const listPlan = (from?: number, to?: number) => {
 export const listPublications = () => apiFetch("/publications") as Promise<ContentPublication[]>;
 export const upsertPublication = (p: { content_item_id: string; channel: ContentOsChannel; status: PublicationStatus; url?: string; scheduled_at?: number | null; published_at?: number | null }) =>
   apiFetch("/publications", { method: "POST", body: JSON.stringify(p) }) as Promise<{ id: string }>;
+
+/** Реальная публикация (сейчас только vk/telegram, см. src/lib/publishing). */
+export const publishItem = (itemId: string, channel: ContentOsChannel) =>
+  apiFetch(`/items/${itemId}/publish`, { method: "POST", body: JSON.stringify({ channel }) }) as Promise<{
+    status: "published" | "failed"; url: string | null; externalId: string | null; error: string | null;
+  }>;
 
 /* ─────────── Каналы (Settings) ─────────── */
 export const listChannels = () => apiFetch("/channels") as Promise<ContentChannelProfile[]>;

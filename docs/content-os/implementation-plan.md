@@ -25,12 +25,12 @@ typecheck/build. Не начинаю следующую фазу молча.
 | 4 | Content API (`/api/content-os/*`) | Phase 2 | ✅ Готово — 21 роут: topics/sources/clusters/brief/items/qc/seo/fact-checks/research/plan/publications/channels/brand/stats/settings |
 | 5 | Admin UI — вся ИА по §14 | Phase 4 | ✅ Готово: Dashboard/Ideas/Sources/Content Plan/Articles/Social/Brand/SEO/Research/Publications/Analytics/Settings |
 | 6 | Brand Knowledge Base | Phase 2 | ✅ CRUD готов (без чанк-эмбеддингов — простой RAG, см. database.md §5). Наполнение реальными брендбук-документами — от вас |
-| 7 | Topic Hunter (расширение радара) | Phase 2 | Частично: сбор/дедуп/кластеризация — через радар как раньше; добавлена AI-классификация темы (topic_classification). Дедупликация по смыслу (embeddings) — не сделана |
+| 7 | Topic Hunter (своя лента, не радар) | Phase 2 | Обновлено 2026-10-03: пересобрано на собственные `content_sources`/`content_source_items` вместо расширения радара (решение владельца — Content OS должен быть самодостаточным). Сбор + лента + конвертация в тему готовы, AI-классификация темы (topic_classification) есть. Дедупликация по смыслу (embeddings) — не сделана |
 | 8 | Research Engine | Phase 7 | Частично: синтез pack готов (research_synthesis), но без автопоиска — источники добавляются вручную (нет поискового провайдера, `integrations.md` §2) |
 | 9 | AI Writer | Phase 6, 8 | ✅ Готово — writer.md + per-channel файлы (telegram/vk/dzen/max.md), версионируются в `/prompts` |
 | 10 | Brand/SEO/Fact checks | Phase 9 | ✅ QC-пайплайн готов (brand_check/seo_check/fact_check через AI Gateway, ручной запуск на каждом материале) |
 | 11 | Channel adapters (без публикации) | Phase 9 | ✅ Готово — writer/channel-адаптация разделены (§21/§24 ТЗ: базовая статья → адаптация под площадку из её текста) |
-| 12 | Публикация | Phase 11, Phase 3 (для VPS-воркера) | Частично: `content_publications` + ручная отметка «опубликовано» готовы (§29 идемпотентность — уникальный индекс item+channel). Автопубликация — ждёт токенов Telegram/VK/MAX/Дзен |
+| 12 | Публикация | Phase 11, Phase 3 (для VPS-воркера) | Частично, обновлено 2026-10-03: VK/Telegram адаптеры написаны и подключены к UI (`src/lib/publishing/`), ждут реальных токенов от владельца — код не тестирован на живом API. MAX — API появился в 2026, адаптер ещё не написан. Дзен — закрывается без адаптера через RSS/`@zen_sync_bot` (см. integrations.md §3) |
 | 13 | Аналитика | Phase 12 | ✅ Dashboard/Analytics готовы (AI local/cloud/fallback, статусы контента/кластеров/публикаций). Метрики охвата/CTR с площадок — только после реальной публикации |
 | 14 | Оптимизация/бенчмарки | Phase 9-13 в проде | — |
 | 15 | Email-движок | `[ОТЛОЖЕНО]` владельцем | Явное решение вернуться к этой фазе |

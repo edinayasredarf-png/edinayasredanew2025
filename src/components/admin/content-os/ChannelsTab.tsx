@@ -37,6 +37,7 @@ function ChannelCard({ channel, reload }: { channel: ContentChannelProfile; relo
   useEffect(() => { setC(channel); setDirty(false); }, [channel]);
 
   const set = <K extends keyof ContentChannelProfile>(key: K, value: ContentChannelProfile[K]) => { setC((v) => ({ ...v, [key]: value })); setDirty(true); };
+  const setCred = (key: string, value: string) => { setC((v) => ({ ...v, credentials: { ...(v.credentials ?? {}), [key]: value } })); setDirty(true); };
 
   const save = async () => {
     setSaving(true);
@@ -90,6 +91,24 @@ function ChannelCard({ channel, reload }: { channel: ContentChannelProfile; relo
         <label className={labelCls}>Инструкция для ИИ</label>
         <textarea className={inputClass()} rows={3} value={c.ai_prompt} onChange={(e) => set("ai_prompt", e.target.value)} />
       </div>
+
+      {(c.id === "vk" || c.id === "telegram") && (
+        <div className="mb-4 pt-3 border-t border-gray-100">
+          <label className={labelCls}>Подключение (для автопубликации)</label>
+          {c.id === "vk" ? (
+            <div className="grid grid-cols-2 gap-2">
+              <input className={inputClass()} placeholder="ID сообщества (без минуса)" value={c.credentials?.groupId ?? ""} onChange={(e) => setCred("groupId", e.target.value)} />
+              <input className={inputClass()} type="password" placeholder="Access token (wall, photos, offline)" value={c.credentials?.accessToken ?? ""} onChange={(e) => setCred("accessToken", e.target.value)} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <input className={inputClass()} placeholder="Chat ID или @channel" value={c.credentials?.chatId ?? ""} onChange={(e) => setCred("chatId", e.target.value)} />
+              <input className={inputClass()} type="password" placeholder="Bot token" value={c.credentials?.botToken ?? ""} onChange={(e) => setCred("botToken", e.target.value)} />
+            </div>
+          )}
+          <p className="text-[10px] text-gray-400 mt-1">Хранится в базе как есть, без шифрования — доступ только у админов сайта.</p>
+        </div>
+      )}
 
       <button onClick={save} disabled={!dirty || saving} className="w-full px-4 py-2 bg-[#029cda] text-white text-sm font-semibold rounded-xl hover:bg-[#0280b5] disabled:opacity-40">
         {saving ? "Сохранение..." : dirty ? "Сохранить изменения" : "Сохранено"}

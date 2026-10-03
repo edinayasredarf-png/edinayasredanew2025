@@ -2,13 +2,14 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import { getTimewebPool } from "@/lib/timewebPg";
-import { dbEnsureRadarTables } from "@/lib/server/radarDb";
 import {
   DEFAULT_CHANNEL_PROFILES,
+  DEFAULT_COMPANY_ID,
   type ContentBrandDocument,
   type ContentBrief,
   type ContentChannelProfile,
   type ContentCluster,
+  type ContentCompany,
   type ContentFactCheck,
   type ContentItem,
   type ContentItemVersion,
@@ -21,6 +22,8 @@ import {
   type ContentResearchSource,
   type ContentSeo,
   type ContentSource,
+  type ContentSourceItem,
+  type ContentSourceItemStatus,
   type ContentTopic,
   type PublicationStatus,
   type QcCheckStatus,
@@ -28,12 +31,74 @@ import {
 } from "@/lib/contentOsTypes";
 
 export async function dbEnsureContentOsTables(): Promise<void> {
-  await dbEnsureRadarTables();
   const pool = getTimewebPool();
 
-  // Расширение радара — темы Content OS (не пересоздаёт radar_items, только добавляет поля).
-  await pool.query(`alter table if exists radar_items add column if not exists popularity int`);
-  await pool.query(`alter table if exists radar_items add column if not exists trust_weight int`);
+  // ─── Компании/бренды (database.md §10) — создаётся и сидится ПЕРВЫМ,
+  // остальные таблицы ниже ссылаются на content_companies(id) как на
+  // дефолт при добавлении company_id, строка 'edinaya-sreda' должна уже
+  // существовать к этому моменту.
+  await pool.query(`
+    create table if not exists content_companies (
+      id text primary key,
+      name text not null,
+      slug text not null,
+      description text not null default '',
+      is_active boolean not null default true,
+      created_at bigint not null,
+      updated_at bigint not null
+    )
+  `);
+  await pool.query(`create unique index if not exists content_companies_slug_idx on content_companies (slug)`);
+  await pool.query(
+    `insert into content_companies (id, name, slug, description, is_active, created_at, updated_at)
+     values ($1, 'ЕдинаяСреда', $1, 'Основная компания — перенесена из однокомпанийной версии Content OS', true, $2, $2)
+     on conflict (id) do nothing`,
+    [DEFAULT_COMPANY_ID, Date.now()]
+  );
+
+  // ─── Источники (§19 ТЗ) — полностью свои таблицы, НЕ «Новостной радар»
+  // (решение владельца 2026-10-03: Content OS должен быть самодостаточным,
+  // не делить таблицы/пайплайн с отдельной функцией админки). Парсинг —
+  // src/lib/server/contentOsFetch.ts, независимая копия, не импорт radarFetch.
+  await pool.query(`
+    create table if not exists content_sources (
+      id text primary key,
+      company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id),
+      name text not null,
+      type text not null default 'keyword',
+      query text not null default '',
+      category text not null default 'other',
+      priority int not null default 5,
+      active boolean not null default true,
+      poll_interval int not null default 60,
+      categories jsonb not null default '[]',
+      tags jsonb not null default '[]',
+      external_id text,
+      last_polled_at bigint,
+      created_at bigint not null,
+      updated_at bigint not null
+    )
+  `);
+  await pool.query(`create index if not exists content_sources_company_idx on content_sources (company_id)`);
+
+  await pool.query(`
+    create table if not exists content_source_items (
+      id text primary key,
+      source_id text not null references content_sources(id) on delete cascade,
+      company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id),
+      category text not null default 'other',
+      title text not null default '',
+      link text not null default '',
+      source_name text not null default '',
+      snippet text not null default '',
+      published_at bigint not null default 0,
+      status text not null default 'new',
+      created_at bigint not null
+    )
+  `);
+  await pool.query(`create index if not exists content_source_items_published_idx on content_source_items (published_at desc)`);
+  await pool.query(`create index if not exists content_source_items_source_idx on content_source_items (source_id, published_at desc)`);
+  await pool.query(`create index if not exists content_source_items_status_idx on content_source_items (company_id, status, published_at desc)`);
 
   await pool.query(`
     create table if not exists content_topics (
@@ -50,6 +115,10 @@ export async function dbEnsureContentOsTables(): Promise<void> {
       updated_at bigint not null
     )
   `);
+  await pool.query(`alter table content_topics add column if not exists company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id)`);
+  // Замена radar_item_id (наследие интеграции с «Новостным радаром») —
+  // новые темы ссылаются на собственную ленту Content OS.
+  await pool.query(`alter table content_topics add column if not exists source_item_id text references content_source_items(id)`);
 
   await pool.query(`
     create table if not exists content_clusters (
@@ -62,6 +131,10 @@ export async function dbEnsureContentOsTables(): Promise<void> {
       updated_at bigint not null
     )
   `);
+  // company_id только здесь — content_briefs/items/seo/fact_checks/research_*
+  // наследуют компанию через cluster_id (не дублируем столбец на каждой
+  // дочерней таблице, см. database.md §10.2).
+  await pool.query(`alter table content_clusters add column if not exists company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id)`);
 
   await pool.query(`
     create table if not exists content_briefs (
@@ -95,21 +168,6 @@ export async function dbEnsureContentOsTables(): Promise<void> {
   await pool.query(`alter table content_items add column if not exists scheduled_at bigint`);
   await pool.query(`create index if not exists content_items_cluster_idx on content_items (cluster_id)`);
   await pool.query(`create index if not exists content_items_scheduled_idx on content_items (scheduled_at)`);
-
-  // Источники (§19 ТЗ) — свой реестр с полным набором полей поверх radar_triggers
-  // (переиспользуем рабочий пайплайн сбора radarFetch.ts, не дублируем его).
-  // dbEnsureRadarTables() уже вызван выше — radar_triggers точно существует.
-  await pool.query(`alter table radar_triggers add column if not exists priority int not null default 5`);
-  await pool.query(`alter table radar_triggers add column if not exists poll_interval int not null default 60`);
-  await pool.query(`alter table radar_triggers add column if not exists categories jsonb not null default '[]'`);
-  await pool.query(`alter table radar_triggers add column if not exists tags jsonb not null default '[]'`);
-  await pool.query(`alter table radar_triggers add column if not exists external_id text`);
-  await pool.query(`alter table radar_triggers add column if not exists last_polled_at bigint`);
-  // Тип источника для UI Content OS (может отличаться от radar 'kind' — напр.
-  // 'website' отображается отдельно, но физически тянется как rss, если по
-  // указанному URL есть лента; иначе источник просто не соберёт новых тем
-  // до появления парсера произвольных сайтов, см. integrations.md).
-  await pool.query(`alter table radar_triggers add column if not exists source_type text`);
 
   await pool.query(`
     create table if not exists content_qc_checks (
@@ -216,6 +274,31 @@ export async function dbEnsureContentOsTables(): Promise<void> {
       sort_order int not null default 0
     )
   `);
+  // Токены/id для реальной публикации (VK/Telegram, см. src/lib/publishing).
+  // Postgres заполняет существующие строки дефолтом '{}' без переписывания
+  // таблицы (fast default) — безопасно даже если строки уже есть в проде.
+  await pool.query(`alter table if exists content_channel_profiles add column if not exists credentials jsonb not null default '{}'::jsonb`);
+  await pool.query(`alter table if exists content_channel_profiles add column if not exists company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id)`);
+  // Composite PK (company_id, id) — у каждой компании свой профиль/токены на
+  // каждый канал (раньше PK был просто `id`, один профиль на канал на весь
+  // сайт). Единственное место в проекте, где меняется существующий PK через
+  // DO-блок (везде остальные миграции — только add column if not exists) —
+  // обосновано тем, что без composite-ключа вторая компания не может иметь
+  // свой 'vk'/'telegram' профиль (конфликт по первичному ключу). Условие
+  // внутри делает блок no-op на каждый последующий вызов ready().
+  await pool.query(`
+    do $$
+    begin
+      if exists (
+        select 1 from pg_constraint
+        where conrelid = 'content_channel_profiles'::regclass and contype = 'p'
+          and array_length(conkey, 1) = 1
+      ) then
+        alter table content_channel_profiles drop constraint content_channel_profiles_pkey;
+        alter table content_channel_profiles add primary key (company_id, id);
+      end if;
+    end $$;
+  `);
 
   await pool.query(`
     create table if not exists content_brand_documents (
@@ -228,6 +311,9 @@ export async function dbEnsureContentOsTables(): Promise<void> {
       updated_at timestamptz not null default now()
     )
   `);
+  // Критично для изоляции (database.md §10.2) — бренд-войс одной компании
+  // не должен попадать в RAG-контекст генерации для другой.
+  await pool.query(`alter table content_brand_documents add column if not exists company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id)`);
 
   await pool.query(`
     create table if not exists content_ai_runs (
@@ -247,35 +333,45 @@ export async function dbEnsureContentOsTables(): Promise<void> {
     )
   `);
   await pool.query(`create index if not exists content_ai_runs_task_idx on content_ai_runs (task, created_at desc)`);
+  // Явный столбец (не через join) — нужен для подсчёта AI-costов по каждой
+  // компании отдельно (внутренняя экономика по клиентам, §10.2 database.md).
+  await pool.query(`alter table content_ai_runs add column if not exists company_id text not null default '${DEFAULT_COMPANY_ID}' references content_companies(id)`);
+  await pool.query(`create index if not exists content_ai_runs_company_idx on content_ai_runs (company_id, created_at desc)`);
 }
 
-async function seedChannelProfilesIfEmpty(): Promise<void> {
+/**
+ * Сеет 5 дефолтных профилей каналов для компании, если у неё их ещё нет —
+ * вызывается лениво из dbListChannelProfiles/dbGetChannelProfile для
+ * конкретной company_id (не из общего ready()), поэтому у новой компании
+ * сразу появляются те же каналы с нейтральными настройками, а не пустой
+ * список.
+ */
+async function seedChannelProfilesForCompany(companyId: string): Promise<void> {
   const pool = getTimewebPool();
-  const { rows } = await pool.query("select count(*)::int as n from content_channel_profiles");
+  const { rows } = await pool.query("select count(*)::int as n from content_channel_profiles where company_id = $1", [companyId]);
   if ((rows[0]?.n ?? 0) > 0) return;
   for (const p of DEFAULT_CHANNEL_PROFILES) {
     await pool.query(
-      `insert into content_channel_profiles (id, name, status, char_limit, formality, emoji_level, hashtags, hashtag_count, cta, ai_prompt, qa_notes, sort_order)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) on conflict (id) do nothing`,
-      [p.id, p.name, p.status, p.char_limit, p.formality, p.emoji_level, p.hashtags, p.hashtag_count, p.cta, p.ai_prompt, p.qa_notes, p.sort_order]
+      `insert into content_channel_profiles (id, company_id, name, status, char_limit, formality, emoji_level, hashtags, hashtag_count, cta, ai_prompt, qa_notes, sort_order)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) on conflict (company_id, id) do nothing`,
+      [p.id, companyId, p.name, p.status, p.char_limit, p.formality, p.emoji_level, p.hashtags, p.hashtag_count, p.cta, p.ai_prompt, p.qa_notes, p.sort_order]
     );
   }
 }
 
 async function ready(): Promise<void> {
   await dbEnsureContentOsTables();
-  await seedChannelProfilesIfEmpty();
 }
 
 /* ─────────── Темы ─────────── */
 
-export async function dbListTopics(opts: { status?: string } = {}): Promise<ContentTopic[]> {
+export async function dbListTopics(opts: { status?: string; companyId?: string } = {}): Promise<ContentTopic[]> {
   await ready();
   const pool = getTimewebPool();
-  const where: string[] = [];
-  const params: unknown[] = [];
+  const params: unknown[] = [opts.companyId ?? DEFAULT_COMPANY_ID];
+  const where: string[] = ["company_id = $1"];
   if (opts.status) { params.push(opts.status); where.push(`status = $${params.length}`); }
-  const sql = `select * from content_topics ${where.length ? "where " + where.join(" and ") : ""} order by created_at desc`;
+  const sql = `select * from content_topics where ${where.join(" and ")} order by created_at desc`;
   const { rows } = await pool.query(sql, params);
   return rows as ContentTopic[];
 }
@@ -286,7 +382,7 @@ export async function dbGetTopic(id: string): Promise<ContentTopic | null> {
   return (rows[0] as ContentTopic) ?? null;
 }
 
-export async function dbUpsertTopic(t: Partial<ContentTopic> & { id?: string }): Promise<string> {
+export async function dbUpsertTopic(t: Partial<ContentTopic> & { id?: string }, companyId: string = DEFAULT_COMPANY_ID): Promise<string> {
   await ready();
   const pool = getTimewebPool();
   const now = Date.now();
@@ -294,9 +390,9 @@ export async function dbUpsertTopic(t: Partial<ContentTopic> & { id?: string }):
   const existing = t.id ? await dbGetTopic(t.id) : null;
   if (!existing) {
     await pool.query(
-      `insert into content_topics (id, title, radar_item_id, thesis, relevance, popularity, status, created_by, created_at, updated_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-      [id, t.title ?? "", t.radar_item_id ?? null, t.thesis ?? "", t.relevance ?? 5, t.popularity ?? 50, t.status ?? "new", t.created_by ?? null, now, now]
+      `insert into content_topics (id, company_id, title, radar_item_id, source_item_id, thesis, relevance, popularity, status, created_by, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [id, companyId, t.title ?? "", t.radar_item_id ?? null, t.source_item_id ?? null, t.thesis ?? "", t.relevance ?? 5, t.popularity ?? 50, t.status ?? "new", t.created_by ?? null, now, now]
     );
   } else {
     await pool.query(
@@ -313,18 +409,18 @@ export async function dbDeleteTopic(id: string): Promise<number> {
   return rowCount ?? 0;
 }
 
-/* ─────────── Источники (§19 ТЗ) — поверх radar_triggers ─────────── */
+/* ─────────── Источники и лента (§19 ТЗ) — свои таблицы, не «Новостной радар» ─────────── */
 
 function toContentSource(r: Record<string, unknown>): ContentSource {
   return {
     id: r.id as string,
-    name: r.label as string,
-    type: (r.source_type as ContentSource["type"]) || (r.kind === "telegram" ? "telegram" : r.kind === "rss" ? "rss" : "keyword"),
+    name: r.name as string,
+    type: r.type as ContentSource["type"],
     url: r.query as string,
     external_id: (r.external_id as string) ?? null,
-    priority: (r.priority as number) ?? 5,
-    active: r.enabled as boolean,
-    poll_interval: (r.poll_interval as number) ?? 60,
+    priority: r.priority as number,
+    active: r.active as boolean,
+    poll_interval: r.poll_interval as number,
     categories: (r.categories as string[]) ?? [],
     tags: (r.tags as string[]) ?? [],
     last_polled_at: (r.last_polled_at as number) ?? null,
@@ -332,51 +428,142 @@ function toContentSource(r: Record<string, unknown>): ContentSource {
   };
 }
 
-export async function dbListSources(): Promise<ContentSource[]> {
+export async function dbListSources(companyId: string = DEFAULT_COMPANY_ID): Promise<ContentSource[]> {
   await ready();
   const pool = getTimewebPool();
-  const { rows } = await pool.query("select * from radar_triggers order by created_at desc");
+  const { rows } = await pool.query("select * from content_sources where company_id = $1 order by created_at desc", [companyId]);
   return rows.map(toContentSource);
 }
 
-/** type 'website' физически тянется как rss (если по URL есть лента) — своего парсера сайтов пока нет, см. integrations.md. */
-function sourceTypeToRadarKind(type: ContentSource["type"]): "keyword" | "rss" | "telegram" {
-  if (type === "telegram") return "telegram";
-  if (type === "keyword") return "keyword";
-  return "rss";
+export async function dbGetSource(id: string): Promise<ContentSource | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_sources where id = $1", [id]);
+  return rows[0] ? toContentSource(rows[0]) : null;
 }
 
-export async function dbUpsertSource(s: Partial<ContentSource> & { id?: string; name: string; type: ContentSource["type"]; url: string }): Promise<string> {
+export async function dbUpsertSource(
+  s: Partial<ContentSource> & { id?: string; name: string; type: ContentSource["type"]; url: string },
+  companyId: string = DEFAULT_COMPANY_ID
+): Promise<string> {
   await ready();
   const pool = getTimewebPool();
   const now = Date.now();
+  const existing = s.id ? await dbGetSource(s.id) : null;
   const id = s.id || randomUUID();
-  const kind = sourceTypeToRadarKind(s.type);
+  if (!existing) {
+    await pool.query(
+      `insert into content_sources (id, company_id, name, type, query, priority, active, poll_interval, categories, tags, external_id, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+      [id, companyId, s.name, s.type, s.url, s.priority ?? 5, s.active ?? true, s.poll_interval ?? 60,
+        JSON.stringify(s.categories ?? []), JSON.stringify(s.tags ?? []), s.external_id ?? null, now, now]
+    );
+    return id;
+  }
   await pool.query(
-    `insert into radar_triggers (id, kind, query, label, category, enabled, created_at, priority, poll_interval, categories, tags, external_id, source_type)
-     values ($1,$2,$3,$4,'other',$5,$6,$7,$8,$9,$10,$11,$12)
-     on conflict (id) do update set
-       kind=excluded.kind, query=excluded.query, label=excluded.label, enabled=excluded.enabled,
-       priority=excluded.priority, poll_interval=excluded.poll_interval, categories=excluded.categories,
-       tags=excluded.tags, external_id=excluded.external_id, source_type=excluded.source_type`,
-    [id, kind, s.url, s.name, s.active ?? true, now, s.priority ?? 5, s.poll_interval ?? 60,
-      JSON.stringify(s.categories ?? []), JSON.stringify(s.tags ?? []), s.external_id ?? null, s.type]
+    `update content_sources set name=$2, type=$3, query=$4, priority=$5, active=$6, poll_interval=$7,
+      categories=$8, tags=$9, external_id=$10, updated_at=$11 where id=$1`,
+    [id, s.name ?? existing.name, s.type ?? existing.type, s.url ?? existing.url, s.priority ?? existing.priority,
+      s.active ?? existing.active, s.poll_interval ?? existing.poll_interval, JSON.stringify(s.categories ?? existing.categories),
+      JSON.stringify(s.tags ?? existing.tags), s.external_id ?? existing.external_id, now]
   );
   return id;
 }
 
 export async function dbDeleteSource(id: string): Promise<number> {
   const pool = getTimewebPool();
-  const { rowCount } = await pool.query("delete from radar_triggers where id = $1", [id]);
+  const { rowCount } = await pool.query("delete from content_sources where id = $1", [id]);
+  return rowCount ?? 0;
+}
+
+export async function dbTouchSourcePolled(id: string, polledAt: number): Promise<void> {
+  const pool = getTimewebPool();
+  await pool.query("update content_sources set last_polled_at = $2 where id = $1", [id, polledAt]);
+}
+
+function toContentSourceItem(r: Record<string, unknown>): ContentSourceItem {
+  return {
+    id: r.id as string,
+    source_id: r.source_id as string,
+    source_name: r.source_name as string,
+    category: r.category as string,
+    title: r.title as string,
+    link: r.link as string,
+    snippet: r.snippet as string,
+    published_at: r.published_at as number,
+    status: r.status as ContentSourceItemStatus,
+    created_at: r.created_at as number,
+  };
+}
+
+export async function dbListSourceItems(opts: {
+  companyId?: string;
+  sourceId?: string;
+  status?: ContentSourceItemStatus;
+  limit?: number;
+} = {}): Promise<ContentSourceItem[]> {
+  await ready();
+  const pool = getTimewebPool();
+  const where: string[] = ["company_id = $1"];
+  const params: unknown[] = [opts.companyId ?? DEFAULT_COMPANY_ID];
+  if (opts.sourceId) { params.push(opts.sourceId); where.push(`source_id = $${params.length}`); }
+  if (opts.status) { params.push(opts.status); where.push(`status = $${params.length}`); }
+  const limit = Math.min(opts.limit ?? 100, 300);
+  const { rows } = await pool.query(
+    `select * from content_source_items where ${where.join(" and ")} order by published_at desc limit ${limit}`,
+    params
+  );
+  return rows.map(toContentSourceItem);
+}
+
+export async function dbGetSourceItem(id: string): Promise<ContentSourceItem | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_source_items where id = $1", [id]);
+  return rows[0] ? toContentSourceItem(rows[0]) : null;
+}
+
+/** Идемпотентно по id (хэш ссылки, см. contentOsFetch.ts) — повторный опрос не плодит дубликаты. */
+export async function dbUpsertSourceItem(item: {
+  id: string;
+  source_id: string;
+  company_id: string;
+  category: string;
+  title: string;
+  link: string;
+  source_name: string;
+  snippet: string;
+  published_at: number;
+}): Promise<void> {
+  const pool = getTimewebPool();
+  await pool.query(
+    `insert into content_source_items (id, source_id, company_id, category, title, link, source_name, snippet, published_at, status, created_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,'new',$10)
+     on conflict (id) do nothing`,
+    [item.id, item.source_id, item.company_id, item.category, item.title, item.link, item.source_name, item.snippet, item.published_at, Date.now()]
+  );
+}
+
+export async function dbSetSourceItemStatus(id: string, status: ContentSourceItemStatus): Promise<void> {
+  const pool = getTimewebPool();
+  await pool.query("update content_source_items set status = $2 where id = $1", [id, status]);
+}
+
+/** Чистит старые (>60 дней) обработанные/отклонённые записи — активная лента не разрастается бесконечно. */
+export async function dbCleanupSourceItems(olderThanDays = 60): Promise<number> {
+  const pool = getTimewebPool();
+  const cutoff = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
+  const { rowCount } = await pool.query(
+    "delete from content_source_items where published_at < $1 and status <> 'new'",
+    [cutoff]
+  );
   return rowCount ?? 0;
 }
 
 /* ─────────── Кластеры и брифы ─────────── */
 
-export async function dbListClusters(): Promise<ContentCluster[]> {
+export async function dbListClusters(companyId: string = DEFAULT_COMPANY_ID): Promise<ContentCluster[]> {
   await ready();
   const pool = getTimewebPool();
-  const { rows } = await pool.query("select * from content_clusters order by created_at desc");
+  const { rows } = await pool.query("select * from content_clusters where company_id = $1 order by created_at desc", [companyId]);
   return rows as ContentCluster[];
 }
 
@@ -386,7 +573,7 @@ export async function dbGetCluster(id: string): Promise<ContentCluster | null> {
   return (rows[0] as ContentCluster) ?? null;
 }
 
-export async function dbUpsertCluster(c: Partial<ContentCluster> & { id?: string }): Promise<string> {
+export async function dbUpsertCluster(c: Partial<ContentCluster> & { id?: string }, companyId: string = DEFAULT_COMPANY_ID): Promise<string> {
   await ready();
   const pool = getTimewebPool();
   const now = Date.now();
@@ -394,9 +581,9 @@ export async function dbUpsertCluster(c: Partial<ContentCluster> & { id?: string
   const existing = c.id ? await dbGetCluster(c.id) : null;
   if (!existing) {
     await pool.query(
-      `insert into content_clusters (id, title, primary_topic_id, status, created_by, created_at, updated_at)
-       values ($1,$2,$3,$4,$5,$6,$7)`,
-      [id, c.title ?? "", c.primary_topic_id ?? null, c.status ?? "new", c.created_by ?? null, now, now]
+      `insert into content_clusters (id, company_id, title, primary_topic_id, status, created_by, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [id, companyId, c.title ?? "", c.primary_topic_id ?? null, c.status ?? "new", c.created_by ?? null, now, now]
     );
   } else {
     await pool.query(
@@ -487,11 +674,11 @@ export async function dbUpsertItem(it: Partial<ContentItem> & { id?: string; clu
 const ITEM_WITH_CLUSTER_SELECT = `select i.*, c.title as cluster_title from content_items i join content_clusters c on c.id = i.cluster_id`;
 
 /** Список контент-айтемов за период (для Content Plan, §44 ТЗ) — по всем кластерам. */
-export async function dbListItemsScheduled(opts: { from?: number; to?: number } = {}): Promise<ContentItemWithCluster[]> {
+export async function dbListItemsScheduled(opts: { from?: number; to?: number; companyId?: string } = {}): Promise<ContentItemWithCluster[]> {
   await ready();
   const pool = getTimewebPool();
-  const where: string[] = ["i.scheduled_at is not null"];
-  const params: unknown[] = [];
+  const params: unknown[] = [opts.companyId ?? DEFAULT_COMPANY_ID];
+  const where: string[] = ["c.company_id = $1", "i.scheduled_at is not null"];
   if (opts.from != null) { params.push(opts.from); where.push(`i.scheduled_at >= $${params.length}`); }
   if (opts.to != null) { params.push(opts.to); where.push(`i.scheduled_at < $${params.length}`); }
   const { rows } = await pool.query(`${ITEM_WITH_CLUSTER_SELECT} where ${where.join(" and ")} order by i.scheduled_at asc`, params);
@@ -499,11 +686,11 @@ export async function dbListItemsScheduled(opts: { from?: number; to?: number } 
 }
 
 /** Все айтемы одного/нескольких каналов (для Articles/Social, §14 ТЗ), с последних. */
-export async function dbListItemsByChannel(channel: ContentOsChannel | ContentOsChannel[]): Promise<ContentItemWithCluster[]> {
+export async function dbListItemsByChannel(channel: ContentOsChannel | ContentOsChannel[], companyId: string = DEFAULT_COMPANY_ID): Promise<ContentItemWithCluster[]> {
   await ready();
   const pool = getTimewebPool();
   const channels = Array.isArray(channel) ? channel : [channel];
-  const { rows } = await pool.query(`${ITEM_WITH_CLUSTER_SELECT} where i.channel = any($1) order by i.updated_at desc limit 200`, [channels]);
+  const { rows } = await pool.query(`${ITEM_WITH_CLUSTER_SELECT} where c.company_id = $1 and i.channel = any($2) order by i.updated_at desc limit 200`, [companyId, channels]);
   return rows.map((r) => ({ ...r, meta: r.meta ?? {} })) as ContentItemWithCluster[];
 }
 
@@ -534,35 +721,97 @@ export async function dbListItemVersions(contentItemId: string): Promise<Content
   return rows as ContentItemVersion[];
 }
 
-/* ─────────── Каналы ─────────── */
+/* ─────────── Компании/бренды (§10 database.md) ─────────── */
 
-export async function dbListChannelProfiles(): Promise<ContentChannelProfile[]> {
+function slugify(s: string): string {
+  return s.trim().toLowerCase().replace(/[^a-zа-яё0-9\s-]/gi, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+
+export async function dbListCompanies(opts: { includeInactive?: boolean } = {}): Promise<ContentCompany[]> {
   await ready();
   const pool = getTimewebPool();
-  const { rows } = await pool.query("select * from content_channel_profiles order by sort_order asc");
+  const where = opts.includeInactive ? "" : "where is_active = true";
+  const { rows } = await pool.query(`select * from content_companies ${where} order by created_at asc`);
+  return rows as ContentCompany[];
+}
+
+export async function dbGetCompany(id: string): Promise<ContentCompany | null> {
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_companies where id = $1", [id]);
+  return (rows[0] as ContentCompany) ?? null;
+}
+
+export async function dbUpsertCompany(c: Partial<ContentCompany> & { id?: string; name: string }): Promise<string> {
+  await ready();
+  const pool = getTimewebPool();
+  const now = Date.now();
+  const existing = c.id ? await dbGetCompany(c.id) : null;
+  const id = c.id || slugify(c.name) || randomUUID();
+  const slug = c.slug?.trim() || slugify(c.name) || id;
+  if (!existing) {
+    await pool.query(
+      `insert into content_companies (id, name, slug, description, is_active, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7)`,
+      [id, c.name, slug, c.description ?? "", c.is_active ?? true, now, now]
+    );
+    return id;
+  }
+  await pool.query(
+    `update content_companies set name=$2, slug=$3, description=$4, is_active=$5, updated_at=$6 where id=$1`,
+    [id, c.name ?? existing.name, slug, c.description ?? existing.description, c.is_active ?? existing.is_active, now]
+  );
+  return id;
+}
+
+/** Мягкое удаление (is_active=false) — компания может быть ключом в company_id у кучи таблиц, физически не удаляем. */
+export async function dbDeactivateCompany(id: string): Promise<void> {
+  if (id === DEFAULT_COMPANY_ID) throw new Error("Нельзя деактивировать компанию по умолчанию");
+  const pool = getTimewebPool();
+  await pool.query("update content_companies set is_active = false, updated_at = $2 where id = $1", [id, Date.now()]);
+}
+
+/* ─────────── Каналы ─────────── */
+
+export async function dbListChannelProfiles(companyId: string = DEFAULT_COMPANY_ID): Promise<ContentChannelProfile[]> {
+  await ready();
+  await seedChannelProfilesForCompany(companyId);
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_channel_profiles where company_id = $1 order by sort_order asc", [companyId]);
   return rows as ContentChannelProfile[];
 }
 
-export async function dbUpsertChannelProfile(p: Partial<ContentChannelProfile> & { id: string }): Promise<void> {
+export async function dbGetChannelProfile(id: ContentOsChannel, companyId: string = DEFAULT_COMPANY_ID): Promise<ContentChannelProfile | null> {
   await ready();
   const pool = getTimewebPool();
-  const { rows } = await pool.query("select * from content_channel_profiles where id = $1", [p.id]);
+  const { rows } = await pool.query("select * from content_channel_profiles where company_id = $1 and id = $2", [companyId, id]);
+  return (rows[0] as ContentChannelProfile) ?? null;
+}
+
+export async function dbUpsertChannelProfile(
+  p: Partial<ContentChannelProfile> & { id: string },
+  companyId: string = DEFAULT_COMPANY_ID
+): Promise<void> {
+  await ready();
+  const pool = getTimewebPool();
+  const { rows } = await pool.query("select * from content_channel_profiles where company_id = $1 and id = $2", [companyId, p.id]);
   const existing = rows[0] as ContentChannelProfile | undefined;
   if (!existing) {
     await pool.query(
-      `insert into content_channel_profiles (id, name, status, char_limit, formality, emoji_level, hashtags, hashtag_count, cta, ai_prompt, qa_notes, sort_order)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-      [p.id, p.name ?? p.id, p.status ?? "setup", p.char_limit ?? 4096, p.formality ?? 50, p.emoji_level ?? 1,
-        p.hashtags ?? false, p.hashtag_count ?? 0, p.cta ?? "", p.ai_prompt ?? "", p.qa_notes ?? "", p.sort_order ?? 0]
+      `insert into content_channel_profiles (id, company_id, name, status, char_limit, formality, emoji_level, hashtags, hashtag_count, cta, ai_prompt, qa_notes, sort_order, credentials)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [p.id, companyId, p.name ?? p.id, p.status ?? "setup", p.char_limit ?? 4096, p.formality ?? 50, p.emoji_level ?? 1,
+        p.hashtags ?? false, p.hashtag_count ?? 0, p.cta ?? "", p.ai_prompt ?? "", p.qa_notes ?? "", p.sort_order ?? 0,
+        JSON.stringify(p.credentials ?? {})]
     );
     return;
   }
   await pool.query(
-    `update content_channel_profiles set name=$2, status=$3, char_limit=$4, formality=$5, emoji_level=$6,
-      hashtags=$7, hashtag_count=$8, cta=$9, ai_prompt=$10, qa_notes=$11 where id=$1`,
-    [p.id, p.name ?? existing.name, p.status ?? existing.status, p.char_limit ?? existing.char_limit,
+    `update content_channel_profiles set name=$3, status=$4, char_limit=$5, formality=$6, emoji_level=$7,
+      hashtags=$8, hashtag_count=$9, cta=$10, ai_prompt=$11, qa_notes=$12, credentials=$13 where company_id=$1 and id=$2`,
+    [companyId, p.id, p.name ?? existing.name, p.status ?? existing.status, p.char_limit ?? existing.char_limit,
       p.formality ?? existing.formality, p.emoji_level ?? existing.emoji_level, p.hashtags ?? existing.hashtags,
-      p.hashtag_count ?? existing.hashtag_count, p.cta ?? existing.cta, p.ai_prompt ?? existing.ai_prompt, p.qa_notes ?? existing.qa_notes]
+      p.hashtag_count ?? existing.hashtag_count, p.cta ?? existing.cta, p.ai_prompt ?? existing.ai_prompt, p.qa_notes ?? existing.qa_notes,
+      JSON.stringify(p.credentials ?? existing.credentials ?? {})]
   );
 }
 
@@ -668,10 +917,17 @@ export async function dbAddFactCheck(f: { content_item_id: string; claim: string
 
 /* ─────────── Publications (§29 ТЗ) ─────────── */
 
-export async function dbListPublications(): Promise<ContentPublication[]> {
+export async function dbListPublications(companyId: string = DEFAULT_COMPANY_ID): Promise<ContentPublication[]> {
   await ready();
   const pool = getTimewebPool();
-  const { rows } = await pool.query("select * from content_publications order by created_at desc limit 200");
+  const { rows } = await pool.query(
+    `select p.* from content_publications p
+     join content_items i on i.id = p.content_item_id
+     join content_clusters c on c.id = i.cluster_id
+     where c.company_id = $1
+     order by p.created_at desc limit 200`,
+    [companyId]
+  );
   return rows as ContentPublication[];
 }
 
@@ -721,10 +977,13 @@ export async function dbUpsertPublication(p: {
 
 /* ─────────── Бренд-документы (RAG, без pgvector — см. audit.md §6) ─────────── */
 
-export async function dbListBrandDocuments(): Promise<ContentBrandDocument[]> {
+export async function dbListBrandDocuments(companyId: string = DEFAULT_COMPANY_ID): Promise<ContentBrandDocument[]> {
   await ready();
   const pool = getTimewebPool();
-  const { rows } = await pool.query("select * from content_brand_documents where is_active = true order by created_at desc");
+  const { rows } = await pool.query(
+    "select * from content_brand_documents where is_active = true and company_id = $1 order by created_at desc",
+    [companyId]
+  );
   return rows.map((r) => ({
     ...r,
     created_at: new Date(r.created_at).getTime(),
@@ -732,13 +991,16 @@ export async function dbListBrandDocuments(): Promise<ContentBrandDocument[]> {
   })) as ContentBrandDocument[];
 }
 
-export async function dbUpsertBrandDocument(d: { id?: string; title: string; category: string; content: string }): Promise<string> {
+export async function dbUpsertBrandDocument(
+  d: { id?: string; title: string; category: string; content: string },
+  companyId: string = DEFAULT_COMPANY_ID
+): Promise<string> {
   await ready();
   const pool = getTimewebPool();
   if (!d.id) {
     const { rows } = await pool.query(
-      `insert into content_brand_documents (title, category, content) values ($1,$2,$3) returning id`,
-      [d.title, d.category, d.content]
+      `insert into content_brand_documents (title, category, content, company_id) values ($1,$2,$3,$4) returning id`,
+      [d.title, d.category, d.content, companyId]
     );
     return rows[0].id as string;
   }
@@ -763,6 +1025,7 @@ export async function dbLogAiRun(r: {
   provider: "local" | "anthropic";
   model: string;
   contentItemId?: string | null;
+  companyId?: string;
   dataClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL";
   inputTokens?: number | null;
   outputTokens?: number | null;
@@ -773,10 +1036,10 @@ export async function dbLogAiRun(r: {
   await dbEnsureContentOsTables();
   const pool = getTimewebPool();
   await pool.query(
-    `insert into content_ai_runs (id, task, prompt_version, provider, model, content_item_id, data_classification, input_tokens, output_tokens, latency_ms, status, error, created_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-    [randomUUID(), r.task, r.promptVersion ?? null, r.provider, r.model, r.contentItemId ?? null, r.dataClassification ?? "INTERNAL",
-      r.inputTokens ?? null, r.outputTokens ?? null, r.latencyMs ?? null, r.status, r.error ?? null, Date.now()]
+    `insert into content_ai_runs (id, task, prompt_version, provider, model, content_item_id, company_id, data_classification, input_tokens, output_tokens, latency_ms, status, error, created_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+    [randomUUID(), r.task, r.promptVersion ?? null, r.provider, r.model, r.contentItemId ?? null, r.companyId ?? DEFAULT_COMPANY_ID,
+      r.dataClassification ?? "INTERNAL", r.inputTokens ?? null, r.outputTokens ?? null, r.latencyMs ?? null, r.status, r.error ?? null, Date.now()]
   );
 }
 
@@ -791,24 +1054,39 @@ export interface ContentOsStats {
   upcomingScheduled: ContentItemWithCluster[];
 }
 
-export async function dbContentOsStats(): Promise<ContentOsStats> {
+export async function dbContentOsStats(companyId: string = DEFAULT_COMPANY_ID): Promise<ContentOsStats> {
   await dbEnsureContentOsTables();
   const pool = getTimewebPool();
-  const runsByProvider = (await pool.query("select provider, count(*)::int as n from content_ai_runs group by provider")).rows as { provider: string; n: number }[];
-  const runsByStatus = (await pool.query("select status, count(*)::int as n from content_ai_runs group by status")).rows as { status: string; n: number }[];
+  const runsByProvider = (await pool.query(
+    "select provider, count(*)::int as n from content_ai_runs where company_id = $1 group by provider", [companyId]
+  )).rows as { provider: string; n: number }[];
+  const runsByStatus = (await pool.query(
+    "select status, count(*)::int as n from content_ai_runs where company_id = $1 group by status", [companyId]
+  )).rows as { status: string; n: number }[];
   const total = runsByStatus.reduce((a, r) => a + r.n, 0);
   const fallback = runsByStatus.find((r) => r.status === "fallback")?.n ?? 0;
-  const itemsByStatusRows = (await pool.query("select status, count(*)::int as n from content_items group by status")).rows as { status: string; n: number }[];
+  const itemsByStatusRows = (await pool.query(
+    `select i.status, count(*)::int as n from content_items i join content_clusters c on c.id = i.cluster_id
+     where c.company_id = $1 group by i.status`, [companyId]
+  )).rows as { status: string; n: number }[];
   const itemsByStatus: Record<string, number> = {};
   for (const r of itemsByStatusRows) itemsByStatus[r.status] = r.n;
-  const clustersByStatusRows = (await pool.query("select status, count(*)::int as n from content_clusters group by status")).rows as { status: string; n: number }[];
+  const clustersByStatusRows = (await pool.query(
+    "select status, count(*)::int as n from content_clusters where company_id = $1 group by status", [companyId]
+  )).rows as { status: string; n: number }[];
   const clustersByStatus: Record<string, number> = {};
   for (const r of clustersByStatusRows) clustersByStatus[r.status] = r.n;
-  const publicationsByStatusRows = (await pool.query("select status, count(*)::int as n from content_publications group by status")).rows as { status: string; n: number }[];
+  const publicationsByStatusRows = (await pool.query(
+    `select p.status, count(*)::int as n from content_publications p
+     join content_items i on i.id = p.content_item_id join content_clusters c on c.id = i.cluster_id
+     where c.company_id = $1 group by p.status`, [companyId]
+  )).rows as { status: string; n: number }[];
   const publicationsByStatus: Record<string, number> = {};
   for (const r of publicationsByStatusRows) publicationsByStatus[r.status] = r.n;
-  const sourcesActive = (await pool.query("select count(*)::int as n from radar_triggers where enabled = true")).rows[0]?.n ?? 0;
-  const upcomingScheduled = await dbListItemsScheduled({ from: Date.now() });
+  const sourcesActive = (await pool.query(
+    "select count(*)::int as n from content_sources where active = true and company_id = $1", [companyId]
+  )).rows[0]?.n ?? 0;
+  const upcomingScheduled = await dbListItemsScheduled({ from: Date.now(), companyId });
   return {
     runsByProvider, runsByStatus, fallbackRate: total > 0 ? fallback / total : 0, itemsByStatus, clustersByStatus,
     publicationsByStatus, sourcesActive, upcomingScheduled: upcomingScheduled.slice(0, 5),

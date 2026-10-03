@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbDeleteSource, dbListSources, dbUpsertSource } from "@/lib/server/contentOsDb";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ function jsonErr(e: unknown, fallback = 500) {
 export async function GET(request: NextRequest) {
   try {
     await requireAdminAccess(request);
-    return NextResponse.json(await dbListSources());
+    return NextResponse.json(await dbListSources(getActiveCompanyId(request)));
   } catch (e) {
     return jsonErr(e, 401);
   }
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!body?.name?.trim() || !body?.url?.trim() || !body?.type) {
       return NextResponse.json({ error: "name, url и type обязательны" }, { status: 400 });
     }
-    const id = await dbUpsertSource(body);
+    const id = await dbUpsertSource(body, getActiveCompanyId(request));
     return NextResponse.json({ id });
   } catch (e) {
     return jsonErr(e, 401);

@@ -15,6 +15,7 @@ import {
   listItemVersions,
   listQcChecks,
   runQcCheck,
+  publishItem,
   saveBrief,
   saveSeo,
   synthesizeResearch,
@@ -371,9 +372,12 @@ function FactCheckPanel({ itemId }: { itemId: string }) {
   );
 }
 
+const AUTO_PUBLISH_CHANNELS: ContentItem["channel"][] = ["vk", "telegram"];
+
 function PublishPanel({ item, onChanged }: { item: ContentItem; onChanged: () => void }) {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
+  const [autoError, setAutoError] = useState<string | null>(null);
 
   const markPublished = async () => {
     setBusy(true);
@@ -384,22 +388,48 @@ function PublishPanel({ item, onChanged }: { item: ContentItem; onChanged: () =>
     } finally { setBusy(false); }
   };
 
+  const canAutoPublish = AUTO_PUBLISH_CHANNELS.includes(item.channel);
+
+  const autoPublish = async () => {
+    setBusy(true);
+    setAutoError(null);
+    try {
+      const result = await publishItem(item.id, item.channel);
+      if (result.status === "failed") { setAutoError(result.error ?? "Ошибка публикации"); return; }
+      onChanged();
+    } catch (e) {
+      setAutoError(e instanceof Error ? e.message : String(e));
+    } finally { setBusy(false); }
+  };
+
   if (item.status !== "approved" && item.status !== "published") return null;
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-100">
       <p className="text-xs font-semibold text-gray-700 mb-2">🚀 Публикация</p>
       {item.status === "published" ? (
-        <p className="text-xs text-green-600">Отмечено как опубликовано.</p>
+        <p className="text-xs text-green-600">Опубликовано.</p>
       ) : (
-        <div className="flex gap-2">
-          <input className={inputClass()} placeholder="Ссылка на публикацию (если уже опубликовали вручную)" value={url} onChange={(e) => setUrl(e.target.value)} />
-          <button onClick={markPublished} disabled={busy} className="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg whitespace-nowrap disabled:opacity-60">
-            {busy ? "..." : "Отметить опубликованным"}
-          </button>
+        <div className="space-y-2">
+          {canAutoPublish && (
+            <button onClick={autoPublish} disabled={busy} className="w-full px-3 py-1.5 bg-[#029cda] text-white text-xs font-semibold rounded-lg disabled:opacity-60">
+              {busy ? "Публикуем..." : `🚀 Опубликовать в ${item.channel === "vk" ? "ВКонтакте" : "Telegram"}`}
+            </button>
+          )}
+          {autoError && <p className="text-[11px] text-red-600 bg-red-50 rounded-lg px-2 py-1">{autoError}</p>}
+          <div className="flex gap-2">
+            <input className={inputClass()} placeholder="Ссылка на публикацию (если опубликовали вручную)" value={url} onChange={(e) => setUrl(e.target.value)} />
+            <button onClick={markPublished} disabled={busy} className="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-semibold rounded-lg whitespace-nowrap disabled:opacity-60">
+              {busy ? "..." : "Отметить вручную"}
+            </button>
+          </div>
         </div>
       )}
-      <p className="text-[10px] text-gray-400 mt-1">Автопубликация недоступна — нет токенов каналов (см. integrations.md §3). Опубликуйте вручную на площадке и отметьте здесь.</p>
+      <p className="text-[10px] text-gray-400 mt-1">
+        {canAutoPublish
+          ? "Автопубликация использует токен из вкладки «Каналы». Если он не настроен или истёк — используйте ручную отметку."
+          : "Для этого канала автопубликация пока не поддерживается (нет официального API — см. integrations.md) — опубликуйте вручную и отметьте здесь."}
+      </p>
     </div>
   );
 }

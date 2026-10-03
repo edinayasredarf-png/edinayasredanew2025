@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbGetTopic, dbUpsertTopic } from "@/lib/server/contentOsDb";
 import { generateForTask } from "@/lib/ai/router";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 import { promptVersion } from "@/lib/ai/promptFiles";
 import { TopicAnalysisSchema } from "@/lib/ai/schemas/contentOs";
 import { buildTopicAnalysisSystemPrompt, buildTopicAnalysisUserPrompt } from "@/lib/ai/prompts/contentOs";
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       system: buildTopicAnalysisSystemPrompt(),
       user: buildTopicAnalysisUserPrompt(topic.title, topic.thesis),
       maxTokens: 500,
+      companyId: getActiveCompanyId(request),
       dataClassification: "PUBLIC",
     });
     await dbUpsertTopic({ id, relevance: result.data.relevance, popularity: result.data.popularity });

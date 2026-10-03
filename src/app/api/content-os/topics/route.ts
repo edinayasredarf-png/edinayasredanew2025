@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbDeleteTopic, dbListTopics, dbUpsertTopic } from "@/lib/server/contentOsDb";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   try {
     await requireAdminAccess(request);
     const status = request.nextUrl.searchParams.get("status") || undefined;
-    return NextResponse.json(await dbListTopics({ status }));
+    return NextResponse.json(await dbListTopics({ status, companyId: getActiveCompanyId(request) }));
   } catch (e) {
     return jsonErr(e, 401);
   }
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     await requireAdminAccess(request);
     const body = await request.json();
     if (!body?.title?.trim() && !body?.id) return NextResponse.json({ error: "title required" }, { status: 400 });
-    const id = await dbUpsertTopic(body);
+    const id = await dbUpsertTopic(body, getActiveCompanyId(request));
     return NextResponse.json({ id });
   } catch (e) {
     return jsonErr(e, 401);

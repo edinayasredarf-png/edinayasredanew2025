@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Select } from "@/components/admin/ui/Select";
 import { inputClass } from "@/components/admin/ui/Field";
-import { deleteSource, upsertSource } from "@/lib/contentOsStore";
-import { CONTENT_SOURCE_TYPES, type ContentSource, type ContentSourceType } from "@/lib/contentOsTypes";
+import { convertSourceItemToTopic, deleteSource, dismissSourceItem, listSourceItems, pollSources, upsertSource } from "@/lib/contentOsStore";
+import { CONTENT_SOURCE_TYPES, type ContentSource, type ContentSourceItem, type ContentSourceItemStatus, type ContentSourceType } from "@/lib/contentOsTypes";
 
 const labelCls = "block text-[13px] font-medium text-[#52555a] mb-1";
 const EMPTY = { name: "", type: "keyword" as ContentSourceType, url: "", external_id: "", priority: 5, poll_interval: 60, categories: "", tags: "" };
@@ -41,7 +41,7 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Удалить источник?")) return;
+    if (!confirm("Удалить источник? Собранные записи ленты останутся.")) return;
     await deleteSource(id); await reload();
   };
 
@@ -51,7 +51,7 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
         <div>
           <h2 className="text-lg font-bold text-gray-900">Sources</h2>
           <p className="text-sm text-gray-500">
-            Источники для Topic Hunter (§19 ТЗ). Реальный сбор — через уже работающий пайплайн «Новостного радара» (RSS/Google News/Telegram), здесь — полный реестр с приоритетом и метаданными.
+            Источники и сбор новостей для Topic Hunter (§19 ТЗ) — полностью внутри Content OS, свой реестр и своя лента.
           </p>
         </div>
         <button onClick={() => setShowForm((v) => !v)} className="px-4 py-2 bg-[#029cda] text-white text-sm font-semibold rounded-xl hover:bg-[#0280b5]">
@@ -106,12 +106,12 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
         </div>
       )}
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-[11px] text-gray-400 uppercase">
               <th className="pb-2">Название</th><th className="pb-2">Тип</th><th className="pb-2">Приоритет</th>
-              <th className="pb-2">Опрос</th><th className="pb-2">Категории</th><th className="pb-2">Активен</th><th className="pb-2"></th>
+              <th className="pb-2">Опрос</th><th className="pb-2">Собрано</th><th className="pb-2">Активен</th><th className="pb-2"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -124,7 +124,7 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
                 <td className="py-2 pr-3 text-gray-600">{CONTENT_SOURCE_TYPES.find((t) => t.key === s.type)?.label}</td>
                 <td className="py-2 pr-3 text-gray-600">{s.priority}</td>
                 <td className="py-2 pr-3 text-gray-600">{s.poll_interval} мин</td>
-                <td className="py-2 pr-3 text-gray-500 text-xs">{s.categories.join(", ") || "—"}</td>
+                <td className="py-2 pr-3 text-gray-500 text-xs">{s.last_polled_at ? new Date(s.last_polled_at).toLocaleString("ru-RU") : "ещё не опрашивался"}</td>
                 <td className="py-2 pr-3">
                   <button onClick={() => toggleActive(s)} className={`w-9 h-5 rounded-full relative transition-colors ${s.active ? "bg-[#029cda]" : "bg-gray-200"}`}>
                     <span className={`absolute top-0.5 h-4 w-4 bg-white rounded-full transition-transform ${s.active ? "translate-x-4" : "translate-x-0.5"}`} />
@@ -136,6 +136,115 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
             {sources.length === 0 && <tr><td colSpan={7} className="py-6 text-center text-gray-400">Источников пока нет.</td></tr>}
           </tbody>
         </table>
+      </div>
+
+      <SourceFeed />
+    </div>
+  );
+}
+
+const FEED_TABS: { key: ContentSourceItemStatus; label: string }[] = [
+  { key: "new", label: "Новые" },
+  { key: "used", label: "Использованные" },
+  { key: "dismissed", label: "Скрытые" },
+];
+
+function SourceFeed() {
+  const [tab, setTab] = useState<ContentSourceItemStatus>("new");
+  const [items, setItems] = useState<ContentSourceItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [polling, setPolling] = useState(false);
+  const [pollMsg, setPollMsg] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = (status: ContentSourceItemStatus) => {
+    setLoading(true);
+    listSourceItems({ status }).then(setItems).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(tab); }, [tab]);
+
+  const poll = async () => {
+    setPolling(true); setPollMsg(null);
+    try {
+      const r = await pollSources();
+      const errSuffix = r.errors.length ? `, ошибок: ${r.errors.length}` : "";
+      setPollMsg(`Опрошено источников: ${r.sources}, собрано новых записей: ${r.saved}${errSuffix}`);
+      if (tab === "new") load("new");
+    } catch (e) {
+      setPollMsg(e instanceof Error ? e.message : "Ошибка опроса");
+    } finally {
+      setPolling(false);
+    }
+  };
+
+  const toTopic = async (id: string) => {
+    setBusyId(id);
+    try { await convertSourceItemToTopic(id); setItems((v) => v.filter((i) => i.id !== id)); }
+    finally { setBusyId(null); }
+  };
+
+  const dismiss = async (id: string) => {
+    setBusyId(id);
+    try { await dismissSourceItem(id); setItems((v) => v.filter((i) => i.id !== id)); }
+    finally { setBusyId(null); }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        <div>
+          <h3 className="text-sm font-bold text-gray-900">Лента</h3>
+          <p className="text-xs text-gray-500">Собранные записи по активным источникам — отсюда темы уходят в «Идеи».</p>
+        </div>
+        <button onClick={poll} disabled={polling} className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 disabled:opacity-60 whitespace-nowrap">
+          {polling ? "Собираем..." : "🔄 Собрать сейчас"}
+        </button>
+      </div>
+
+      {pollMsg && <p className="text-xs text-gray-600 bg-[#F6F7F9] rounded-lg px-3 py-2 mb-3">{pollMsg}</p>}
+
+      <div className="flex gap-1 mb-3 border-b border-gray-100">
+        {FEED_TABS.map((t) => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`px-3 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors ${tab === t.key ? "border-[#029cda] text-[#029cda]" : "border-transparent text-gray-400 hover:text-gray-600"}`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {loading && <p className="text-sm text-gray-400 py-8 text-center">Загрузка...</p>}
+      {!loading && items.length === 0 && (
+        <p className="text-sm text-gray-400 py-8 text-center">
+          {tab === "new" ? "Пока пусто — нажмите «Собрать сейчас» или подождите следующего опроса." : "Ничего нет."}
+        </p>
+      )}
+
+      <div className="space-y-2">
+        {items.map((item) => (
+          <div key={item.id} className="bg-white border border-gray-100 rounded-xl p-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{item.category}</span>
+                <span className="text-[11px] text-gray-400">{item.source_name}</span>
+                <span className="text-[11px] text-gray-300">·</span>
+                <span className="text-[11px] text-gray-400">{new Date(item.published_at).toLocaleString("ru-RU")}</span>
+              </div>
+              <a href={item.link} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-900 hover:text-[#029cda] line-clamp-2">{item.title}</a>
+              {item.snippet && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.snippet}</p>}
+            </div>
+            {tab === "new" && (
+              <div className="flex flex-col gap-1.5 shrink-0">
+                <button onClick={() => toTopic(item.id)} disabled={busyId === item.id} className="px-3 py-1.5 bg-[#029cda] text-white text-xs font-semibold rounded-lg whitespace-nowrap disabled:opacity-60">
+                  → Создать тему
+                </button>
+                <button onClick={() => dismiss(item.id)} disabled={busyId === item.id} className="px-3 py-1.5 text-gray-400 hover:text-gray-700 text-xs font-medium whitespace-nowrap">
+                  Скрыть
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

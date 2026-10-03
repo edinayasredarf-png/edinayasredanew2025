@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { listBrandDocuments, listChannels, listClusters, listSources, listTopics } from "@/lib/contentOsStore";
-import type { ContentBrandDocument, ContentChannelProfile, ContentCluster, ContentSource, ContentTopic } from "@/lib/contentOsTypes";
+import { getActiveCompanyIdClient, listBrandDocuments, listChannels, listClusters, listCompanies, listSources, listTopics, setActiveCompanyIdClient } from "@/lib/contentOsStore";
+import { DEFAULT_COMPANY_ID, type ContentBrandDocument, type ContentChannelProfile, type ContentCluster, type ContentCompany, type ContentSource, type ContentTopic } from "@/lib/contentOsTypes";
 import DashboardTab from "./DashboardTab";
 import IdeasTab from "./IdeasTab";
 import SourcesTab from "./SourcesTab";
@@ -43,6 +43,8 @@ export default function ContentOs() {
   const [clusters, setClusters] = useState<ContentCluster[]>([]);
   const [channels, setChannels] = useState<ContentChannelProfile[]>([]);
   const [brandDocs, setBrandDocs] = useState<ContentBrandDocument[]>([]);
+  const [companies, setCompanies] = useState<ContentCompany[]>([]);
+  const [activeCompanyId, setActiveCompanyId] = useState<string>(DEFAULT_COMPANY_ID);
   const [loading, setLoading] = useState(true);
   const [openClusterId, setOpenClusterId] = useState<string | null>(null);
 
@@ -51,17 +53,44 @@ export default function ContentOs() {
   const reloadClusters = useCallback(async () => setClusters(await listClusters()), []);
   const reloadChannels = useCallback(async () => setChannels(await listChannels()), []);
   const reloadBrand = useCallback(async () => setBrandDocs(await listBrandDocuments()), []);
+  const reloadCompanies = useCallback(async () => setCompanies(await listCompanies()), []);
+
+  // company_id читается на сервере из cookie (src/lib/server/contentOsCompany.ts),
+  // не из query/пропсов — поэтому простой reload всех company-scoped данных
+  // после смены cookie достаточен, без переписывания apiFetch-сигнатур.
+  const reloadCompanyScoped = useCallback(
+    () => Promise.all([reloadTopics(), reloadSources(), reloadClusters(), reloadChannels(), reloadBrand()]),
+    [reloadTopics, reloadSources, reloadClusters, reloadChannels, reloadBrand]
+  );
+
+  useEffect(() => {
+    const fromCookie = getActiveCompanyIdClient();
+    if (fromCookie) setActiveCompanyId(fromCookie);
+  }, []);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        await Promise.all([reloadTopics(), reloadSources(), reloadClusters(), reloadChannels(), reloadBrand()]);
+        await Promise.all([reloadCompanyScoped(), reloadCompanies()]);
       } finally {
         setLoading(false);
       }
     })();
-  }, [reloadTopics, reloadSources, reloadClusters, reloadChannels, reloadBrand]);
+  }, [reloadCompanyScoped, reloadCompanies]);
+
+  const switchCompany = async (id: string) => {
+    if (id === activeCompanyId) return;
+    setActiveCompanyIdClient(id);
+    setActiveCompanyId(id);
+    setOpenClusterId(null);
+    setLoading(true);
+    try {
+      await reloadCompanyScoped();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const developTopic = async (topic: ContentTopic) => {
     const { id } = await upsertCluster({ title: topic.title, primary_topic_id: topic.id });
@@ -81,6 +110,18 @@ export default function ContentOs() {
           <h1 className="text-2xl font-bold text-gray-900">Content OS</h1>
           <p className="text-sm text-gray-500">Source → Idea → Cluster → Draft (local/cloud AI) → QC → Approval → Plan → Publication.</p>
         </div>
+        {companies.length > 1 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">🏢 Компания</span>
+            <select
+              value={activeCompanyId}
+              onChange={(e) => switchCompany(e.target.value)}
+              className="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#029cda]"
+            >
+              {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-1 rounded-2xl bg-[#F6F7F9] p-1 mb-5">
@@ -95,7 +136,12 @@ export default function ContentOs() {
       {loading ? (
         <p className="text-sm text-gray-400 py-10 text-center">Загрузка...</p>
       ) : (
-        <>
+        // key=activeCompanyId — вкладки, которые сами тянут данные по себе
+        // (Dashboard/Content Plan/Articles/Social/SEO/Research/Publications/
+        // Analytics), перемонтируются при смене компании и запрашивают заново;
+        // остальные (Ideas/Sources/Brand/Settings) получают уже перезагруженные
+        // пропсы из reloadCompanyScoped.
+        <div key={activeCompanyId}>
           {view === "dashboard" && <DashboardTab onOpenCluster={setOpenClusterId} />}
           {view === "ideas" && <IdeasTab topics={topics} reload={reloadTopics} onDevelop={developTopic} />}
           {view === "sources" && <SourcesTab sources={sources} reload={reloadSources} />}
@@ -107,8 +153,8 @@ export default function ContentOs() {
           {view === "research" && <ResearchTab clusters={clusters} onOpenCluster={setOpenClusterId} />}
           {view === "publications" && <PublicationsTab />}
           {view === "analytics" && <AnalyticsTab />}
-          {view === "settings" && <SettingsTab channels={channels} reloadChannels={reloadChannels} />}
-        </>
+          {view === "settings" && <SettingsTab channels={channels} reloadChannels={reloadChannels} companies={companies} reloadCompanies={reloadCompanies} />}
+        </div>
       )}
 
       {openClusterId && <ClusterDetail clusterId={openClusterId} channels={channels} onClose={closeDetail} onChanged={reloadClusters} />}

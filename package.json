@@ -10,6 +10,7 @@
     "export": "next build",
     "indexnow": "node scripts/indexnow-submit.mjs",
     "db:check-timeweb": "node scripts/check-timeweb-pg.mjs",
+    "db:check-content-os": "node scripts/check-content-os-schema.mjs",
     "auth:set-password": "node scripts/set-user-password.mjs"
   },
   "dependencies": {

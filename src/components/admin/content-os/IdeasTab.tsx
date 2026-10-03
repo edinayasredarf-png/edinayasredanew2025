@@ -97,7 +97,7 @@ export default function IdeasTab({ topics, reload, onDevelop }: {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900">{t.title}</p>
               {t.thesis && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{t.thesis}</p>}
-              <p className="text-[11px] text-gray-400 mt-1">Релевантность {t.relevance} · Популярность {t.popularity} · {t.status}{t.radar_item_id ? " · из мониторинга" : ""}</p>
+              <p className="text-[11px] text-gray-400 mt-1">Релевантность {t.relevance} · Популярность {t.popularity} · {t.status}{(t.source_item_id || t.radar_item_id) ? " · из мониторинга" : ""}</p>
             </div>
             <div className="flex flex-col gap-1.5 shrink-0 items-end">
               <button onClick={() => onDevelop(t)} className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#029cda]/10 text-[#029cda] hover:bg-[#029cda]/15">✍️ Развить</button>

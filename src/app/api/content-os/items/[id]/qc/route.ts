@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbAddQcCheck, dbGetItem, dbListBrandDocuments, dbListFactChecks, dbListQcChecks } from "@/lib/server/contentOsDb";
 import { generateForTask } from "@/lib/ai/router";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 import { promptVersion } from "@/lib/ai/promptFiles";
 import { QcResultSchema } from "@/lib/ai/schemas/contentOs";
 import { buildQcPrompt, buildQcUserPrompt } from "@/lib/ai/prompts/contentOs";
@@ -50,7 +51,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!item.body.trim()) return NextResponse.json({ error: "Текст пуст — нечего проверять" }, { status: 400 });
 
   try {
-    const brandDocs = checkType === "brand" ? await dbListBrandDocuments() : [];
+    const companyId = getActiveCompanyId(request);
+    const brandDocs = checkType === "brand" ? await dbListBrandDocuments(companyId) : [];
     const factChecks = checkType === "fact" ? await dbListFactChecks(id) : [];
     const researchSummary = factChecks.length ? factChecks.map((f) => `${f.claim} — ${f.verdict}${f.source_url ? ` (${f.source_url})` : ""}`).join("\n") : undefined;
 
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const result = await generateForTask({
       task, promptVersion: promptVersion(promptFile), schema: QcResultSchema, system, user,
-      maxTokens: 1500, contentItemId: id, dataClassification: "INTERNAL",
+      maxTokens: 1500, contentItemId: id, companyId, dataClassification: "INTERNAL",
     });
 
     const checkId = await dbAddQcCheck({ content_item_id: id, check_type: checkType, status: result.data.status.toLowerCase() as "pass" | "review" | "fail", notes: result.data.notes });

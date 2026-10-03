@@ -44,6 +44,8 @@ export interface ContentOsGenerateOptions<T> extends Pick<StructuredRequest<T>, 
   /** Версия промпт-файла из prompts/*.md (§33 ТЗ) — для трассировки в content_ai_runs. */
   promptVersion?: number;
   contentItemId?: string;
+  /** Чья генерация — для стоимости AI по компаниям (database.md §10.2). Без него — дефолтная компания. */
+  companyId?: string;
   dataClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL";
 }
 
@@ -56,13 +58,14 @@ async function logRun(
   latencyMs: number,
   usage: { inputTokens: number; outputTokens: number },
   contentItemId?: string,
+  companyId?: string,
   dataClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL",
   error?: string
 ): Promise<void> {
   try {
     await dbLogAiRun({
       task, promptVersion: promptVersion ?? null, provider, model, contentItemId: contentItemId ?? null,
-      dataClassification: dataClassification ?? "INTERNAL",
+      companyId, dataClassification: dataClassification ?? "INTERNAL",
       inputTokens: usage.inputTokens, outputTokens: usage.outputTokens,
       latencyMs, status, error: error ?? null,
     });
@@ -83,7 +86,7 @@ export async function generateForTask<T>(opts: ContentOsGenerateOptions<T>): Pro
   const started = Date.now();
   try {
     const result = await primary.generateStructured(req);
-    await logRun(opts.task, opts.promptVersion, route.provider, "ok", result.model, Date.now() - started, result.usage, opts.contentItemId, opts.dataClassification);
+    await logRun(opts.task, opts.promptVersion, route.provider, "ok", result.model, Date.now() - started, result.usage, opts.contentItemId, opts.companyId, opts.dataClassification);
     return result;
   } catch (e) {
     if (route.provider === route.fallback) throw e;
@@ -92,7 +95,7 @@ export async function generateForTask<T>(opts: ContentOsGenerateOptions<T>): Pro
     const result = await fallback.generateStructured(req);
     await logRun(
       opts.task, opts.promptVersion, route.fallback, "fallback", result.model, Date.now() - fbStarted, result.usage,
-      opts.contentItemId, opts.dataClassification, e instanceof Error ? e.message : String(e)
+      opts.contentItemId, opts.companyId, opts.dataClassification, e instanceof Error ? e.message : String(e)
     );
     return result;
   }

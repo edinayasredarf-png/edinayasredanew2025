@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbDeleteBrandDocument, dbListBrandDocuments, dbUpsertBrandDocument } from "@/lib/server/contentOsDb";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ function jsonErr(e: unknown, fallback = 500) {
 export async function GET(request: NextRequest) {
   try {
     await requireAdminAccess(request);
-    return NextResponse.json(await dbListBrandDocuments());
+    return NextResponse.json(await dbListBrandDocuments(getActiveCompanyId(request)));
   } catch (e) {
     return jsonErr(e, 401);
   }
@@ -26,7 +27,10 @@ export async function POST(request: NextRequest) {
     await requireAdminAccess(request);
     const body = await request.json();
     if (!body?.title?.trim()) return NextResponse.json({ error: "title required" }, { status: 400 });
-    const id = await dbUpsertBrandDocument({ id: body.id, title: body.title, category: body.category || "brand", content: body.content || "" });
+    const id = await dbUpsertBrandDocument(
+      { id: body.id, title: body.title, category: body.category || "brand", content: body.content || "" },
+      getActiveCompanyId(request)
+    );
     return NextResponse.json({ id });
   } catch (e) {
     return jsonErr(e, 401);

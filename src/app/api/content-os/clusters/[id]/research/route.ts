@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbAddResearchSource, dbCreateResearchPack, dbGetResearchPack } from "@/lib/server/contentOsDb";
 import { generateForTask } from "@/lib/ai/router";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 import { promptVersion } from "@/lib/ai/promptFiles";
 import { ResearchSummarySchema } from "@/lib/ai/schemas/contentOs";
 import { buildResearchSystemPrompt, buildResearchUserPrompt } from "@/lib/ai/prompts/contentOs";
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const user = buildResearchUserPrompt(sources.map((s) => ({ title: s.title, text: s.extracted_text })));
     const result = await generateForTask({
       task: "research_synthesis", promptVersion: promptVersion("research"), schema: ResearchSummarySchema,
-      system, user, maxTokens: 3000, dataClassification: "INTERNAL",
+      system, user, maxTokens: 3000, companyId: getActiveCompanyId(request), dataClassification: "INTERNAL",
     });
 
     const packId = await dbCreateResearchPack(id, result.data.summary);

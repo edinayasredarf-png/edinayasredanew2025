@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbGetResearchPack, dbListBrandDocuments, dbListChannelProfiles, dbListItemsByCluster } from "@/lib/server/contentOsDb";
 import { generateForTask } from "@/lib/ai/router";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 import { promptVersion } from "@/lib/ai/promptFiles";
 import { ContentOsDraftSchema } from "@/lib/ai/schemas/contentOs";
 import {
@@ -46,9 +47,10 @@ export async function POST(request: NextRequest) {
   if (!body.channel) return NextResponse.json({ error: "Укажите канал" }, { status: 400 });
   if (!body.clusterId) return NextResponse.json({ error: "Укажите кластер" }, { status: 400 });
 
+  const companyId = getActiveCompanyId(request);
   const [channels, brandDocs, existingItems, researchPack] = await Promise.all([
-    dbListChannelProfiles(),
-    dbListBrandDocuments(),
+    dbListChannelProfiles(companyId),
+    dbListBrandDocuments(companyId),
     dbListItemsByCluster(body.clusterId),
     dbGetResearchPack(body.clusterId),
   ]);
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
       user,
       maxTokens: 4000,
       contentItemId: body.contentItemId,
+      companyId,
       dataClassification: "INTERNAL",
     });
 

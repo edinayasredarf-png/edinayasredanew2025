@@ -2,14 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 import ChannelsTab from "./ChannelsTab";
-import { CONTENT_OS_TASK_LABELS, type ContentChannelProfile, type ContentOsTask } from "@/lib/contentOsTypes";
+import CompaniesPanel from "./CompaniesPanel";
+import { CONTENT_OS_TASK_LABELS, type ContentChannelProfile, type ContentCompany, type ContentOsTask } from "@/lib/contentOsTypes";
 
 interface RoutingInfo {
   localConfigured: boolean;
   routes: Record<ContentOsTask, { provider: "local" | "anthropic"; model?: string; fallback: "local" | "anthropic" }>;
 }
 
-export default function SettingsTab({ channels, reloadChannels }: { channels: ContentChannelProfile[]; reloadChannels: () => Promise<void> }) {
+export default function SettingsTab({
+  channels, reloadChannels, companies, reloadCompanies,
+}: {
+  channels: ContentChannelProfile[]; reloadChannels: () => Promise<void>;
+  companies: ContentCompany[]; reloadCompanies: () => Promise<void>;
+}) {
   const [routing, setRouting] = useState<RoutingInfo | null>(null);
 
   useEffect(() => {
@@ -23,8 +29,10 @@ export default function SettingsTab({ channels, reloadChannels }: { channels: Co
     <div>
       <div className="mb-4">
         <h2 className="text-lg font-bold text-gray-900">Settings</h2>
-        <p className="text-sm text-gray-500">Профили каналов и AI-роутинг (§73-74 ТЗ).</p>
+        <p className="text-sm text-gray-500">Компании, профили каналов и AI-роутинг (§73-74 ТЗ).</p>
       </div>
+
+      <CompaniesPanel companies={companies} reload={reloadCompanies} />
 
       <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between mb-3">

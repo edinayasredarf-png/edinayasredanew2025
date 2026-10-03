@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { dbListPublications, dbUpsertPublication } from "@/lib/server/contentOsDb";
+import { getActiveCompanyId } from "@/lib/server/contentOsCompany";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ function jsonErr(e: unknown, fallback = 500) {
 export async function GET(request: NextRequest) {
   try {
     await requireAdminAccess(request);
-    return NextResponse.json(await dbListPublications());
+    return NextResponse.json(await dbListPublications(getActiveCompanyId(request)));
   } catch (e) {
     return jsonErr(e, 401);
   }

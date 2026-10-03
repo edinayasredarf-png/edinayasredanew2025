@@ -1,6 +1,21 @@
 // Content OS — общие типы. Без server-only: клиент (админ-UI) и сервер (БД).
 // Схема — docs/content-os/database.md, разделы админки — ТЗ §14.
 
+/* ─────────── Компании/бренды (§10 database.md, добавлено 2026-10-03) ─────────── */
+
+/** id первой/дефолтной компании — на неё переносится всё, что было до мультикомпанийности. */
+export const DEFAULT_COMPANY_ID = "edinaya-sreda";
+
+export interface ContentCompany {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  is_active: boolean;
+  created_at: number;
+  updated_at: number;
+}
+
 export type ContentOsChannel = "article" | "telegram" | "vk" | "dzen" | "max";
 export const CONTENT_OS_CHANNELS: { key: ContentOsChannel; label: string; icon: string }[] = [
   { key: "article", label: "Сайт / Статья", icon: "🌐" },
@@ -27,7 +42,10 @@ export interface ContentTopic {
   id: string;
   title: string;
   source_id: string | null;
+  /** @deprecated наследие интеграции с «Новостным радаром», больше не пишется новым кодом — см. source_item_id. */
   radar_item_id: string | null;
+  /** Откуда пришла тема — элемент собственной ленты Content OS (content_source_items), если не создана вручную. */
+  source_item_id: string | null;
   thesis: string;
   relevance: number;
   popularity: number;
@@ -60,6 +78,22 @@ export interface ContentSource {
   categories: string[];
   tags: string[];
   last_polled_at: number | null;
+  created_at: number;
+}
+
+/** Новость/пост, собранные опросом источника — своя лента Content OS, без «Новостного радара». */
+export type ContentSourceItemStatus = "new" | "used" | "dismissed";
+
+export interface ContentSourceItem {
+  id: string;
+  source_id: string;
+  source_name: string;
+  category: string;
+  title: string;
+  link: string;
+  snippet: string;
+  published_at: number;
+  status: ContentSourceItemStatus;
   created_at: number;
 }
 
@@ -234,6 +268,14 @@ export interface ContentChannelProfile {
   ai_prompt: string;
   qa_notes: string;
   sort_order: number;
+  /**
+   * Токены/id для реальной публикации (пока только vk/telegram, см.
+   * src/lib/publishing). Хранится как есть в БД (не зашифровано) — доступ
+   * защищён только requireAdminAccess, как и остальные данные Content OS.
+   *   vk: { groupId, accessToken }
+   *   telegram: { chatId, botToken }
+   */
+  credentials?: Record<string, string>;
 }
 
 export const DEFAULT_CHANNEL_PROFILES: ContentChannelProfile[] = [
