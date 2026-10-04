@@ -1,11 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import nextDynamic from 'next/dynamic';
+import {
+  Banknote, Braces, Building2, FileText, ListChecks, Mail, Paperclip,
+  Palette, PanelTop, Table as TableIcon, UserCog, Users,
+} from 'lucide-react';
 import { Spinner } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
+import { Modal, SettingsRow } from '@/components/admin/ui/Modal';
 import { inputClass } from '@/components/admin/ui/Field';
-import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, DocStyle, Alias, CalcTableDef, CalcColumn, ColKind } from './types';
+import { ScrollX } from '@/components/admin/ui/ScrollX';
+import { isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
+import type { Organization, Executor, ServiceType, ServiceLineItem, HeaderLayout, DocStyle, Alias, CalcTableDef, CalcColumn, ColKind, Tier, TemplateMeta } from './types';
+
+const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
 
 const input = inputClass();
 const label = 'block text-xs font-medium text-gray-500 mb-1';
@@ -29,8 +39,28 @@ function emptyOrg(sort: number): Organization {
   };
 }
 
+type SectionId =
+  | 'templates' | 'prices' | 'tables' | 'docstyle' | 'header' | 'aliases'
+  | 'services' | 'positions' | 'orgs' | 'executors' | 'mail-accounts' | 'attachments';
+
+const SECTION_ICONS: Record<SectionId, React.ComponentType<{ className?: string }>> = {
+  templates: FileText,
+  prices: Banknote,
+  tables: TableIcon,
+  docstyle: Palette,
+  header: PanelTop,
+  aliases: Braces,
+  services: ListChecks,
+  positions: UserCog,
+  orgs: Building2,
+  executors: Users,
+  'mail-accounts': Mail,
+  attachments: Paperclip,
+};
+
 export default function KpSettings({
-  orgs, executors, services, positions, headerLayout, docStyle, aliases, calcTables, onChanged, setStatus,
+  orgs, executors, services, positions, headerLayout, docStyle, aliases, calcTables,
+  tiers, templates, serviceTypes, onChanged, setStatus,
 }: {
   orgs: Organization[];
   executors: Executor[];
@@ -40,92 +70,149 @@ export default function KpSettings({
   docStyle: DocStyle;
   aliases: Alias[];
   calcTables: CalcTableDef[];
+  tiers: Tier[];
+  templates: TemplateMeta[];
+  serviceTypes: string[];
   onChanged: () => void;
   setStatus: (s: string) => void;
 }) {
   const [editKey, setEditKey] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [open, setOpen] = useState<SectionId | null>(null);
+  const close = () => setOpen(null);
+
+  const ROWS: Array<{ id: SectionId; title: string; subtitle: string }> = [
+    { id: 'templates', title: 'Шаблоны', subtitle: `Шаблонов: ${templates.length}` },
+    { id: 'prices', title: 'Цены', subtitle: 'Тарифы по услугам и компаниям' },
+    { id: 'tables', title: 'Таблицы расчёта', subtitle: `Таблиц: ${calcTables.length}` },
+    { id: 'docstyle', title: 'Оформление документа', subtitle: 'Шрифт, стиль, подписант' },
+    { id: 'header', title: 'Шапка документа', subtitle: 'Логотип и реквизиты в шапке' },
+    { id: 'aliases', title: 'Алиасы', subtitle: `Плейсхолдеры для шаблонов: ${aliases.length}` },
+    { id: 'services', title: 'Услуги', subtitle: `Услуг: ${services.length}` },
+    { id: 'positions', title: 'Должности клиента', subtitle: `Записей: ${positions.length}` },
+    { id: 'orgs', title: 'Компании (от кого КП)', subtitle: `Компаний: ${orgs.length}` },
+    { id: 'executors', title: 'Исполнители', subtitle: `Менеджеров: ${executors.length}` },
+    { id: 'mail-accounts', title: 'Почтовые ящики для рассылки', subtitle: 'SMTP-ящики компаний' },
+    { id: 'attachments', title: 'Библиотека вложений', subtitle: 'Файлы для писем с КП' },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Таблицы расчёта */}
-      <TablesManager calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
+    <div className="max-w-[560px] mx-auto space-y-2">
+      {ROWS.map((r) => {
+        const Icon = SECTION_ICONS[r.id];
+        return <SettingsRow key={r.id} icon={<Icon className="w-5 h-5" />} title={r.title} subtitle={r.subtitle} onClick={() => setOpen(r.id)} />;
+      })}
 
-      {/* Оформление документа */}
-      <DocStyleEditor style={docStyle} onChanged={onChanged} setStatus={setStatus} />
+      {open === 'templates' && (
+        <Modal title="Шаблоны" onClose={close} maxWidth="max-w-5xl">
+          <TemplatesTab orgs={orgs} serviceTypes={serviceTypes} templates={templates} aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'prices' && (
+        <Modal title="Цены" onClose={close} maxWidth="max-w-5xl">
+          <PricesTab orgs={orgs} tiers={tiers} services={services} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'tables' && (
+        <Modal title="Таблицы расчёта" onClose={close} maxWidth="max-w-4xl">
+          <TablesManager calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'docstyle' && (
+        <Modal title="Оформление документа" onClose={close}>
+          <DocStyleEditor style={docStyle} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'header' && (
+        <Modal title="Шапка документа" onClose={close} maxWidth="max-w-3xl">
+          <HeaderLayoutEditor layout={headerLayout} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'aliases' && (
+        <Modal title="Алиасы" onClose={close} maxWidth="max-w-3xl">
+          <AliasesManager aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'services' && (
+        <Modal title="Услуги" onClose={close} maxWidth="max-w-3xl">
+          <ServicesManager services={services} calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'positions' && (
+        <Modal title="Должности клиента" onClose={close}>
+          <PositionsManager positions={positions} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'orgs' && (
+        <Modal title="Компании (от кого КП)" onClose={close} maxWidth="max-w-3xl">
+          <div className="flex items-center justify-end mb-2">
+            <button
+              onClick={() => { setCreating(true); setEditKey(null); }}
+              className="text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]"
+            >
+              + Добавить компанию
+            </button>
+          </div>
 
-      {/* Шапка документа */}
-      <HeaderLayoutEditor layout={headerLayout} onChanged={onChanged} setStatus={setStatus} />
+          {creating && (
+            <OrgEditor
+              org={emptyOrg(orgs.length + 1)}
+              isNew
+              onClose={() => setCreating(false)}
+              onSaved={() => { setCreating(false); onChanged(); }}
+              setStatus={setStatus}
+            />
+          )}
 
-      {/* Алиасы */}
-      <AliasesManager aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
-
-      {/* Услуги */}
-      <ServicesManager services={services} calcTables={calcTables} onChanged={onChanged} setStatus={setStatus} />
-      {/* Должности клиента */}
-      <PositionsManager positions={positions} onChanged={onChanged} setStatus={setStatus} />
-      {/* Компании */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-[#1b2a4a]">Компании (от кого КП)</h3>
-          <button
-            onClick={() => { setCreating(true); setEditKey(null); }}
-            className="text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]"
-          >
-            + Добавить компанию
-          </button>
-        </div>
-
-        {creating && (
-          <OrgEditor
-            org={emptyOrg(orgs.length + 1)}
-            isNew
-            onClose={() => setCreating(false)}
-            onSaved={() => { setCreating(false); onChanged(); }}
-            setStatus={setStatus}
-          />
-        )}
-
-        <div className="space-y-2">
-          {orgs.map((o) => (
-            <div key={o.key} className="bg-white border border-gray-200 rounded-xl">
-              <div className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <div className="font-medium text-sm text-[#313131]">
-                    {o.name} {!o.isActive && <span className="text-xs text-gray-400">(скрыта)</span>}
+          <div className="space-y-2">
+            {orgs.map((o) => (
+              <div key={o.key} className="bg-white border border-gray-200 rounded-xl">
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div>
+                    <div className="font-medium text-sm text-[#313131]">
+                      {o.name} {!o.isActive && <span className="text-xs text-gray-400">(скрыта)</span>}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      подписант: {o.directorRole} {o.directorFio || '—'} · номер письма: {o.writeKpNumber ? 'да' : 'нет'}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-400">
-                    подписант: {o.directorRole} {o.directorFio || '—'} · номер письма: {o.writeKpNumber ? 'да' : 'нет'}
-                  </div>
+                  <button
+                    onClick={() => { setEditKey(editKey === o.key ? null : o.key); setCreating(false); }}
+                    className="text-sm text-[#029cda] hover:text-[#0280b5]"
+                  >
+                    {editKey === o.key ? 'Свернуть' : 'Настроить'}
+                  </button>
                 </div>
-                <button
-                  onClick={() => { setEditKey(editKey === o.key ? null : o.key); setCreating(false); }}
-                  className="text-sm text-[#029cda] hover:text-[#0280b5]"
-                >
-                  {editKey === o.key ? 'Свернуть' : 'Настроить'}
-                </button>
+                {editKey === o.key && (
+                  <div className="border-t border-gray-100 p-4">
+                    <OrgEditor
+                      org={o}
+                      onClose={() => setEditKey(null)}
+                      onSaved={() => { setEditKey(null); onChanged(); }}
+                      setStatus={setStatus}
+                    />
+                  </div>
+                )}
               </div>
-              {editKey === o.key && (
-                <div className="border-t border-gray-100 p-4">
-                  <OrgEditor
-                    org={o}
-                    onClose={() => setEditKey(null)}
-                    onSaved={() => { setEditKey(null); onChanged(); }}
-                    setStatus={setStatus}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Исполнители */}
-      <ExecutorsManager executors={executors} onChanged={onChanged} setStatus={setStatus} />
-      {/* Ящики для рассылки */}
-      <MailAccountsManager setStatus={setStatus} />
-      {/* Библиотека вложений */}
-      <MailAttachmentsManager setStatus={setStatus} />
+            ))}
+          </div>
+        </Modal>
+      )}
+      {open === 'executors' && (
+        <Modal title="Исполнители" onClose={close}>
+          <ExecutorsManager executors={executors} onChanged={onChanged} setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'mail-accounts' && (
+        <Modal title="Почтовые ящики для рассылки" onClose={close} maxWidth="max-w-3xl">
+          <MailAccountsManager setStatus={setStatus} />
+        </Modal>
+      )}
+      {open === 'attachments' && (
+        <Modal title="Библиотека вложений" onClose={close} maxWidth="max-w-3xl">
+          <MailAttachmentsManager setStatus={setStatus} />
+        </Modal>
+      )}
     </div>
   );
 }
@@ -1233,6 +1320,640 @@ function ExecutorsManager({
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+/* ═══════════════ Вкладка «Шаблоны» ═══════════════ */
+interface TemplateDraft {
+  id?: number;
+  name: string;
+  serviceType: string;
+  orgKey: string;
+  bodyHtml: string;
+  skipAuto: boolean;
+}
+
+function TemplatesTab({
+  orgs, serviceTypes, templates, aliases, onChanged, setStatus,
+}: {
+  orgs: Organization[];
+  serviceTypes: string[];
+  templates: TemplateMeta[];
+  aliases: Alias[];
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [draft, setDraft] = useState<TemplateDraft | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
+
+  const openNew = () =>
+    setDraft({ name: '', serviceType: serviceTypes[0] || 'ИМЗ', orgKey: '', bodyHtml: '', skipAuto: false });
+
+  const openEdit = async (id: number) => {
+    try {
+      const res = await fetch(`/api/kp/templates?id=${id}`, { credentials: 'include' });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка');
+      const t = d.template;
+      setDraft({ id: t.id, name: t.name, serviceType: t.serviceType, orgKey: t.orgKey || '', bodyHtml: t.bodyHtml || '', skipAuto: t.skipAutoBlocks });
+    } catch (e) {
+      setStatus((e as Error).message);
+    }
+  };
+
+  const saveDraft = async () => {
+    if (!draft) return;
+    if (!draft.serviceType) return setStatus('Укажите тип услуги');
+    setBusy(true);
+    try {
+      const payload = {
+        id: draft.id,
+        name: draft.name || 'Шаблон',
+        serviceType: draft.serviceType,
+        orgKey: draft.orgKey || null,
+        bodyHtml: draft.bodyHtml,
+        skipAutoBlocks: draft.skipAuto,
+      };
+      const res = await fetch('/api/kp/templates', {
+        method: draft.id ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка сохранения');
+      setStatus('Шаблон сохранён');
+      setDraft(null);
+      onChanged();
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const del = async (id: number) => {
+    if (!confirm('Удалить шаблон?')) return;
+    await fetch(`/api/kp/templates?id=${id}`, { method: 'DELETE', credentials: 'include' });
+    onChanged();
+  };
+
+  const toggleSkip = async (id: number, skipAutoBlocks: boolean) => {
+    await fetch('/api/kp/templates', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, skipAutoBlocks }),
+    });
+    onChanged();
+  };
+
+  const input = inputClass();
+  const label = 'block text-xs font-medium text-gray-500 mb-1';
+
+  if (draft) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-3">
+          <div className="text-sm font-semibold text-[#1b2a4a]">{draft.id ? 'Редактирование шаблона' : 'Новый шаблон'}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <div className={label}>Название</div>
+              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={input} placeholder="ИМЗ Экострой" />
+            </div>
+            <div>
+              <div className={label}>Тип услуги *</div>
+              <Select value={draft.serviceType} onChange={(v) => setDraft({ ...draft, serviceType: v })} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
+            </div>
+            <div>
+              <div className={label}>Компания (пусто = общий)</div>
+              <Select value={draft.orgKey} onChange={(v) => setDraft({ ...draft, orgKey: v })} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
+            </div>
+          </div>
+          <div>
+            <div className={label}>Тело шаблона (форматируйте как в Word; вставляйте алиасы {'{{...}}'} из панели справа)</div>
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+              <RichEditor key={draft.id || 'new'} initialHtml={draft.bodyHtml} onChange={(html) => setDraft((d) => (d ? { ...d, bodyHtml: html } : d))} />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
+            <input type="checkbox" checked={draft.skipAuto} onChange={(e) => setDraft({ ...draft, skipAuto: e.target.checked })} />
+            Шаблон уже содержит шапку/подписанта (не добавлять автоматически)
+          </label>
+          <div className="flex gap-2">
+            <button onClick={saveDraft} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить шаблон'}</button>
+            <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
+          </div>
+        </div>
+        <div>
+          <AliasPanel aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <button onClick={openNew} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">Создать шаблон</button>
+        <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Загрузить .docx (можно несколько)</button>
+      </div>
+
+      {uploadOpen && <DocxUpload orgs={orgs} serviceTypes={serviceTypes} onChanged={onChanged} setStatus={setStatus} />}
+
+      <div className="space-y-2">
+        {templates.length === 0 && <div className="text-sm text-gray-400">Шаблонов пока нет. Создайте новый или загрузите .docx.</div>}
+        {templates.map((t) => (
+          <div key={t.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3">
+            <div>
+              <div className="font-medium text-sm text-[#313131]">
+                {t.name}{' '}
+                <span className="text-xs bg-[#EAF6FC] text-[#0b5c7d] px-2 py-0.5 rounded ml-1">{t.serviceType}</span>{' '}
+                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{t.orgKey ? orgs.find((o) => o.key === t.orgKey)?.shortName || t.orgKey : 'общий'}</span>{' '}
+                <span className="text-xs text-gray-400">{t.source === 'html' ? 'редактируемый' : '.docx'}</span>
+              </div>
+              <div className="text-xs text-gray-400 mt-0.5">плейсхолдеров: {t.placeholders.length}</div>
+              <label className="flex items-center gap-2 text-xs text-gray-500 mt-1 cursor-pointer">
+                <input type="checkbox" checked={t.skipAutoBlocks} onChange={(e) => toggleSkip(t.id, e.target.checked)} />
+                уже содержит шапку/подписанта (не добавлять авто)
+              </label>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button onClick={() => openEdit(t.id)} className="text-sm text-[#029cda] hover:text-[#0280b5]">Изменить</button>
+              <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-600 text-sm">Удалить</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Панель алиасов: копирование в буфер + создание своих. */
+function AliasPanel({ aliases, onChanged, setStatus }: { aliases: Alias[]; onChanged: () => void; setStatus: (s: string) => void }) {
+  const [k, setK] = useState('');
+  const [lbl, setLbl] = useState('');
+  const [val, setVal] = useState('');
+  const copy = async (key: string) => {
+    try { await navigator.clipboard.writeText(`{{${key}}}`); setStatus(`Скопировано: {{${key}}}`); }
+    catch { setStatus(`Вставьте вручную: {{${key}}}`); }
+  };
+  const create = async () => {
+    if (!k.trim()) return setStatus('Укажите ключ алиаса');
+    const res = await fetch('/api/kp/aliases', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: k, label: lbl, value: val }),
+    });
+    const j = await res.json();
+    if (!res.ok) return setStatus(j.error || 'Ошибка');
+    setK(''); setLbl(''); setVal('');
+    setStatus('Алиас создан');
+    onChanged();
+  };
+  const custom = aliases.filter((a) => a.isCustom);
+  const builtin = aliases.filter((a) => !a.isCustom);
+  const chip = (a: Alias) => (
+    <button key={a.key} onClick={() => copy(a.key)} title={`${a.label}${a.isCustom ? ` = ${a.value}` : ''} — нажмите, чтобы скопировать`}
+      className="text-left px-2 py-1 rounded border border-gray-200 bg-white hover:border-[#029cda] text-xs">
+      <code className="font-mono text-[#0b5c7d]">{`{{${a.key}}}`}</code>
+      <span className="text-gray-400 block truncate">{a.label}</span>
+    </button>
+  );
+  return (
+    <div className="bg-[#EAF6FC] border border-[#cbe8f5] rounded-2xl p-4 space-y-3 sticky top-4">
+      <div className="text-sm font-semibold text-[#0b5c7d]">Алиасы (клик — копировать)</div>
+      <div className="text-[11px] text-[#4a7d92]">Нажмите на алиас, чтобы скопировать, и вставьте в текст (Ctrl+V). Шапка/подписант/таблица подставляются автоматически.</div>
+      {custom.length > 0 && (
+        <>
+          <div className="text-xs font-medium text-[#0b5c7d]">Свои</div>
+          <div className="grid grid-cols-2 gap-1">{custom.map(chip)}</div>
+        </>
+      )}
+      <div className="text-xs font-medium text-[#0b5c7d]">Встроенные</div>
+      <div className="grid grid-cols-2 gap-1 max-h-72 overflow-y-auto pr-1">{builtin.map(chip)}</div>
+      <div className="border-t border-[#cbe8f5] pt-2 space-y-1">
+        <div className="text-xs font-medium text-[#0b5c7d]">Новый алиас</div>
+        <input value={k} onChange={(e) => setK(e.target.value)} placeholder="ключ (латиница)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
+        <input value={lbl} onChange={(e) => setLbl(e.target.value)} placeholder="описание" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
+        <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="значение (текст)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
+        <button onClick={create} className="w-full px-3 py-1.5 rounded-xl bg-[#029cda] text-white text-xs hover:bg-[#0280b5]">Создать</button>
+      </div>
+    </div>
+  );
+}
+
+/* Массовая загрузка готовых .docx: drag-and-drop, услуга/компания для каждого. */
+type UploadStatus = 'pending' | 'uploading' | 'done' | 'error';
+interface UploadItem {
+  uid: string;
+  file: File;
+  name: string;
+  serviceType: string;
+  orgKey: string;
+  skipAuto: boolean;
+  status: UploadStatus;
+  message?: string;
+}
+
+function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organization[]; serviceTypes: string[]; onChanged: () => void; setStatus: (s: string) => void }) {
+  const defaultSvc = serviceTypes[0] || 'ИМЗ';
+  const [items, setItems] = useState<UploadItem[]>([]);
+  // Значения по умолчанию для вновь добавляемых файлов (и для «Применить ко всем»).
+  const [defSvc, setDefSvc] = useState(defaultSvc);
+  const [defOrg, setDefOrg] = useState('');
+  const [defSkip, setDefSkip] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const input = inputClass();
+  const label = 'block text-xs font-medium text-gray-500 mb-1';
+
+  const uid = () =>
+    (typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2));
+
+  const addFiles = (files: FileList | File[]) => {
+    const docx = Array.from(files).filter(
+      (f) => f.name.toLowerCase().endsWith('.docx'),
+    );
+    const skipped = Array.from(files).length - docx.length;
+    if (skipped > 0) setStatus(`Пропущено файлов (не .docx): ${skipped}`);
+    if (docx.length === 0) return;
+    setItems((prev) => [
+      ...prev,
+      ...docx.map((file) => ({
+        uid: uid(),
+        file,
+        name: file.name.replace(/\.docx$/i, ''),
+        serviceType: defSvc,
+        orgKey: defOrg,
+        skipAuto: defSkip,
+        status: 'pending' as UploadStatus,
+      })),
+    ]);
+  };
+
+  const patch = (id: string, p: Partial<UploadItem>) =>
+    setItems((prev) => prev.map((it) => (it.uid === id ? { ...it, ...p } : it)));
+  const remove = (id: string) => setItems((prev) => prev.filter((it) => it.uid !== id));
+
+  const applyDefaultsToAll = () =>
+    setItems((prev) =>
+      prev.map((it) =>
+        it.status === 'done'
+          ? it
+          : { ...it, serviceType: defSvc, orgKey: defOrg, skipAuto: defSkip },
+      ),
+    );
+
+  const uploadOne = async (it: UploadItem): Promise<boolean> => {
+    const fd = new FormData();
+    fd.append('file', it.file);
+    fd.append('name', it.name || it.file.name.replace(/\.docx$/i, ''));
+    fd.append('serviceType', it.serviceType);
+    fd.append('orgKey', it.orgKey);
+    fd.append('skipAutoBlocks', String(it.skipAuto));
+    try {
+      const res = await fetch('/api/kp/templates', { method: 'POST', credentials: 'include', body: fd });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Ошибка загрузки');
+      patch(it.uid, { status: 'done', message: `плейсхолдеров: ${d.placeholders?.length ?? 0}` });
+      return true;
+    } catch (e) {
+      patch(it.uid, { status: 'error', message: (e as Error).message });
+      return false;
+    }
+  };
+
+  const uploadAll = async () => {
+    const queue = items.filter((it) => it.status === 'pending' || it.status === 'error');
+    if (queue.length === 0) return setStatus('Добавьте файлы для загрузки');
+    setBusy(true);
+    let ok = 0;
+    for (const it of queue) {
+      patch(it.uid, { status: 'uploading', message: undefined });
+      const success = await uploadOne(it);
+      if (success) ok += 1;
+    }
+    setBusy(false);
+    setStatus(`Загружено шаблонов: ${ok} из ${queue.length}`);
+    if (ok > 0) onChanged();
+  };
+
+  const clearDone = () => setItems((prev) => prev.filter((it) => it.status !== 'done'));
+
+  const pendingCount = items.filter((it) => it.status === 'pending' || it.status === 'error').length;
+
+  const statusView = (it: UploadItem) => {
+    if (it.status === 'uploading') return <Spinner size={16} />;
+    if (it.status === 'done') return <span className="text-[#16a34a] text-sm" title={it.message}>✓ загружен</span>;
+    if (it.status === 'error') return <span className="text-red-500 text-xs" title={it.message}>ошибка</span>;
+    return <span className="text-gray-400 text-xs">в очереди</span>;
+  };
+
+  return (
+    <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4">
+      {/* Значения по умолчанию для новых файлов */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <div className={label}>Услуга по умолчанию</div>
+          <Select value={defSvc} onChange={setDefSvc} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
+        </div>
+        <div>
+          <div className={label}>Компания по умолчанию</div>
+          <Select value={defOrg} onChange={setDefOrg} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
+        </div>
+        <div className="flex items-end gap-2">
+          <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer flex-1">
+            <input type="checkbox" checked={defSkip} onChange={(e) => setDefSkip(e.target.checked)} />
+            уже с шапкой
+          </label>
+          {items.length > 0 && (
+            <button onClick={applyDefaultsToAll} className="px-3 py-2 text-xs rounded-xl border border-gray-200 text-[#313131] hover:bg-white whitespace-nowrap">
+              Применить ко всем
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Зона drag-and-drop */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files); }}
+        onClick={() => fileInputRef.current?.click()}
+        className={`rounded-xl border-2 border-dashed px-4 py-8 text-center cursor-pointer transition-colors ${dragOver ? 'border-[#029cda] bg-[#EAF6FC]' : 'border-gray-300 bg-white hover:border-[#029cda]'}`}
+      >
+        <div className="text-sm text-[#313131] font-medium">Перетащите сюда файлы .docx</div>
+        <div className="text-xs text-gray-400 mt-1">или нажмите, чтобы выбрать несколько файлов</div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".docx"
+          multiple
+          className="hidden"
+          onChange={(e) => { if (e.target.files?.length) addFiles(e.target.files); e.target.value = ''; }}
+        />
+      </div>
+
+      {/* Очередь файлов */}
+      {items.length > 0 && (
+        <div className="space-y-2">
+          {items.map((it) => (
+            <div key={it.uid} className="bg-white border border-gray-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div>
+                  <div className={label}>Название</div>
+                  <input value={it.name} onChange={(e) => patch(it.uid, { name: e.target.value })} className={input} />
+                  <div className="text-[11px] text-gray-400 mt-0.5 truncate" title={it.file.name}>{it.file.name}</div>
+                </div>
+                <div>
+                  <div className={label}>Услуга *</div>
+                  <Select value={it.serviceType} onChange={(v) => patch(it.uid, { serviceType: v })} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
+                </div>
+                <div>
+                  <div className={label}>Компания</div>
+                  <Select value={it.orgKey} onChange={(v) => patch(it.uid, { orgKey: v })} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 justify-between sm:justify-end">
+                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer whitespace-nowrap">
+                  <input type="checkbox" checked={it.skipAuto} onChange={(e) => patch(it.uid, { skipAuto: e.target.checked })} />
+                  с шапкой
+                </label>
+                <div className="w-20 text-right">{statusView(it)}</div>
+                <button onClick={() => remove(it.uid)} disabled={it.status === 'uploading'} className="text-red-500 hover:text-red-600 text-sm disabled:opacity-40">✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center gap-2">
+        <button onClick={uploadAll} disabled={busy || pendingCount === 0} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
+          {busy && <Spinner size={16} color="#fff" />}
+          {busy ? 'Загрузка…' : pendingCount > 0 ? `Загрузить (${pendingCount})` : 'Загрузить'}
+        </button>
+        {items.some((it) => it.status === 'done') && (
+          <button onClick={clearDone} disabled={busy} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-white disabled:opacity-50">Убрать загруженные</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════ Вкладка «Цены» ═══════════════ */
+const PRICE_TABS = [
+  { key: 'direct', label: '₽ прямой' },
+  { key: 'tender', label: '₽ торги' },
+  { key: 'ais', label: 'АИС и пролонгация' },
+] as const;
+type PriceTab = (typeof PRICE_TABS)[number]['key'];
+type ScalarField = 'pricePerHaDirect' | 'pricePerHaTender' | 'aisPrice' | 'renewalPerYear';
+
+const isAisPurchase = (name: string) => name.trim() === 'ЕС';
+const isRenewalService = (name: string) => /пролонгац/i.test(name);
+
+/** Строка матрицы цен: либо позиция услуги (line), либо скалярная цена услуги. */
+type PriceRow =
+  | { kind: 'line'; svc: string; lineKey: string; label: string }
+  | { kind: 'scalar'; svc: string; scalarField: ScalarField; label: string };
+
+/** Сводная матрица цен: услуги/позиции (строки) × компании (столбцы) по виду цены. */
+function PricesTab({
+  orgs, tiers, services, onChanged, setStatus,
+}: {
+  orgs: Organization[];
+  tiers: Tier[];
+  services: ServiceType[];
+  onChanged: () => void;
+  setStatus: (s: string) => void;
+}) {
+  const [tab, setTab] = useState<PriceTab>('direct');
+  const [busy, setBusy] = useState(false);
+
+  // Цены задаются только для атомарных услуг. Комбинированные (ИЗН + ЕС и т.п.)
+  // берут цены компонентов автоматически — собственной цены у них нет.
+  const atomicServices = useMemo(() => services.filter((s) => !isCombinedService(s.name)), [services]);
+  const combinedServices = useMemo(() => services.filter((s) => isCombinedService(s.name)).map((s) => s.name), [services]);
+  const lineItemsOf = React.useCallback(
+    (svc: string) => services.find((s) => s.name === svc)?.lineItems ?? [],
+    [services],
+  );
+
+  // Локальное редактируемое состояние: orgKey → serviceType → Tier (со строковыми ценами).
+  const buildMap = React.useCallback((): Record<string, Record<string, Tier>> => {
+    const m: Record<string, Record<string, Tier>> = {};
+    for (const o of orgs) {
+      m[o.key] = {};
+      for (const s of atomicServices) {
+        const t = tiers.find((x) => x.orgKey === o.key && x.serviceType === s.name);
+        m[o.key][s.name] = t
+          ? { ...t, linePrices: { ...(t.linePrices || {}) } }
+          : { orgKey: o.key, serviceType: s.name, pricePerHaDirect: 0, pricePerHaTender: 0, aisPrice: 0, renewalPerYear: 0, minHectares: 1, linePrices: {} };
+      }
+    }
+    return m;
+  }, [orgs, atomicServices, tiers]);
+
+  const [map, setMap] = useState<Record<string, Record<string, Tier>>>(buildMap);
+
+  const lineDir: 'direct' | 'tender' = tab === 'tender' ? 'tender' : 'direct';
+
+  // Матрица строк под выбранную вкладку.
+  const priceRows = useMemo<PriceRow[]>(() => {
+    const rows: PriceRow[] = [];
+    if (tab === 'ais') {
+      // Только АИС «Единая среда» (покупка) и пролонгация.
+      for (const s of atomicServices) {
+        if (isAisPurchase(s.name)) rows.push({ kind: 'scalar', svc: s.name, scalarField: 'aisPrice', label: `${s.name} — АИС «Единая среда» (покупка)` });
+      }
+      for (const s of atomicServices) {
+        if (isRenewalService(s.name)) rows.push({ kind: 'scalar', svc: s.name, scalarField: 'renewalPerYear', label: `${s.name} — пролонгация (за год)` });
+      }
+      return rows;
+    }
+    // Прямой/торги: только услуги-работы; АИС и пролонгацию не показываем.
+    const scalarField: ScalarField = tab === 'tender' ? 'pricePerHaTender' : 'pricePerHaDirect';
+    for (const s of atomicServices) {
+      if (isAisPurchase(s.name) || isRenewalService(s.name)) continue;
+      const items = lineItemsOf(s.name);
+      if (items.length > 0) {
+        for (const it of items) rows.push({ kind: 'line', svc: s.name, lineKey: it.key, label: `${s.name} — ${it.name}` });
+      } else {
+        rows.push({ kind: 'scalar', svc: s.name, scalarField, label: s.name });
+      }
+    }
+    return rows;
+  }, [atomicServices, lineItemsOf, tab]);
+
+  const getVal = (orgKey: string, row: PriceRow): number => {
+    const t = map[orgKey]?.[row.svc];
+    if (!t) return 0;
+    if (row.kind === 'line') return t.linePrices?.[row.lineKey]?.[lineDir] ?? 0;
+    return (t[row.scalarField] as number) ?? 0;
+  };
+
+  const setVal = (orgKey: string, row: PriceRow, val: number) => {
+    if (row.kind === 'line') {
+      setMap((prev) => {
+        const t = prev[orgKey][row.svc];
+        const lp = { ...(t.linePrices || {}) };
+        const cur = lp[row.lineKey] || { direct: 0, tender: 0 };
+        // Фиксированная цена: только direct/tender, без верхней границы.
+        lp[row.lineKey] = { ...cur, [lineDir]: val, directMax: 0, tenderMax: 0 };
+        return { ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...t, linePrices: lp } } };
+      });
+      return;
+    }
+    setMap((prev) => ({ ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...prev[orgKey][row.svc], [row.scalarField]: val } } }));
+  };
+
+  const save = async () => {
+    setBusy(true);
+    let ok = 0;
+    try {
+      for (const o of orgs) {
+        const orgTiers = atomicServices.map((s) => map[o.key][s.name]);
+        const res = await fetch('/api/kp/organizations', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ org: o, tiers: orgTiers }),
+        });
+        if (res.ok) ok += 1;
+      }
+      setStatus(`Цены сохранены (компаний: ${ok} из ${orgs.length})`);
+      onChanged();
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const numCell = 'w-full px-2 py-1.5 rounded-xl border border-gray-200 text-sm text-right outline-none focus:border-[#029cda]';
+
+  if (orgs.length === 0) {
+    return <div className="text-sm text-gray-400 p-4">Сначала добавьте компании в разделе «Компании (от кого КП)».</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-[#1b2a4a]">Цены по услугам</h3>
+          <p className="text-xs text-gray-500">Услуги/позиции — строки, компании — столбцы. Выберите вид цены и заполните ячейки.</p>
+        </div>
+        <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
+          {PRICE_TABS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setTab(f.key)}
+              className={`px-3 py-1.5 rounded-xl text-xs ${tab === f.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <ScrollX className="bg-white border border-gray-200 rounded-xl">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
+              <th className="px-3 py-2 sticky left-0 bg-white">Услуга / позиция</th>
+              {orgs.map((o) => (
+                <th key={o.key} className="px-3 py-2 min-w-[120px] text-right" title={o.name}>{o.shortName || o.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {priceRows.length === 0 && (
+              <tr>
+                <td colSpan={orgs.length + 1} className="px-3 py-4 text-xs text-gray-400 text-center">
+                  {tab === 'ais' ? 'Нет услуг АИС/пролонгации (ЕС, «Пролонгация ЕС»).' : 'Нет услуг для этой вкладки.'}
+                </td>
+              </tr>
+            )}
+            {priceRows.map((row, i) => (
+              <tr key={`${row.svc}#${row.kind === 'line' ? row.lineKey : 'scalar'}`} className={i % 2 ? 'bg-[#FAFBFC]' : ''}>
+                <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{row.label}</td>
+                {orgs.map((o) => (
+                  <td key={o.key} className="px-2 py-1">
+                    <input
+                      className={numCell}
+                      inputMode="decimal"
+                      value={getVal(o.key, row) || ''}
+                      onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
+                      placeholder="0"
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ScrollX>
+
+      {combinedServices.length > 0 && (
+        <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-xl px-3 py-2 space-y-1">
+          <div className="font-medium text-[#0b5c7d]">Комбинированные услуги отдельной цены не имеют — строки и цены берутся из компонентов:</div>
+          {combinedServices.map((s) => (
+            <div key={s}>• <span className="text-[#313131]">{s}</span> = {serviceComponents(s).join(' + ')}</div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
+          {busy && <Spinner size={16} color="#fff" />}
+          {busy ? 'Сохранение…' : 'Сохранить цены'}
+        </button>
+        <span className="text-xs text-gray-400">Цена по позиции — фиксированная (за единицу), по каждой компании.</span>
       </div>
     </div>
   );

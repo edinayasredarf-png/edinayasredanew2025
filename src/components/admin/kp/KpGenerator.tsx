@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import nextDynamic from 'next/dynamic';
 import KpSettings from './KpSettings';
 
-const RichEditor = nextDynamic(() => import('@/components/blog/RichEditor'), { ssr: false });
-
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
+import { Modal } from '@/components/admin/ui/Modal';
 import { ToggleRow } from '@/components/admin/ui/Toggle';
 import { Select } from '@/components/admin/ui/Select';
 import { MultiSelect } from '@/components/admin/ui/MultiSelect';
@@ -16,7 +14,7 @@ import { HelpTip } from '@/components/admin/ui/HelpTip';
 import { WordIcon, PdfIcon } from '@/components/admin/ui/FileIcons';
 import { normalizeCompanyName, normalizeFio } from '@/components/admin/kp/textNormalize';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
-import { composeTier, composeLines, isCombinedService, serviceComponents } from '@/lib/kp/serviceComposition';
+import { composeTier, composeLines, serviceComponents } from '@/lib/kp/serviceComposition';
 import { positionWithCompany } from '@/lib/kp/companyCase';
 import { evalFormulaSafe } from './formulaClient';
 import KpCalcGrid from './KpCalcGrid';
@@ -119,7 +117,7 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
 }
 
 export default function KpGenerator() {
-  const [tab, setTab] = useState<'create' | 'templates' | 'prices' | 'settings' | 'history' | 'sends' | 'registry' | 'pdf2word'>('create');
+  const [tab, setTab] = useState<'create' | 'settings' | 'history' | 'sends' | 'registry' | 'pdf2word'>('create');
 
   // Справочники
   const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -677,13 +675,11 @@ export default function KpGenerator() {
 
   const TABS = [
     { k: 'create', label: 'Создать КП' },
-    { k: 'templates', label: 'Шаблоны' },
-    { k: 'prices', label: 'Цены' },
-    { k: 'registry', label: 'Реестр КП' },
-    { k: 'settings', label: 'Настройки' },
-    { k: 'history', label: 'История' },
+    { k: 'registry', label: 'Реестр' },
     { k: 'sends', label: 'Рассылки' },
+    { k: 'history', label: 'История' },
     { k: 'pdf2word', label: 'PDF → Word' },
+    { k: 'settings', label: 'Настройки' },
   ] as const;
 
   return (
@@ -695,16 +691,19 @@ export default function KpGenerator() {
         .kp-app input[type="checkbox"]:focus-visible { outline-offset: 2px; }
         .kp-app select { -webkit-appearance: none; appearance: none; padding-right: 2.25rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M6 8l4 4 4-4' stroke='%239aa3b2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; }
       `}</style>
-      {/* Шапка: заголовок + подчёркнутые вкладки (стиль референса). Прокрутка на узких экранах. */}
-      <div className="space-y-3">
-        <h2 className="text-lg sm:text-xl font-bold text-[#1b2a4a] leading-tight tracking-tight">Генератор коммерческих предложений</h2>
-        <ScrollX className="border-b border-gray-200" innerClassName="flex gap-5 sm:gap-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      {/* Шапка: заголовок по центру + вкладки-пилюля (стиль «Главной»). */}
+      <div className="flex flex-col items-center text-center gap-5 pb-2">
+        <div>
+          <h2 className="text-xl font-semibold text-[#1b2a4a]">Генератор коммерческих предложений</h2>
+          <p className="text-sm text-gray-500 mt-1">Создавайте тут КП и сразу отправляйте клиентам</p>
+        </div>
+        <ScrollX innerClassName="inline-flex items-center gap-1 p-1 rounded-2xl bg-[var(--es-tile)] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
             <button
               key={t.k}
               onClick={() => setTab(t.k)}
-              className={`shrink-0 whitespace-nowrap pb-2.5 -mb-px border-b-2 text-sm transition-colors ${
-                tab === t.k ? 'border-[#029cda] text-[#029cda] font-semibold' : 'border-transparent text-gray-500 hover:text-[#1b2a4a]'
+              className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-xl text-sm font-medium transition ${
+                tab === t.k ? 'bg-white text-[#1b2a4a] shadow-[var(--es-shadow-sm)]' : 'text-gray-500 hover:text-[#1b2a4a]'
               }`}
             >
               {t.label}
@@ -714,7 +713,7 @@ export default function KpGenerator() {
       </div>
 
       {status && (
-        <div className="text-sm px-4 py-2 rounded-xl bg-[#EAF6FC] text-[#0b5c7d] border border-[#cbe8f5]">
+        <div className="text-sm px-4 py-2 rounded-xl bg-[#EAF6FC] text-[#0b5c7d] border border-[#cbe8f5] max-w-[560px] mx-auto">
           {status}
         </div>
       )}
@@ -738,27 +737,6 @@ export default function KpGenerator() {
         />
       )}
 
-      {tab === 'templates' && (
-        <TemplatesTab
-          orgs={orgs}
-          serviceTypes={serviceTypes}
-          templates={templates}
-          aliases={aliases}
-          onChanged={loadMeta}
-          setStatus={setStatus}
-        />
-      )}
-
-      {tab === 'prices' && (
-        <PricesTab
-          orgs={orgs}
-          tiers={tiers}
-          services={services}
-          onChanged={loadMeta}
-          setStatus={setStatus}
-        />
-      )}
-
       {tab === 'settings' && (
         <KpSettings
           orgs={orgs}
@@ -769,6 +747,9 @@ export default function KpGenerator() {
           docStyle={docStyle}
           aliases={aliases}
           calcTables={calcTables}
+          tiers={tiers}
+          templates={templates}
+          serviceTypes={serviceTypes}
           onChanged={loadMeta}
           setStatus={setStatus}
         />
@@ -856,7 +837,9 @@ function CreateTab(p: CreateProps) {
 
   const input = inputClass();
   const label = 'block text-xs font-medium text-gray-500 mb-1';
-  const panel = 'bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4';
+  const panel = 'bg-white rounded-2xl border border-gray-100 p-5 space-y-4';
+  const chip = 'flex items-center gap-2.5 bg-[#F6F7F9] rounded-xl px-4 py-2.5';
+  const [tableModalOpen, setTableModalOpen] = React.useState(false);
   const fieldLabel = (text: React.ReactNode, hint?: string, required?: boolean) => (
     <div className="flex items-center gap-1.5 mb-1">
       <span className="text-xs font-medium text-gray-500">{text}{required && <span className="text-red-500"> *</span>}</span>
@@ -896,8 +879,8 @@ function CreateTab(p: CreateProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div className="lg:col-span-2 space-y-4">
+    <div className="max-w-[560px] mx-auto space-y-4">
+      <div className="space-y-4">
         {/* Организации + услуга */}
         <div className={panel}>
           <div className="flex flex-col md:flex-row md:items-start gap-3">
@@ -927,19 +910,19 @@ function CreateTab(p: CreateProps) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2.5">
-            <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
+            <div className={chip}>
               <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Режим цены</span>
               <HelpTip text="Можно включить оба режима — в таблице покажутся выбранные колонки стоимости (прямой контракт и/или торги)." />
               <ToggleRow checked={modeDirect} onChange={(v) => { if (!v && !modeTender) return; setModeDirect(v); }}>Прямой контракт</ToggleRow>
               <ToggleRow checked={modeTender} onChange={(v) => { if (!v && !modeDirect) return; setModeTender(v); }}>Торги</ToggleRow>
             </div>
-            <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
+            <div className={chip}>
               <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Единица площади</span>
               <HelpTip text="Можно включить обе — тогда в таблице будут оба столбца, значения связаны: изменил кв. м — пересчитаются га и наоборот." />
               <ToggleRow checked={unitSqm} onChange={(v) => { if (!v && !unitHa) return; setUnitSqm(v); }}>кв. м</ToggleRow>
               <ToggleRow checked={unitHa} onChange={(v) => { if (!v && !unitSqm) return; setUnitHa(v); }}>Гектары</ToggleRow>
             </div>
-            <div className="flex items-center gap-2.5 bg-white/60 rounded-xl px-4 py-2.5">
+            <div className={chip}>
               <span className="text-sm text-[#1b2a4a] whitespace-nowrap">Сельское поселение</span>
               <HelpTip text="Для сельских поселений цена АИС «Единая среда» делится на 1,6." />
               <ToggleRow checked={ruralSettlement} onChange={setRuralSettlement}>{null}</ToggleRow>
@@ -1094,24 +1077,42 @@ function CreateTab(p: CreateProps) {
           </div>
         </div>
 
-        {/* Таблица расчёта — конфигурируемая (Excel-стиль) */}
+        {/* Таблица расчёта — конфигурируемая (Excel-стиль); сам редактор открывается в модалке */}
         <div className={panel}>
           <div className="text-sm font-semibold text-[#1b2a4a]">Таблица расчёта</div>
-          <KpCalcGrid
-            calcTables={calcTables}
-            selectedKey={selectedTableKey}
-            onSelectTable={onSelectTable}
-            columns={columns}
-            setColumns={setColumns}
-            rows={rows}
-            setRows={setRows}
-            previewScope={previewScope}
-            areaUnit={areaUnit}
-            onTablesChanged={onTablesChanged}
-            onImportedTable={onImportedTable}
-            setStatus={setStatus}
-          />
+          <button type="button" onClick={() => setTableModalOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-100 hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition text-left">
+            <span className="shrink-0 size-10 rounded-xl bg-[#F6F7F9] grid place-items-center text-[#1b2a4a]">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M4 4h16v16H4Z M4 9h16 M9 9v11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-medium text-[#1b2a4a] truncate">
+                {calcTables.find((t) => t.key === selectedTableKey)?.name || 'Выберите таблицу'}
+              </span>
+              <span className="block text-xs text-gray-400">{rows.length} {rows.length === 1 ? 'строка' : 'строк'} · Настроить</span>
+            </span>
+            <svg className="shrink-0 w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="none" aria-hidden><path d="M7.5 15l5-5-5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </button>
         </div>
+
+        {tableModalOpen && (
+          <Modal title="Таблица расчёта" onClose={() => setTableModalOpen(false)} maxWidth="max-w-5xl">
+            <KpCalcGrid
+              calcTables={calcTables}
+              selectedKey={selectedTableKey}
+              onSelectTable={onSelectTable}
+              columns={columns}
+              setColumns={setColumns}
+              rows={rows}
+              setRows={setRows}
+              previewScope={previewScope}
+              areaUnit={areaUnit}
+              onTablesChanged={onTablesChanged}
+              onImportedTable={onImportedTable}
+              setStatus={setStatus}
+            />
+          </Modal>
+        )}
 
         {(inc.ais || inc.renewal) && (
           <div className="text-xs text-gray-400">
@@ -1121,11 +1122,11 @@ function CreateTab(p: CreateProps) {
         )}
       </div>
 
-      {/* Правая колонка: матрица итогов + действия */}
+      {/* Итоги по организациям + действия */}
       <div className="space-y-4">
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3 sticky top-4">
+        <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-3">
           <div className="text-sm font-semibold text-[#1b2a4a]">Итоги по организациям</div>
-          {perOrgTotals.length === 0 && <div className="text-sm text-gray-400">Выберите организации слева.</div>}
+          {perOrgTotals.length === 0 && <div className="text-sm text-gray-400">Выберите организации выше.</div>}
           {perOrgTotals.map((t) => (
             <div key={t.key} className="border border-gray-100 rounded-xl p-3">
               <div className="flex items-center justify-between">
@@ -1436,640 +1437,6 @@ function PdfToWordTab({ setStatus }: { setStatus: (s: string) => void }) {
   );
 }
 
-/* ═══════════════ Вкладка «Шаблоны» ═══════════════ */
-interface TemplateDraft {
-  id?: number;
-  name: string;
-  serviceType: string;
-  orgKey: string;
-  bodyHtml: string;
-  skipAuto: boolean;
-}
-
-function TemplatesTab({
-  orgs, serviceTypes, templates, aliases, onChanged, setStatus,
-}: {
-  orgs: Organization[];
-  serviceTypes: string[];
-  templates: TemplateMeta[];
-  aliases: Alias[];
-  onChanged: () => void;
-  setStatus: (s: string) => void;
-}) {
-  const [draft, setDraft] = useState<TemplateDraft | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(false);
-
-  const openNew = () =>
-    setDraft({ name: '', serviceType: serviceTypes[0] || 'ИМЗ', orgKey: '', bodyHtml: '', skipAuto: false });
-
-  const openEdit = async (id: number) => {
-    try {
-      const res = await fetch(`/api/kp/templates?id=${id}`, { credentials: 'include' });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || 'Ошибка');
-      const t = d.template;
-      setDraft({ id: t.id, name: t.name, serviceType: t.serviceType, orgKey: t.orgKey || '', bodyHtml: t.bodyHtml || '', skipAuto: t.skipAutoBlocks });
-    } catch (e) {
-      setStatus((e as Error).message);
-    }
-  };
-
-  const saveDraft = async () => {
-    if (!draft) return;
-    if (!draft.serviceType) return setStatus('Укажите тип услуги');
-    setBusy(true);
-    try {
-      const payload = {
-        id: draft.id,
-        name: draft.name || 'Шаблон',
-        serviceType: draft.serviceType,
-        orgKey: draft.orgKey || null,
-        bodyHtml: draft.bodyHtml,
-        skipAutoBlocks: draft.skipAuto,
-      };
-      const res = await fetch('/api/kp/templates', {
-        method: draft.id ? 'PATCH' : 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || 'Ошибка сохранения');
-      setStatus('Шаблон сохранён');
-      setDraft(null);
-      onChanged();
-    } catch (e) {
-      setStatus((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const del = async (id: number) => {
-    if (!confirm('Удалить шаблон?')) return;
-    await fetch(`/api/kp/templates?id=${id}`, { method: 'DELETE', credentials: 'include' });
-    onChanged();
-  };
-
-  const toggleSkip = async (id: number, skipAutoBlocks: boolean) => {
-    await fetch('/api/kp/templates', {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, skipAutoBlocks }),
-    });
-    onChanged();
-  };
-
-  const input = inputClass();
-  const label = 'block text-xs font-medium text-gray-500 mb-1';
-
-  if (draft) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-3">
-          <div className="text-sm font-semibold text-[#1b2a4a]">{draft.id ? 'Редактирование шаблона' : 'Новый шаблон'}</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <div className={label}>Название</div>
-              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={input} placeholder="ИМЗ Экострой" />
-            </div>
-            <div>
-              <div className={label}>Тип услуги *</div>
-              <Select value={draft.serviceType} onChange={(v) => setDraft({ ...draft, serviceType: v })} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
-            </div>
-            <div>
-              <div className={label}>Компания (пусто = общий)</div>
-              <Select value={draft.orgKey} onChange={(v) => setDraft({ ...draft, orgKey: v })} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
-            </div>
-          </div>
-          <div>
-            <div className={label}>Тело шаблона (форматируйте как в Word; вставляйте алиасы {'{{...}}'} из панели справа)</div>
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-              <RichEditor key={draft.id || 'new'} initialHtml={draft.bodyHtml} onChange={(html) => setDraft((d) => (d ? { ...d, bodyHtml: html } : d))} />
-            </div>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
-            <input type="checkbox" checked={draft.skipAuto} onChange={(e) => setDraft({ ...draft, skipAuto: e.target.checked })} />
-            Шаблон уже содержит шапку/подписанта (не добавлять автоматически)
-          </label>
-          <div className="flex gap-2">
-            <button onClick={saveDraft} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить шаблон'}</button>
-            <button onClick={() => setDraft(null)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
-          </div>
-        </div>
-        <div>
-          <AliasPanel aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <button onClick={openNew} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">Создать шаблон</button>
-        <button onClick={() => setUploadOpen((v) => !v)} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Загрузить .docx (можно несколько)</button>
-      </div>
-
-      {uploadOpen && <DocxUpload orgs={orgs} serviceTypes={serviceTypes} onChanged={onChanged} setStatus={setStatus} />}
-
-      <div className="space-y-2">
-        {templates.length === 0 && <div className="text-sm text-gray-400">Шаблонов пока нет. Создайте новый или загрузите .docx.</div>}
-        {templates.map((t) => (
-          <div key={t.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3">
-            <div>
-              <div className="font-medium text-sm text-[#313131]">
-                {t.name}{' '}
-                <span className="text-xs bg-[#EAF6FC] text-[#0b5c7d] px-2 py-0.5 rounded ml-1">{t.serviceType}</span>{' '}
-                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{t.orgKey ? orgs.find((o) => o.key === t.orgKey)?.shortName || t.orgKey : 'общий'}</span>{' '}
-                <span className="text-xs text-gray-400">{t.source === 'html' ? 'редактируемый' : '.docx'}</span>
-              </div>
-              <div className="text-xs text-gray-400 mt-0.5">плейсхолдеров: {t.placeholders.length}</div>
-              <label className="flex items-center gap-2 text-xs text-gray-500 mt-1 cursor-pointer">
-                <input type="checkbox" checked={t.skipAutoBlocks} onChange={(e) => toggleSkip(t.id, e.target.checked)} />
-                уже содержит шапку/подписанта (не добавлять авто)
-              </label>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <button onClick={() => openEdit(t.id)} className="text-sm text-[#029cda] hover:text-[#0280b5]">Изменить</button>
-              <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-600 text-sm">Удалить</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* Панель алиасов: копирование в буфер + создание своих. */
-function AliasPanel({ aliases, onChanged, setStatus }: { aliases: Alias[]; onChanged: () => void; setStatus: (s: string) => void }) {
-  const [k, setK] = useState('');
-  const [lbl, setLbl] = useState('');
-  const [val, setVal] = useState('');
-  const copy = async (key: string) => {
-    try { await navigator.clipboard.writeText(`{{${key}}}`); setStatus(`Скопировано: {{${key}}}`); }
-    catch { setStatus(`Вставьте вручную: {{${key}}}`); }
-  };
-  const create = async () => {
-    if (!k.trim()) return setStatus('Укажите ключ алиаса');
-    const res = await fetch('/api/kp/aliases', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: k, label: lbl, value: val }),
-    });
-    const j = await res.json();
-    if (!res.ok) return setStatus(j.error || 'Ошибка');
-    setK(''); setLbl(''); setVal('');
-    setStatus('Алиас создан');
-    onChanged();
-  };
-  const custom = aliases.filter((a) => a.isCustom);
-  const builtin = aliases.filter((a) => !a.isCustom);
-  const chip = (a: Alias) => (
-    <button key={a.key} onClick={() => copy(a.key)} title={`${a.label}${a.isCustom ? ` = ${a.value}` : ''} — нажмите, чтобы скопировать`}
-      className="text-left px-2 py-1 rounded border border-gray-200 bg-white hover:border-[#029cda] text-xs">
-      <code className="font-mono text-[#0b5c7d]">{`{{${a.key}}}`}</code>
-      <span className="text-gray-400 block truncate">{a.label}</span>
-    </button>
-  );
-  return (
-    <div className="bg-[#EAF6FC] border border-[#cbe8f5] rounded-2xl p-4 space-y-3 sticky top-4">
-      <div className="text-sm font-semibold text-[#0b5c7d]">Алиасы (клик — копировать)</div>
-      <div className="text-[11px] text-[#4a7d92]">Нажмите на алиас, чтобы скопировать, и вставьте в текст (Ctrl+V). Шапка/подписант/таблица подставляются автоматически.</div>
-      {custom.length > 0 && (
-        <>
-          <div className="text-xs font-medium text-[#0b5c7d]">Свои</div>
-          <div className="grid grid-cols-2 gap-1">{custom.map(chip)}</div>
-        </>
-      )}
-      <div className="text-xs font-medium text-[#0b5c7d]">Встроенные</div>
-      <div className="grid grid-cols-2 gap-1 max-h-72 overflow-y-auto pr-1">{builtin.map(chip)}</div>
-      <div className="border-t border-[#cbe8f5] pt-2 space-y-1">
-        <div className="text-xs font-medium text-[#0b5c7d]">Новый алиас</div>
-        <input value={k} onChange={(e) => setK(e.target.value)} placeholder="ключ (латиница)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
-        <input value={lbl} onChange={(e) => setLbl(e.target.value)} placeholder="описание" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
-        <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="значение (текст)" className="w-full px-2 py-1 rounded border border-gray-200 text-xs" />
-        <button onClick={create} className="w-full px-3 py-1.5 rounded-xl bg-[#029cda] text-white text-xs hover:bg-[#0280b5]">Создать</button>
-      </div>
-    </div>
-  );
-}
-
-/* Массовая загрузка готовых .docx: drag-and-drop, услуга/компания для каждого. */
-type UploadStatus = 'pending' | 'uploading' | 'done' | 'error';
-interface UploadItem {
-  uid: string;
-  file: File;
-  name: string;
-  serviceType: string;
-  orgKey: string;
-  skipAuto: boolean;
-  status: UploadStatus;
-  message?: string;
-}
-
-function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organization[]; serviceTypes: string[]; onChanged: () => void; setStatus: (s: string) => void }) {
-  const defaultSvc = serviceTypes[0] || 'ИМЗ';
-  const [items, setItems] = useState<UploadItem[]>([]);
-  // Значения по умолчанию для вновь добавляемых файлов (и для «Применить ко всем»).
-  const [defSvc, setDefSvc] = useState(defaultSvc);
-  const [defOrg, setDefOrg] = useState('');
-  const [defSkip, setDefSkip] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const input = inputClass();
-  const label = 'block text-xs font-medium text-gray-500 mb-1';
-
-  const uid = () =>
-    (typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2));
-
-  const addFiles = (files: FileList | File[]) => {
-    const docx = Array.from(files).filter(
-      (f) => f.name.toLowerCase().endsWith('.docx'),
-    );
-    const skipped = Array.from(files).length - docx.length;
-    if (skipped > 0) setStatus(`Пропущено файлов (не .docx): ${skipped}`);
-    if (docx.length === 0) return;
-    setItems((prev) => [
-      ...prev,
-      ...docx.map((file) => ({
-        uid: uid(),
-        file,
-        name: file.name.replace(/\.docx$/i, ''),
-        serviceType: defSvc,
-        orgKey: defOrg,
-        skipAuto: defSkip,
-        status: 'pending' as UploadStatus,
-      })),
-    ]);
-  };
-
-  const patch = (id: string, p: Partial<UploadItem>) =>
-    setItems((prev) => prev.map((it) => (it.uid === id ? { ...it, ...p } : it)));
-  const remove = (id: string) => setItems((prev) => prev.filter((it) => it.uid !== id));
-
-  const applyDefaultsToAll = () =>
-    setItems((prev) =>
-      prev.map((it) =>
-        it.status === 'done'
-          ? it
-          : { ...it, serviceType: defSvc, orgKey: defOrg, skipAuto: defSkip },
-      ),
-    );
-
-  const uploadOne = async (it: UploadItem): Promise<boolean> => {
-    const fd = new FormData();
-    fd.append('file', it.file);
-    fd.append('name', it.name || it.file.name.replace(/\.docx$/i, ''));
-    fd.append('serviceType', it.serviceType);
-    fd.append('orgKey', it.orgKey);
-    fd.append('skipAutoBlocks', String(it.skipAuto));
-    try {
-      const res = await fetch('/api/kp/templates', { method: 'POST', credentials: 'include', body: fd });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || 'Ошибка загрузки');
-      patch(it.uid, { status: 'done', message: `плейсхолдеров: ${d.placeholders?.length ?? 0}` });
-      return true;
-    } catch (e) {
-      patch(it.uid, { status: 'error', message: (e as Error).message });
-      return false;
-    }
-  };
-
-  const uploadAll = async () => {
-    const queue = items.filter((it) => it.status === 'pending' || it.status === 'error');
-    if (queue.length === 0) return setStatus('Добавьте файлы для загрузки');
-    setBusy(true);
-    let ok = 0;
-    for (const it of queue) {
-      patch(it.uid, { status: 'uploading', message: undefined });
-      const success = await uploadOne(it);
-      if (success) ok += 1;
-    }
-    setBusy(false);
-    setStatus(`Загружено шаблонов: ${ok} из ${queue.length}`);
-    if (ok > 0) onChanged();
-  };
-
-  const clearDone = () => setItems((prev) => prev.filter((it) => it.status !== 'done'));
-
-  const pendingCount = items.filter((it) => it.status === 'pending' || it.status === 'error').length;
-
-  const statusView = (it: UploadItem) => {
-    if (it.status === 'uploading') return <Spinner size={16} />;
-    if (it.status === 'done') return <span className="text-[#16a34a] text-sm" title={it.message}>✓ загружен</span>;
-    if (it.status === 'error') return <span className="text-red-500 text-xs" title={it.message}>ошибка</span>;
-    return <span className="text-gray-400 text-xs">в очереди</span>;
-  };
-
-  return (
-    <div className="bg-[#F6F7F9] rounded-2xl border border-gray-100 p-5 space-y-4">
-      {/* Значения по умолчанию для новых файлов */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <div className={label}>Услуга по умолчанию</div>
-          <Select value={defSvc} onChange={setDefSvc} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
-        </div>
-        <div>
-          <div className={label}>Компания по умолчанию</div>
-          <Select value={defOrg} onChange={setDefOrg} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
-        </div>
-        <div className="flex items-end gap-2">
-          <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer flex-1">
-            <input type="checkbox" checked={defSkip} onChange={(e) => setDefSkip(e.target.checked)} />
-            уже с шапкой
-          </label>
-          {items.length > 0 && (
-            <button onClick={applyDefaultsToAll} className="px-3 py-2 text-xs rounded-xl border border-gray-200 text-[#313131] hover:bg-white whitespace-nowrap">
-              Применить ко всем
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Зона drag-and-drop */}
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files); }}
-        onClick={() => fileInputRef.current?.click()}
-        className={`rounded-xl border-2 border-dashed px-4 py-8 text-center cursor-pointer transition-colors ${dragOver ? 'border-[#029cda] bg-[#EAF6FC]' : 'border-gray-300 bg-white hover:border-[#029cda]'}`}
-      >
-        <div className="text-sm text-[#313131] font-medium">Перетащите сюда файлы .docx</div>
-        <div className="text-xs text-gray-400 mt-1">или нажмите, чтобы выбрать несколько файлов</div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".docx"
-          multiple
-          className="hidden"
-          onChange={(e) => { if (e.target.files?.length) addFiles(e.target.files); e.target.value = ''; }}
-        />
-      </div>
-
-      {/* Очередь файлов */}
-      {items.length > 0 && (
-        <div className="space-y-2">
-          {items.map((it) => (
-            <div key={it.uid} className="bg-white border border-gray-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div>
-                  <div className={label}>Название</div>
-                  <input value={it.name} onChange={(e) => patch(it.uid, { name: e.target.value })} className={input} />
-                  <div className="text-[11px] text-gray-400 mt-0.5 truncate" title={it.file.name}>{it.file.name}</div>
-                </div>
-                <div>
-                  <div className={label}>Услуга *</div>
-                  <Select value={it.serviceType} onChange={(v) => patch(it.uid, { serviceType: v })} searchable options={serviceTypes.map((s) => ({ value: s, label: s }))} />
-                </div>
-                <div>
-                  <div className={label}>Компания</div>
-                  <Select value={it.orgKey} onChange={(v) => patch(it.uid, { orgKey: v })} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
-                </div>
-              </div>
-              <div className="flex items-center gap-3 justify-between sm:justify-end">
-                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer whitespace-nowrap">
-                  <input type="checkbox" checked={it.skipAuto} onChange={(e) => patch(it.uid, { skipAuto: e.target.checked })} />
-                  с шапкой
-                </label>
-                <div className="w-20 text-right">{statusView(it)}</div>
-                <button onClick={() => remove(it.uid)} disabled={it.status === 'uploading'} className="text-red-500 hover:text-red-600 text-sm disabled:opacity-40">✕</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="flex items-center gap-2">
-        <button onClick={uploadAll} disabled={busy || pendingCount === 0} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
-          {busy && <Spinner size={16} color="#fff" />}
-          {busy ? 'Загрузка…' : pendingCount > 0 ? `Загрузить (${pendingCount})` : 'Загрузить'}
-        </button>
-        {items.some((it) => it.status === 'done') && (
-          <button onClick={clearDone} disabled={busy} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-white disabled:opacity-50">Убрать загруженные</button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════ Вкладка «Цены» ═══════════════ */
-const PRICE_TABS = [
-  { key: 'direct', label: '₽ прямой' },
-  { key: 'tender', label: '₽ торги' },
-  { key: 'ais', label: 'АИС и пролонгация' },
-] as const;
-type PriceTab = (typeof PRICE_TABS)[number]['key'];
-type ScalarField = 'pricePerHaDirect' | 'pricePerHaTender' | 'aisPrice' | 'renewalPerYear';
-
-const isAisPurchase = (name: string) => name.trim() === 'ЕС';
-const isRenewalService = (name: string) => /пролонгац/i.test(name);
-
-/** Строка матрицы цен: либо позиция услуги (line), либо скалярная цена услуги. */
-type PriceRow =
-  | { kind: 'line'; svc: string; lineKey: string; label: string }
-  | { kind: 'scalar'; svc: string; scalarField: ScalarField; label: string };
-
-/** Сводная матрица цен: услуги/позиции (строки) × компании (столбцы) по виду цены. */
-function PricesTab({
-  orgs, tiers, services, onChanged, setStatus,
-}: {
-  orgs: Organization[];
-  tiers: Tier[];
-  services: ServiceType[];
-  onChanged: () => void;
-  setStatus: (s: string) => void;
-}) {
-  const [tab, setTab] = useState<PriceTab>('direct');
-  const [busy, setBusy] = useState(false);
-
-  // Цены задаются только для атомарных услуг. Комбинированные (ИЗН + ЕС и т.п.)
-  // берут цены компонентов автоматически — собственной цены у них нет.
-  const atomicServices = useMemo(() => services.filter((s) => !isCombinedService(s.name)), [services]);
-  const combinedServices = useMemo(() => services.filter((s) => isCombinedService(s.name)).map((s) => s.name), [services]);
-  const lineItemsOf = React.useCallback(
-    (svc: string) => services.find((s) => s.name === svc)?.lineItems ?? [],
-    [services],
-  );
-
-  // Локальное редактируемое состояние: orgKey → serviceType → Tier (со строковыми ценами).
-  const buildMap = React.useCallback((): Record<string, Record<string, Tier>> => {
-    const m: Record<string, Record<string, Tier>> = {};
-    for (const o of orgs) {
-      m[o.key] = {};
-      for (const s of atomicServices) {
-        const t = tiers.find((x) => x.orgKey === o.key && x.serviceType === s.name);
-        m[o.key][s.name] = t
-          ? { ...t, linePrices: { ...(t.linePrices || {}) } }
-          : { orgKey: o.key, serviceType: s.name, pricePerHaDirect: 0, pricePerHaTender: 0, aisPrice: 0, renewalPerYear: 0, minHectares: 1, linePrices: {} };
-      }
-    }
-    return m;
-  }, [orgs, atomicServices, tiers]);
-
-  const [map, setMap] = useState<Record<string, Record<string, Tier>>>(buildMap);
-
-  const lineDir: 'direct' | 'tender' = tab === 'tender' ? 'tender' : 'direct';
-
-  // Матрица строк под выбранную вкладку.
-  const priceRows = useMemo<PriceRow[]>(() => {
-    const rows: PriceRow[] = [];
-    if (tab === 'ais') {
-      // Только АИС «Единая среда» (покупка) и пролонгация.
-      for (const s of atomicServices) {
-        if (isAisPurchase(s.name)) rows.push({ kind: 'scalar', svc: s.name, scalarField: 'aisPrice', label: `${s.name} — АИС «Единая среда» (покупка)` });
-      }
-      for (const s of atomicServices) {
-        if (isRenewalService(s.name)) rows.push({ kind: 'scalar', svc: s.name, scalarField: 'renewalPerYear', label: `${s.name} — пролонгация (за год)` });
-      }
-      return rows;
-    }
-    // Прямой/торги: только услуги-работы; АИС и пролонгацию не показываем.
-    const scalarField: ScalarField = tab === 'tender' ? 'pricePerHaTender' : 'pricePerHaDirect';
-    for (const s of atomicServices) {
-      if (isAisPurchase(s.name) || isRenewalService(s.name)) continue;
-      const items = lineItemsOf(s.name);
-      if (items.length > 0) {
-        for (const it of items) rows.push({ kind: 'line', svc: s.name, lineKey: it.key, label: `${s.name} — ${it.name}` });
-      } else {
-        rows.push({ kind: 'scalar', svc: s.name, scalarField, label: s.name });
-      }
-    }
-    return rows;
-  }, [atomicServices, lineItemsOf, tab]);
-
-  const getVal = (orgKey: string, row: PriceRow): number => {
-    const t = map[orgKey]?.[row.svc];
-    if (!t) return 0;
-    if (row.kind === 'line') return t.linePrices?.[row.lineKey]?.[lineDir] ?? 0;
-    return (t[row.scalarField] as number) ?? 0;
-  };
-
-  const setVal = (orgKey: string, row: PriceRow, val: number) => {
-    if (row.kind === 'line') {
-      setMap((prev) => {
-        const t = prev[orgKey][row.svc];
-        const lp = { ...(t.linePrices || {}) };
-        const cur = lp[row.lineKey] || { direct: 0, tender: 0 };
-        // Фиксированная цена: только direct/tender, без верхней границы.
-        lp[row.lineKey] = { ...cur, [lineDir]: val, directMax: 0, tenderMax: 0 };
-        return { ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...t, linePrices: lp } } };
-      });
-      return;
-    }
-    setMap((prev) => ({ ...prev, [orgKey]: { ...prev[orgKey], [row.svc]: { ...prev[orgKey][row.svc], [row.scalarField]: val } } }));
-  };
-
-  const save = async () => {
-    setBusy(true);
-    let ok = 0;
-    try {
-      for (const o of orgs) {
-        const orgTiers = atomicServices.map((s) => map[o.key][s.name]);
-        const res = await fetch('/api/kp/organizations', {
-          method: 'POST', credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ org: o, tiers: orgTiers }),
-        });
-        if (res.ok) ok += 1;
-      }
-      setStatus(`Цены сохранены (компаний: ${ok} из ${orgs.length})`);
-      onChanged();
-    } catch (e) {
-      setStatus((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const numCell = 'w-full px-2 py-1.5 rounded-xl border border-gray-200 text-sm text-right outline-none focus:border-[#029cda]';
-
-  if (orgs.length === 0) {
-    return <div className="text-sm text-gray-400 p-4">Сначала добавьте компании во вкладке «Настройки».</div>;
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-[#1b2a4a]">Цены по услугам</h3>
-          <p className="text-xs text-gray-500">Услуги/позиции — строки, компании — столбцы. Выберите вид цены и заполните ячейки.</p>
-        </div>
-        <div className="flex gap-1 bg-[#F6F7F9] rounded-xl p-1">
-          {PRICE_TABS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setTab(f.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs ${tab === f.key ? 'bg-white shadow-sm text-[#313131] font-medium' : 'text-gray-500'}`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <ScrollX className="bg-white border border-gray-200 rounded-xl">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
-              <th className="px-3 py-2 sticky left-0 bg-white">Услуга / позиция</th>
-              {orgs.map((o) => (
-                <th key={o.key} className="px-3 py-2 min-w-[120px] text-right" title={o.name}>{o.shortName || o.name}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {priceRows.length === 0 && (
-              <tr>
-                <td colSpan={orgs.length + 1} className="px-3 py-4 text-xs text-gray-400 text-center">
-                  {tab === 'ais' ? 'Нет услуг АИС/пролонгации (ЕС, «Пролонгация ЕС»).' : 'Нет услуг для этой вкладки.'}
-                </td>
-              </tr>
-            )}
-            {priceRows.map((row, i) => (
-              <tr key={`${row.svc}#${row.kind === 'line' ? row.lineKey : 'scalar'}`} className={i % 2 ? 'bg-[#FAFBFC]' : ''}>
-                <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{row.label}</td>
-                {orgs.map((o) => (
-                  <td key={o.key} className="px-2 py-1">
-                    <input
-                      className={numCell}
-                      inputMode="decimal"
-                      value={getVal(o.key, row) || ''}
-                      onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
-                      placeholder="0"
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </ScrollX>
-
-      {combinedServices.length > 0 && (
-        <div className="text-xs text-gray-500 bg-[#EAF6FC] border border-[#cbe8f5] rounded-xl px-3 py-2 space-y-1">
-          <div className="font-medium text-[#0b5c7d]">Комбинированные услуги отдельной цены не имеют — строки и цены берутся из компонентов:</div>
-          {combinedServices.map((s) => (
-            <div key={s}>• <span className="text-[#313131]">{s}</span> = {serviceComponents(s).join(' + ')}</div>
-          ))}
-        </div>
-      )}
-
-      <div className="flex items-center gap-3">
-        <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">
-          {busy && <Spinner size={16} color="#fff" />}
-          {busy ? 'Сохранение…' : 'Сохранить цены'}
-        </button>
-        <span className="text-xs text-gray-400">Цена по позиции — фиксированная (за единицу), по каждой компании.</span>
-      </div>
-    </div>
-  );
-}
 
 /* ═══════════════ Вкладка «История» ═══════════════ */
 function HistoryTab({ setStatus }: { setStatus: (s: string) => void }) {
