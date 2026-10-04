@@ -3,6 +3,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import nextDynamic from 'next/dynamic';
+import {
+  AudioWaveform, BarChart3, FileEdit, FolderKanban, LayoutGrid, Link2, MailOpen,
+  Mail, Megaphone, MessageCircle, Newspaper, Radar, Share2, SquarePen, Star, Users,
+} from 'lucide-react';
 import { authStore } from '@/lib/authStore';
 
 /* Разделы админки грузятся по требованию (а не все сразу на экран логина) —
@@ -37,26 +41,32 @@ const mkIcon = (d: string) => function Icon({ className }: IconProps) {
     </svg>
   );
 };
-const IconGrid = mkIcon('M4 4h6v6H4Z M14 4h6v6h-6Z M4 14h6v6H4Z M14 14h6v6h-6Z');
 const IconSearch = mkIcon('M11 18a7 7 0 100-14 7 7 0 000 14Z M20.5 20.5L16 16');
-const IconNews = mkIcon('M4 5h16v14H4Z M8 9h8 M8 13h8 M8 17h4');
-const IconLink = mkIcon('M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1 M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1');
-const IconMail = mkIcon('M4 6h16v12H4Z M4 7l8 6 8-6');
-const IconChat = mkIcon('M21 12a8 8 0 01-11.5 7.2L4 20l1-4.5A8 8 0 1121 12Z');
-const IconWave = mkIcon('M6 9v6 M10 5v14 M14 8v8 M18 10v4 M2 11v2 M22 11v2');
-const IconRadar = mkIcon('M5 19a1 1 0 100-2 1 1 0 000 2 M4 11a9 9 0 019 9 M4 5a15 15 0 0115 15');
-const IconContentOs = mkIcon('M4 4h16v16H4Z M4 9h16 M9 9v11 M13 13h4 M13 16h4');
-const IconChart = mkIcon('M4 20V10 M10 20V4 M16 20v-8 M22 20H2');
-const IconMailOpen = mkIcon('M4 9l8-5 8 5v9H4Z M4 9l8 5 8-5');
-const IconUsers = mkIcon('M16 20v-2a4 4 0 00-8 0v2 M12 12a4 4 0 100-8 4 4 0 000 8 M22 20v-2a4 4 0 00-3-3.8');
-const IconShare = mkIcon('M8 12a3 3 0 10-3-3 3 3 0 003 3 M16 6a3 3 0 10-3-3 3 3 0 003 3 M16 21a3 3 0 10-3-3 3 3 0 003 3 M9 11l6-4 M9 13l6 4');
-const IconPencil = mkIcon('M12 20h9 M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z');
-const IconAds = mkIcon('M4 5h16v14H4Z M4 9h16 M8 13h4 M8 16h6');
+
+/** Обёртка над lucide-иконкой под сигнатуру (p: IconProps) => ReactElement,
+ *  которую ждёт NAV/SearchEntry — та же библиотека, что на «Главной». */
+const wrapIcon = (Lucide: React.ComponentType<{ className?: string }>) =>
+  function Icon({ className }: IconProps) {
+    return <Lucide className={className || 'w-5 h-5'} />;
+  };
+
+const IconGrid = wrapIcon(LayoutGrid);
+const IconNews = wrapIcon(Newspaper);
+const IconLink = wrapIcon(Link2);
+const IconMail = wrapIcon(Mail);
+const IconChat = wrapIcon(MessageCircle);
+const IconWave = wrapIcon(AudioWaveform);
+const IconRadar = wrapIcon(Radar);
+const IconContentOs = wrapIcon(FolderKanban);
+const IconChart = wrapIcon(BarChart3);
+const IconMailOpen = wrapIcon(MailOpen);
+const IconUsers = wrapIcon(Users);
+const IconShare = wrapIcon(Share2);
+const IconPencil = wrapIcon(SquarePen);
+const IconAds = wrapIcon(Megaphone);
+const IconKp = wrapIcon(FileEdit);
 const IconStar = ({ className, filled }: IconProps & { filled?: boolean }) => (
-  <svg className={className || 'w-5 h-5'} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'}
-    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3.5l2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.9l6-.9z" />
-  </svg>
+  <Star className={className || 'w-5 h-5'} fill={filled ? 'currentColor' : 'none'} />
 );
 
 
@@ -132,7 +142,7 @@ const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon:
     { id: 'feedback', label: 'Обратная связь', icon: IconChat },
   ] },
   { group: 'Отдел продаж', items: [
-    { id: 'kp', label: 'Генератор КП', icon: IconPencil },
+    { id: 'kp', label: 'Генератор КП', icon: IconKp },
   ] },
   { group: 'AI', items: [
     { id: 'ai-analytics', label: 'Речевая аналитика', icon: IconWave },
@@ -186,16 +196,16 @@ const AI_SUBVIEWS: Array<{ label: string; view: string; kind: string }> = [
 const SEARCH_INDEX: SearchEntry[] = [
   ...NAV_FLAT.map((i): SearchEntry => ({ label: i.label, tab: i.id, kind: 'Раздел', icon: i.icon })),
   ...AI_SUBVIEWS.map((s): SearchEntry => ({ label: s.label, tab: 'ai-analytics', view: s.view, kind: s.kind, icon: IconWave })),
-  { label: 'Сгенерировать КП', tab: 'kp', kind: 'Действие', icon: IconPencil },
+  { label: 'Сгенерировать КП', tab: 'kp', kind: 'Действие', icon: IconKp },
   { label: 'Отправить КП на почту', tab: 'kp', kind: 'Действие', icon: IconMail },
-  { label: 'Шаблоны КП', tab: 'kp', kind: 'Настройки', icon: IconPencil },
-  { label: 'Загрузка КП в сделку Bitrix', tab: 'kp', kind: 'Настройки', icon: IconPencil },
+  { label: 'Шаблоны КП', tab: 'kp', kind: 'Настройки', icon: IconKp },
+  { label: 'Загрузка КП в сделку Bitrix', tab: 'kp', kind: 'Настройки', icon: IconKp },
   { label: 'Почтовые ящики для рассылок', tab: 'letters', kind: 'Настройки', icon: IconMail },
 ];
 
 /** Частые запросы — показываются сразу при открытии пустого поиска. */
 const FREQUENT: SearchEntry[] = [
-  { label: 'Генератор КП', tab: 'kp', kind: 'Раздел', icon: IconPencil },
+  { label: 'Генератор КП', tab: 'kp', kind: 'Раздел', icon: IconKp },
   { label: 'Сигналы РОП', tab: 'ai-analytics', view: 'signals', kind: 'Раздел', icon: IconWave },
   { label: 'Чек-листы: соблюдение по шагам', tab: 'ai-analytics', view: 'checklists', kind: 'Отчёт', icon: IconWave },
   { label: 'Коммуникации (звонки)', tab: 'ai-analytics', view: 'calls', kind: 'Раздел', icon: IconWave },
