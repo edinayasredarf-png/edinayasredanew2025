@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Search, Trash2 } from 'lucide-react';
 import KpSettings from './KpSettings';
 
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
@@ -1683,35 +1684,46 @@ function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s:
 
   const cell = 'w-full px-1.5 py-1 rounded border border-transparent hover:border-gray-200 focus:border-[#029cda] text-sm outline-none bg-transparent';
 
+  const [q, setQ] = useState('');
+  const filtered = rows.filter((r) => {
+    const s = q.trim().toLowerCase();
+    if (!s) return true;
+    return [r.addressee, r.subject, r.executor, r.note].some((v) => (v || '').toLowerCase().includes(s));
+  });
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm text-gray-500 shrink-0">Компания-отправитель:</span>
-        <Select value={orgKey} onChange={setOrgKey} className="min-w-[200px]" options={orgs.map((o) => ({ value: o.key, label: o.shortName || o.name }))} />
+        <div className="relative w-full sm:w-72">
+          <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск"
+            className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#F6F7F9] text-sm outline-none focus:ring-2 focus:ring-[#029cda]/20 placeholder:text-gray-400" />
+        </div>
+        <Select value={orgKey} onChange={setOrgKey} className="w-full sm:w-64" options={orgs.map((o) => ({ value: o.key, label: o.shortName || o.name }))} />
         <span className="text-xs text-gray-400">Следующий №: <b className="text-[#313131]">{nextNumber}</b></span>
-        <button onClick={addRow} className="ml-auto text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5]">+ Строка</button>
+        <button onClick={addRow} className="ml-auto text-sm px-3 py-1.5 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] whitespace-nowrap">+ Строка</button>
       </div>
 
       {loading ? <LoadingBlock /> : rows.length === 0 ? (
         <div className="text-sm text-gray-400">Реестр пуст. Записи добавляются автоматически при генерации КП (галочка «Записать в реестр») или вручную.</div>
       ) : (
-        <ScrollX className="bg-white border border-gray-200 rounded-xl">
+        <ScrollX className="bg-white border border-gray-100 rounded-2xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
-                <th className="px-2 py-2 w-12">№</th>
-                <th className="px-2 py-2 w-28">Дата</th>
-                <th className="px-2 py-2 min-w-[240px]">Организация (адресат)</th>
-                <th className="px-2 py-2 min-w-[160px]">Краткое содержание</th>
-                <th className="px-2 py-2 w-32">Исполнитель</th>
-                <th className="px-2 py-2 w-24">вх. №</th>
-                <th className="px-2 py-2 w-28">вх. дата</th>
-                <th className="px-2 py-2 min-w-[140px]">Примечание</th>
+              <tr className="text-left text-xs font-bold text-[#029cda] border-b border-gray-100">
+                <th className="px-3 py-3 w-12">№</th>
+                <th className="px-3 py-3 w-28">Дата</th>
+                <th className="px-3 py-3 min-w-[240px]">Организация (адресат)</th>
+                <th className="px-3 py-3 min-w-[160px]">Краткое содержание</th>
+                <th className="px-3 py-3 w-32">Исполнитель</th>
+                <th className="px-3 py-3 w-24">вх. №</th>
+                <th className="px-3 py-3 w-28">вх. дата</th>
+                <th className="px-3 py-3 min-w-[140px]">Примечание</th>
                 <th className="px-2 py-1 w-8"></th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {filtered.map((r) => (
                 <tr key={r.id} className="border-b border-gray-50 align-top">
                   <td className="px-2 py-1"><input className={`${cell} w-10 text-center`} value={r.number} onChange={(e) => patchLocal(r.id, { number: Number(e.target.value) || 0 })} onBlur={() => saveField(r.id, { number: r.number })} /></td>
                   <td className="px-2 py-1"><input className={cell} value={r.letterDate} onChange={(e) => patchLocal(r.id, { letterDate: e.target.value })} onBlur={() => saveField(r.id, { letterDate: r.letterDate })} /></td>
@@ -1721,9 +1733,12 @@ function RegistryTab({ orgs, setStatus }: { orgs: Organization[]; setStatus: (s:
                   <td className="px-2 py-1"><input className={cell} value={r.incomingNo} onChange={(e) => patchLocal(r.id, { incomingNo: e.target.value })} onBlur={() => saveField(r.id, { incomingNo: r.incomingNo })} /></td>
                   <td className="px-2 py-1"><input className={cell} value={r.incomingDate} onChange={(e) => patchLocal(r.id, { incomingDate: e.target.value })} onBlur={() => saveField(r.id, { incomingDate: r.incomingDate })} /></td>
                   <td className="px-2 py-1"><input className={cell} value={r.note} onChange={(e) => patchLocal(r.id, { note: e.target.value })} onBlur={() => saveField(r.id, { note: r.note })} /></td>
-                  <td className="px-1 py-1"><button onClick={() => delRow(r.id)} className="text-red-500 hover:text-red-600">✕</button></td>
+                  <td className="px-1 py-1"><button onClick={() => delRow(r.id)} title="Удалить строку" className="text-gray-300 hover:text-red-500"><Trash2 className="w-4 h-4" /></button></td>
                 </tr>
               ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={9} className="px-3 py-6 text-center text-gray-400">Ничего не найдено по запросу «{q}».</td></tr>
+              )}
             </tbody>
           </table>
         </ScrollX>
