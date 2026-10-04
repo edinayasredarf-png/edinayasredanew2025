@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { inputClass } from "@/components/admin/ui/Field";
 import { classifyTopic, deleteTopic, upsertTopic } from "@/lib/contentOsStore";
 import type { ContentTopic } from "@/lib/contentOsTypes";
@@ -104,7 +105,7 @@ export default function IdeasTab({ topics, reload, onDevelop }: {
               <button onClick={() => classify(t.id)} disabled={classifying === t.id} className="text-[11px] text-gray-500 hover:text-gray-800 disabled:opacity-50">
                 {classifying === t.id ? "Оценка..." : "🤖 Оценить ИИ"}
               </button>
-              <button onClick={() => remove(t.id)} className="text-[11px] text-red-500 hover:text-red-700">Удалить</button>
+              <button onClick={() => remove(t.id)} title="Удалить" className="text-red-500 hover:text-red-700"><Trash2 className="w-3.5 h-3.5" /></button>
             </div>
           </div>
         ))}

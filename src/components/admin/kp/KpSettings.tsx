@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import nextDynamic from 'next/dynamic';
 import {
   Banknote, Braces, Building2, FileText, ListChecks, Mail, Paperclip,
-  Palette, PanelTop, Table as TableIcon, UserCog, Users,
+  Palette, PanelTop, Pencil, Table as TableIcon, Trash2, UserCog, Users, X,
 } from 'lucide-react';
 import { Spinner } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
@@ -283,7 +283,7 @@ function MailAttachmentsManager({ setStatus }: { setStatus: (s: string) => void 
                 </div>
                 <div className="flex gap-3 shrink-0">
                   <a href={`/api/kp/attachments?id=${a.id}`} className="text-sm text-[#029cda]">Скачать</a>
-                  <button onClick={() => del(a.id)} className="text-sm text-red-500">Удалить</button>
+                  <button onClick={() => del(a.id)} title="Удалить" className="text-sm text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
@@ -375,8 +375,8 @@ function MailAccountsManager({ setStatus }: { setStatus: (s: string) => void }) 
                   {a.label || a.from_email} <span className="text-xs text-gray-400">{a.from_email} · {a.smtp_host}:{a.smtp_port}{a.has_password ? '' : ' · без пароля'}{a.enabled ? '' : ' · выкл'}</span>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setDraft({ ...a, password: '' })} className="text-sm text-[#029cda]">Изменить</button>
-                  <button onClick={() => del(a.id)} className="text-sm text-red-500">Удалить</button>
+                  <button onClick={() => setDraft({ ...a, password: '' })} title="Изменить" className="text-sm text-[#029cda]"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => del(a.id)} title="Удалить" className="text-sm text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
@@ -585,7 +585,7 @@ function OrgEditor({
           {busy ? 'Сохранение…' : 'Сохранить компанию'}
         </button>
         <button onClick={onClose} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
-        {!isNew && <button onClick={del} className="ml-auto px-4 py-2 text-sm rounded-xl border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
+        {!isNew && <button onClick={del} title="Удалить" className="ml-auto px-4 py-2 text-sm rounded-xl border border-red-200 text-red-500 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>}
       </div>
     </div>
   );
@@ -769,7 +769,7 @@ function AliasesManager({
             {customs.map((a) => (
               <div key={a.key} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-3 py-2">
                 <div className="text-sm text-[#313131]"><code className="font-mono">{`{{${a.key}}}`}</code> — {a.label || '—'} <span className="text-gray-400">= «{a.value}»</span></div>
-                <button onClick={() => del(a.key)} className="text-sm text-red-500">Удалить</button>
+                <button onClick={() => del(a.key)} title="Удалить" className="text-sm text-red-500"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>
@@ -979,7 +979,7 @@ function TableEditor({
                 <td className="py-0.5 whitespace-nowrap text-gray-400">
                   <button onClick={() => move(i, -1)} className="hover:text-[#029cda] px-1">↑</button>
                   <button onClick={() => move(i, 1)} className="hover:text-[#029cda] px-1">↓</button>
-                  <button onClick={() => del(i)} className="hover:text-red-500 px-1">✕</button>
+                  <button onClick={() => del(i)} title="Удалить" className="hover:text-red-500 px-1"><X className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
@@ -1009,7 +1009,7 @@ function TableEditor({
                         <input value={r[c.key] ?? ''} onChange={(e) => setDefCell(ri, c.key, e.target.value)} className={`${input} min-w-[140px]`} />
                       </td>
                     ))}
-                    <td><button onClick={() => setDefRows((rs) => rs.filter((_, j) => j !== ri))} className="text-red-500 px-1">✕</button></td>
+                    <td><button onClick={() => setDefRows((rs) => rs.filter((_, j) => j !== ri))} title="Удалить строку" className="text-red-500 px-1"><X className="w-4 h-4" /></button></td>
                   </tr>
                 ))}
               </tbody>
@@ -1022,7 +1022,7 @@ function TableEditor({
       <div className="flex items-center gap-2">
         <button onClick={save} disabled={busy} className="px-4 py-2 text-sm rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] disabled:opacity-50 inline-flex items-center gap-2">{busy && <Spinner size={16} color="#fff" />}{busy ? 'Сохранение…' : 'Сохранить таблицу'}</button>
         <button onClick={onClose} className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Отмена</button>
-        {!isNew && <button onClick={remove} className="ml-auto px-4 py-2 text-sm rounded-xl border border-red-200 text-red-500 hover:bg-red-50">Удалить</button>}
+        {!isNew && <button onClick={remove} title="Удалить" className="ml-auto px-4 py-2 text-sm rounded-xl border border-red-200 text-red-500 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>}
       </div>
       <div className="text-xs text-gray-400">«Σ» — суммировать колонку в строке ИТОГО. «Стоим.» — это колонка стоимости услуги (её сумма идёт в итог КП и в матрицу организаций).</div>
     </div>
@@ -1155,7 +1155,7 @@ function ServicesManager({
                 <ToggleRow checked={s.isActive} onChange={(v) => toggle(s.name, v)} className="text-xs text-gray-500 whitespace-nowrap">
                   активна
                 </ToggleRow>
-                <button onClick={() => del(s.name)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
+                <button onClick={() => del(s.name)} title="Удалить" className="text-sm text-red-500 whitespace-nowrap"><Trash2 className="w-4 h-4" /></button>
               </div>
 
               {itemsFor === s.name && (
@@ -1175,7 +1175,7 @@ function ServicesManager({
                         value={it.unit}
                         onChange={(e) => setItemsDraft((arr) => arr.map((x, i) => i === idx ? { ...x, unit: e.target.value } : x))}
                       />
-                      <button onClick={() => setItemsDraft((arr) => arr.filter((_, i) => i !== idx))} className="text-red-500 text-sm px-1">✕</button>
+                      <button onClick={() => setItemsDraft((arr) => arr.filter((_, i) => i !== idx))} title="Удалить" className="text-red-500 text-sm px-1"><X className="w-4 h-4" /></button>
                     </div>
                   ))}
                   <div className="flex items-center gap-2">
@@ -1253,7 +1253,7 @@ function PositionsManager({
             <div key={p} className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
               <input className={`${input} flex-1`} value={edits[p] ?? p} onChange={(e) => setEdits((m) => ({ ...m, [p]: e.target.value }))} />
               {(edits[p] ?? p) !== p && <button onClick={() => rename(p)} className="text-sm text-[#16a34a] whitespace-nowrap">Сохранить</button>}
-              <button onClick={() => del(p)} className="text-sm text-red-500 whitespace-nowrap">Удалить</button>
+              <button onClick={() => del(p)} title="Удалить" className="text-sm text-red-500 whitespace-nowrap"><Trash2 className="w-4 h-4" /></button>
             </div>
           ))}
           {positions.length === 0 && <div className="text-sm text-gray-400">Должностей пока нет.</div>}
@@ -1315,8 +1315,8 @@ function ExecutorsManager({
           <div key={e.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-2">
             <div className="text-sm text-[#313131]">{e.fio} <span className="text-xs text-gray-400">{e.phone} {e.email}</span></div>
             <div className="flex gap-3">
-              <button onClick={() => { setEditId(e.id); setDraft(e); }} className="text-sm text-[#029cda]">Изменить</button>
-              <button onClick={() => del(e.id)} className="text-sm text-red-500">Удалить</button>
+              <button onClick={() => { setEditId(e.id); setDraft(e); }} title="Изменить" className="text-sm text-[#029cda]"><Pencil className="w-4 h-4" /></button>
+              <button onClick={() => del(e.id)} title="Удалить" className="text-sm text-red-500"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}
@@ -1480,8 +1480,8 @@ function TemplatesTab({
               </label>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <button onClick={() => openEdit(t.id)} className="text-sm text-[#029cda] hover:text-[#0280b5]">Изменить</button>
-              <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-600 text-sm">Удалить</button>
+              <button onClick={() => openEdit(t.id)} title="Изменить" className="text-sm text-[#029cda] hover:text-[#0280b5]"><Pencil className="w-4 h-4" /></button>
+              <button onClick={() => del(t.id)} title="Удалить" className="text-red-500 hover:text-red-600 text-sm"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}
@@ -1726,7 +1726,7 @@ function DocxUpload({ orgs, serviceTypes, onChanged, setStatus }: { orgs: Organi
                   с шапкой
                 </label>
                 <div className="w-20 text-right">{statusView(it)}</div>
-                <button onClick={() => remove(it.uid)} disabled={it.status === 'uploading'} className="text-red-500 hover:text-red-600 text-sm disabled:opacity-40">✕</button>
+                <button onClick={() => remove(it.uid)} disabled={it.status === 'uploading'} title="Удалить" className="text-red-500 hover:text-red-600 text-sm disabled:opacity-40"><X className="w-4 h-4" /></button>
               </div>
             </div>
           ))}

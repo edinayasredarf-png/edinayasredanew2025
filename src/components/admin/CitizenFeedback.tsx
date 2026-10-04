@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 
 interface FileMeta {
   id: string;
@@ -167,7 +168,7 @@ export default function CitizenFeedback() {
                       </label>
                     </td>
                     <td className="py-2 pr-2">
-                      <button onClick={() => remove(r.id)} className="text-red-400 hover:text-red-600 text-xs">Удалить</button>
+                      <button onClick={() => remove(r.id)} title="Удалить" className="text-red-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
                 );

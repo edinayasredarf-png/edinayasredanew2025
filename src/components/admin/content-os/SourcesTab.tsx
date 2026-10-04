@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Select } from "@/components/admin/ui/Select";
 import { inputClass } from "@/components/admin/ui/Field";
 import { autoProcessSources, convertSourceItemToTopic, deleteSource, dismissSourceItem, listSourceItems, pollSources, upsertSource } from "@/lib/contentOsStore";
@@ -135,7 +136,7 @@ export default function SourcesTab({ sources, reload }: { sources: ContentSource
                     <span className={`absolute top-0.5 h-4 w-4 bg-white rounded-full transition-transform ${s.active ? "translate-x-4" : "translate-x-0.5"}`} />
                   </button>
                 </td>
-                <td className="py-2"><button onClick={() => remove(s.id)} className="text-[11px] text-red-500 hover:text-red-700">Удалить</button></td>
+                <td className="py-2"><button onClick={() => remove(s.id)} title="Удалить" className="text-red-500 hover:text-red-700"><Trash2 className="w-3.5 h-3.5" /></button></td>
               </tr>
             ))}
             {sources.length === 0 && <tr><td colSpan={7} className="py-6 text-center text-gray-400">Источников пока нет.</td></tr>}

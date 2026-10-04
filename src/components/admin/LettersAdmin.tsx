@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import nextDynamic from 'next/dynamic';
+import { Pencil, Trash2, X } from 'lucide-react';
 import LetterNotifications from './LetterNotifications';
 import { Select } from '@/components/admin/ui/Select';
 import { inputClass } from '@/components/admin/ui/Field';
@@ -541,7 +542,7 @@ export default function LettersAdmin() {
                   <td className="py-1 pr-2"><input value={r.email} onChange={(e) => setRow(i, { email: e.target.value })} placeholder="glava@example.ru" type="email" className={inputCls} /></td>
                   <td className="py-1 pr-2"><input value={r.phone} onChange={(e) => setRow(i, { phone: e.target.value })} placeholder="+7 900 000-00-00" type="tel" className={inputCls} /></td>
                   <td className="py-1 text-center">
-                    <button onClick={() => removeRow(i)} className="text-gray-400 hover:text-red-500" title="Удалить">✕</button>
+                    <button onClick={() => removeRow(i)} className="text-gray-400 hover:text-red-500" title="Удалить"><X className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -783,8 +784,8 @@ function MailAccountsPanel({
                 <input type="checkbox" className="sr-only peer" checked={a.enabled} onChange={() => toggle(a)} />
                 <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-[#029cda] relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
               </label>
-              <button onClick={() => startEdit(a)} className="text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50">Изменить</button>
-              <button onClick={() => remove(a.id)} className="text-sm text-red-500 hover:underline">Удалить</button>
+              <button onClick={() => startEdit(a)} title="Изменить" className="text-sm px-3 py-1.5 rounded-xl border border-gray-200 text-[#313131] hover:bg-gray-50"><Pencil className="w-4 h-4" /></button>
+              <button onClick={() => remove(a.id)} title="Удалить" className="text-sm text-red-500 hover:underline"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Search, Trash2 } from 'lucide-react';
+import { Search, Trash2, X } from 'lucide-react';
 import KpSettings from './KpSettings';
 
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
@@ -1297,7 +1297,7 @@ function CreateTab(p: CreateProps) {
           <div className="bg-white rounded-2xl max-w-4xl w-full my-8 p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-[#1b2a4a]">Предпросмотр — {preview.length} КП</h3>
-              <button onClick={() => setPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+              <button onClick={() => setPreview(null)} title="Закрыть" className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
             <div className="text-xs text-gray-400">Черновой расчёт по каждой компании. Оформление (шапка, подписант, текст) — из её шаблона при генерации.</div>
             {preview.map((p) => (
@@ -1344,7 +1344,7 @@ function CreateTab(p: CreateProps) {
           <div className={`bg-white rounded-2xl w-full my-8 p-6 space-y-4 ${isPdf ? 'max-w-4xl' : 'max-w-3xl'}`} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-[#1b2a4a]">Предпросмотр документа</h3>
-              <button onClick={() => setDocPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+              <button onClick={() => setDocPreview(null)} title="Закрыть" className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
             {docPreview.length > 1 && (
               <div className="flex gap-1 flex-wrap bg-[#F6F7F9] rounded-xl p-1">
@@ -1480,7 +1480,7 @@ function HistoryTab({ setStatus }: { setStatus: (s: string) => void }) {
           <div className="flex items-center gap-3 shrink-0">
             <span className="text-sm font-semibold text-[#1b2a4a]">{fmtMoney(r.totalCost)} ₽</span>
             <a href={`/api/kp/history/${r.id}/download`} className="text-sm text-[#029cda] hover:text-[#0280b5]">Скачать</a>
-            <button onClick={() => del(r.id)} className="text-red-500 hover:text-red-600 text-sm">Удалить</button>
+            <button onClick={() => del(r.id)} title="Удалить" className="text-red-500 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
           </div>
         </div>
       ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { X } from 'lucide-react';
 import { evalFormulaSafe } from './formulaClient';
 import { Select } from '@/components/admin/ui/Select';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
@@ -315,7 +316,7 @@ export default function KpCalcGrid({
                     <span className="flex items-center gap-0.5 text-gray-400">
                       <button onClick={() => moveCol(ci, -1)} className="hover:text-[#029cda]" title="влево">◀</button>
                       <button onClick={() => moveCol(ci, 1)} className="hover:text-[#029cda]" title="вправо">▶</button>
-                      <button onClick={() => delCol(ci)} className="hover:text-red-500" title="удалить">✕</button>
+                      <button onClick={() => delCol(ci)} className="hover:text-red-500" title="Удалить колонку"><X className="w-4 h-4" /></button>
                     </span>
                   </div>
                   {c.kind !== 'text' && c.kind !== 'number' && (
@@ -364,7 +365,7 @@ export default function KpCalcGrid({
                       title={manual ? 'Сумма задаётся вручную — вернуть формулу' : 'Ввести сумму вручную'}
                     >✎</button>
                   )}
-                  <button onClick={() => setRows((rs) => rs.filter((_, j) => j !== ri))} className="text-red-500 hover:text-red-600 px-1">✕</button>
+                  <button onClick={() => setRows((rs) => rs.filter((_, j) => j !== ri))} title="Удалить строку" className="text-red-500 hover:text-red-600 px-1"><X className="w-4 h-4" /></button>
                 </td>
               </tr>
               );

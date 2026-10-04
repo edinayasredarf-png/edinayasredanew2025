@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { ChevronRight, X } from 'lucide-react';
 
 /** Универсальное модальное окно: клик по фону/Esc — закрыть, клик внутри — не закрывает. */
 export function Modal({ title, onClose, children, maxWidth = 'max-w-lg' }: {
@@ -21,7 +22,7 @@ export function Modal({ title, onClose, children, maxWidth = 'max-w-lg' }: {
       <div className={`bg-white rounded-2xl w-full ${maxWidth} my-8 p-6 space-y-4`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-[#1b2a4a]">{title}</h3>
-          <button type="button" onClick={onClose} className="shrink-0 text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+          <button type="button" onClick={onClose} title="Закрыть" className="shrink-0 text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
         </div>
         {children}
       </div>
@@ -46,9 +47,7 @@ export function SettingsRow({ icon, title, subtitle, onClick }: {
         <span className="block text-sm font-medium text-[#1b2a4a]">{title}</span>
         {subtitle && <span className="block text-xs text-gray-400 truncate">{subtitle}</span>}
       </span>
-      <svg className="shrink-0 w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="none" aria-hidden>
-        <path d="M7.5 15l5-5-5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <ChevronRight className="shrink-0 w-4 h-4 text-gray-300" />
     </button>
   );
 }
