@@ -113,6 +113,14 @@ function AdminLogin() {
 
 type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp' | 'content-os';
 const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp', 'content-os'];
+
+/** metrika/email/leads/social рендерят один и тот же AnalyticsDashboard с разным `only`
+ *  — для keep-alive это одна панель, а не четыре. */
+type AnalyticsTabId = 'metrika' | 'email' | 'leads' | 'social';
+const ANALYTICS_TAB_IDS: AnalyticsTabId[] = ['metrika', 'email', 'leads', 'social'];
+const isAnalyticsTab = (t: TabId): t is AnalyticsTabId => (ANALYTICS_TAB_IDS as TabId[]).includes(t);
+/** Панель вкладки для учёта «уже открывали» — у Аналитики общая на все 4 под-вкладки. */
+const panelOf = (t: TabId): string => (isAnalyticsTab(t) ? 'analytics' : t);
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
@@ -201,6 +209,10 @@ export default function AdminPanel() {
   const [authChecked, setAuthChecked] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  // Панели монтируются при первом открытии и дальше не размонтируются — переключение
+  // вкладок не должно каждый раз заново грузить данные КП/речевой аналитики/Content OS.
+  const [visitedPanels, setVisitedPanels] = useState<Set<string>>(() => new Set([panelOf('dashboard')]));
+  const [lastAnalyticsTab, setLastAnalyticsTab] = useState<'metrika' | 'email' | 'leads' | 'social'>('metrika');
   const [favorites, setFavorites] = useState<TabId[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -237,6 +249,14 @@ export default function AdminPanel() {
       if (t && ALL_TAB_IDS.includes(t as TabId)) setActiveTab(t as TabId);
     } catch { /* нет URL */ }
   }, []);
+
+  // Помечаем панель как посещённую (монтируем один раз) и запоминаем активную
+  // под-вкладку Аналитики, чтобы AnalyticsDashboard не терял её, уходя в hidden.
+  useEffect(() => {
+    const panel = panelOf(activeTab);
+    setVisitedPanels((prev) => (prev.has(panel) ? prev : new Set(prev).add(panel)));
+    if (isAnalyticsTab(activeTab)) setLastAnalyticsTab(activeTab);
+  }, [activeTab]);
 
   // Отражаем активную вкладку в URL (replace — без засорения истории).
   useEffect(() => {
@@ -474,20 +494,25 @@ export default function AdminPanel() {
               </div>
             </div>
           )}
-          {activeTab === 'kp' && <KpGenerator />}
-          {activeTab === 'ai-analytics' && <AiSalesSection />}
-          {activeTab === 'utm' && <UtmGenerator />}
-          {activeTab === 'press' && <PressAdmin />}
-          {activeTab === 'ads' && <AdsAdmin />}
-          {activeTab === 'letters' && <LettersAdmin />}
-          {activeTab === 'radar' && <NewsRadar />}
-          {activeTab === 'content-os' && <ContentOs />}
-          {activeTab === 'feedback' && <CitizenFeedback />}
-          {(activeTab === 'metrika' || activeTab === 'email' || activeTab === 'leads' || activeTab === 'social') && (
-            <AnalyticsDashboard only={activeTab} />
+          {/* Каждая панель монтируется один раз при первом открытии (visitedPanels) и
+              дальше просто скрывается через `hidden` — переключение вкладок не должно
+              заново грузить данные КП/речевой аналитики/Content OS и т.п. */}
+          {visitedPanels.has('kp') && <div className={activeTab === 'kp' ? '' : 'hidden'}><KpGenerator /></div>}
+          {visitedPanels.has('ai-analytics') && <div className={activeTab === 'ai-analytics' ? '' : 'hidden'}><AiSalesSection /></div>}
+          {visitedPanels.has('utm') && <div className={activeTab === 'utm' ? '' : 'hidden'}><UtmGenerator /></div>}
+          {visitedPanels.has('press') && <div className={activeTab === 'press' ? '' : 'hidden'}><PressAdmin /></div>}
+          {visitedPanels.has('ads') && <div className={activeTab === 'ads' ? '' : 'hidden'}><AdsAdmin /></div>}
+          {visitedPanels.has('letters') && <div className={activeTab === 'letters' ? '' : 'hidden'}><LettersAdmin /></div>}
+          {visitedPanels.has('radar') && <div className={activeTab === 'radar' ? '' : 'hidden'}><NewsRadar /></div>}
+          {visitedPanels.has('content-os') && <div className={activeTab === 'content-os' ? '' : 'hidden'}><ContentOs /></div>}
+          {visitedPanels.has('feedback') && <div className={activeTab === 'feedback' ? '' : 'hidden'}><CitizenFeedback /></div>}
+          {visitedPanels.has('analytics') && (
+            <div className={isAnalyticsTab(activeTab) ? '' : 'hidden'}>
+              <AnalyticsDashboard only={lastAnalyticsTab} />
+            </div>
           )}
 
-          {activeTab === 'dashboard' && <AdminDashboard />}
+          {visitedPanels.has('dashboard') && <div className={activeTab === 'dashboard' ? '' : 'hidden'}><AdminDashboard /></div>}
         </div>
       </div>
     </div>
