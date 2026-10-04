@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Camera, Trash2, UserRound } from 'lucide-react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
@@ -3038,10 +3039,67 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
 }
 
 interface ManagerDetailData {
-  bitrixUserId: string; name: string | null; metrics: ManagerRow;
+  bitrixUserId: string; name: string | null; avatarUrl: string | null; metrics: ManagerRow;
   criteria: Array<{ key: string; label: string; avg: number }>;
   strengths: string[]; weaknesses: string[];
   recentCalls: Array<{ id: string; startedAt: string | null; callType: string | null; managerScore: number | null; temperature: string | null }>;
+}
+
+/** Фото менеджера с загрузкой/удалением — настройки карточки менеджера. */
+function ManagerAvatar({ bitrixUserId, avatarUrl, onChange }: { bitrixUserId: string; avatarUrl: string | null; onChange: (url: string | null) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const upload = async (file: File) => {
+    setBusy(true); setErr('');
+    try {
+      const fd = new FormData(); fd.append('file', file);
+      const r = await fetch(`/api/ai-sales/managers/${bitrixUserId}/avatar`, { method: 'POST', body: fd });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Не удалось загрузить фото');
+      onChange(j.avatarUrl);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setBusy(false); }
+  };
+  const remove = async () => {
+    setBusy(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/managers/${bitrixUserId}/avatar`, { method: 'DELETE' });
+      if (!r.ok) throw new Error('Не удалось удалить фото');
+      onChange(null);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="relative group shrink-0">
+        <input ref={inputRef} type="file" accept="image/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }} />
+        <button type="button" onClick={() => inputRef.current?.click()} disabled={busy}
+          title="Загрузить фото"
+          className="size-16 rounded-2xl bg-[#F6F7F9] overflow-hidden grid place-items-center relative disabled:opacity-60">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarUrl} alt="" className="size-16 object-cover" />
+          ) : (
+            <UserRound className="w-7 h-7 text-gray-400" />
+          )}
+          <span className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition grid place-items-center">
+            {busy ? <Spinner size={16} color="#fff" /> : <Camera className="w-5 h-5 text-white" />}
+          </span>
+        </button>
+      </div>
+      {avatarUrl && (
+        <button type="button" onClick={remove} disabled={busy}
+          title="Удалить фото" className="text-gray-400 hover:text-red-500 disabled:opacity-60">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      )}
+      {err && <span className="text-xs text-red-600">{err}</span>}
+    </div>
+  );
 }
 
 function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void; onOpenCall?: (id: string) => void }) {
@@ -3065,7 +3123,11 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
   return (
     <div>
       <button onClick={onBack} className="text-sm text-[#029cda] mb-4">← К менеджерам</button>
-      <h2 className="text-xl font-bold text-gray-900 mb-4">{data.name || `#${data.bitrixUserId}`}</h2>
+      <div className="flex items-center gap-4 mb-4">
+        <ManagerAvatar bitrixUserId={data.bitrixUserId} avatarUrl={data.avatarUrl}
+          onChange={(url) => setData((d) => d && { ...d, avatarUrl: url })} />
+        <h2 className="text-xl font-bold text-gray-900">{data.name || `#${data.bitrixUserId}`}</h2>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
         <Kpi label="Оценка (по сделкам)" value={m.avgManagerScore != null ? `${m.avgManagerScore}/10` : '—'} />
         <Kpi label="Звонков" value={m.calls} sub={`Проанализировано: ${m.analyzed}`} />

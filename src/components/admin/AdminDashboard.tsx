@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight, ArrowRightLeft, Archive, Briefcase, ChevronDown, ChevronRight,
   ClipboardList, FileEdit, FileText, Flame, FolderOpen, History, LayoutTemplate,
-  Newspaper, Phone, Radar, ScrollText, Sparkles, Swords, Tags, UserPlus,
+  Newspaper, Phone, Radar, ScrollText, Sparkles, Swords, Tags, UserPlus, UserRound,
 } from 'lucide-react';
 import { sb_listPosts } from '@/lib/blogStore';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
@@ -127,16 +127,18 @@ export default function AdminDashboard({ onNavigate }: { onNavigate?: (tab: TabI
   }, [range.from, range.to]);
 
   // Менеджеры отдела продаж (только для РОП/админа — при отказе просто не показываем).
-  const [managers, setManagers] = useState<{ id: string; name: string }[]>([]);
+  // Фото загружается в настройках менеджера (Речевая аналитика → Менеджеры → карточка);
+  // пока не загружено — показываем иконку-заглушку, а не инициалы.
+  const [managers, setManagers] = useState<{ id: string; name: string; avatarUrl: string | null }[]>([]);
   useEffect(() => {
     (async () => {
       try {
         const r = await fetch(`/api/ai-sales/managers?from=${dayStr(-29)}&to=${dayStr(0)}`, { credentials: 'include' });
         if (!r.ok) return;
         const d = await r.json();
-        type Row = { bitrixUserId: string; name: string | null };
+        type Row = { bitrixUserId: string; name: string | null; avatarUrl: string | null };
         const items: Row[] = d?.items ?? [];
-        setManagers(items.slice(0, 4).map((m) => ({ id: m.bitrixUserId, name: m.name || 'Без имени' })));
+        setManagers(items.slice(0, 4).map((m) => ({ id: m.bitrixUserId, name: m.name || 'Без имени', avatarUrl: m.avatarUrl ?? null })));
       } catch { /* нет доступа — просто не показываем менеджеров */ }
     })();
   }, []);
@@ -144,8 +146,6 @@ export default function AdminDashboard({ onNavigate }: { onNavigate?: (tab: TabI
   const postsInRange = useMemo(() => posts.filter((p) => inRange(p.createdAt, range.from, range.to)), [posts, range]);
   const fmt = (v: number | null) => (v == null ? '—' : new Intl.NumberFormat('ru-RU').format(v));
   const go = (tab: TabId, view?: string) => () => onNavigate?.(tab, view);
-
-  const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
   return (
     <div className="max-w-[600px] mx-auto">
@@ -256,8 +256,13 @@ export default function AdminDashboard({ onNavigate }: { onNavigate?: (tab: TabI
             {managers.map((m) => (
               <button key={m.id} type="button" onClick={go('ai-analytics', 'managers')}
                 className="group flex flex-col items-center gap-1.5 w-20 text-center">
-                <span className="size-20 rounded-3xl bg-[#029cda]/10 text-[#029cda] text-lg font-semibold grid place-items-center transition group-hover:bg-[#029cda]/15">
-                  {initials(m.name)}
+                <span className="size-20 rounded-3xl bg-[var(--es-tile)] overflow-hidden grid place-items-center transition group-hover:bg-[var(--es-tile-hover)]">
+                  {m.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={m.avatarUrl} alt="" className="size-20 object-cover" />
+                  ) : (
+                    <UserRound className="w-8 h-8 text-[var(--es-ink-3)]" />
+                  )}
                 </span>
                 <span className="text-xs font-medium text-[var(--es-ink)] leading-4 line-clamp-2">{m.name}</span>
               </button>

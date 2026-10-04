@@ -35,12 +35,23 @@ export async function listManagerOptions(): Promise<Array<{ bitrixUserId: string
 export interface ManagerRow {
   bitrixUserId: string;
   name: string | null;
+  avatarUrl: string | null;
   calls: number;
   analyzed: number;
   deals: number;
   hotDeals: number;
   avgManagerScore: number | null;
   avgDealScore: number | null;
+}
+
+/** Фото менеджера (для карточки в «Речевой аналитике» и плиток на «Главной»). */
+export async function setManagerAvatar(bitrixUserId: string, avatarUrl: string | null): Promise<void> {
+  const pool = getTimewebPool();
+  await pool.query(
+    `insert into ai_managers (bitrix_user_id, avatar_url) values ($1, $2)
+       on conflict (bitrix_user_id) do update set avatar_url = excluded.avatar_url, updated_at = now()`,
+    [bitrixUserId, avatarUrl]
+  );
 }
 
 export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
@@ -70,10 +81,11 @@ export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
     dealParams
   );
 
-  const names = await pool.query<{ bitrix_user_id: string; full_name: string | null }>(
-    `select bitrix_user_id, full_name from ai_managers`
+  const names = await pool.query<{ bitrix_user_id: string; full_name: string | null; avatar_url: string | null }>(
+    `select bitrix_user_id, full_name, avatar_url from ai_managers`
   );
   const nameMap = new Map(names.rows.map((r) => [r.bitrix_user_id, r.full_name]));
+  const avatarMap = new Map(names.rows.map((r) => [r.bitrix_user_id, r.avatar_url]));
   const dealMap = new Map(dealAgg.rows.map((r) => [r.uid, r]));
 
   const uids = new Set<string>([...callAgg.rows.map((r) => r.uid), ...dealAgg.rows.map((r) => r.uid)]);
@@ -86,6 +98,7 @@ export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
     rows.push({
       bitrixUserId: uid,
       name: nameMap.get(uid) ?? null,
+      avatarUrl: avatarMap.get(uid) ?? null,
       calls: Number(c?.calls ?? 0),
       analyzed: Number(c?.analyzed ?? 0),
       deals: Number(dl?.deals ?? 0),
@@ -109,6 +122,7 @@ const CRITERION_LABEL: Record<string, string> = {
 export interface ManagerDetail {
   bitrixUserId: string;
   name: string | null;
+  avatarUrl: string | null;
   metrics: ManagerRow;
   criteria: Array<{ key: string; label: string; avg: number }>;
   strengths: string[];
@@ -120,8 +134,8 @@ export async function getManagerDetail(bitrixUserId: string, range?: DateRange):
   const pool = getTimewebPool();
   const list = await listManagers(range);
   const metrics = list.find((m) => m.bitrixUserId === bitrixUserId);
-  const nameRow = await pool.query<{ full_name: string | null }>(
-    `select full_name from ai_managers where bitrix_user_id = $1`, [bitrixUserId]
+  const nameRow = await pool.query<{ full_name: string | null; avatar_url: string | null }>(
+    `select full_name, avatar_url from ai_managers where bitrix_user_id = $1`, [bitrixUserId]
   );
   if (!metrics && nameRow.rowCount === 0) return null;
 
@@ -175,8 +189,9 @@ export async function getManagerDetail(bitrixUserId: string, range?: DateRange):
   return {
     bitrixUserId,
     name: metrics?.name ?? nameRow.rows[0]?.full_name ?? null,
+    avatarUrl: metrics?.avatarUrl ?? nameRow.rows[0]?.avatar_url ?? null,
     metrics: metrics ?? {
-      bitrixUserId, name: nameRow.rows[0]?.full_name ?? null,
+      bitrixUserId, name: nameRow.rows[0]?.full_name ?? null, avatarUrl: nameRow.rows[0]?.avatar_url ?? null,
       calls: 0, analyzed: 0, deals: 0, hotDeals: 0, avgManagerScore: null, avgDealScore: null,
     },
     criteria: crit.rows.map((r) => ({ key: r.key, label: CRITERION_LABEL[r.key] || r.key, avg: Number(r.avg) })),
