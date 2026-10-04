@@ -2,18 +2,30 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import nextDynamic from 'next/dynamic';
 import { authStore } from '@/lib/authStore';
-import AdminDashboard from './AdminDashboard';
-import UtmGenerator from './UtmGenerator';
-import PressAdmin from './PressAdmin';
-import AdsAdmin from './AdsAdmin';
-import AnalyticsDashboard from '@/components/profile/AnalyticsDashboard';
-import LettersAdmin from './LettersAdmin';
-import NewsRadar from './NewsRadar';
-import CitizenFeedback from './CitizenFeedback';
-import AiSalesSection from './ai-sales/AiSalesSection';
-import KpGenerator from './kp/KpGenerator';
-import ContentOs from './content-os/ContentOs';
+
+/* Разделы админки грузятся по требованию (а не все сразу на экран логина) —
+   KP/AI-аналитика/Content OS тянут mammoth, three, konva, tiptap и т.п. */
+const TabLoading = () => (
+  <div className="flex items-center justify-center py-24">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#029cda]" />
+  </div>
+);
+const lazyTab = <P extends object>(loader: () => Promise<{ default: React.ComponentType<P> }>) =>
+  nextDynamic(loader, { ssr: false, loading: TabLoading });
+
+const AdminDashboard = lazyTab(() => import('./AdminDashboard'));
+const UtmGenerator = lazyTab(() => import('./UtmGenerator'));
+const PressAdmin = lazyTab(() => import('./PressAdmin'));
+const AdsAdmin = lazyTab(() => import('./AdsAdmin'));
+const AnalyticsDashboard = lazyTab<{ only?: 'metrika' | 'email' | 'leads' | 'social' }>(() => import('@/components/profile/AnalyticsDashboard'));
+const LettersAdmin = lazyTab(() => import('./LettersAdmin'));
+const NewsRadar = lazyTab(() => import('./NewsRadar'));
+const CitizenFeedback = lazyTab(() => import('./CitizenFeedback'));
+const AiSalesSection = lazyTab(() => import('./ai-sales/AiSalesSection'));
+const KpGenerator = lazyTab(() => import('./kp/KpGenerator'));
+const ContentOs = lazyTab(() => import('./content-os/ContentOs'));
 
 /* ─────────── Иконки навигации (line-стиль, currentColor) ─────────── */
 type IconProps = { className?: string };
