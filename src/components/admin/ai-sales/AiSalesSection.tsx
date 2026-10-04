@@ -1,9 +1,13 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, Trash2, UserRound } from 'lucide-react';
+import {
+  BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
+  ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
+} from 'lucide-react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
+import { Modal, SettingsRow } from '@/components/admin/ui/Modal';
 import { ScrollX } from '@/components/admin/ui/ScrollX';
 import { ExcelIcon } from '@/components/admin/ui/FileIcons';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
@@ -130,7 +134,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function Kpi({ label, value, sub, onClick }: { label: string; value: React.ReactNode; sub?: string; onClick?: () => void }) {
-  const cls = "bg-[#F6F7F9] rounded-xl p-5 text-left w-full shadow-sm" + (onClick ? " hover:bg-[#029cda]/10 hover:shadow-md transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]" : "");
+  const cls = "bg-[var(--es-tile)] rounded-3xl p-5 text-left w-full" + (onClick ? " hover:bg-[#029cda]/10 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]" : "");
   const inner = (
     <>
       <p className="text-sm text-gray-600">{label}</p>
@@ -181,27 +185,56 @@ function usePersistentPeriod(): [Period, (p: Period) => void] {
   return [period, setPeriod];
 }
 
+/** Период сворачивается в иконку-календарь; раскрывается попап с пресетами и датами. */
 function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+
   const active = keyForPeriod(value);
-  const presets = [['today', 'Сегодня'], ['week', 'Неделя'], ['month', 'Месяц']];
+  const presets = [['today', 'Сегодня'], ['week', 'Неделя'], ['month', 'Месяц']] as const;
+  const activeLabel = active === 'all'
+    ? 'Всё время'
+    : (presets.find(([k]) => k === active)?.[1]
+      ?? (value.from || value.to ? `${value.from || '…'} — ${value.to || '…'}` : 'Период'));
+
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-4">
-      {presets.map(([key, label]) => (
-        <button key={key} onClick={() => onChange(presetRange(key))}
-          className={`px-3 py-1.5 rounded-xl text-sm transition ${active === key ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
-          {label}
-        </button>
-      ))}
-      <span className="text-gray-300 mx-1">|</span>
-      <DatePicker value={value.from || ''} max={value.to || undefined} placeholder="с даты" className="w-[150px]"
-        onChange={(v) => onChange({ from: v || null, to: value.to })} />
-      <span className="text-gray-400 text-sm">—</span>
-      <DatePicker value={value.to || ''} min={value.from || undefined} placeholder="по дату" className="w-[150px]"
-        onChange={(v) => onChange({ from: value.from, to: v || null })} />
-      <button onClick={() => onChange(NO_PERIOD)}
-        className={`px-3 py-1.5 rounded-xl text-sm transition ${active === 'all' ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
-        Всё
+    <div className="relative inline-block mb-4" ref={ref}>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
+        className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F6F7F9] text-sm text-[#1b2a4a] hover:bg-gray-100 transition">
+        <CalendarDays className="w-4 h-4 text-gray-500" />
+        {activeLabel}
       </button>
+      {open && (
+        <div className="absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-xl shadow-xl p-3 w-[300px] space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {presets.map(([key, label]) => (
+              <button key={key} onClick={() => { onChange(presetRange(key)); setOpen(false); }}
+                className={`px-3 py-1.5 rounded-xl text-sm transition ${active === key ? 'bg-[#029cda] text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                {label}
+              </button>
+            ))}
+            <button onClick={() => { onChange(NO_PERIOD); setOpen(false); }}
+              className={`px-3 py-1.5 rounded-xl text-sm transition ${active === 'all' ? 'bg-[#029cda] text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+              Всё
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <DatePicker value={value.from || ''} max={value.to || undefined} placeholder="с даты" className="flex-1"
+              onChange={(v) => onChange({ from: v || null, to: value.to })} />
+            <span className="text-gray-400 text-sm">—</span>
+            <DatePicker value={value.to || ''} min={value.from || undefined} placeholder="по дату" className="flex-1"
+              onChange={(v) => onChange({ from: value.from, to: v || null })} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -291,43 +324,86 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
     } finally { setBusy(false); }
   };
 
+  const [queueOpen, setQueueOpen] = useState(false);
+
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
   if (!data) return <LoadingBlock />;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-xl font-bold text-gray-900">AI Продажи — дашборд</h2>
-        <div className="flex gap-2">
-          <button onClick={sync} disabled={busy}
-            className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">
-            Синхронизировать Bitrix
-          </button>
-          <button onClick={drain} disabled={busy}
-            className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700 disabled:opacity-50">
-            Обработать очередь
-          </button>
+      <div className="flex flex-col items-center text-center gap-4 mb-8">
+        <div>
+          <h2 className="text-xl font-semibold text-[#1b2a4a]">Речевая аналитика</h2>
+          <p className="text-sm text-gray-500 mt-1">Получайте отчёты, анализы и важные данные</p>
         </div>
-      </div>
-      {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
-
-      <PeriodBar value={period} onChange={setPeriod} />
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-        <Kpi label="Звонки" value={data.calls.total} sub={`Проанализировано: ${data.calls.analyzed}`} onClick={onNavigate ? () => onNavigate({ tab: 'ai-calls' }) : undefined} />
-        <Kpi label="Средняя длит." value={fmtDur(data.calls.avgDurationSec)} />
-        <Kpi label="Средний Deal Score" value={data.calls.avgDealScore ?? '—'} sub="0–100" />
-        <Kpi label="Средняя оценка менеджера" value={data.calls.avgManagerScore ?? '—'} sub="0–10 · по сделкам" />
+        <PeriodBar value={period} onChange={setPeriod} />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-        <Kpi label="🔥 Горячие" value={data.temperature.hot} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'HOT' }) : undefined} />
-        <Kpi label="Тёплые" value={data.temperature.warm} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'WARM' }) : undefined} />
-        <Kpi label="Холодные" value={data.temperature.cold} onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'COLD' }) : undefined} />
-        <Kpi label="Кому звонить сегодня" value={data.attention.withoutNextStep} sub="Открыть сигналы →" onClick={onNavigate ? () => onNavigate({ tab: 'ai-signals' }) : undefined} />
+      <div className="max-w-[720px] mx-auto space-y-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <Kpi label="Звонки" value={data.calls.total} sub={`Проанализировано: ${data.calls.analyzed}`} onClick={onNavigate ? () => onNavigate({ tab: 'ai-calls' }) : undefined} />
+          <Kpi label="Средняя длительность" value={fmtDur(data.calls.avgDurationSec)} />
+          <Kpi label="Ср. оценка менеджера" value={data.calls.avgManagerScore ?? '—'} sub="0–10 · по сделкам" />
+          <Kpi label="Ср. Deal Score" value={data.calls.avgDealScore ?? '—'} sub="0–100" />
+          <Kpi label="Кому звонить сегодня" value={data.attention.withoutNextStep} sub="Открыть сигналы →" onClick={onNavigate ? () => onNavigate({ tab: 'ai-signals' }) : undefined} />
+        </div>
+
+        <div>
+          <h3 className="text-xl font-semibold text-[#1b2a4a] mb-1">Сделки</h3>
+          <p className="text-sm text-gray-500 mb-4">Показывается уровень готовности к покупке или заказу услуги</p>
+          <div className="flex flex-wrap gap-5">
+            <TempTile emoji="🔥" value={data.temperature.hot} label="Горячие" borderClass="border-red-400"
+              onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'HOT' }) : undefined} />
+            <TempTile emoji="☀️" value={data.temperature.warm} label="Тёплые" borderClass="border-amber-300"
+              onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'WARM' }) : undefined} />
+            <TempTile emoji="❄️" value={data.temperature.cold} label="Холодные" borderClass="border-sky-400"
+              onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'COLD' }) : undefined} />
+          </div>
+        </div>
+
+        <button type="button" onClick={() => setQueueOpen(true)}
+          className="w-full flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition text-left">
+          <span className="shrink-0 size-10 rounded-2xl bg-[var(--es-tile)] grid place-items-center text-[#1b2a4a]">
+            <ListChecks className="w-5 h-5" />
+          </span>
+          <span className="flex-1 text-sm font-medium text-[#1b2a4a]">Очередь обработки транскрибации</span>
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        </button>
       </div>
 
-      <QueuePanel refreshSignal={queueTick} />
+      {queueOpen && (
+        <Modal title="Очередь обработки" onClose={() => setQueueOpen(false)} maxWidth="max-w-xl">
+          <div className="flex flex-wrap gap-2">
+            <button onClick={sync} disabled={busy}
+              className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">
+              Синхронизировать Bitrix
+            </button>
+            <button onClick={drain} disabled={busy}
+              className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700 disabled:opacity-50">
+              Обработать очередь
+            </button>
+          </div>
+          {msg && <div className="p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
+          <QueuePanel refreshSignal={queueTick} />
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/** Плитка температуры сделки (горячие/тёплые/холодные) — крупная эмодзи-иконка + число. */
+function TempTile({ emoji, value, label, borderClass, onClick }: {
+  emoji: string; value: number; label: string; borderClass: string; onClick?: () => void;
+}) {
+  const Comp = onClick ? 'button' : 'div';
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <Comp type={onClick ? 'button' : undefined} onClick={onClick}
+        className={`w-40 h-20 rounded-3xl bg-[var(--es-tile)] border-2 ${borderClass} flex items-center justify-center gap-3 transition ${onClick ? 'hover:bg-white cursor-pointer' : ''}`}>
+        <span className="text-3xl leading-none">{emoji}</span>
+        <span className="text-2xl font-semibold text-gray-900">{value}</span>
+      </Comp>
+      <span className="text-xs font-medium text-gray-700">{label}</span>
     </div>
   );
 }
@@ -599,7 +675,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
         <div className="mb-3">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#029cda]/10 text-[#029cda]">
             тег: {tag}
-            <button onClick={() => setTag('')} className="text-[#029cda] hover:text-red-500">✕</button>
+            <button onClick={() => setTag('')} title="Сбросить фильтр" className="text-[#029cda] hover:text-red-500"><X className="w-4 h-4" /></button>
           </span>
         </div>
       )}
@@ -3660,7 +3736,7 @@ function KnowledgeBase() {
                 {upFiles.map((f, i) => (
                   <div key={i} className="flex items-center justify-between text-xs bg-white border border-gray-200 rounded-lg px-3 py-1.5">
                     <span className="truncate">{f.name} <span className="text-gray-400">({Math.round(f.size / 1024)} КБ)</span></span>
-                    <button onClick={() => setUpFiles((prev) => prev.filter((_, j) => j !== i))} className="text-red-500 hover:text-red-600 shrink-0 ml-2">✕</button>
+                    <button onClick={() => setUpFiles((prev) => prev.filter((_, j) => j !== i))} title="Удалить" className="text-red-500 hover:text-red-600 shrink-0 ml-2"><X className="w-4 h-4" /></button>
                   </div>
                 ))}
                 <button onClick={uploadBatch} disabled={upBusy}
@@ -3723,7 +3799,7 @@ function KnowledgeBase() {
                   {d.chunks > 0 && d.indexed < d.chunks && <span className="text-xs text-amber-600 ml-1">не всё проиндексировано</span>}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-gray-400 text-xs">{d.updatedAt ? new Date(d.updatedAt).toLocaleDateString('ru-RU') : '—'}</td>
-                <td className="px-3 py-2 whitespace-nowrap text-right"><button onClick={() => remove(d.id)} className="text-gray-300 hover:text-red-500">✕</button></td>
+                <td className="px-3 py-2 whitespace-nowrap text-right"><button onClick={() => remove(d.id)} title="Удалить" className="text-gray-300 hover:text-red-500"><X className="w-4 h-4" /></button></td>
               </tr>
             ))}
             {docs.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-gray-400">База знаний пуста — добавьте первый документ.</td></tr>}
@@ -3804,7 +3880,7 @@ function Departments() {
                   className="flex-1 bg-transparent px-2 py-1 rounded border border-transparent hover:border-gray-200 focus:border-[#029cda] focus:bg-white text-sm outline-none" />
                 <span className="text-xs text-gray-400 whitespace-nowrap">{d.managerCount} сотр.</span>
                 <button onClick={() => remove(d.id)} title="Удалить отдел"
-                  className="text-gray-300 hover:text-red-500 px-1">✕</button>
+                  className="text-gray-300 hover:text-red-500 px-1"><X className="w-4 h-4" /></button>
               </li>
             ))}
             {depts.length === 0 && <li className="text-sm text-gray-400">Отделов пока нет.</li>}
@@ -4132,7 +4208,7 @@ function Scripts() {
                       placeholder="Название шага…"
                       className="flex-1 bg-white px-2 py-1 rounded border border-gray-200 focus:border-[#029cda] text-sm outline-none" />
                     <button onClick={() => setDraft(s.id, { steps: d.steps.filter((_, i) => i !== idx) })}
-                      title="Удалить шаг" className="text-gray-300 hover:text-red-500 px-1">✕</button>
+                      title="Удалить шаг" className="text-gray-300 hover:text-red-500 px-1"><X className="w-4 h-4" /></button>
                   </li>
                 ))}
               </ol>
@@ -4251,7 +4327,7 @@ function StageScriptsPanel() {
                               <input value={st.title} onChange={(e) => setStep(s.key, idx, e.target.value)}
                                 placeholder="Название шага…"
                                 className="flex-1 bg-white px-2 py-1 rounded border border-gray-200 focus:border-[#029cda] text-xs outline-none" />
-                              <button onClick={() => removeStep(s.key, idx)} title="Удалить шаг" className="text-gray-300 hover:text-red-500 px-1">✕</button>
+                              <button onClick={() => removeStep(s.key, idx)} title="Удалить шаг" className="text-gray-300 hover:text-red-500 px-1"><X className="w-4 h-4" /></button>
                             </li>
                           ))}
                         </ol>
@@ -4313,11 +4389,29 @@ const GROUPS: NavGroup[] = [
   ] },
 ];
 
+/** Иконка и подпись раздела «Настройка» — список открывается модалкой, как в Настройках Генератора КП. */
+const SETUP_SUBTITLE: Partial<Record<View, string>> = {
+  departments: 'Структура компании и состав отделов',
+  scripts: 'Скрипт продаж для анализа звонков',
+  kb: 'Документы для ассистента и анализа',
+  prompts: 'Промты AI по отделам',
+  settings: 'AI-провайдер, модели по задачам',
+};
+function SetupIcon({ view }: { view: View }) {
+  const cls = 'w-5 h-5';
+  if (view === 'departments') return <Building2 className={cls} />;
+  if (view === 'scripts') return <ScrollText className={cls} />;
+  if (view === 'kb') return <BookOpen className={cls} />;
+  if (view === 'prompts') return <Sparkles className={cls} />;
+  return <SlidersHorizontal className={cls} />;
+}
+
 export default function AiSalesSection() {
   const [view, setView] = useState<View>('dashboard');
   const [openCall, setOpenCall] = useState<string | null>(null);
   const [openCallSeek, setOpenCallSeek] = useState<number | null>(null);
   const [openDeal, setOpenDeal] = useState<string | null>(null);
+  const [openSetup, setOpenSetup] = useState<View | null>(null);
   const [initTemp, setInitTemp] = useState<string | undefined>(undefined);
   const [initTag, setInitTag] = useState<string | undefined>(undefined);
 
@@ -4387,7 +4481,8 @@ export default function AiSalesSection() {
   })();
 
   const activeGroup = GROUPS.find((g) => g.views.some((v) => v.view === view)) ?? GROUPS[0];
-  const openGroup = (g: NavGroup) => { if (!g.views.some((v) => v.view === view)) go(g.views[0].view); };
+  const openGroup = (g: NavGroup) => { if (!g.views.some((v) => v.view === view)) go(g.views[0].view); setOpenSetup(null); };
+  const isSetup = activeGroup.key === 'setup';
 
   return (
     <div>
@@ -4402,18 +4497,42 @@ export default function AiSalesSection() {
           ))}
         </div>
       </ScrollX>
-      {/* Уровень 2 — вкладки активной группы */}
-      <ScrollX className="mb-5 border-b border-gray-200">
-        <div className="flex gap-1 min-w-max" role="tablist" aria-label={activeGroup.label}>
-          {activeGroup.views.map((s) => (
-            <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
-              className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </ScrollX>
-      {body}
+
+      {isSetup ? (
+        <>
+          {/* «Настройка» — список разделов с иконками, как в Настройках Генератора КП: клик открывает модалку. */}
+          <div className="max-w-[560px] mx-auto space-y-2 mt-4">
+            {activeGroup.views.map((s) => (
+              <SettingsRow key={s.view} icon={<SetupIcon view={s.view} />} title={s.label}
+                subtitle={SETUP_SUBTITLE[s.view]} onClick={() => setOpenSetup(s.view)} />
+            ))}
+          </div>
+          {openSetup && (
+            <Modal title={activeGroup.views.find((s) => s.view === openSetup)?.label || ''} onClose={() => setOpenSetup(null)} maxWidth="max-w-4xl">
+              {openSetup === 'departments' && <Departments />}
+              {openSetup === 'scripts' && <Scripts />}
+              {openSetup === 'kb' && <KnowledgeBase />}
+              {openSetup === 'prompts' && <Prompts />}
+              {openSetup === 'settings' && <Settings />}
+            </Modal>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Уровень 2 — вкладки активной группы */}
+          <ScrollX className="mb-5 border-b border-gray-200">
+            <div className="flex gap-1 min-w-max" role="tablist" aria-label={activeGroup.label}>
+              {activeGroup.views.map((s) => (
+                <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
+                  className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </ScrollX>
+          {body}
+        </>
+      )}
     </div>
   );
 }
