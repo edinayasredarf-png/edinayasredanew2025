@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import nextDynamic from 'next/dynamic';
 import { authStore } from '@/lib/authStore';
@@ -15,7 +15,7 @@ const TabLoading = () => (
 const lazyTab = <P extends object>(loader: () => Promise<{ default: React.ComponentType<P> }>) =>
   nextDynamic(loader, { ssr: false, loading: TabLoading });
 
-const AdminDashboard = lazyTab(() => import('./AdminDashboard'));
+const AdminDashboard = lazyTab<{ onNavigate?: (tab: TabId, view?: string) => void }>(() => import('./AdminDashboard'));
 const UtmGenerator = lazyTab(() => import('./UtmGenerator'));
 const PressAdmin = lazyTab(() => import('./PressAdmin'));
 const AdsAdmin = lazyTab(() => import('./AdsAdmin'));
@@ -111,7 +111,7 @@ function AdminLogin() {
   );
 }
 
-type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp' | 'content-os';
+export type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp' | 'content-os';
 const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp', 'content-os'];
 
 /** metrika/email/leads/social рендерят один и тот же AnalyticsDashboard с разным `only`
@@ -123,7 +123,7 @@ const isAnalyticsTab = (t: TabId): t is AnalyticsTabId => (ANALYTICS_TAB_IDS as 
 const panelOf = (t: TabId): string => (isAnalyticsTab(t) ? 'analytics' : t);
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
-    { id: 'dashboard', label: 'Дашборд', icon: IconGrid },
+    { id: 'dashboard', label: 'Главная', icon: IconGrid },
     { id: 'write', label: 'Написать', icon: IconPencil },
     { id: 'press', label: 'СМИ о нас', icon: IconNews },
     { id: 'ads', label: 'Реклама', icon: IconAds },
@@ -223,17 +223,22 @@ export default function AdminPanel() {
   const results = query.trim()
     ? SEARCH_INDEX.filter((e) => e.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
     : [];
-  const openResult = (e: SearchEntry) => {
-    // Под-раздел речевой аналитики: пробрасываем ?asv= и будим AiSalesSection.
-    if (e.view) {
+  // Переход на вкладку (+ опционально под-раздел речевой аналитики через ?asv=,
+  // будит AiSalesSection). Общая точка навигации для поиска и плиток «Главной».
+  const navigateTo = useCallback((tab: TabId, view?: string) => {
+    if (view) {
       try {
         const p = new URLSearchParams(window.location.search);
-        p.set('tab', 'ai-analytics'); p.set('asv', e.view);
+        p.set('tab', tab); p.set('asv', view);
         window.history.replaceState(null, '', `?${p}`);
         window.dispatchEvent(new PopStateEvent('popstate'));
       } catch { /* нет URL */ }
     }
-    setActiveTab(e.tab);
+    setActiveTab(tab);
+  }, []);
+
+  const openResult = (e: SearchEntry) => {
+    navigateTo(e.tab, e.view);
     setQuery(''); setSearchOpen(false);
   };
 
@@ -512,7 +517,7 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {visitedPanels.has('dashboard') && <div className={activeTab === 'dashboard' ? '' : 'hidden'}><AdminDashboard /></div>}
+          {visitedPanels.has('dashboard') && <div className={activeTab === 'dashboard' ? '' : 'hidden'}><AdminDashboard onNavigate={navigateTo} /></div>}
         </div>
       </div>
     </div>
