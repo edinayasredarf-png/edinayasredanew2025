@@ -713,7 +713,7 @@ export default function KpGenerator() {
       </div>
 
       {status && (
-        <div className="text-sm px-4 py-2 rounded-xl bg-[#EAF6FC] text-[#0b5c7d] border border-[#cbe8f5] max-w-[560px] mx-auto">
+        <div className="text-sm px-4 py-2 rounded-xl bg-[#EAF6FC] text-[#0b5c7d] border border-[#cbe8f5] max-w-[800px] mx-auto">
           {status}
         </div>
       )}
@@ -879,7 +879,7 @@ function CreateTab(p: CreateProps) {
   };
 
   return (
-    <div className="max-w-[560px] mx-auto space-y-4">
+    <div className="max-w-[800px] mx-auto space-y-4">
       <div className="space-y-4">
         {/* Организации + услуга */}
         <div className={panel}>
