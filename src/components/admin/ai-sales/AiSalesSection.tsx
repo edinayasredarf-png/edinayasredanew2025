@@ -659,7 +659,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-xl font-semibold text-[#1b2a4a]">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a] whitespace-nowrap">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
         <div className="flex gap-2 flex-wrap">
           <Select value={department} onChange={setDepartment} className="w-full sm:w-[180px]" ariaLabel="Отдел"
             options={[{ value: '', label: 'Все отделы' }, ...departmentOptions.map((d) => ({ value: d.id, label: d.name }))]} />
@@ -1364,7 +1364,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-xl font-semibold text-[#1b2a4a]">Сделки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a] whitespace-nowrap">Сделки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
         <Select value={temp} onChange={setTemp} className="w-full sm:w-[180px]" ariaLabel="Температура"
           options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
       </div>
@@ -3323,7 +3323,7 @@ function Triggers({ onOpen }: { onOpen: (callId: string) => void }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h2 className="text-xl font-semibold text-[#1b2a4a]">Триггеры <span className="text-gray-400 text-base font-normal">({items.length})</span></h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a] whitespace-nowrap">Триггеры <span className="text-gray-400 text-base font-normal">({items.length})</span></h2>
         <Select value={type} onChange={setType} className="w-full sm:w-[280px]" ariaLabel="Тип триггера"
           options={[{ value: '', label: 'Все типы' }, ...typeOptions.map(([k, label]) => ({ value: k, label }))]} />
       </div>
