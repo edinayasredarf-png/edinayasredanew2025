@@ -481,6 +481,9 @@ function QueuePanel({ refreshSignal }: { refreshSignal?: number }) {
   const [q, setQ] = useState<QueueDetailsT | null>(null);
   const [err, setErr] = useState('');
   const [openErrors, setOpenErrors] = useState(false);
+  const [purgeDays, setPurgeDays] = useState('1');
+  const [purging, setPurging] = useState(false);
+  const [purgeMsg, setPurgeMsg] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -492,6 +495,19 @@ function QueuePanel({ refreshSignal }: { refreshSignal?: number }) {
   }, []);
 
   useEffect(() => { load(); }, [load, refreshSignal]);
+
+  const purge = async () => {
+    const label = purgeDays === '0' ? 'ВСЕ записи об ошибках' : `записи об ошибках старше ${purgeDays} дн.`;
+    if (!window.confirm(`Удалить ${label}? Это необратимо; ожидающие и выполняющиеся задачи не затрагиваются.`)) return;
+    setPurging(true); setPurgeMsg('');
+    try {
+      const r = await fetch(`/api/ai-sales/jobs/queue?olderThanDays=${purgeDays}`, { method: 'DELETE' });
+      const j = await r.json();
+      setPurgeMsg(r.ok ? `Удалено записей: ${j.deleted}` : (j.error || 'Ошибка'));
+      if (r.ok) load();
+    } catch (e) { setPurgeMsg(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setPurging(false); }
+  };
 
   // Автообновление, пока есть активность в очереди.
   useEffect(() => {
@@ -552,11 +568,21 @@ function QueuePanel({ refreshSignal }: { refreshSignal?: number }) {
             )}
           </div>
 
+          {q.failed.length === 0 && purgeMsg && <p className="text-xs text-gray-500">{purgeMsg}</p>}
           {q.failed.length > 0 && (
             <div>
               <button onClick={() => setOpenErrors((v) => !v)} className="text-xs font-semibold text-red-600 uppercase mb-2 flex items-center gap-1">
                 Ошибки ({q.failed.length}) <span className="text-[10px]">{openErrors ? '▲' : '▼'}</span>
               </button>
+              {openErrors && (
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <Select value={purgeDays} onChange={setPurgeDays} className="w-[190px]" ariaLabel="Какие ошибки очистить"
+                    options={[{ value: '1', label: 'Старше 1 дня' }, { value: '7', label: 'Старше 7 дней' }, { value: '30', label: 'Старше 30 дней' }, { value: '0', label: 'Все ошибки' }]} />
+                  <button type="button" onClick={purge} disabled={purging}
+                    className="px-3 py-2 rounded-xl text-sm border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50">{purging ? 'Очищаю…' : 'Очистить ошибки'}</button>
+                  {purgeMsg && <span className="text-xs text-gray-500">{purgeMsg}</span>}
+                </div>
+              )}
               {openErrors && (
                 <ul className="space-y-2">
                   {q.failed.map((j) => (

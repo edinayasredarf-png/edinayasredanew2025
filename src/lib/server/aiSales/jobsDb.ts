@@ -288,3 +288,16 @@ export async function queueDetails(): Promise<QueueDetails> {
     byType: byType.rows.map((r) => ({ type: r.type, count: Number(r.n) })),
   };
 }
+
+/**
+ * Удалить записи о задачах в статусе FAILED старше N дней (0 — все ошибочные).
+ * Только FAILED: ожидающие, выполняющиеся и повторяемые задачи не затрагиваются.
+ */
+export async function purgeFailedJobs(olderThanDays: number): Promise<number> {
+  const days = Math.max(0, Math.floor(olderThanDays));
+  const { rowCount } = await getTimewebPool().query(
+    `delete from ai_jobs where status = 'FAILED' and updated_at < now() - ($1 || ' days')::interval`,
+    [String(days)]
+  );
+  return rowCount ?? 0;
+}
