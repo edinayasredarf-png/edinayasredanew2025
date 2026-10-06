@@ -658,8 +658,8 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
         <div className="flex gap-2 flex-wrap">
           <Select value={department} onChange={setDepartment} className="w-full sm:w-[180px]" ariaLabel="Отдел"
             options={[{ value: '', label: 'Все отделы' }, ...departmentOptions.map((d) => ({ value: d.id, label: d.name }))]} />
@@ -683,7 +683,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
-        <ScrollX className="bg-white rounded-xl border border-gray-100">
+        <ScrollX className="bg-white rounded-2xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>
@@ -999,7 +999,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <button onClick={onBack} className="text-sm text-[#029cda]">{backLabel}</button>
         <div className="flex gap-2 items-center">
           {data.call.dealUrl
@@ -1363,15 +1363,15 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Сделки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Сделки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
         <Select value={temp} onChange={setTemp} className="w-full sm:w-[180px]" ariaLabel="Температура"
           options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
       </div>
       <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
-        <ScrollX className="bg-white rounded-xl border border-gray-100">
+        <ScrollX className="bg-white rounded-2xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>{['Клиент / Сделка', 'Менеджер', 'Звонков', 'Темп.', 'Score', 'Оценка мен.', 'Следующий шаг'].map((h) => (
@@ -1449,7 +1449,7 @@ function DealDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => void
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <button onClick={onBack} className="text-sm text-[#029cda]">← К сделкам</button>
         <div className="flex gap-2">
           {data.deal.dealUrl && <a href={data.deal.dealUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Сделка в Bitrix</a>}
@@ -1746,7 +1746,7 @@ function Signals({ onOpen }: { onOpen: (id: string) => void }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h2 className="text-xl font-bold text-gray-900">Сигналы — что горит прямо сейчас</h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Сигналы — что горит прямо сейчас</h2>
         <button onClick={() => load()} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
       </div>
       <p className="text-sm text-gray-500 mb-4">Приоритетная лента для РОПа: критичные сделки, просроченные обещания клиентам, слабые этапы и всплески проигрышей. Отметьте «Готово» или «Отложить» — обработанное уходит из ленты.</p>
@@ -1893,7 +1893,7 @@ function Trends() {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h2 className="text-xl font-bold text-gray-900">Динамика — прогресс во времени</h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Динамика — прогресс во времени</h2>
         <div className="flex items-center gap-1">
           {[8, 12, 26].map((w) => (
             <button key={w} onClick={() => setWeeks(w)}
@@ -2081,7 +2081,7 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
     <div>
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Отчёты по отделу</h2>
+          <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Отчёты по отделу</h2>
           <p className="text-sm text-gray-500 mb-4">Что происходит за период и по каким сделкам проблемы. Клик по сделке — открыть карточку.</p>
         </div>
         <ExportButton period={period} />
@@ -2298,7 +2298,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
     <div>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Чек-листы и конверсия</h2>
+          <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Чек-листы и конверсия</h2>
           <p className="text-sm text-gray-500 mb-3">Работа менеджеров по чек-листам и результатам. Клик по ячейке шага — звонки; клик по менеджеру — карточка.</p>
         </div>
         {mode === 'steps' && <MatrixExport period={period} />}
@@ -2317,7 +2317,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
           {mode === 'steps' && (!data || data.managers.length === 0 ? (
             <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет оценок скрипта за период. Убедитесь, что задан активный скрипт и звонки проанализированы.</p>
           ) : (
-            <ScrollX className="bg-white rounded-xl border border-gray-100">
+            <ScrollX className="bg-white rounded-2xl border border-gray-100">
               <table className="min-w-full text-sm">
                 <thead className="bg-[#F6F7F9] text-gray-600">
                   <tr>
@@ -2360,7 +2360,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
           {mode === 'avg' && (!data || data.managers.length === 0 ? (
             <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет оценок скрипта за период.</p>
           ) : (
-            <ScrollX className="bg-white rounded-xl border border-gray-100">
+            <ScrollX className="bg-white rounded-2xl border border-gray-100">
               <table className="min-w-full text-sm">
                 <thead className="bg-[#F6F7F9] text-gray-600">
                   <tr>
@@ -2388,7 +2388,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
           {mode === 'conv' && (!conv || conv.managers.length === 0 ? (
             <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет данных по результатам звонков за период.</p>
           ) : (
-            <ScrollX className="bg-white rounded-xl border border-gray-100">
+            <ScrollX className="bg-white rounded-2xl border border-gray-100">
               <table className="min-w-full text-sm">
                 <thead className="bg-[#F6F7F9] text-gray-600">
                   <tr>
@@ -2419,7 +2419,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
           {mode === 'obj' && (!obj || obj.length === 0 ? (
             <p className="text-gray-400 text-sm px-1 py-8 text-center">Нет возражений за период.</p>
           ) : (
-            <ScrollX className="bg-white rounded-xl border border-gray-100">
+            <ScrollX className="bg-white rounded-2xl border border-gray-100">
               <table className="min-w-full text-sm">
                 <thead className="bg-[#F6F7F9] text-gray-600">
                   <tr>
@@ -2551,8 +2551,8 @@ function FollowUps() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">
           Follow-up <span className="text-gray-400 text-base font-normal">· активных {openCount}{overdueCount ? <span className="text-red-500">, просрочено {overdueCount}</span> : null}</span>
         </h2>
         <Select value={status} onChange={setStatus} className="w-full sm:w-[180px]" ariaLabel="Статус"
@@ -2618,7 +2618,7 @@ function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Проигранные сделки</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Проигранные сделки</h2>
       <p className="text-sm text-gray-500 mb-4">Причины проигрыша по AI-разбору звонков (не только по полю Bitrix).</p>
       <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : data.total === 0 ? (
@@ -2733,7 +2733,7 @@ function Settings() {
 
   return (
     <div className="max-w-2xl">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Настройки AI</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Настройки AI</h2>
       <p className="text-sm text-gray-500 mb-4">Влияют на следующий анализ. Ключи Yandex/Anthropic/STT задаются в переменных окружения (Vercel).</p>
 
       <div className="bg-white rounded-xl border border-gray-100 px-5">
@@ -2890,7 +2890,7 @@ function StageDictionaryPanel() {
 
   return (
     <div className="max-w-3xl mt-8">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Этапы воронок</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Этапы воронок</h2>
       <p className="text-sm text-gray-500 mb-4">
         Сопоставление стадий/статусов Bitrix (лид, сделка «Отдел продаж», сделка «Обслуживание сервиса») с этапами наших воронок — по нему речевая аналитика понимает, на каком этапе идёт звонок, и какой промпт-чеклист применять.
       </p>
@@ -2947,7 +2947,7 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">AI-теги</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">AI-теги</h2>
       <p className="text-sm text-gray-500 mb-4">Автотеги из разборов звонков. Клик по тегу — звонки с этим тегом.</p>
       <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : data.groups.length === 0 ? (
@@ -3002,13 +3002,13 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Менеджеры</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Менеджеры</h2>
         <ExportButton period={period} />
       </div>
       <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : (
-        <ScrollX className="bg-white rounded-xl border border-gray-100">
+        <ScrollX className="bg-white rounded-2xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>{['Менеджер', 'Звонков', 'Сделок', '🔥 Горячих', 'Оценка', 'Deal Score'].map((h) => (
@@ -3123,7 +3123,7 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
       <div className="flex items-center gap-4 mb-4">
         <ManagerAvatar bitrixUserId={data.bitrixUserId} avatarUrl={data.avatarUrl}
           onChange={(url) => setData((d) => d && { ...d, avatarUrl: url })} />
-        <h2 className="text-xl font-bold text-gray-900">{data.name || `#${data.bitrixUserId}`}</h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">{data.name || `#${data.bitrixUserId}`}</h2>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
         <Kpi label="Оценка (по сделкам)" value={m.avgManagerScore != null ? `${m.avgManagerScore}/10` : '—'} />
@@ -3225,7 +3225,7 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Поиск по звонкам</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Поиск по звонкам</h2>
       <p className="text-sm text-gray-500 mb-4">Полнотекстовый поиск по репликам всех расшифрованных звонков. Клик по результату — переход к звонку и моменту записи.</p>
 
       <div className="flex gap-2 mb-3 flex-wrap">
@@ -3323,7 +3323,7 @@ function Triggers({ onOpen }: { onOpen: (callId: string) => void }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h2 className="text-xl font-bold text-gray-900">Триггеры <span className="text-gray-400 text-base font-normal">({items.length})</span></h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Триггеры <span className="text-gray-400 text-base font-normal">({items.length})</span></h2>
         <Select value={type} onChange={setType} className="w-full sm:w-[280px]" ariaLabel="Тип триггера"
           options={[{ value: '', label: 'Все типы' }, ...typeOptions.map(([k, label]) => ({ value: k, label }))]} />
       </div>
@@ -3390,7 +3390,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Контроль качества</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Контроль качества</h2>
       <p className="text-sm text-gray-500 mb-5">Эталонные оценки руководителя против оценок LLM. Главная цель — чтобы оценка модели <b>коррелировала</b> с оценкой человека. Эталон ставится в карточке звонка.</p>
 
       {s.count === 0 ? (
@@ -3421,7 +3421,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
             </div>
           )}
 
-          <ScrollX className="bg-white rounded-xl border border-gray-100">
+          <ScrollX className="bg-white rounded-2xl border border-gray-100">
             <table className="min-w-full text-sm">
               <thead className="bg-[#F6F7F9] text-gray-600">
                 <tr>{['Дата', 'Менеджер', 'Клиент', 'Сделка: чел./LLM/Δ', 'Менеджер: чел./LLM/Δ', 'Ревьюер'].map((h) => (
@@ -3532,7 +3532,7 @@ function AssistantAsk({ callId, compact = false, placeholder }: { callId?: strin
 function Assistant() {
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Ассистент</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Ассистент</h2>
       <p className="text-sm text-gray-500 mb-5">Задавайте вопросы — ассистент отвечает по вашей базе знаний (продукты, цены, скрипты, возражения, регламенты). Материалы добавляются во вкладке «База знаний».</p>
       <AssistantAsk placeholder="Например: как отвечать на «дорого»? какие продукты и цены?" />
     </div>
@@ -3621,7 +3621,7 @@ function KnowledgeBase() {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h2 className="text-xl font-bold text-gray-900">База знаний</h2>
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">База знаний</h2>
         <button onClick={openNew} className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white">+ Документ</button>
       </div>
       <p className="text-sm text-gray-500 mb-3">Материалы для ассистента: продукты, цены, FAQ, скрипты, регламенты, возражения, примеры звонков. При сохранении текст индексируется (эмбеддинги Yandex).</p>
@@ -3703,7 +3703,7 @@ function KnowledgeBase() {
         </div>
       )}
 
-      <ScrollX className="bg-white rounded-xl border border-gray-100">
+      <ScrollX className="bg-white rounded-2xl border border-gray-100">
         <table className="min-w-full text-sm">
           <thead className="bg-[#F6F7F9] text-gray-600">
             <tr>{['Заголовок', 'Категория', 'Чанки', 'Обновлён', ''].map((h) => (
@@ -3777,7 +3777,7 @@ function Departments() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Отделы</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Отделы</h2>
       <p className="text-sm text-gray-500 mb-5">Структура компании для речевой аналитики: у каждого отдела свой промт анализа и свой состав сотрудников.</p>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
@@ -3811,7 +3811,7 @@ function Departments() {
         {/* Сотрудники */}
         <div>
           <p className="text-sm font-semibold text-gray-700 mb-3">Сотрудники по отделам</p>
-          <ScrollX className="bg-white rounded-xl border border-gray-100">
+          <ScrollX className="bg-white rounded-2xl border border-gray-100">
             <table className="min-w-full text-sm">
               <thead className="bg-[#F6F7F9] text-gray-600">
                 <tr><th className="text-left font-medium px-3 py-2">Сотрудник</th><th className="text-left font-medium px-3 py-2">Отдел</th></tr>
@@ -3869,7 +3869,7 @@ function Prompts() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Промты анализа</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Промты анализа</h2>
       <p className="text-sm text-gray-500 mb-5">Свой системный промт для YandexGPT на каждый отдел — звонки разных отделов анализируются по-разному. Пусто — используется стандартный промт (отдел продаж).</p>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
@@ -3966,7 +3966,7 @@ function StagePromptsPanel() {
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Промты по этапам воронки</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Промты по этапам воронки</h2>
       <p className="text-sm text-gray-500 mb-4">
         Добавляются поверх стандартного промта в зависимости от текущего этапа сделки/лида (не применяется, если у отдела задан свой промт выше — отдел тогда полностью управляет содержанием). Пусто — используется стандартный промт этапа (код, src/lib/ai/prompts/dealStagePrompts.ts).
       </p>
@@ -4084,7 +4084,7 @@ function Scripts() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Скрипт продаж</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Скрипт продаж</h2>
       <p className="text-sm text-gray-500 mb-5">Чек-лист шагов, по которому LLM оценивает каждый звонок. Можно завести отдельный чек-лист под конкретный этап воронки (напр. «Заявка получена» ≠ «Просроченная задолженность») — иначе применяется общий/отдела вне зависимости от этапа. Изменение шагов повышает версию.</p>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
@@ -4213,7 +4213,7 @@ function StageScriptsPanel() {
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Чек-листы по этапам воронки</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Чек-листы по этапам воронки</h2>
       <p className="text-sm text-gray-500 mb-4">
         Общий (вне отдела) чек-лист под конкретный этап — приоритетнее общего скрипта выше, но уступает скрипту отдела для этой же комбинации, если такой заведён. Пусто — берётся общий скрипт. Показаны только показательные этапы (техническим/финальным чек-лист не нужен).
       </p>
@@ -4465,7 +4465,7 @@ export default function AiSalesSection() {
       ) : (
         <>
           {!onDashboard && subTabs}
-          {body}
+          <div className={onDashboard ? '' : 'max-w-[1100px] mx-auto'}>{body}</div>
         </>
       )}
     </div>
