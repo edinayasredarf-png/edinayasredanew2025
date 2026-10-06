@@ -278,7 +278,7 @@ interface Dash {
   queue: { pending: number; running: number; failed: number; retry: number };
 }
 
-function Dashboard({ onNavigate, nav }: { onNavigate?: (t: NavTarget) => void; nav: React.ReactNode }) {
+function Dashboard({ onNavigate, nav, subNav }: { onNavigate?: (t: NavTarget) => void; nav: React.ReactNode; subNav?: React.ReactNode }) {
   const [data, setData] = useState<Dash | null>(null);
   const [err, setErr] = useState<string>('');
   const [busy, setBusy] = useState(false);
@@ -339,6 +339,7 @@ function Dashboard({ onNavigate, nav }: { onNavigate?: (t: NavTarget) => void; n
           <PeriodBar value={period} onChange={setPeriod} center />
         </div>
       </div>
+      {subNav}
 
       <div className="max-w-[720px] mx-auto space-y-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -4389,10 +4390,23 @@ export default function AiSalesSection() {
   );
   const onDashboard = !openCall && !isSetup && view === 'dashboard';
 
+  const subTabs = (
+    <ScrollX className="mb-5 border-b border-gray-200">
+      <div className="flex gap-1 min-w-max sm:justify-center" role="tablist" aria-label={activeGroup.label}>
+        {activeGroup.views.map((s) => (
+          <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
+            className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+    </ScrollX>
+  );
+
   const body = (() => {
     // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки, поиск).
     if (openCall) return <CallDetail id={openCall} initialSeekMs={openCallSeek} onBack={closeCall} />;
-    if (view === 'dashboard') return <Dashboard onNavigate={nav} nav={groupNav} />;
+    if (view === 'dashboard') return <Dashboard onNavigate={nav} nav={groupNav} subNav={subTabs} />;
     if (view === 'signals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Signals onOpen={setOpenDeal} />;
     if (view === 'trends') return <Trends />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
@@ -4437,27 +4451,20 @@ export default function AiSalesSection() {
           </div>
           {openSetup && (
             <Modal title={activeGroup.views.find((s) => s.view === openSetup)?.label || ''} onClose={() => setOpenSetup(null)} maxWidth="max-w-4xl">
-              {openSetup === 'departments' && <Departments />}
-              {openSetup === 'scripts' && <Scripts />}
-              {openSetup === 'kb' && <KnowledgeBase />}
-              {openSetup === 'prompts' && <Prompts />}
-              {openSetup === 'settings' && <Settings />}
+              {/* Заголовок раздела уже в шапке модалки — собственный h2 компонента скрываем. */}
+              <div className="space-y-4 [&>div>h2:first-child]:hidden [&>div>div:first-child>h2:first-child]:hidden">
+                {openSetup === 'departments' && <Departments />}
+                {openSetup === 'scripts' && <Scripts />}
+                {openSetup === 'kb' && <KnowledgeBase />}
+                {openSetup === 'prompts' && <Prompts />}
+                {openSetup === 'settings' && <Settings />}
+              </div>
             </Modal>
           )}
         </>
       ) : (
         <>
-          {/* Уровень 2 — вкладки активной группы */}
-          <ScrollX className="mb-5 border-b border-gray-200">
-            <div className="flex gap-1 min-w-max sm:justify-center" role="tablist" aria-label={activeGroup.label}>
-              {activeGroup.views.map((s) => (
-                <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
-                  className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </ScrollX>
+          {!onDashboard && subTabs}
           {body}
         </>
       )}
