@@ -30,7 +30,7 @@ async function scanNewLeads(): Promise<number> {
         and not exists (select 1 from ai_briefs b where b.entity_type = 'lead' and b.bitrix_entity_id = l.bitrix_lead_id)
       order by l.bitrix_created_at desc limit 30`);
   for (const r of rows) {
-    await enqueueJob({ type: "brief.lead", payload: { leadId: r.bitrix_lead_id }, priority: 70, maxAttempts: 2, idempotencyKey: `brief:lead:${r.bitrix_lead_id}` });
+    await enqueueJob({ type: "brief.lead", payload: { leadId: r.bitrix_lead_id }, priority: 150, maxAttempts: 2, idempotencyKey: `brief:lead:${r.bitrix_lead_id}` });
   }
   return rows.length;
 }
@@ -52,7 +52,7 @@ async function scanDeferredDeals(): Promise<number> {
     [stages]);
   const week = isoWeek();
   for (const r of rows) {
-    await enqueueJob({ type: "brief.deal", payload: { dealId: r.bitrix_deal_id }, priority: 120, maxAttempts: 2, idempotencyKey: `brief:deal:${r.bitrix_deal_id}:${week}` });
+    await enqueueJob({ type: "brief.deal", payload: { dealId: r.bitrix_deal_id }, priority: 160, maxAttempts: 2, idempotencyKey: `brief:deal:${r.bitrix_deal_id}:${week}` });
   }
   return rows.length;
 }

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   const jobId = await enqueueJob({
     type: type === "lead" ? "brief.lead" : "brief.deal",
     payload: type === "lead" ? { leadId: id } : { dealId: id },
-    priority: 10, maxAttempts: 2, idempotencyKey: `brief:manual:${type}:${id}:${Date.now()}`,
+    priority: 90, maxAttempts: 2, idempotencyKey: `brief:manual:${type}:${id}:${Date.now()}`,
   });
   return NextResponse.json({ ok: true, jobId });
 }

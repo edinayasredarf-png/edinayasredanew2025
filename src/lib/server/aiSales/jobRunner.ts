@@ -73,31 +73,38 @@ export async function drainQueue(
   };
 
   const deadline = Date.now() + timeBudgetMs;
-  while (Date.now() < deadline) {
-    const [job] = await claimBatch(1, types);
-    if (!job) break; // очередь пуста
-    report.claimed += 1;
-    onJob?.({ job, phase: "start" });
+  // Задачи в основном ждут ответа LLM/шлюза (I/O) — выполняем несколько параллельно, каждый
+  // «рабочий» сам берёт следующую задачу (SKIP LOCKED не даёт взять одну дважды). Раньше шёл один
+  // цикл: при тайм-аутах LLM (до 45 с) за вызов обрабатывалась одна задача — бэклог не рассасывался.
+  const concurrency = Math.max(1, Number(process.env.AI_DRAIN_CONCURRENCY) || 4);
+  const worker = async () => {
+    while (Date.now() < deadline) {
+      const [job] = await claimBatch(1, types);
+      if (!job) break; // очередь пуста
+      report.claimed += 1;
+      onJob?.({ job, phase: "start" });
 
-    const handler = handlers.get(job.type);
-    if (!handler) {
-      const error = `Нет обработчика для типа задачи: ${job.type}`;
-      await failJob(job, error);
-      report.skipped += 1;
-      onJob?.({ job, phase: "skipped", error });
-      continue;
+      const handler = handlers.get(job.type);
+      if (!handler) {
+        const error = `Нет обработчика для типа задачи: ${job.type}`;
+        await failJob(job, error);
+        report.skipped += 1;
+        onJob?.({ job, phase: "skipped", error });
+        continue;
+      }
+      try {
+        const result = await handler(job);
+        await completeJob(job.id, result);
+        report.completed += 1;
+        onJob?.({ job, phase: "completed" });
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        await failJob(job, message);
+        report.failed += 1;
+        onJob?.({ job, phase: "failed", error: message });
+      }
     }
-    try {
-      const result = await handler(job);
-      await completeJob(job.id, result);
-      report.completed += 1;
-      onJob?.({ job, phase: "completed" });
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      await failJob(job, message);
-      report.failed += 1;
-      onJob?.({ job, phase: "failed", error: message });
-    }
-  }
+  };
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
   return report;
 }
