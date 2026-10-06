@@ -89,13 +89,10 @@ export async function getDashboard(
 
   const analysisAgg = await pool.query<{
     avg_deal: string | null;
-    hot: string; warm: string; cold: string; no_next: string;
+    no_next: string;
   }>(
     `select
         avg(a.deal_score)::text as avg_deal,
-        count(*) filter (where a.deal_temperature = 'HOT')::text as hot,
-        count(*) filter (where a.deal_temperature = 'WARM')::text as warm,
-        count(*) filter (where a.deal_temperature = 'COLD')::text as cold,
         count(*) filter (where a.next_step is null)::text as no_next
        from ai_call_analysis a
        join ai_calls c on c.id = a.call_id
@@ -112,6 +109,18 @@ export async function getDashboard(
   const dealWhere = dealParts.length ? ` where ${dealParts.join(" and ")}` : "";
   const mgrAgg = await pool.query<{ avg_mgr: string | null }>(
     `select avg(di.manager_score)::text as avg_mgr
+       from ai_deal_insights di
+       join ai_deals d on d.bitrix_deal_id = di.bitrix_deal_id${dealWhere}`,
+    dealParams
+  );
+
+  // Температура — по СДЕЛКАМ (итоговая оценка сделки), с теми же фильтрами, что и список
+  // «Сделки», — чтобы цифры на плитках совпадали с тем, что открывается по клику.
+  const tempAgg = await pool.query<{ hot: string; warm: string; cold: string }>(
+    `select
+        count(*) filter (where di.deal_temperature = 'HOT')::text as hot,
+        count(*) filter (where di.deal_temperature = 'WARM')::text as warm,
+        count(*) filter (where di.deal_temperature = 'COLD')::text as cold
        from ai_deal_insights di
        join ai_deals d on d.bitrix_deal_id = di.bitrix_deal_id${dealWhere}`,
     dealParams
@@ -146,9 +155,9 @@ export async function getDashboard(
       avgManagerScore: round(mgrAgg.rows[0]?.avg_mgr ?? null, 1),
     },
     temperature: {
-      hot: Number(aa?.hot ?? 0),
-      warm: Number(aa?.warm ?? 0),
-      cold: Number(aa?.cold ?? 0),
+      hot: Number(tempAgg.rows[0]?.hot ?? 0),
+      warm: Number(tempAgg.rows[0]?.warm ?? 0),
+      cold: Number(tempAgg.rows[0]?.cold ?? 0),
     },
     attention: {
       withoutNextStep: Number(aa?.no_next ?? 0),

@@ -20,7 +20,7 @@ const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'От
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'rop' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -133,8 +133,8 @@ const STATUS_LABEL: Record<string, string> = {
   FAILED: 'Ошибка', RETRY_PENDING: 'Повтор', NO_RECORDING: 'Нет записи',
 };
 
-function Kpi({ label, value, sub, onClick }: { label: string; value: React.ReactNode; sub?: string; onClick?: () => void }) {
-  const cls = "bg-[var(--es-tile)] rounded-3xl p-5 text-left w-full" + (onClick ? " hover:bg-[#029cda]/10 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]" : "");
+function Kpi({ label, value, sub, onClick, tall = false }: { label: string; value: React.ReactNode; sub?: string; onClick?: () => void; tall?: boolean }) {
+  const cls = "bg-[var(--es-tile)] rounded-3xl p-5 text-left w-full" + (tall ? " min-h-[132px] flex flex-col justify-between" : "") + (onClick ? " hover:bg-[#029cda]/10 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda]" : "");
   const inner = (
     <>
       <p className="text-sm text-gray-600">{label}</p>
@@ -186,7 +186,7 @@ function usePersistentPeriod(): [Period, (p: Period) => void] {
 }
 
 /** Период сворачивается в иконку-календарь; раскрывается попап с пресетами и датами. */
-function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
+function PeriodBar({ value, onChange, center = false }: { value: Period; onChange: (p: Period) => void; center?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -206,14 +206,14 @@ function PeriodBar({ value, onChange }: { value: Period; onChange: (p: Period) =
       ?? (value.from || value.to ? `${value.from || '…'} — ${value.to || '…'}` : 'Период'));
 
   return (
-    <div className="relative inline-block mb-4" ref={ref}>
+    <div className={`relative inline-block ${center ? '' : 'mb-4'}`} ref={ref}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
         className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F6F7F9] text-sm text-[#1b2a4a] hover:bg-gray-100 transition">
         <CalendarDays className="w-4 h-4 text-gray-500" />
         {activeLabel}
       </button>
       {open && (
-        <div className="absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-xl shadow-xl p-3 w-[300px] space-y-3">
+        <div className={`absolute z-30 mt-2 ${center ? 'left-1/2 -translate-x-1/2' : 'left-0'} bg-white border border-gray-200 rounded-xl shadow-xl p-3 w-[300px] max-w-[90vw] space-y-3`}>
           <div className="flex flex-wrap gap-2">
             {presets.map(([key, label]) => (
               <button key={key} onClick={() => { onChange(presetRange(key)); setOpen(false); }}
@@ -278,7 +278,7 @@ interface Dash {
   queue: { pending: number; running: number; failed: number; retry: number };
 }
 
-function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
+function Dashboard({ onNavigate, nav }: { onNavigate?: (t: NavTarget) => void; nav: React.ReactNode }) {
   const [data, setData] = useState<Dash | null>(null);
   const [err, setErr] = useState<string>('');
   const [busy, setBusy] = useState(false);
@@ -331,27 +331,27 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
 
   return (
     <div>
-      <div className="flex flex-col items-center text-center gap-4 mb-8">
-        <div>
-          <h2 className="text-xl font-semibold text-[#1b2a4a]">Речевая аналитика</h2>
-          <p className="text-sm text-gray-500 mt-1">Получайте отчёты, анализы и важные данные</p>
+      <div className="flex flex-col items-center text-center mb-8">
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Речевая аналитика</h2>
+        <p className="text-sm text-gray-500 mt-1 mb-5">Получайте отчёты, анализы и важные данные</p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {nav}
+          <PeriodBar value={period} onChange={setPeriod} center />
         </div>
-        <PeriodBar value={period} onChange={setPeriod} />
       </div>
 
       <div className="max-w-[720px] mx-auto space-y-8">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <Kpi label="Звонки" value={data.calls.total} sub={`Проанализировано: ${data.calls.analyzed}`} onClick={onNavigate ? () => onNavigate({ tab: 'ai-calls' }) : undefined} />
-          <Kpi label="Средняя длительность" value={fmtDur(data.calls.avgDurationSec)} />
-          <Kpi label="Ср. оценка менеджера" value={data.calls.avgManagerScore ?? '—'} sub="0–10 · по сделкам" />
-          <Kpi label="Ср. Deal Score" value={data.calls.avgDealScore ?? '—'} sub="0–100" />
-          <Kpi label="Кому звонить сегодня" value={data.attention.withoutNextStep} sub="Открыть сигналы →" onClick={onNavigate ? () => onNavigate({ tab: 'ai-signals' }) : undefined} />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Kpi tall label="Звонки" value={data.calls.total} onClick={onNavigate ? () => onNavigate({ tab: 'ai-calls' }) : undefined} />
+          <Kpi tall label="Средняя длительность" value={fmtDur(data.calls.avgDurationSec)} />
+          <Kpi tall label="Ср. оценка менеджера" value={data.calls.avgManagerScore != null ? `${data.calls.avgManagerScore}/10` : '—'} />
+          <Kpi tall label="Ср. Deal Score" value={data.calls.avgDealScore != null ? `${data.calls.avgDealScore}/100` : '—'} />
         </div>
 
         <div>
           <h3 className="text-xl font-semibold text-[#1b2a4a] mb-1">Сделки</h3>
           <p className="text-sm text-gray-500 mb-4">Показывается уровень готовности к покупке или заказу услуги</p>
-          <div className="flex flex-wrap gap-5">
+          <div className="grid grid-cols-3 gap-3">
             <TempTile emoji="🔥" value={data.temperature.hot} label="Горячие" borderClass="border-red-400"
               onClick={onNavigate ? () => onNavigate({ tab: 'ai-deals', temperature: 'HOT' }) : undefined} />
             <TempTile emoji="☀️" value={data.temperature.warm} label="Тёплые" borderClass="border-amber-300"
@@ -397,11 +397,11 @@ function TempTile({ emoji, value, label, borderClass, onClick }: {
 }) {
   const Comp = onClick ? 'button' : 'div';
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-1.5 min-w-0">
       <Comp type={onClick ? 'button' : undefined} onClick={onClick}
-        className={`w-40 h-20 rounded-3xl bg-[var(--es-tile)] border-2 ${borderClass} flex items-center justify-center gap-3 transition ${onClick ? 'hover:bg-white cursor-pointer' : ''}`}>
-        <span className="text-3xl leading-none">{emoji}</span>
+        className={`relative overflow-hidden w-full h-20 rounded-3xl bg-[var(--es-tile)] border-2 ${borderClass} flex items-center justify-center transition ${onClick ? 'hover:bg-white cursor-pointer' : ''}`}>
         <span className="text-2xl font-semibold text-gray-900">{value}</span>
+        <span className="absolute right-1.5 -bottom-1 text-5xl leading-none select-none" aria-hidden>{emoji}</span>
       </Comp>
       <span className="text-xs font-medium text-gray-700">{label}</span>
     </div>
@@ -2973,86 +2973,6 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   );
 }
 
-/* ─────────── AI РОП (сводный отчёт) ─────────── */
-interface RopData {
-  dept: { calls: number; analyzed: number; avgDealScore: number | null; avgManagerScore: number | null; hot: number; warm: number; cold: number; withoutNextStep: number };
-  headlines: string[];
-  bestManager: { name: string | null; score: number } | null;
-  needsCoaching: { name: string | null; score: number } | null;
-  weakestArea: string | null;
-  attention: { criticalCount: number; riskCount: number; opportunityCount: number; items: RecoItem[] };
-  overdueFollowups: number;
-}
-
-function Rop({ onNavigate }: { onNavigate: (t: NavTarget) => void }) {
-  const [data, setData] = useState<RopData | null>(null);
-  const [period, setPeriod] = usePersistentPeriod();
-  const [err, setErr] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    setLoading(true); setErr('');
-    try {
-      const r = await fetch(`/api/ai-sales/rop?${periodQS(period)}`);
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || 'Ошибка');
-      setData(j);
-    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
-    finally { setLoading(false); }
-  }, [period]);
-  useEffect(() => { load(); }, [load]);
-
-  if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
-
-  return (
-    <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">AI РОП — сводка по отделу</h2>
-      <p className="text-sm text-gray-500 mb-4">Ключевые цифры, кто в топе, где проблемы и что требует внимания.</p>
-      <PeriodBar value={period} onChange={setPeriod} />
-      {loading ? <LoadingBlock /> : !data ? null : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Kpi label="Звонки" value={data.dept.calls} sub={`Проанализировано: ${data.dept.analyzed}`} />
-            <Kpi label="Ср. Deal Score" value={data.dept.avgDealScore ?? '—'} />
-            <Kpi label="Ср. оценка менеджера" value={data.dept.avgManagerScore != null ? `${data.dept.avgManagerScore}/10` : '—'} />
-            <Kpi label="Просрочено follow-up" value={data.overdueFollowups} />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Kpi label="🔥 Горячие" value={data.dept.hot} />
-            <Kpi label="Тёплые" value={data.dept.warm} />
-            <Kpi label="🔴 Критично" value={data.attention.criticalCount} />
-            <Kpi label="🟠 Риск" value={data.attention.riskCount} />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-[#029cda]/5 border border-[#029cda]/20 rounded-xl p-4">
-              <p className="font-semibold text-gray-800 mb-2">Главное</p>
-              {data.headlines.length ? <ul className="space-y-1 text-sm text-gray-700">{data.headlines.map((h, i) => <li key={i}>• {h}</li>)}</ul> : <p className="text-gray-400 text-sm">Недостаточно данных.</p>}
-              <div className="mt-3 text-sm text-gray-700 space-y-1">
-                {data.bestManager && <p>🏆 Лучший менеджер: <b>{data.bestManager.name || '—'}</b> ({data.bestManager.score}/10)</p>}
-                {data.needsCoaching && <p>📉 Нужен коучинг: <b>{data.needsCoaching.name || '—'}</b> ({data.needsCoaching.score}/10)</p>}
-                {data.weakestArea && <p>⚠️ Слабый участок: <b>{data.weakestArea}</b></p>}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col">
-              <p className="font-semibold text-gray-800 mb-3">Требует внимания</p>
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="rounded-xl bg-red-50 p-3 text-center"><p className="text-2xl font-bold text-red-600">{data.attention.criticalCount}</p><p className="text-xs text-red-500">критично</p></div>
-                <div className="rounded-xl bg-amber-50 p-3 text-center"><p className="text-2xl font-bold text-amber-600">{data.attention.riskCount}</p><p className="text-xs text-amber-500">риск</p></div>
-                <div className="rounded-xl bg-gray-50 p-3 text-center"><p className="text-2xl font-bold text-gray-700">{data.overdueFollowups}</p><p className="text-xs text-gray-500">просрочки</p></div>
-              </div>
-              <p className="text-sm text-gray-500 mb-3">Полный приоритезированный список — во вкладке «Сигналы».</p>
-              <button onClick={() => onNavigate({ tab: 'ai-signals' })}
-                className="mt-auto px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white hover:brightness-95">Открыть Сигналы →</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ─────────── Менеджеры ─────────── */
 interface ManagerRow {
   bitrixUserId: string; name: string | null; calls: number; analyzed: number;
@@ -4358,27 +4278,26 @@ interface NavGroup { key: string; label: string; views: Array<{ view: View; labe
 
 /** Двухуровневая навигация: группа → её вкладки. Снимает частокол из 18 вкладок. */
 const GROUPS: NavGroup[] = [
-  { key: 'main', label: 'Главное', views: [
+  { key: 'main', label: 'Главная', views: [
     { view: 'dashboard', label: 'Обзор' },
     { view: 'signals', label: 'Сигналы' },
-    { view: 'rop', label: 'AI РОП' },
-    { view: 'trends', label: 'Динамика' },
     { view: 'followups', label: 'Follow-up' },
+    { view: 'assistant', label: 'Ассистент' },
   ] },
   { key: 'reviews', label: 'Разборы', views: [
-    { view: 'calls', label: 'Коммуникации' },
-    { view: 'search', label: 'Поиск' },
+    { view: 'calls', label: 'Звонки' },
     { view: 'deals', label: 'Сделки' },
+    { view: 'lost', label: 'Проигрыши' },
+    { view: 'search', label: 'Поиск' },
     { view: 'triggers', label: 'Триггеры' },
-    { view: 'qc', label: 'Контроль качества' },
-    { view: 'assistant', label: 'Ассистент' },
+    { view: 'tags', label: 'Теги' },
   ] },
   { key: 'analytics', label: 'Аналитика', views: [
     { view: 'managers', label: 'Менеджеры' },
     { view: 'insights', label: 'Отчёты' },
+    { view: 'trends', label: 'Динамика' },
     { view: 'checklists', label: 'Чек-листы' },
-    { view: 'lost', label: 'Проигрыши' },
-    { view: 'tags', label: 'Разметка' },
+    { view: 'qc', label: 'Контроль качества' },
   ] },
   { key: 'setup', label: 'Настройка', views: [
     { view: 'departments', label: 'Отделы' },
@@ -4454,10 +4373,26 @@ export default function AiSalesSection() {
     else window.history.pushState(null, '', url);
   }, [view, openCall, openDeal]);
 
+  const activeGroup = GROUPS.find((g) => g.views.some((v) => v.view === view)) ?? GROUPS[0];
+  const openGroup = (g: NavGroup) => { if (!g.views.some((v) => v.view === view)) go(g.views[0].view); setOpenSetup(null); };
+  const isSetup = activeGroup.key === 'setup';
+
+  const groupNav = (
+    <div className="inline-flex max-w-full overflow-x-auto bg-[#F6F7F9] rounded-full p-1 gap-0.5" role="tablist" aria-label="Разделы речевой аналитики">
+      {GROUPS.map((g) => (
+        <button key={g.key} type="button" role="tab" aria-selected={g.key === activeGroup.key} onClick={() => openGroup(g)}
+          className={`px-4 py-1.5 text-sm rounded-full whitespace-nowrap transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] ${g.key === activeGroup.key ? 'bg-white text-[#1b2a4a] font-medium shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}>
+          {g.label}
+        </button>
+      ))}
+    </div>
+  );
+  const onDashboard = !openCall && !isSetup && view === 'dashboard';
+
   const body = (() => {
     // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки, поиск).
     if (openCall) return <CallDetail id={openCall} initialSeekMs={openCallSeek} onBack={closeCall} />;
-    if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
+    if (view === 'dashboard') return <Dashboard onNavigate={nav} nav={groupNav} />;
     if (view === 'signals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Signals onOpen={setOpenDeal} />;
     if (view === 'trends') return <Trends />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
@@ -4473,30 +4408,23 @@ export default function AiSalesSection() {
     if (view === 'insights') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Insights onOpen={setOpenDeal} />;
     if (view === 'followups') return <FollowUps />;
     if (view === 'lost') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <LostDeals onOpen={setOpenDeal} />;
-    if (view === 'rop') return <Rop onNavigate={nav} />;
     if (view === 'checklists') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Checklists onOpen={setOpenDeal} onOpenCall={(cid) => openCallAt(cid, null)} />;
     if (view === 'managers') return openDeal ? <ManagerDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Managers onOpen={setOpenDeal} />;
     if (view === 'deals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Deals onOpen={setOpenDeal} initialTemperature={initTemp} />;
     return <Calls initialTemperature={initTemp} initialTag={initTag} />;
   })();
 
-  const activeGroup = GROUPS.find((g) => g.views.some((v) => v.view === view)) ?? GROUPS[0];
-  const openGroup = (g: NavGroup) => { if (!g.views.some((v) => v.view === view)) go(g.views[0].view); setOpenSetup(null); };
-  const isSetup = activeGroup.key === 'setup';
 
   return (
     <div>
-      {/* Уровень 1 — группы */}
-      <ScrollX className="mb-2">
-        <div className="flex gap-1 min-w-max" role="tablist" aria-label="Разделы речевой аналитики">
-          {GROUPS.map((g) => (
-            <button key={g.key} type="button" role="tab" aria-selected={g.key === activeGroup.key} onClick={() => openGroup(g)}
-              className={`px-3.5 py-1.5 text-sm rounded-xl whitespace-nowrap transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-offset-1 ${g.key === activeGroup.key ? 'bg-[#029cda] text-white font-medium' : 'text-gray-500 hover:bg-gray-100'}`}>
-              {g.label}
-            </button>
-          ))}
+      {/* Главный экран рисует шапку сам (навигация в одной строке с периодом) */}
+      {!onDashboard && (
+        <div className="flex flex-col items-center text-center mb-6">
+          <h2 className="text-xl font-semibold text-[#1b2a4a]">Речевая аналитика</h2>
+          <p className="text-sm text-gray-500 mt-1 mb-5">Получайте отчёты, анализы и важные данные</p>
+          {groupNav}
         </div>
-      </ScrollX>
+      )}
 
       {isSetup ? (
         <>
@@ -4521,7 +4449,7 @@ export default function AiSalesSection() {
         <>
           {/* Уровень 2 — вкладки активной группы */}
           <ScrollX className="mb-5 border-b border-gray-200">
-            <div className="flex gap-1 min-w-max" role="tablist" aria-label={activeGroup.label}>
+            <div className="flex gap-1 min-w-max sm:justify-center" role="tablist" aria-label={activeGroup.label}>
               {activeGroup.views.map((s) => (
                 <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
                   className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
