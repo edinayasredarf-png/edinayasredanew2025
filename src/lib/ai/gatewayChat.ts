@@ -33,8 +33,6 @@ export async function gatewayChat(opts: {
   maxTokens?: number;
   timeoutMs: number;
   temperature?: number;
-  /** Доп. поля тела запроса (например, параметры встроенного поиска провайдера). */
-  extraBody?: Record<string, unknown>;
 }): Promise<GatewayChatResult> {
   const base = (process.env.SELFHOSTED_LLM_URL?.trim() || process.env.SELFHOSTED_LLM_BASE_URL?.trim() || "").replace(/\/+$/, "");
   if (!base) throw new AiProviderNotConfiguredError("AI Gateway не настроен: задайте SELFHOSTED_LLM_URL (и SELFHOSTED_LLM_API_KEY)");
@@ -53,7 +51,6 @@ export async function gatewayChat(opts: {
         temperature: opts.temperature ?? 0.2,
         max_tokens: opts.maxTokens ?? 3000,
         stream: false,
-        ...(opts.extraBody ?? {}),
         messages: [
           { role: "system", content: opts.system },
           { role: "user", content: opts.user },
@@ -85,27 +82,60 @@ export async function gatewayChat(opts: {
   return { text, citations, model: opts.model };
 }
 
-/**
- * Параметры встроенного веб-поиска, которые шлюз пробрасывает провайдеру. Для моделей без
- * известного параметра — null (запрос идёт как обычный чат).
+/* ───────────── AI-агент Timeweb с веб-поиском ─────────────
+ * У AI Gateway встроенного веб-поиска нет (подтверждено поддержкой Timeweb) — поиск выполняет
+ * AI-агент с включённой опцией «Поиск в интернете» (0,49 ₽ за поисковый запрос, агент сам решает,
+ * когда искать). Настройка (env на Vercel):
+ *   BRIEF_SEARCH_AGENT_URL — endpoint агента из «ИИ-сервисы → Агенты → API-доступ»:
+ *       …/cloud-ai/agents/<id>/call               — «родной» формат ({message} → {message})
+ *       …/cloud-ai/agents/<id>/v1[/chat/completions] — OpenAI-совместимый формат
+ *   BRIEF_SEARCH_AGENT_KEY — ключ доступа агента (Bearer).
  */
-export function searchExtraFor(model: string): Record<string, unknown> | null {
-  const m = model.toLowerCase();
-  if (m.startsWith("xai/")) return { search_parameters: { mode: "on", return_citations: true } };
-  if (m.startsWith("gemini/")) return { tools: [{ google_search: {} }] };
-  if (m.startsWith("openai/") && m.includes("search")) return { web_search_options: {} };
-  return null;
+export function agentSearchConfigured(): boolean {
+  return Boolean(process.env.BRIEF_SEARCH_AGENT_URL?.trim() && process.env.BRIEF_SEARCH_AGENT_KEY?.trim());
 }
 
-/** Поиск «как у брифа»: сперва с параметрами поиска провайдера, при 4xx — обычным запросом. */
-export async function gatewaySearchChat(opts: Omit<Parameters<typeof gatewayChat>[0], "extraBody">): Promise<GatewayChatResult & { usedSearchParams: boolean }> {
-  const extra = searchExtraFor(opts.model);
-  if (extra) {
-    try {
-      return { ...(await gatewayChat({ ...opts, extraBody: extra })), usedSearchParams: true };
-    } catch (e) {
-      if (!/Шлюз 4\d\d/.test(e instanceof Error ? e.message : "")) throw e;
-    }
+export async function agentSearchChat(opts: { system: string; user: string; timeoutMs: number; model?: string }): Promise<GatewayChatResult> {
+  const url = process.env.BRIEF_SEARCH_AGENT_URL?.trim() || "";
+  const key = process.env.BRIEF_SEARCH_AGENT_KEY?.trim() || "";
+  if (!url || !key) {
+    throw new AiProviderNotConfiguredError("Не настроен агент поиска: задайте BRIEF_SEARCH_AGENT_URL и BRIEF_SEARCH_AGENT_KEY (AI-агент Timeweb с включённым веб-поиском)");
   }
-  return { ...(await gatewayChat(opts)), usedSearchParams: false };
+  const native = /\/call\/?$/.test(url);
+  const endpoint = native ? url.replace(/\/+$/, "") : url.replace(/\/+$/, "").replace(/\/chat\/completions$/, "") + "/chat/completions";
+  const body = native
+    ? { message: `${opts.system}\n\n${opts.user}` }
+    : { model: opts.model || "agent", stream: false, temperature: 0.2, messages: [{ role: "system", content: opts.system }, { role: "user", content: opts.user }] };
+
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(opts.timeoutMs),
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    const timedOut = (e as Error).name === "TimeoutError" || (e as Error).name === "AbortError";
+    throw new Error(timedOut ? `Агент поиска не ответил за ${Math.round(opts.timeoutMs / 1000)} с` : `Агент поиска недоступен: ${(e as Error).message}`);
+  }
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Агент поиска ${res.status}: ${detail.slice(0, 300)}`);
+  }
+  const json = (await res.json()) as ChatResponse & { message?: string };
+  const text = (native ? json.message : json.choices?.[0]?.message?.content ?? json.message) ?? "";
+  const clean = text.replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "").trim();
+
+  const seen = new Set<string>();
+  const citations: Array<{ url: string; title: string | null }> = [];
+  const add = (u: string | undefined, title: string | null) => {
+    if (u && /^https?:\/\//.test(u) && !seen.has(u)) { seen.add(u); citations.push({ url: u, title }); }
+  };
+  for (const c of json.citations ?? []) {
+    if (typeof c === "string") add(c, null);
+    else add(c?.url, c?.title ?? null);
+  }
+  for (const a of json.choices?.[0]?.message?.annotations ?? []) if (a.type === "url_citation") add(a.url_citation?.url, a.url_citation?.title ?? null);
+  return { text: clean, citations, model: "timeweb-agent" };
 }

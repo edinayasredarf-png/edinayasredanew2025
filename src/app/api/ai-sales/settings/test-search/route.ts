@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRopAccess } from "@/lib/server/authFromBearer";
-import { gatewayChat, searchExtraFor } from "@/lib/ai/gatewayChat";
+import { agentSearchChat, agentSearchConfigured } from "@/lib/ai/gatewayChat";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,21 +27,21 @@ function countRecentDates(text: string): number {
   return (text.match(re) ?? []).length;
 }
 
-async function run(model: string, query: string, variant: string, extraBody?: Record<string, unknown>): Promise<VariantResult> {
+async function run(query: string): Promise<VariantResult> {
   const t0 = Date.now();
   try {
-    const r = await gatewayChat({
-      model, extraBody, maxTokens: 900, timeoutMs: 24_000,
-      system: "Ты исследователь. Используй поиск в интернете, если он тебе доступен. Не выдумывай: если не нашёл — так и скажи.",
+    const r = await agentSearchChat({
+      timeoutMs: 28_000,
+      system: "Ты исследователь. Используй поиск в интернете. Не выдумывай: если не нашёл — так и скажи.",
       user: query,
     });
     return {
-      variant, ok: true, ms: Date.now() - t0, citations: r.citations.length,
+      variant: "агент Timeweb с веб-поиском", ok: true, ms: Date.now() - t0, citations: r.citations.length,
       urls: (r.text.match(/https?:\/\/\S+/g) ?? []).length,
       recentDates: countRecentDates(r.text), preview: r.text.slice(0, 600),
     };
   } catch (e) {
-    return { variant, ok: false, ms: Date.now() - t0, citations: 0, urls: 0, recentDates: 0, preview: "", error: e instanceof Error ? e.message : String(e) };
+    return { variant: "агент Timeweb с веб-поиском", ok: false, ms: Date.now() - t0, citations: 0, urls: 0, recentDates: 0, preview: "", error: e instanceof Error ? e.message : String(e) };
   }
 }
 
@@ -53,22 +53,17 @@ export async function POST(request: NextRequest) {
     const status = (e as { status?: number }).status ?? 401;
     return NextResponse.json({ error: "Доступно только РОП/админ" }, { status });
   }
-  const body = (await request.json().catch(() => ({}))) as { model?: string; query?: string };
-  const model = String(body.model ?? "").trim() || process.env.SELFHOSTED_LLM_MODEL?.trim() || "";
-  if (!model) return NextResponse.json({ error: "Укажите модель" }, { status: 400 });
+  if (!agentSearchConfigured()) {
+    return NextResponse.json({ error: "Агент поиска не настроен. Создайте AI-агента Timeweb с включённым веб-поиском и задайте на Vercel BRIEF_SEARCH_AGENT_URL и BRIEF_SEARCH_AGENT_KEY." }, { status: 400 });
+  }
+  const body = (await request.json().catch(() => ({}))) as { query?: string };
   const query = String(body.query ?? "").trim() || DEFAULT_QUERY;
-
-  const extra = searchExtraFor(model);
-  // Два варианта параллельно: обычный чат и с параметрами поиска провайдера (если известны).
-  const variants = await Promise.all([
-    run(model, query, "обычный запрос"),
-    ...(extra ? [run(model, query, "с параметрами поиска провайдера", extra)] : []),
-  ]);
-  const best = variants.find((v) => v.ok && (v.citations > 0 || (v.urls > 0 && v.recentDates > 0)));
-  const verdict = best
-    ? { searches: true, message: `Модель ищет в интернете (вариант: ${best.variant}) — подходит для поиска.` }
-    : variants.some((v) => v.ok)
-      ? { searches: false, message: "Ответ получен, но ссылок и свежих дат нет — похоже, модель отвечает из памяти. Попробуйте другую модель." }
-      : { searches: false, message: "Модель не ответила — проверьте id модели и доступность шлюза." };
-  return NextResponse.json({ model, verdict, variants });
+  const v = await run(query);
+  const searches = v.ok && (v.citations > 0 || (v.urls > 0 && v.recentDates > 0));
+  const verdict = searches
+    ? { searches: true, message: "Агент ищет в интернете — подходит для брифов." }
+    : v.ok
+      ? { searches: false, message: "Ответ получен, но ссылок и свежих дат нет. Проверьте, что у агента включена опция «Поиск в интернете»." }
+      : { searches: false, message: "Агент не ответил — проверьте URL, ключ и что агент запущен." };
+  return NextResponse.json({ verdict, variants: [v] });
 }

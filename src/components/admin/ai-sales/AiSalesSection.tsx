@@ -2932,12 +2932,12 @@ function Settings() {
         <Field label="Модель для RAG-ассистента" hint="Ответы на вопросы по базе знаний (§31 ТЗ). Пусто — используется «Модель анализа звонка/сделки» выше.">
           <input value={str('ai.model.rag')} onChange={(e) => set('ai.model.rag', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
         </Field>
-        <Field label="Модель поиска для брифов" hint="Модель AI Gateway, которая ищет в интернете новости, программы и закупки по лиду/сделке (лучше «online»-модель с поиском). Пусто — модель шлюза по умолчанию.">
+        <Field label="Поиск для брифов (AI-агент Timeweb)" hint="Поиск в интернете выполняет AI-агент Timeweb с включённой опцией «Поиск в интернете» (у AI Gateway веб-поиска нет). Подключение — переменные BRIEF_SEARCH_AGENT_URL и BRIEF_SEARCH_AGENT_KEY на Vercel; модель агента выбирается в кабинете Timeweb. Ниже поле нужно только для OpenAI-совместимого агента, если он требует имя модели.">
           <input value={str('ai.model.briefSearch')} onChange={(e) => set('ai.model.briefSearch', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(модель шлюза по умолчанию)" />
           <div className="mt-2">
             <button type="button" onClick={testSearch} disabled={searchTesting}
               className="px-3 py-1.5 rounded-xl text-sm border border-gray-300 text-gray-700 hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50">
-              {searchTesting ? 'Проверяю (до 25 с)…' : 'Проверить поиск'}
+              {searchTesting ? 'Проверяю (до 30 с)…' : 'Проверить поиск'}
             </button>
           </div>
           {searchTest && (

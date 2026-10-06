@@ -9,11 +9,9 @@
    новые лиды за 3 дня без брифа → `brief.lead`; сделки на этапе «Отложенный» (этап ищется
    по названию в справочнике стадий) → `brief.deal` (ключ идемпотентности — ISO-неделя).
 2. `briefService.runBrief`: `gatherCrm` (crm.*.get, реквизиты, комментарии, активности, прошлые
-   сделки компании) → `researchWeb` через **AI Gateway Timeweb** (`SELFHOSTED_LLM_URL/KEY`):
-   шаг 1 — «модель поиска» ищет в интернете (`ai.model.briefSearch`), шаг 2 — «модель анализа»
-   собирает бриф из CRM + найденного (`ai.model.brief`, пусто = модель поиска). Модели выбираются
-   в Речевая аналитика → Настройка → Настройки (каталог шлюза). → запись в `ai_briefs` →
-   поле Bitrix → уведомление.
+   сделки компании) → **поиск** — AI-агент Timeweb с включённой опцией «Поиск в интернете»
+   (`agentSearchChat`; у AI Gateway веб-поиска нет, 0,49 ₽/запрос) → **сборка брифа** моделью
+   AI Gateway (`ai.model.brief`) из CRM + найденного → запись в `ai_briefs` → поле Bitrix → уведомление.
 3. «Новое» = ссылка триггера не встречалась в прошлых брифах по этой сущности.
    Для лида уведомляем всегда, для отложенной сделки — только если есть новое.
 
@@ -21,7 +19,7 @@
 (env `BRIEF_LEAD_FIELD` / `BRIEF_DEAL_FIELD`). Уведомление — `im.notify.system.add`
 ответственному и РОПам (`user_profiles.role = 'rop'` через `ai_managers.user_profile_id`).
 
-**Нужно в окружении.** `SELFHOSTED_LLM_URL` (+ `SELFHOSTED_LLM_API_KEY`) и выбранные модели; у вебхука Bitrix права `crm` и `im`;
+**Нужно в окружении.** `SELFHOSTED_LLM_URL` (+ `SELFHOSTED_LLM_API_KEY`), `BRIEF_SEARCH_AGENT_URL` и `BRIEF_SEARCH_AGENT_KEY` (агент Timeweb с веб-поиском); у вебхука Bitrix права `crm` и `im`;
 у БД — право на DDL (таблица создаётся при первом обращении, см. `supabase/migrations/timeweb_ai_briefs.sql`).
 
 **Ограничение.** Vercel Hobby режет функцию на 60 с: на поиск отведено 28 с, на сборку брифа 25 с.

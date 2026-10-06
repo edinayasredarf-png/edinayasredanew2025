@@ -3,7 +3,7 @@ import "server-only";
 import { bitrixCall } from "@/lib/server/bitrix";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 import { getTimewebPool } from "@/lib/timewebPg";
-import { gatewayChat, gatewaySearchChat } from "@/lib/ai/gatewayChat";
+import { agentSearchChat, gatewayChat } from "@/lib/ai/gatewayChat";
 import { getBriefModels } from "@/lib/server/aiSales/settingsDb";
 import {
   insertBrief, markBrief, previousTriggerUrls,
@@ -111,7 +111,7 @@ export async function gatherCrm(entityType: BriefEntity, id: string): Promise<Cr
 
 /* ───────────────────────── 2. Поиск и сборка (AI Gateway Timeweb) ───────────────────────── */
 
-/** Шаг 1 — модель ПОИСКА: ищет в интернете и отдаёт факты со ссылками. */
+/** Шаг 1 — AI-агент Timeweb с веб-поиском: ищет в интернете и отдаёт факты со ссылками. */
 const SEARCH_SYSTEM = `Ты — исследователь-аналитик отдела продаж компании «Единая среда» (цифровая платформа учёта и управления территориями и муниципальными объектами; услуги: инвентаризация мест захоронений, инвентаризация и паспортизация зелёных насаждений, цифровое лесоустройство, благоустройство, озеленение, содержание кладбищ).
 Найди в интернете актуальную информацию («информационные триггеры») по указанной организации и её региону:
 1. Свежие новости об организации и её руководстве (смена главы/директора, кадровые изменения, выборы).
@@ -162,9 +162,9 @@ export async function researchWeb(snap: CrmSnapshot): Promise<ResearchResult> {
   const company = snap.data["Компания"] as Row | undefined;
   const who = `«${snap.companyTitle}»${s(company?.инн) ? `, ИНН ${s(company?.инн)}` : ""}${snap.region ? `, регион: ${snap.region}` : ""}${s(company?.юр_адрес) ? `, адрес: ${s(company?.юр_адрес)}` : ""}`;
 
-  // Шаг 1: поиск в интернете (бюджет ~28 с — вся функция на Vercel Hobby живёт 60 с).
-  const found = await gatewaySearchChat({
-    model: models.search, system: SEARCH_SYSTEM, maxTokens: 2500, timeoutMs: 28_000,
+  // Шаг 1: поиск в интернете через AI-агента (бюджет ~28 с — вся функция на Vercel Hobby живёт 60 с).
+  const found = await agentSearchChat({
+    system: SEARCH_SYSTEM, timeoutMs: 28_000, model: models.search,
     user: `Организация: ${who}. Сегодня ${today}. Найди информационные триггеры по пунктам 1–5.`,
   });
   const sources = found.citations.map((c) => `- ${c.title ? `${c.title}: ` : ""}${c.url}`).join("\n");
