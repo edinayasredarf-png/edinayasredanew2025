@@ -2830,6 +2830,18 @@ function Settings() {
     } finally { setBusy(false); }
   };
 
+  const [searchTesting, setSearchTesting] = useState(false);
+  const [searchTest, setSearchTest] = useState<null | { error?: string; verdict?: { searches: boolean; message: string }; variants?: Array<{ variant: string; ok: boolean; ms: number; citations: number; urls: number; recentDates: number; preview: string; error?: string }> }>(null);
+  const testSearch = async () => {
+    setSearchTesting(true); setSearchTest(null);
+    try {
+      const r = await fetch('/api/ai-sales/settings/test-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: String(s?.['ai.model.briefSearch'] ?? '') }) });
+      const j = await r.json();
+      setSearchTest(r.ok ? j : { error: j.error || 'Ошибка' });
+    } catch (e) { setSearchTest({ error: e instanceof Error ? e.message : 'Ошибка' }); }
+    finally { setSearchTesting(false); }
+  };
+
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
   if (!s) return <LoadingBlock />;
   const str = (k: string, d = '') => (s[k] == null ? d : String(s[k]));
@@ -2896,6 +2908,27 @@ function Settings() {
         </Field>
         <Field label="Модель поиска для брифов" hint="Модель AI Gateway, которая ищет в интернете новости, программы и закупки по лиду/сделке (лучше «online»-модель с поиском). Пусто — модель шлюза по умолчанию.">
           <input value={str('ai.model.briefSearch')} onChange={(e) => set('ai.model.briefSearch', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(модель шлюза по умолчанию)" />
+          <div className="mt-2">
+            <button type="button" onClick={testSearch} disabled={searchTesting}
+              className="px-3 py-1.5 rounded-xl text-sm border border-gray-300 text-gray-700 hover:border-[#029cda] hover:text-[#029cda] disabled:opacity-50">
+              {searchTesting ? 'Проверяю (до 25 с)…' : 'Проверить поиск'}
+            </button>
+          </div>
+          {searchTest && (
+            <div className="mt-2 space-y-2 text-sm">
+              {searchTest.error && <div className="p-3 bg-red-50 text-red-700 rounded-xl">{searchTest.error}</div>}
+              {searchTest.verdict && (
+                <div className={`p-3 rounded-xl ${searchTest.verdict.searches ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-800'}`}>{searchTest.verdict.message}</div>
+              )}
+              {searchTest.variants?.map((v) => (
+                <div key={v.variant} className="p-3 rounded-xl bg-[#F6F7F9] text-gray-700">
+                  <div className="font-medium">{v.variant} · {Math.round(v.ms / 1000)} с · {v.ok ? `ссылок: ${v.citations + v.urls}, свежих дат: ${v.recentDates}` : 'ошибка'}</div>
+                  {v.error && <div className="text-red-600 text-xs mt-1 break-words">{v.error}</div>}
+                  {v.preview && <div className="text-xs text-gray-500 mt-1 whitespace-pre-wrap break-words">{v.preview}</div>}
+                </div>
+              ))}
+            </div>
+          )}
         </Field>
         <Field label="Модель анализа для брифов" hint="Модель AI Gateway, которая из данных CRM и найденного собирает итоговый бриф. Пусто — используется модель поиска.">
           <input value={str('ai.model.brief')} onChange={(e) => set('ai.model.brief', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель поиска)" />

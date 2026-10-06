@@ -3,7 +3,7 @@ import "server-only";
 import { bitrixCall } from "@/lib/server/bitrix";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 import { getTimewebPool } from "@/lib/timewebPg";
-import { gatewayChat } from "@/lib/ai/gatewayChat";
+import { gatewayChat, gatewaySearchChat } from "@/lib/ai/gatewayChat";
 import { getBriefModels } from "@/lib/server/aiSales/settingsDb";
 import {
   insertBrief, markBrief, previousTriggerUrls,
@@ -163,7 +163,7 @@ export async function researchWeb(snap: CrmSnapshot): Promise<ResearchResult> {
   const who = `«${snap.companyTitle}»${s(company?.инн) ? `, ИНН ${s(company?.инн)}` : ""}${snap.region ? `, регион: ${snap.region}` : ""}${s(company?.юр_адрес) ? `, адрес: ${s(company?.юр_адрес)}` : ""}`;
 
   // Шаг 1: поиск в интернете (бюджет ~28 с — вся функция на Vercel Hobby живёт 60 с).
-  const found = await gatewayChat({
+  const found = await gatewaySearchChat({
     model: models.search, system: SEARCH_SYSTEM, maxTokens: 2500, timeoutMs: 28_000,
     user: `Организация: ${who}. Сегодня ${today}. Найди информационные триггеры по пунктам 1–5.`,
   });

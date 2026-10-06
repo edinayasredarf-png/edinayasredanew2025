@@ -33,6 +33,8 @@ export async function gatewayChat(opts: {
   maxTokens?: number;
   timeoutMs: number;
   temperature?: number;
+  /** Доп. поля тела запроса (например, параметры встроенного поиска провайдера). */
+  extraBody?: Record<string, unknown>;
 }): Promise<GatewayChatResult> {
   const base = (process.env.SELFHOSTED_LLM_URL?.trim() || process.env.SELFHOSTED_LLM_BASE_URL?.trim() || "").replace(/\/+$/, "");
   if (!base) throw new AiProviderNotConfiguredError("AI Gateway не настроен: задайте SELFHOSTED_LLM_URL (и SELFHOSTED_LLM_API_KEY)");
@@ -51,6 +53,7 @@ export async function gatewayChat(opts: {
         temperature: opts.temperature ?? 0.2,
         max_tokens: opts.maxTokens ?? 3000,
         stream: false,
+        ...(opts.extraBody ?? {}),
         messages: [
           { role: "system", content: opts.system },
           { role: "user", content: opts.user },
@@ -80,4 +83,29 @@ export async function gatewayChat(opts: {
   }
   for (const a of msg?.annotations ?? []) if (a.type === "url_citation") add(a.url_citation?.url, a.url_citation?.title ?? null);
   return { text, citations, model: opts.model };
+}
+
+/**
+ * Параметры встроенного веб-поиска, которые шлюз пробрасывает провайдеру. Для моделей без
+ * известного параметра — null (запрос идёт как обычный чат).
+ */
+export function searchExtraFor(model: string): Record<string, unknown> | null {
+  const m = model.toLowerCase();
+  if (m.startsWith("xai/")) return { search_parameters: { mode: "on", return_citations: true } };
+  if (m.startsWith("gemini/")) return { tools: [{ google_search: {} }] };
+  if (m.startsWith("openai/") && m.includes("search")) return { web_search_options: {} };
+  return null;
+}
+
+/** Поиск «как у брифа»: сперва с параметрами поиска провайдера, при 4xx — обычным запросом. */
+export async function gatewaySearchChat(opts: Omit<Parameters<typeof gatewayChat>[0], "extraBody">): Promise<GatewayChatResult & { usedSearchParams: boolean }> {
+  const extra = searchExtraFor(opts.model);
+  if (extra) {
+    try {
+      return { ...(await gatewayChat({ ...opts, extraBody: extra })), usedSearchParams: true };
+    } catch (e) {
+      if (!/Шлюз 4\d\d/.test(e instanceof Error ? e.message : "")) throw e;
+    }
+  }
+  return { ...(await gatewayChat(opts)), usedSearchParams: false };
 }
