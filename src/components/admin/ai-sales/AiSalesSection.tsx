@@ -13,6 +13,7 @@ import { ExcelIcon } from '@/components/admin/ui/FileIcons';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
 import { STAGE_LABEL as DEAL_STAGE_LABEL_UI, ALL_STAGES } from '@/lib/ai/dealStages';
 import { getStagePromptBlock } from '@/lib/ai/prompts/dealStagePrompts';
+import { BRIEF_COMPOSE_PROMPT_DEFAULT, BRIEF_SEARCH_PROMPT_DEFAULT } from '@/lib/ai/prompts/briefPrompts';
 /** Название этапа воронки по ключу (строка из API — не сужена до StageKey на фронте). */
 const stageLabelOf = (key: string): string => (DEAL_STAGE_LABEL_UI as Record<string, string>)[key] || key;
 const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'Отдел продаж', service: 'Обслуживание сервиса', project: 'Управление проектами', unknown: 'не распознано' };
@@ -2844,6 +2845,9 @@ function Settings() {
         'ai.model.rag': s['ai.model.rag'],
         'ai.model.briefSearch': s['ai.model.briefSearch'],
         'ai.model.brief': s['ai.model.brief'],
+        // Промты брифа: если текст не отличается от стандартного — храним пусто (подхватятся будущие правки стандарта).
+        'ai.brief.promptSearch': String(s['ai.brief.promptSearch'] ?? '').trim() === BRIEF_SEARCH_PROMPT_DEFAULT.trim() ? '' : String(s['ai.brief.promptSearch'] ?? ''),
+        'ai.brief.promptBrief': String(s['ai.brief.promptBrief'] ?? '').trim() === BRIEF_COMPOSE_PROMPT_DEFAULT.trim() ? '' : String(s['ai.brief.promptBrief'] ?? ''),
         'ai.analysis_enabled': s['ai.analysis_enabled'],
         'ai.confidence_threshold': Number(s['ai.confidence_threshold']),
         'bitrix.auto_write': s['bitrix.auto_write'],
@@ -2958,6 +2962,16 @@ function Settings() {
         </Field>
         <Field label="Модель анализа для брифов" hint="Модель AI Gateway, которая из данных CRM и найденного собирает итоговый бриф. Пусто — используется модель поиска.">
           <input value={str('ai.model.brief')} onChange={(e) => set('ai.model.brief', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель поиска)" />
+        </Field>
+        <Field label="Промт поиска для брифов" hint="Инструкция AI-агенту с веб-поиском: что искать по организации и региону. Пусто или стандартный текст — используется встроенный. Изменения действуют на новые брифы.">
+          <textarea value={String(s?.['ai.brief.promptSearch'] || BRIEF_SEARCH_PROMPT_DEFAULT)} onChange={(e) => set('ai.brief.promptSearch', e.target.value)} rows={10}
+            className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full font-mono leading-relaxed" />
+          <button type="button" onClick={() => set('ai.brief.promptSearch', BRIEF_SEARCH_PROMPT_DEFAULT)} className="mt-1 text-xs text-[#029cda] hover:underline">Вернуть стандартный</button>
+        </Field>
+        <Field label="Промт сборки брифа" hint="Как из данных CRM и найденного собрать бриф: разделы и тон. Блок со списком триггеров (JSON для подсветки «новое») добавляется автоматически и не редактируется. Пусто или стандартный текст — используется встроенный.">
+          <textarea value={String(s?.['ai.brief.promptBrief'] || BRIEF_COMPOSE_PROMPT_DEFAULT)} onChange={(e) => set('ai.brief.promptBrief', e.target.value)} rows={12}
+            className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full font-mono leading-relaxed" />
+          <button type="button" onClick={() => set('ai.brief.promptBrief', BRIEF_COMPOSE_PROMPT_DEFAULT)} className="mt-1 text-xs text-[#029cda] hover:underline">Вернуть стандартный</button>
         </Field>
         <Field label="Анализ включён">
           <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>

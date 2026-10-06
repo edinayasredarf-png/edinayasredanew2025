@@ -1,5 +1,6 @@
 import "server-only";
 
+import { BRIEF_COMPOSE_PROMPT_DEFAULT, BRIEF_SEARCH_PROMPT_DEFAULT } from "@/lib/ai/prompts/briefPrompts";
 import { getTimewebPool } from "@/lib/timewebPg";
 import type { AiJobType } from "@/lib/server/aiSales/jobsDb";
 
@@ -42,6 +43,9 @@ export const EDITABLE_KEYS = new Set<string>([
   // Брифы по лидам/сделкам (AI Gateway): модель поиска в интернете и модель сборки брифа.
   "ai.model.briefSearch",
   "ai.model.brief",
+  // Свои тексты промтов брифа (пусто — стандартные из src/lib/ai/prompts/briefPrompts.ts).
+  "ai.brief.promptSearch",
+  "ai.brief.promptBrief",
   "ai.analysis_enabled",
   "ai.confidence_threshold",
   "transcription.provider",
@@ -99,6 +103,18 @@ export async function getTaskModel(task: "roles" | "rag"): Promise<string | unde
   if (specific?.trim()) return specific.trim();
   const { analysisModel } = await getAiConfig();
   return analysisModel?.trim() || undefined;
+}
+
+/** Промты брифа: свой текст из настроек, иначе стандартный. */
+export async function getBriefPrompts(): Promise<{ search: string; brief: string }> {
+  const [search, brief] = await Promise.all([
+    getSetting<string | undefined>("ai.brief.promptSearch", undefined),
+    getSetting<string | undefined>("ai.brief.promptBrief", undefined),
+  ]);
+  return {
+    search: search?.trim() || BRIEF_SEARCH_PROMPT_DEFAULT,
+    brief: brief?.trim() || BRIEF_COMPOSE_PROMPT_DEFAULT,
+  };
 }
 
 /** Модели брифов (AI Gateway): `briefSearch` — поиск в интернете, `brief` — анализ CRM + сборка брифа. */

@@ -4,7 +4,8 @@ import { bitrixCall } from "@/lib/server/bitrix";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { agentSearchChat, gatewayChat } from "@/lib/ai/gatewayChat";
-import { getBriefModels } from "@/lib/server/aiSales/settingsDb";
+import { getBriefModels, getBriefPrompts } from "@/lib/server/aiSales/settingsDb";
+import { BRIEF_JSON_SUFFIX } from "@/lib/ai/prompts/briefPrompts";
 import {
   insertBrief, markBrief, previousTriggerUrls,
   type BriefEntity, type BriefTrigger,
@@ -111,31 +112,6 @@ export async function gatherCrm(entityType: BriefEntity, id: string): Promise<Cr
 
 /* ───────────────────────── 2. Поиск и сборка (AI Gateway Timeweb) ───────────────────────── */
 
-/** Шаг 1 — AI-агент Timeweb с веб-поиском: ищет в интернете и отдаёт факты со ссылками. */
-const SEARCH_SYSTEM = `Ты — исследователь-аналитик отдела продаж компании «Единая среда» (цифровая платформа учёта и управления территориями и муниципальными объектами; услуги: инвентаризация мест захоронений, инвентаризация и паспортизация зелёных насаждений, цифровое лесоустройство, благоустройство, озеленение, содержание кладбищ).
-Найди в интернете актуальную информацию («информационные триггеры») по указанной организации и её региону:
-1. Свежие новости об организации и её руководстве (смена главы/директора, кадровые изменения, выборы).
-2. Бюджетные и муниципальные программы, нацпроекты, гранты, на которые сейчас выделены деньги.
-3. Тендеры и закупки (в т.ч. 44-ФЗ/223-ФЗ) по их профилю.
-4. Направления, пересекающиеся с нашими услугами (инвентаризация захоронений и зелёных насаждений, благоустройство, озеленение, содержание кладбищ).
-5. Что делают соседние районы/организации региона («соседи уже делают»).
-Правила: приоритет материалов последних 12 месяцев; не выдумывай — если по пункту ничего не найдено, так и напиши; у КАЖДОГО факта указывай дату и URL источника; не путай организации-тёзки (сверяй регион/ИНН). Ответ — по пунктам 1–5, кратко.`;
-
-/** Шаг 2 — модель БРИФА: CRM + найденное → итоговый бриф. */
-const SYSTEM = `Ты — помощник отдела продаж компании «Единая среда» (цифровая платформа учёта и управления территориями; услуги: инвентаризация мест захоронений, инвентаризация и паспортизация зелёных насаждений, цифровое лесоустройство, благоустройство, озеленение, содержание кладбищ, контроль подрядчиков).
-Готовишь бриф менеджеру перед звонком. Тебе даны данные CRM и результаты поиска в интернете. Используй ТОЛЬКО эти данные, ничего не выдумывай; если данных нет — так и пиши.
-
-Формат ответа (обычный текст, без Markdown-таблиц), разделы строго в таком порядке:
-Компания и контакты
-Состояние сделки (что было, что сейчас)
-Потребность и точки входа (наши услуги, которые могут быть актуальны)
-Информационные триггеры из новостей и закупок (с датами и источниками)
-Рекомендуемая цель звонка и одно ключевое предложение
-
-В самом конце, после текста, выведи блок \`\`\`json со списком найденных триггеров:
-[{"title":"...","date":"YYYY-MM-DD или null","url":"https://...","source":"домен","kind":"news|procurement|budget|competitor|neighbors|other"}]
-Только реальные триггеры из результатов поиска (URL бери оттуда), максимум 12. Если ничего нет — [].`;
-
 export interface ResearchResult { text: string; triggers: BriefTrigger[] }
 
 function parseResult(raw: string): ResearchResult {
@@ -158,13 +134,14 @@ function parseResult(raw: string): ResearchResult {
 
 export async function researchWeb(snap: CrmSnapshot): Promise<ResearchResult> {
   const models = await getBriefModels();
+  const prompts = await getBriefPrompts();
   const today = new Date().toISOString().slice(0, 10);
   const company = snap.data["Компания"] as Row | undefined;
   const who = `«${snap.companyTitle}»${s(company?.инн) ? `, ИНН ${s(company?.инн)}` : ""}${snap.region ? `, регион: ${snap.region}` : ""}${s(company?.юр_адрес) ? `, адрес: ${s(company?.юр_адрес)}` : ""}`;
 
   // Шаг 1: поиск в интернете через AI-агента (бюджет ~28 с — вся функция на Vercel Hobby живёт 60 с).
   const found = await agentSearchChat({
-    system: SEARCH_SYSTEM, timeoutMs: 28_000, model: models.search,
+    system: prompts.search, timeoutMs: 28_000, model: models.search,
     user: `Организация: ${who}. Сегодня ${today}. Найди информационные триггеры по пунктам 1–5.`,
   });
   const sources = found.citations.map((c) => `- ${c.title ? `${c.title}: ` : ""}${c.url}`).join("\n");
@@ -172,7 +149,7 @@ export async function researchWeb(snap: CrmSnapshot): Promise<ResearchResult> {
 
   // Шаг 2: анализ CRM + результатов поиска → бриф (бюджет ~25 с).
   const brief = await gatewayChat({
-    model: models.brief, system: SYSTEM, maxTokens: 3500, timeoutMs: 25_000,
+    model: models.brief, system: `${prompts.brief}\n\n${BRIEF_JSON_SUFFIX}`, maxTokens: 3500, timeoutMs: 25_000,
     user: `Подготовь бриф по ${snap.entityType === "lead" ? "лиду" : "сделке"} #${snap.entityId} («${snap.title}»), организация: ${who}.\nСегодня ${today}.\n\nДанные из CRM (JSON):\n${JSON.stringify(snap.data, null, 1).slice(0, 9000)}\n\nРезультаты поиска в интернете:\n${research.slice(0, 9000)}`,
   });
   if (!brief.text.trim()) throw new Error("Модель вернула пустой бриф");
