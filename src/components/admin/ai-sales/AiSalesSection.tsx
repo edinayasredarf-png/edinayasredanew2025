@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
-  ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
+  ListFilter, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
 } from 'lucide-react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
@@ -179,14 +179,41 @@ function keyForPeriod(p: Period): string {
 /* Период по умолчанию — «Сегодня», общий для всех вкладок и сохраняется
    при переходах туда-обратно (модульная переменная переживает размонтирование). */
 let sharedPeriod: Period = presetRange('today');
+const periodListeners = new Set<() => void>();
 function usePersistentPeriod(): [Period, (p: Period) => void] {
   const [period, setState] = useState<Period>(() => sharedPeriod);
-  const setPeriod = useCallback((p: Period) => { sharedPeriod = p; setState(p); }, []);
+  useEffect(() => {
+    const l = () => setState(sharedPeriod);
+    periodListeners.add(l);
+    return () => { periodListeners.delete(l); };
+  }, []);
+  const setPeriod = useCallback((p: Period) => { sharedPeriod = p; periodListeners.forEach((f) => f()); }, []);
   return [period, setPeriod];
 }
 
+/* Фильтры звонков и счётчик живут вне экрана «Звонки»: кнопка-фильтр и бейдж
+   вкладки находятся в шапке раздела. */
+interface CallFilters { department: string; manager: string; temp: string; status: string; tag: string }
+const NO_CALL_FILTERS: CallFilters = { department: '', manager: '', temp: '', status: '', tag: '' };
+let sharedCallFilters: CallFilters = NO_CALL_FILTERS;
+let sharedCallsTotal: number | null = null;
+const callStoreListeners = new Set<() => void>();
+const notifyCallStore = () => callStoreListeners.forEach((f) => f());
+const setCallFilters = (p: Partial<CallFilters>) => { sharedCallFilters = { ...sharedCallFilters, ...p }; notifyCallStore(); };
+const setCallsTotal = (n: number) => { if (sharedCallsTotal !== n) { sharedCallsTotal = n; notifyCallStore(); } };
+function useCallStore() {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const l = () => tick((n) => n + 1);
+    callStoreListeners.add(l);
+    return () => { callStoreListeners.delete(l); };
+  }, []);
+  // setFilters/setTotal — модульные функции с постоянной ссылкой (безопасно в deps эффектов).
+  return { filters: sharedCallFilters, total: sharedCallsTotal, setFilters: setCallFilters, setTotal: setCallsTotal };
+}
+
 /** Период сворачивается в иконку-календарь; раскрывается попап с пресетами и датами. */
-function PeriodBar({ value, onChange, center = false }: { value: Period; onChange: (p: Period) => void; center?: boolean }) {
+function PeriodBar({ value, onChange, center = false, iconOnly = false }: { value: Period; onChange: (p: Period) => void; center?: boolean; iconOnly?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -208,9 +235,13 @@ function PeriodBar({ value, onChange, center = false }: { value: Period; onChang
   return (
     <div className={`relative inline-block ${center ? '' : 'mb-4'}`} ref={ref}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
-        className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F6F7F9] text-sm text-[#1b2a4a] hover:bg-gray-100 transition">
-        <CalendarDays className="w-4 h-4 text-gray-500" />
-        {activeLabel}
+        title={activeLabel} aria-label={`Период: ${activeLabel}`}
+        className={iconOnly
+          ? 'relative size-11 grid place-items-center rounded-2xl bg-[#F6F7F9] text-[#1b2a4a] hover:bg-gray-100 transition'
+          : 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F6F7F9] text-sm text-[#1b2a4a] hover:bg-gray-100 transition'}>
+        <CalendarDays className={iconOnly ? 'w-5 h-5' : 'w-4 h-4 text-gray-500'} />
+        {!iconOnly && activeLabel}
+        {iconOnly && active !== 'today' && <span className="absolute top-2 right-2 size-2 rounded-full bg-[#029cda]" />}
       </button>
       {open && (
         <div className={`absolute z-30 mt-2 ${center ? 'left-1/2 -translate-x-1/2' : 'left-0'} bg-white border border-gray-200 rounded-xl shadow-xl p-3 w-[300px] max-w-[90vw] space-y-3`}>
@@ -278,13 +309,13 @@ interface Dash {
   queue: { pending: number; running: number; failed: number; retry: number };
 }
 
-function Dashboard({ onNavigate, nav, subNav }: { onNavigate?: (t: NavTarget) => void; nav: React.ReactNode; subNav?: React.ReactNode }) {
+function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   const [data, setData] = useState<Dash | null>(null);
   const [err, setErr] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [queueTick, setQueueTick] = useState(0);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
 
   const load = useCallback(async () => {
     setErr('');
@@ -331,16 +362,6 @@ function Dashboard({ onNavigate, nav, subNav }: { onNavigate?: (t: NavTarget) =>
 
   return (
     <div>
-      <div className="flex flex-col items-center text-center mb-8">
-        <h2 className="text-xl font-semibold text-[#1b2a4a]">Речевая аналитика</h2>
-        <p className="text-sm text-gray-500 mt-1 mb-5">Получайте отчёты, анализы и важные данные</p>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {nav}
-          <PeriodBar value={period} onChange={setPeriod} center />
-        </div>
-      </div>
-      {subNav}
-
       <div className="max-w-[720px] mx-auto space-y-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Kpi tall label="Звонки" value={data.calls.total} onClick={onNavigate ? () => onNavigate({ tab: 'ai-calls' }) : undefined} />
@@ -570,29 +591,20 @@ interface CallItem {
 
 function Calls({ initialTemperature, initialTag }: { initialTemperature?: string; initialTag?: string }) {
   const [items, setItems] = useState<CallItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [temp, setTemp] = useState(initialTemperature || '');
-  const [status, setStatus] = useState('');
-  const [tag, setTag] = useState(initialTag || '');
-  const [manager, setManager] = useState('');
-  const [managerOptions, setManagerOptions] = useState<Array<{ bitrixUserId: string; name: string | null }>>([]);
-  const [department, setDepartment] = useState('');
-  const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; name: string }>>([]);
-  const [period, setPeriod] = usePersistentPeriod();
+  const { filters, setFilters, setTotal: publishTotal } = useCallStore();
+  const { temp, status, tag, manager, department } = filters;
+  const [period] = usePersistentPeriod();
   const [sort, setSort] = useState<'asc' | 'desc'>('desc');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Переход с главной (плитка температуры / тег) задаёт фильтр при открытии.
   useEffect(() => {
-    fetch('/api/ai-sales/managers/options')
-      .then((r) => r.json())
-      .then((j) => { if (Array.isArray(j.items)) setManagerOptions(j.items); })
-      .catch(() => {});
-    fetch('/api/ai-sales/departments')
-      .then((r) => r.json())
-      .then((j) => { if (Array.isArray(j.departments)) setDepartmentOptions(j.departments.map((d: { id: string; name: string }) => ({ id: d.id, name: d.name }))); })
-      .catch(() => {});
-  }, []);
+    if (initialTemperature !== undefined || initialTag !== undefined) {
+      setFilters({ temp: initialTemperature || '', tag: initialTag || '' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTemperature, initialTag]);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
@@ -608,11 +620,11 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
       const r = await fetch(`/api/ai-sales/calls?${qs}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
-      setItems(j.items); setTotal(j.total);
+      setItems(j.items); publishTotal(j.total);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Ошибка');
     } finally { setLoading(false); }
-  }, [temp, status, tag, manager, department, period, sort]);
+  }, [temp, status, tag, manager, department, period, sort, publishTotal]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -658,29 +670,14 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-xl font-semibold text-[#1b2a4a] whitespace-nowrap">Звонки <span className="text-gray-400 text-base font-normal">({total})</span></h2>
-        <div className="flex gap-2 flex-wrap">
-          <Select value={department} onChange={setDepartment} className="w-full sm:w-[180px]" ariaLabel="Отдел"
-            options={[{ value: '', label: 'Все отделы' }, ...departmentOptions.map((d) => ({ value: d.id, label: d.name }))]} />
-          <Select value={manager} onChange={setManager} searchable className="w-full sm:w-[180px]" ariaLabel="Менеджер"
-            options={[{ value: '', label: 'Все менеджеры' }, ...managerOptions.map((m) => ({ value: m.bitrixUserId, label: m.name || `ID ${m.bitrixUserId}` }))]} />
-          <Select value={temp} onChange={setTemp} className="w-full sm:w-[160px]" ariaLabel="Температура"
-            options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
-          <Select value={status} onChange={setStatus} className="w-full sm:w-[170px]" ariaLabel="Статус"
-            options={[{ value: '', label: 'Все статусы' }, { value: 'COMPLETED', label: 'Готово' }, { value: 'TRANSCRIBING', label: 'Транскрибация' }, { value: 'FAILED', label: 'Ошибка' }, { value: 'NO_RECORDING', label: 'Нет записи' }]} />
-        </div>
-      </div>
-
       {tag && (
         <div className="mb-3">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#029cda]/10 text-[#029cda]">
             тег: {tag}
-            <button onClick={() => setTag('')} title="Сбросить фильтр" className="text-[#029cda] hover:text-red-500"><X className="w-4 h-4" /></button>
+            <button onClick={() => setFilters({ tag: '' })} title="Сбросить фильтр" className="text-[#029cda] hover:text-red-500"><X className="w-4 h-4" /></button>
           </span>
         </div>
       )}
-      <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
         <ScrollX className="bg-white rounded-2xl border border-gray-100">
@@ -1343,7 +1340,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
   const [items, setItems] = useState<DealItem[]>([]);
   const [total, setTotal] = useState(0);
   const [temp, setTemp] = useState(initialTemperature || '');
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -1368,7 +1365,6 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
         <Select value={temp} onChange={setTemp} className="w-full sm:w-[180px]" ariaLabel="Температура"
           options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
       </div>
-      <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : (
         <ScrollX className="bg-white rounded-2xl border border-gray-100">
@@ -1706,7 +1702,7 @@ function SignalCard({ s, onOpen, onAct, busy }: {
 
 function Signals({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<SignalsData | null>(null);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -1750,7 +1746,6 @@ function Signals({ onOpen }: { onOpen: (id: string) => void }) {
         <button onClick={() => load()} className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Обновить</button>
       </div>
       <p className="text-sm text-gray-500 mb-4">Приоритетная лента для РОПа: критичные сделки, просроченные обещания клиентам, слабые этапы и всплески проигрышей. Отметьте «Готово» или «Отложить» — обработанное уходит из ленты.</p>
-      <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
@@ -2035,7 +2030,7 @@ const DRILL_TITLE: Record<DrillKind, string> = { objection: 'Возражени�
 function Insights({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<InsightsData | null>(null);
   const [reco, setReco] = useState<RecoBuckets | null>(null);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
   const [drill, setDrill] = useState<{ kind: DrillKind; label: string } | null>(null);
@@ -2086,7 +2081,6 @@ function Insights({ onOpen }: { onOpen: (id: string) => void }) {
         </div>
         <ExportButton period={period} />
       </div>
-      <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : (
         <div className="space-y-4">
           {data.headlines.length > 0 && (
@@ -2228,7 +2222,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
   const [data, setData] = useState<ChecklistData | null>(null);
   const [conv, setConv] = useState<ConvData | null>(null);
   const [obj, setObj] = useState<ObjRowM[] | null>(null);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
   // Провал по ячейке: звонки, где менеджер выполнил/провалил шаг.
@@ -2309,7 +2303,6 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
             className={`px-3 py-1.5 rounded-xl text-sm transition ${mode === k ? 'bg-[#029cda] text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}>{label}</button>
         ))}
       </div>
-      <PeriodBar value={period} onChange={setPeriod} />
 
       {loading ? <LoadingBlock /> : (
         <>
@@ -2595,7 +2588,7 @@ interface LostData {
 
 function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
   const [data, setData] = useState<LostData | null>(null);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [reasonFilter, setReasonFilter] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
@@ -2620,7 +2613,6 @@ function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
     <div>
       <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Проигранные сделки</h2>
       <p className="text-sm text-gray-500 mb-4">Причины проигрыша по AI-разбору звонков (не только по полю Bitrix).</p>
-      <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : data.total === 0 ? (
         <p className="text-gray-400 py-8">Проигранных сделок с разбором за период нет. (Убедитесь, что синхронизация обновила статусы сделок.)</p>
       ) : (
@@ -2925,7 +2917,7 @@ const TAG_CAT_COLOR: Record<string, string> = {
 
 function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
   const [data, setData] = useState<TagsData | null>(null);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -2949,7 +2941,6 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
     <div>
       <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">AI-теги</h2>
       <p className="text-sm text-gray-500 mb-4">Автотеги из разборов звонков. Клик по тегу — звонки с этим тегом.</p>
-      <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : !data ? null : data.groups.length === 0 ? (
         <p className="text-gray-400 py-8">Тегов пока нет — появятся после анализа звонков.</p>
       ) : (
@@ -2982,7 +2973,7 @@ interface ManagerRow {
 
 function Managers({ onOpen }: { onOpen: (id: string) => void }) {
   const [items, setItems] = useState<ManagerRow[]>([]);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -3006,7 +2997,6 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
         <h2 className="text-xl font-semibold text-[#1b2a4a]">Менеджеры</h2>
         <ExportButton period={period} />
       </div>
-      <PeriodBar value={period} onChange={setPeriod} />
       {loading ? <LoadingBlock /> : (
         <ScrollX className="bg-white rounded-2xl border border-gray-100">
           <table className="min-w-full text-sm">
@@ -3194,7 +3184,7 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
   const [total, setTotal] = useState(0);
   const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; name: string }>>([]);
   const [department, setDepartment] = useState('');
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [err, setErr] = useState('');
@@ -3245,7 +3235,6 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
         ))}
       </div>
 
-      <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       {loading ? <LoadingBlock /> : searched && (
@@ -3299,7 +3288,7 @@ interface TriggerRowT {
 
 function Triggers({ onOpen }: { onOpen: (callId: string) => void }) {
   const [items, setItems] = useState<TriggerRowT[]>([]);
-  const [period, setPeriod] = usePersistentPeriod();
+  const [period] = usePersistentPeriod();
   const [type, setType] = useState('');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -3328,7 +3317,6 @@ function Triggers({ onOpen }: { onOpen: (callId: string) => void }) {
           options={[{ value: '', label: 'Все типы' }, ...typeOptions.map(([k, label]) => ({ value: k, label }))]} />
       </div>
       <p className="text-sm text-gray-500 mb-3">Звонки, где клиент назвал внешний повод обратиться сейчас или повод для движения сделки (прокуратура, смена руководителя, новый закон, бюджет, закупка и т.п.) — со слов клиента, найдено ИИ при анализе звонка.</p>
-      <PeriodBar value={period} onChange={setPeriod} />
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
       {loading ? <LoadingBlock /> : items.length === 0 ? (
         <p className="text-sm text-gray-400 mt-4">Триггеров за период не найдено.</p>
@@ -4326,6 +4314,58 @@ function SetupIcon({ view }: { view: View }) {
   return <SlidersHorizontal className={cls} />;
 }
 
+/** Кнопка-фильтр звонков в шапке раздела: попап с отделом/менеджером/температурой/статусом. */
+function CallFiltersButton() {
+  const { filters, setFilters } = useCallStore();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [managerOptions, setManagerOptions] = useState<Array<{ bitrixUserId: string; name: string | null }>>([]);
+  const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; name: string }>>([]);
+  useEffect(() => {
+    fetch('/api/ai-sales/managers/options').then((r) => r.json())
+      .then((j) => { if (Array.isArray(j.items)) setManagerOptions(j.items); }).catch(() => {});
+    fetch('/api/ai-sales/departments').then((r) => r.json())
+      .then((j) => { if (Array.isArray(j.departments)) setDepartmentOptions(j.departments.map((d: { id: string; name: string }) => ({ id: d.id, name: d.name }))); }).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+  const activeCount = [filters.department, filters.manager, filters.temp, filters.status].filter(Boolean).length;
+  return (
+    <div className="relative" ref={ref}>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} title="Фильтры звонков" aria-label="Фильтры звонков"
+        className="relative size-11 grid place-items-center rounded-2xl bg-[#F6F7F9] text-[#1b2a4a] hover:bg-gray-100 transition">
+        <ListFilter className="w-5 h-5" />
+        {activeCount > 0 && <span className="absolute top-2 right-2 size-2 rounded-full bg-[#029cda]" />}
+      </button>
+      {open && (
+        <div className="absolute z-30 mt-2 right-0 bg-white border border-gray-200 rounded-xl shadow-xl p-3 w-[280px] max-w-[90vw] space-y-2 text-left">
+          <Select value={filters.department} onChange={(v) => setFilters({ department: v })} className="w-full" ariaLabel="Отдел"
+            options={[{ value: '', label: 'Все отделы' }, ...departmentOptions.map((d) => ({ value: d.id, label: d.name }))]} />
+          <Select value={filters.manager} onChange={(v) => setFilters({ manager: v })} searchable className="w-full" ariaLabel="Менеджер"
+            options={[{ value: '', label: 'Все менеджеры' }, ...managerOptions.map((m) => ({ value: m.bitrixUserId, label: m.name || `ID ${m.bitrixUserId}` }))]} />
+          <Select value={filters.temp} onChange={(v) => setFilters({ temp: v })} className="w-full" ariaLabel="Температура"
+            options={[{ value: '', label: 'Все температуры' }, { value: 'HOT', label: 'Горячие' }, { value: 'WARM', label: 'Тёплые' }, { value: 'COLD', label: 'Холодные' }]} />
+          <Select value={filters.status} onChange={(v) => setFilters({ status: v })} className="w-full" ariaLabel="Статус"
+            options={[{ value: '', label: 'Все статусы' }, { value: 'COMPLETED', label: 'Готово' }, { value: 'TRANSCRIBING', label: 'Транскрибация' }, { value: 'FAILED', label: 'Ошибка' }, { value: 'NO_RECORDING', label: 'Нет записи' }]} />
+          {activeCount > 0 && (
+            <button type="button" onClick={() => setFilters({ department: '', manager: '', temp: '', status: '' })}
+              className="w-full text-sm text-[#029cda] hover:underline pt-1">Сбросить фильтры</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Экраны, которые учитывают общий период — для них в шапке показывается календарь. */
+const PERIOD_VIEWS = new Set<View>(['dashboard', 'calls', 'deals', 'signals', 'insights', 'checklists', 'lost', 'tags', 'managers', 'search', 'triggers']);
+
 export default function AiSalesSection() {
   const [view, setView] = useState<View>('dashboard');
   const [openCall, setOpenCall] = useState<string | null>(null);
@@ -4378,6 +4418,22 @@ export default function AiSalesSection() {
   const openGroup = (g: NavGroup) => { if (!g.views.some((v) => v.view === view)) go(g.views[0].view); setOpenSetup(null); };
   const isSetup = activeGroup.key === 'setup';
 
+  const [period, setPeriod] = usePersistentPeriod();
+  const callStore = useCallStore();
+  const { filters: cf, setTotal: setCallsTotal } = callStore;
+  useEffect(() => {
+    const qs = periodQS(period);
+    if (cf.temp) qs.set('temperature', cf.temp);
+    if (cf.status) qs.set('status', cf.status);
+    if (cf.tag) qs.set('tag', cf.tag);
+    if (cf.manager) qs.set('manager', cf.manager);
+    if (cf.department) qs.set('department', cf.department);
+    qs.set('limit', '1');
+    let alive = true;
+    fetch(`/api/ai-sales/calls?${qs}`).then((r) => r.json())
+      .then((j) => { if (alive && typeof j.total === 'number') setCallsTotal(j.total); }).catch(() => {});
+    return () => { alive = false; };
+  }, [period, cf.temp, cf.status, cf.tag, cf.manager, cf.department, setCallsTotal]);
   const groupNav = (
     <div className="inline-flex max-w-full overflow-x-auto bg-[#F6F7F9] rounded-full p-1 gap-0.5" role="tablist" aria-label="Разделы речевой аналитики">
       {GROUPS.map((g) => (
@@ -4388,7 +4444,6 @@ export default function AiSalesSection() {
       ))}
     </div>
   );
-  const onDashboard = !openCall && !isSetup && view === 'dashboard';
 
   const subTabs = (
     <ScrollX className="mb-5 border-b border-gray-200">
@@ -4397,6 +4452,9 @@ export default function AiSalesSection() {
           <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
             className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
             {s.label}
+            {s.view === 'calls' && callStore.total != null && (
+              <span className="ml-1.5 inline-grid min-w-5 h-5 px-1.5 place-items-center rounded-full bg-[#029cda]/10 text-[#029cda] text-xs font-medium">{callStore.total}</span>
+            )}
           </button>
         ))}
       </div>
@@ -4406,7 +4464,7 @@ export default function AiSalesSection() {
   const body = (() => {
     // Карточка звонка доступна из любого раздела (сделки, менеджеры, звонки, поиск).
     if (openCall) return <CallDetail id={openCall} initialSeekMs={openCallSeek} onBack={closeCall} />;
-    if (view === 'dashboard') return <Dashboard onNavigate={nav} nav={groupNav} subNav={subTabs} />;
+    if (view === 'dashboard') return <Dashboard onNavigate={nav} />;
     if (view === 'signals') return openDeal ? <DealDetail id={openDeal} onBack={() => setOpenDeal(null)} onOpenCall={setOpenCall} /> : <Signals onOpen={setOpenDeal} />;
     if (view === 'trends') return <Trends />;
     if (view === 'search') return <Search onOpen={openCallAt} />;
@@ -4431,14 +4489,15 @@ export default function AiSalesSection() {
 
   return (
     <div>
-      {/* Главный экран рисует шапку сам (навигация в одной строке с периодом) */}
-      {!onDashboard && (
-        <div className="flex flex-col items-center text-center mb-6">
-          <h2 className="text-xl font-semibold text-[#1b2a4a]">Речевая аналитика</h2>
-          <p className="text-sm text-gray-500 mt-1 mb-5">Получайте отчёты, анализы и важные данные</p>
+      <div className="flex flex-col items-center text-center mb-6">
+        <h2 className="text-xl font-semibold text-[#1b2a4a]">Речевая аналитика</h2>
+        <p className="text-sm text-gray-500 mt-1 mb-5">Получайте отчёты, анализы и важные данные</p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
           {groupNav}
+          {!isSetup && PERIOD_VIEWS.has(view) && !openCall && <PeriodBar value={period} onChange={setPeriod} center iconOnly />}
+          {!isSetup && view === 'calls' && !openCall && <CallFiltersButton />}
         </div>
-      )}
+      </div>
 
       {isSetup ? (
         <>
@@ -4464,8 +4523,8 @@ export default function AiSalesSection() {
         </>
       ) : (
         <>
-          {!onDashboard && subTabs}
-          <div className={onDashboard ? '' : 'max-w-[1100px] mx-auto'}>{body}</div>
+          {subTabs}
+          {body}
         </>
       )}
     </div>
