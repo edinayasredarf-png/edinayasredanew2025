@@ -2745,6 +2745,8 @@ function Settings() {
         'ai.model.analysis': s['ai.model.analysis'],
         'ai.model.roles': s['ai.model.roles'],
         'ai.model.rag': s['ai.model.rag'],
+        'ai.model.briefSearch': s['ai.model.briefSearch'],
+        'ai.model.brief': s['ai.model.brief'],
         'ai.analysis_enabled': s['ai.analysis_enabled'],
         'ai.confidence_threshold': Number(s['ai.confidence_threshold']),
         'bitrix.auto_write': s['bitrix.auto_write'],
@@ -2820,6 +2822,12 @@ function Settings() {
         </Field>
         <Field label="Модель для RAG-ассистента" hint="Ответы на вопросы по базе знаний (§31 ТЗ). Пусто — используется «Модель анализа звонка/сделки» выше.">
           <input value={str('ai.model.rag')} onChange={(e) => set('ai.model.rag', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
+        </Field>
+        <Field label="Модель поиска для брифов" hint="Модель AI Gateway, которая ищет в интернете новости, программы и закупки по лиду/сделке (лучше «online»-модель с поиском). Пусто — модель шлюза по умолчанию.">
+          <input value={str('ai.model.briefSearch')} onChange={(e) => set('ai.model.briefSearch', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(модель шлюза по умолчанию)" />
+        </Field>
+        <Field label="Модель анализа для брифов" hint="Модель AI Gateway, которая из данных CRM и найденного собирает итоговый бриф. Пусто — используется модель поиска.">
+          <input value={str('ai.model.brief')} onChange={(e) => set('ai.model.brief', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель поиска)" />
         </Field>
         <Field label="Анализ включён">
           <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>

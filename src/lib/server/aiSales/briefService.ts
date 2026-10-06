@@ -1,9 +1,10 @@
 import "server-only";
 
-import Anthropic from "@anthropic-ai/sdk";
 import { bitrixCall } from "@/lib/server/bitrix";
 import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
 import { getTimewebPool } from "@/lib/timewebPg";
+import { gatewayChat } from "@/lib/ai/gatewayChat";
+import { getBriefModels } from "@/lib/server/aiSales/settingsDb";
 import {
   insertBrief, markBrief, previousTriggerUrls,
   type BriefEntity, type BriefTrigger,
@@ -18,7 +19,6 @@ import {
 /** Пользовательские поля Bitrix (можно переопределить через env). */
 const LEAD_FIELD = process.env.BRIEF_LEAD_FIELD?.trim() || "UF_CRM_1791289652";
 const DEAL_FIELD = process.env.BRIEF_DEAL_FIELD?.trim() || "UF_CRM_1791289910";
-const BRIEF_MODEL = process.env.AI_MODEL_BRIEF?.trim() || "claude-sonnet-5-5";
 const FIELD_MAX_CHARS = 15000;
 
 type Row = Record<string, unknown>;
@@ -109,16 +109,21 @@ export async function gatherCrm(entityType: BriefEntity, id: string): Promise<Cr
   };
 }
 
-/* ───────────────────────── 2. Поиск в интернете (Claude + web_search) ───────────────────────── */
+/* ───────────────────────── 2. Поиск и сборка (AI Gateway Timeweb) ───────────────────────── */
 
-const SYSTEM = `Ты — помощник отдела продаж компании «Единая среда» (цифровая платформа учёта и управления территориями и муниципальными объектами; услуги: инвентаризация мест захоронений, инвентаризация и паспортизация зелёных насаждений, цифровое лесоустройство, благоустройство, озеленение, содержание кладбищ, контроль подрядчиков).
-Готовишь бриф менеджеру перед звонком. Данные CRM даны в сообщении. Затем ИЩЕШЬ В ИНТЕРНЕТЕ актуальную информацию («информационные триггеры») по компании и её региону:
-1. Свежие новости о компании/организации и её руководстве (смена главы/директора, кадровые изменения, выборы).
+/** Шаг 1 — модель ПОИСКА: ищет в интернете и отдаёт факты со ссылками. */
+const SEARCH_SYSTEM = `Ты — исследователь-аналитик отдела продаж компании «Единая среда» (цифровая платформа учёта и управления территориями и муниципальными объектами; услуги: инвентаризация мест захоронений, инвентаризация и паспортизация зелёных насаждений, цифровое лесоустройство, благоустройство, озеленение, содержание кладбищ).
+Найди в интернете актуальную информацию («информационные триггеры») по указанной организации и её региону:
+1. Свежие новости об организации и её руководстве (смена главы/директора, кадровые изменения, выборы).
 2. Бюджетные и муниципальные программы, нацпроекты, гранты, на которые сейчас выделены деньги.
-3. Тендеры и закупки (в т.ч. госзакупки 44-ФЗ/223-ФЗ) по их профилю.
+3. Тендеры и закупки (в т.ч. 44-ФЗ/223-ФЗ) по их профилю.
 4. Направления, пересекающиеся с нашими услугами (инвентаризация захоронений и зелёных насаждений, благоустройство, озеленение, содержание кладбищ).
 5. Что делают соседние районы/организации региона («соседи уже делают»).
-Правила: приоритет — материалы последних 12 месяцев; не выдумывай — если по пункту ничего не найдено, так и напиши; каждый триггер — с датой и ссылкой на источник; не смешивай разные организации-тёзки (сверяй регион/ИНН).
+Правила: приоритет материалов последних 12 месяцев; не выдумывай — если по пункту ничего не найдено, так и напиши; у КАЖДОГО факта указывай дату и URL источника; не путай организации-тёзки (сверяй регион/ИНН). Ответ — по пунктам 1–5, кратко.`;
+
+/** Шаг 2 — модель БРИФА: CRM + найденное → итоговый бриф. */
+const SYSTEM = `Ты — помощник отдела продаж компании «Единая среда» (цифровая платформа учёта и управления территориями; услуги: инвентаризация мест захоронений, инвентаризация и паспортизация зелёных насаждений, цифровое лесоустройство, благоустройство, озеленение, содержание кладбищ, контроль подрядчиков).
+Готовишь бриф менеджеру перед звонком. Тебе даны данные CRM и результаты поиска в интернете. Используй ТОЛЬКО эти данные, ничего не выдумывай; если данных нет — так и пиши.
 
 Формат ответа (обычный текст, без Markdown-таблиц), разделы строго в таком порядке:
 Компания и контакты
@@ -129,7 +134,7 @@ const SYSTEM = `Ты — помощник отдела продаж компан
 
 В самом конце, после текста, выведи блок \`\`\`json со списком найденных триггеров:
 [{"title":"...","date":"YYYY-MM-DD или null","url":"https://...","source":"домен","kind":"news|procurement|budget|competitor|neighbors|other"}]
-Только реальные найденные триггеры, максимум 12. Если ничего нет — [].`;
+Только реальные триггеры из результатов поиска (URL бери оттуда), максимум 12. Если ничего нет — [].`;
 
 export interface ResearchResult { text: string; triggers: BriefTrigger[] }
 
@@ -152,27 +157,31 @@ function parseResult(raw: string): ResearchResult {
 }
 
 export async function researchWeb(snap: CrmSnapshot): Promise<ResearchResult> {
-  if (!process.env.ANTHROPIC_API_KEY?.trim()) throw new Error("ANTHROPIC_API_KEY не задан — поиск в интернете для брифа недоступен");
-  const client = new Anthropic();
-  const userText = `Подготовь бриф по ${snap.entityType === "lead" ? "лиду" : "сделке"} #${snap.entityId} («${snap.title}»), компания: ${snap.companyTitle}${snap.region ? `, регион: ${snap.region}` : ""}.\nСегодня ${new Date().toISOString().slice(0, 10)}.\n\nДанные из CRM (JSON):\n${JSON.stringify(snap.data, null, 1).slice(0, 14000)}`;
+  const models = await getBriefModels();
+  const today = new Date().toISOString().slice(0, 10);
+  const company = snap.data["Компания"] as Row | undefined;
+  const who = `«${snap.companyTitle}»${s(company?.инн) ? `, ИНН ${s(company?.инн)}` : ""}${snap.region ? `, регион: ${snap.region}` : ""}${s(company?.юр_адрес) ? `, адрес: ${s(company?.юр_адрес)}` : ""}`;
 
-  const messages: Anthropic.MessageParam[] = [{ role: "user", content: userText }];
-  let finalText = "";
-  // pause_turn — серверный инструмент поиска попросил продолжить ход (длинная серия поисков).
-  for (let turn = 0; turn < 4; turn++) {
-    const resp = await client.messages.create({
-      model: BRIEF_MODEL,
-      max_tokens: 4000,
-      system: SYSTEM,
-      messages,
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5, user_location: { type: "approximate", country: "RU", timezone: "Europe/Moscow" } }],
-    }, { timeout: 50_000, maxRetries: 0 });
-    finalText = resp.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
-    if (resp.stop_reason !== "pause_turn") break;
-    messages.push({ role: "assistant", content: resp.content });
+  // Шаг 1: поиск в интернете (бюджет ~28 с — вся функция на Vercel Hobby живёт 60 с).
+  const found = await gatewayChat({
+    model: models.search, system: SEARCH_SYSTEM, maxTokens: 2500, timeoutMs: 28_000,
+    user: `Организация: ${who}. Сегодня ${today}. Найди информационные триггеры по пунктам 1–5.`,
+  });
+  const sources = found.citations.map((c) => `- ${c.title ? `${c.title}: ` : ""}${c.url}`).join("\n");
+  const research = `${found.text}${sources ? `\n\nСсылки, найденные поиском:\n${sources}` : ""}`;
+
+  // Шаг 2: анализ CRM + результатов поиска → бриф (бюджет ~25 с).
+  const brief = await gatewayChat({
+    model: models.brief, system: SYSTEM, maxTokens: 3500, timeoutMs: 25_000,
+    user: `Подготовь бриф по ${snap.entityType === "lead" ? "лиду" : "сделке"} #${snap.entityId} («${snap.title}»), организация: ${who}.\nСегодня ${today}.\n\nДанные из CRM (JSON):\n${JSON.stringify(snap.data, null, 1).slice(0, 9000)}\n\nРезультаты поиска в интернете:\n${research.slice(0, 9000)}`,
+  });
+  if (!brief.text.trim()) throw new Error("Модель вернула пустой бриф");
+  const parsed = parseResult(brief.text);
+  // Если модель не вернула JSON, но поиск дал ссылки — оформляем их как триггеры без классификации.
+  if (!parsed.triggers.length && found.citations.length) {
+    parsed.triggers = found.citations.slice(0, 8).map((c) => ({ title: c.title || c.url, date: null, url: c.url, source: new URL(c.url).hostname, kind: "other" }));
   }
-  if (!finalText.trim()) throw new Error("Модель вернула пустой бриф");
-  return parseResult(finalText);
+  return parsed;
 }
 
 /* ───────────────────────── 3. Запись в Bitrix и уведомления ───────────────────────── */

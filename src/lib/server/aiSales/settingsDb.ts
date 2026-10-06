@@ -39,6 +39,9 @@ export const EDITABLE_KEYS = new Set<string>([
   // ai.model.analysis (см. getTaskModel).
   "ai.model.roles",
   "ai.model.rag",
+  // Брифы по лидам/сделкам (AI Gateway): модель поиска в интернете и модель сборки брифа.
+  "ai.model.briefSearch",
+  "ai.model.brief",
   "ai.analysis_enabled",
   "ai.confidence_threshold",
   "transcription.provider",
@@ -96,6 +99,17 @@ export async function getTaskModel(task: "roles" | "rag"): Promise<string | unde
   if (specific?.trim()) return specific.trim();
   const { analysisModel } = await getAiConfig();
   return analysisModel?.trim() || undefined;
+}
+
+/** Модели брифов (AI Gateway): `briefSearch` — поиск в интернете, `brief` — анализ CRM + сборка брифа. */
+export async function getBriefModels(): Promise<{ search: string; brief: string }> {
+  const [search, brief] = await Promise.all([
+    getSetting<string | undefined>("ai.model.briefSearch", undefined),
+    getSetting<string | undefined>("ai.model.brief", undefined),
+  ]);
+  const def = process.env.SELFHOSTED_LLM_MODEL?.trim() || "local";
+  const s = search?.trim() || def;
+  return { search: s, brief: brief?.trim() || s };
 }
 
 /**
