@@ -198,6 +198,8 @@ export interface CallListFilters {
   temperature?: string | null;
   status?: string | null;
   tag?: string | null; // slug тега
+  dealId?: string | null; // точная привязка звонка к сделке
+  leadId?: string | null; // … к лиду
   q?: string | null; // поиск по клиенту / сделке / телефону (за все даты, если from/to не заданы)
   from?: string | null;
   to?: string | null;
@@ -228,6 +230,8 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
   if (f.status) { where.push(`c.status = $${i++}`); params.push(f.status); }
   if (f.from) { where.push(`c.started_at >= $${i++}::date`); params.push(f.from); }
   if (f.to) { where.push(`c.started_at < ($${i++}::date + interval '1 day')`); params.push(f.to); }
+  if (f.dealId) { where.push(`c.bitrix_deal_id = $${i++}`); params.push(f.dealId); }
+  if (f.leadId) { where.push(`c.bitrix_lead_id = $${i++}`); params.push(f.leadId); }
   const q = f.q?.trim();
   if (q) {
     const like = `%${q.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`;

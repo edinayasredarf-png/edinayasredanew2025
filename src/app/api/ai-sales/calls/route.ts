@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
       status: sp.get("status"),
       tag: sp.get("tag"),
       q: sp.get("q"),
+      dealId: sp.get("dealId"),
+      leadId: sp.get("leadId"),
       from: sp.get("from"),
       to: sp.get("to"),
       sort: sp.get("sort") === "asc" ? "asc" : "desc",

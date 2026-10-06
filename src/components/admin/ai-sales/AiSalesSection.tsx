@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
-  BarChart3, ExternalLink, Home, ListFilter, PhoneCall, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
+  BarChart3, ExternalLink, FileText, Home, ListFilter, PhoneCall, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
 } from 'lucide-react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
@@ -961,6 +961,47 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
 
   useEffect(() => { load(); }, [load]);
 
+  // Бриф по сделке/лиду звонка (CRM + поиск в интернете) — показываем рядом с разбором.
+  const [brief, setBrief] = useState<BriefItem | null>(null);
+  const [briefBusy, setBriefBusy] = useState(false);
+  const [briefOpen, setBriefOpen] = useState(false);
+  const briefEnt = useMemo(() => {
+    const c = data?.call;
+    if (!c) return null;
+    if (c.bitrixDealId) return { type: 'deal' as const, id: c.bitrixDealId };
+    if (c.bitrixLeadId) return { type: 'lead' as const, id: c.bitrixLeadId };
+    return null;
+  }, [data]);
+  const loadBrief = useCallback(async (): Promise<BriefItem | null> => {
+    if (!briefEnt) return null;
+    try {
+      const r = await fetch(`/api/ai-sales/briefs/by-entity?type=${briefEnt.type}&id=${briefEnt.id}`);
+      const j = await r.json();
+      const b: BriefItem | null = r.ok ? j.brief : null;
+      setBrief(b);
+      return b;
+    } catch { return null; }
+  }, [briefEnt]);
+  useEffect(() => { loadBrief(); }, [loadBrief]);
+
+  const requestBrief = async () => {
+    if (!briefEnt) { setMsg('У звонка нет привязанной сделки или лида — бриф подготовить не из чего'); return; }
+    setBriefBusy(true); setMsg('');
+    const prev = brief?.createdAt ?? null;
+    try {
+      const r = await fetch('/api/ai-sales/briefs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ entityType: briefEnt.type, id: briefEnt.id }) });
+      const j = await r.json();
+      if (!r.ok) { setMsg(j.error || 'Ошибка'); return; }
+      setMsg('Бриф поставлен в очередь — появится здесь через 1–2 минуты');
+      // Ждём новый бриф (опрос раз в 8 с, до ~2,5 минут).
+      for (let i = 0; i < 18; i++) {
+        await new Promise((res) => setTimeout(res, 8000));
+        const b = await loadBrief();
+        if (b && b.createdAt !== prev) { setMsg('Бриф готов'); setBriefOpen(true); return; }
+      }
+    } finally { setBriefBusy(false); }
+  };
+
   // Ручная правка оценки шага скрипта (если ИИ ошибся) — оптимистично + пересчёт %.
   const toggleStep = async (key: string, completed: boolean) => {
     setScript((prev) => {
@@ -1051,6 +1092,10 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
             : data.call.leadUrl
               ? <a href={data.call.leadUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-xl text-sm border border-gray-300 text-gray-700">Лид в Bitrix</a>
               : null}
+          <button onClick={requestBrief} disabled={briefBusy || !briefEnt} title={briefEnt ? 'Бриф — данные CRM + свежие новости, программы и закупки из интернета' : 'Нет привязанной сделки или лида'}
+            className="w-9 h-9 rounded-xl border border-gray-300 text-gray-600 hover:text-[#029cda] hover:border-[#029cda] flex items-center justify-center disabled:opacity-50">
+            {briefBusy ? <Spinner size={16} /> : <FileText className="w-5 h-5" />}
+          </button>
           <button onClick={retranscribe} disabled={busy} title="Перетранскрибировать — заново распознать запись (текущим провайдером)"
             className="w-9 h-9 rounded-xl border border-gray-300 text-gray-600 hover:text-[#029cda] hover:border-[#029cda] flex items-center justify-center disabled:opacity-50">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a4 4 0 00-4 4v4a4 4 0 008 0V7a4 4 0 00-4-4z M5 11a7 7 0 0014 0 M12 18v3" /></svg>
@@ -1062,6 +1107,32 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
         </div>
       </div>
       {msg && <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
+
+      {brief && brief.status === 'READY' && (
+        <div className={`mb-4 rounded-2xl border p-4 ${brief.newTriggers > 0 ? 'border-amber-300 bg-amber-50' : 'border-gray-100 bg-white'}`}>
+          <div className="flex flex-wrap items-center gap-2">
+            <FileText className="w-4 h-4 text-[#029cda]" />
+            <span className="text-sm font-semibold text-[#1b2a4a]">AI-бриф по {brief.entityType === 'deal' ? 'сделке' : 'лиду'}</span>
+            <span className="text-xs text-gray-400">{fmtWhenShort(brief.createdAt)}</span>
+            {brief.newTriggers > 0 && <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-xs font-medium">новых триггеров: {brief.newTriggers}</span>}
+            <button type="button" onClick={() => setBriefOpen((v) => !v)} className="ml-auto text-xs text-[#029cda] hover:underline">{briefOpen ? 'Свернуть' : 'Показать бриф'}</button>
+            <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('ai-sales:open-brief', { detail: brief.id }))} className="text-xs text-[#029cda] hover:underline">В разделе «Брифы» →</button>
+          </div>
+          {brief.triggers.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {brief.triggers.slice(0, briefOpen ? 12 : 3).map((t, i) => (
+                <li key={i} className="text-sm text-[#1b2a4a]">
+                  {t.isNew && <span className="mr-1.5 px-1.5 py-0.5 rounded-md bg-amber-200 text-amber-900 text-[11px] font-medium">новое</span>}
+                  {t.date && <span className="text-xs text-gray-400 mr-1.5">{t.date}</span>}
+                  {t.title}
+                  {t.url && <a href={t.url} target="_blank" rel="noopener noreferrer" className="ml-1.5 text-xs text-[#029cda] hover:underline">{t.source || 'источник'}</a>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {briefOpen && brief.briefText && <div className="mt-3 whitespace-pre-wrap text-sm text-[#1b2a4a] leading-relaxed bg-[#F6F7F9] rounded-xl p-3">{brief.briefText}</div>}
+        </div>
+      )}
 
       <div className="bg-[#F6F7F9] rounded-xl p-5 mb-4">
         <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-700">
@@ -4429,11 +4500,12 @@ interface BriefItem {
 const TRIGGER_KIND_RU: Record<string, string> = { news: 'Новости', procurement: 'Закупки', budget: 'Бюджет/программы', competitor: 'Конкуренты', neighbors: 'Соседи', other: 'Другое' };
 const fmtWhenShort = (iso: string) => new Date(iso).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' });
 
-function BriefDetailModal({ id, onClose, onChanged }: { id: string; onClose: () => void; onChanged: () => void }) {
+function BriefDetailModal({ id, onClose, onChanged, onOpenCall }: { id: string; onClose: () => void; onChanged: () => void; onOpenCall?: (callId: string) => void }) {
   const [data, setData] = useState<{ brief: BriefItem; history: Array<{ id: string; createdAt: string; newTriggers: number }> } | null>(null);
   const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [calls, setCalls] = useState<CallItem[]>([]);
   useEffect(() => {
     let alive = true;
     setData(null); setErr('');
@@ -4441,6 +4513,11 @@ function BriefDetailModal({ id, onClose, onChanged }: { id: string; onClose: () 
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
       if (alive) { setData(j); onChanged(); }
+      // Звонки по этой сделке/лиду — чтобы от брифа перейти к разбору разговора.
+      const b: BriefItem = j.brief;
+      const cr = await fetch(`/api/ai-sales/calls?${b.entityType === 'deal' ? 'dealId' : 'leadId'}=${b.entityId}&limit=6&sort=desc`);
+      const cj = await cr.json().catch(() => ({}));
+      if (alive && cr.ok && Array.isArray(cj.items)) setCalls(cj.items);
     }).catch((e) => { if (alive) setErr(e instanceof Error ? e.message : 'Ошибка'); });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -4491,6 +4568,23 @@ function BriefDetailModal({ id, onClose, onChanged }: { id: string; onClose: () 
           {data && data.history.length > 1 && (
             <p className="text-xs text-gray-400">Версий брифа: {data.history.length} · первая {fmtWhenShort(data.history[data.history.length - 1].createdAt)}</p>
           )}
+          {calls.length > 0 && onOpenCall && (
+            <div>
+              <h4 className="text-sm font-semibold text-[#1b2a4a] mb-2">Звонки</h4>
+              <ul className="space-y-1.5">
+                {calls.map((c) => (
+                  <li key={c.id}>
+                    <button type="button" onClick={() => { onClose(); onOpenCall(c.id); }}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-gray-100 bg-white hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition text-left text-sm">
+                      <span className="flex-1 text-[#1b2a4a]">{c.startedAt ? fmtWhenShort(c.startedAt) : '—'}{c.managerName ? ` · ${c.managerName}` : ''}</span>
+                      {c.temperature && <span className={`px-2 py-0.5 rounded-full text-[11px] ${TEMP_BADGE[c.temperature] || ''}`}>{tempRu(c.temperature)}</span>}
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {msg && <div className="p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
           <div className="flex flex-wrap gap-2">
             {b.bitrixUrl && (
@@ -4506,7 +4600,7 @@ function BriefDetailModal({ id, onClose, onChanged }: { id: string; onClose: () 
   );
 }
 
-function Briefs() {
+function Briefs({ focusId, onOpenCall }: { focusId?: string | null; onOpenCall?: (callId: string) => void }) {
   const [items, setItems] = useState<BriefItem[]>([]);
   const [total, setTotal] = useState(0);
   const [type, setType] = useState<'' | 'lead' | 'deal'>('');
@@ -4514,7 +4608,8 @@ function Briefs() {
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(focusId ?? null);
+  useEffect(() => { if (focusId) setOpenId(focusId); }, [focusId]);
   const [createOpen, setCreateOpen] = useState(false);
   const [createVal, setCreateVal] = useState('');
   const [createMsg, setCreateMsg] = useState('');
@@ -4597,7 +4692,7 @@ function Briefs() {
           <p className="text-xs text-gray-400 text-center mt-3">Показано: {items.length} из {total}</p>
         </>
       )}
-      {openId && <BriefDetailModal id={openId} onClose={() => setOpenId(null)} onChanged={() => load(true)} />}
+      {openId && <BriefDetailModal id={openId} onClose={() => setOpenId(null)} onChanged={() => load(true)} onOpenCall={onOpenCall} />}
       {createOpen && (
         <Modal title="Создать бриф" onClose={() => setCreateOpen(false)} maxWidth="max-w-lg">
           <p className="text-sm text-gray-500">Вставьте ссылку на лид или сделку из Bitrix (или «лид 123» / «сделка 456»).</p>
@@ -4796,11 +4891,12 @@ export default function AiSalesSection() {
   const [openCallSeek, setOpenCallSeek] = useState<number | null>(null);
   const [openDeal, setOpenDeal] = useState<string | null>(null);
   const [openSetup, setOpenSetup] = useState<View | null>(null);
+  const [briefFocus, setBriefFocus] = useState<string | null>(null);
   const [initTemp, setInitTemp] = useState<string | undefined>(undefined);
   const [initTag, setInitTag] = useState<string | undefined>(undefined);
 
   const closeCall = () => { setOpenCall(null); setOpenCallSeek(null); };
-  const go = (v: View) => { setView(v); closeCall(); setOpenDeal(null); setInitTemp(undefined); setInitTag(undefined); };
+  const go = (v: View) => { setView(v); closeCall(); setOpenDeal(null); setInitTemp(undefined); setInitTag(undefined); setBriefFocus(null); };
   const nav = (t: NavTarget) => {
     const map: Record<string, View> = { 'ai-deals': 'deals', 'ai-calls': 'calls', 'ai-signals': 'signals' };
     setInitTemp(t.temperature); setInitTag(t.tag);
@@ -4812,6 +4908,16 @@ export default function AiSalesSection() {
 
   // URL-состояние: вкладка/открытый звонок/сделка → query (браузерный «Назад»,
   // F5 и ссылки). Параметры с префиксом as* — чтобы не мешать родительской админке.
+  // Из карточки звонка: «В разделе Брифы →» — открыть бриф в своём разделе.
+  useEffect(() => {
+    const onOpenBrief = (e: Event) => {
+      const id = (e as CustomEvent<string>).detail;
+      setOpenCall(null); setOpenCallSeek(null); setOpenDeal(null);
+      setBriefFocus(id); setView('briefs');
+    };
+    window.addEventListener('ai-sales:open-brief', onOpenBrief);
+    return () => window.removeEventListener('ai-sales:open-brief', onOpenBrief);
+  }, []);
   const urlInit = useRef(false);
   useEffect(() => {
     // Зеркалим состояние из URL: при загрузке и на «Назад/Вперёд» (popstate).
@@ -4903,7 +5009,7 @@ export default function AiSalesSection() {
     if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'triggers') return <Triggers onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'assistant') return <Assistant />;
-    if (view === 'briefs') return <Briefs />;
+    if (view === 'briefs') return <Briefs focusId={briefFocus} onOpenCall={(cid) => openCallAt(cid, null)} />;
     if (view === 'kb') return <KnowledgeBase />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
     if (view === 'departments') return <Departments />;

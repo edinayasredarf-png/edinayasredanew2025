@@ -170,3 +170,13 @@ export async function getBrief(id: string, markSeen = true): Promise<{ brief: Br
     [rows[0].entity_type, rows[0].bitrix_entity_id]);
   return { brief: map(rows[0], true), history: h.rows.map((x) => ({ id: x.id, createdAt: x.created_at.toISOString(), newTriggers: x.new_triggers })) };
 }
+
+/** Последний бриф по сущности (для карточки звонка). */
+export async function getLatestBrief(entityType: BriefEntity, entityId: string): Promise<BriefRow | null> {
+  await ensureBriefsSchema();
+  const { rows } = await getTimewebPool().query<Raw>(
+    `select b.*, m.full_name as manager_name from ai_briefs b left join ai_managers m on m.bitrix_user_id = b.bitrix_user_id
+      where b.entity_type = $1 and b.bitrix_entity_id = $2
+      order by (b.status = 'READY') desc, b.created_at desc limit 1`, [entityType, entityId]);
+  return rows[0] ? map(rows[0], true) : null;
+}
