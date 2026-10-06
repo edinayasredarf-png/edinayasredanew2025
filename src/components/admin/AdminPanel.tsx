@@ -226,6 +226,7 @@ export default function AdminPanel() {
   const [favorites, setFavorites] = useState<TabId[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false); // бургер-меню (телефон/планшет)
   const profileRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -406,6 +407,10 @@ export default function AdminPanel() {
         <div className="flex-1 min-w-0">
           {/* Верхняя панель: глобальный поиск + профиль справа (как у Яндекса) */}
           <div className="flex items-center justify-end gap-3 mb-5">
+            <button type="button" onClick={() => setMenuOpen(true)} aria-label="Открыть меню" title="Меню"
+              className="lg:hidden mr-auto w-11 h-11 rounded-full bg-[var(--es-tile)] grid place-items-center text-[var(--es-ink)] hover:bg-[var(--es-tile-2)] transition">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            </button>
             <div ref={searchRef} className={`relative transition-[width] duration-300 ease-out ${searchOpen ? 'w-[min(560px,60vw)]' : 'w-[220px]'}`}>
               <div className={`flex items-center h-11 rounded-full pl-4 pr-3 transition-colors duration-200 ${searchOpen ? 'bg-white ring-1 ring-[var(--es-line)] shadow-[var(--es-shadow-sm)]' : 'bg-[var(--es-tile)]'}`}>
                 <input value={query}
@@ -468,17 +473,23 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Мобильная навигация */}
-          <div className="lg:hidden -mx-3 px-3 mb-4 overflow-x-auto">
-            <div className="flex gap-2 min-w-max">
-              {NAV_FLAT.map((item) => (
-                <button key={item.id} type="button" onClick={() => setActiveTab(item.id)}
-                  className={`px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${activeTab === item.id ? 'bg-[var(--es-black)] text-white' : 'bg-[var(--es-tile)] text-[var(--es-ink-2)]'}`}>
-                  {item.label}
-                </button>
-              ))}
+          {/* Мобильная навигация — выдвижное меню по бургеру */}
+          {menuOpen && (
+            <div className="lg:hidden fixed inset-0 z-[60] bg-black/40" onClick={() => setMenuOpen(false)}>
+              <nav className="absolute left-0 top-0 bottom-0 w-[290px] max-w-[85vw] bg-white p-3 flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()} aria-label="Главное меню">
+                <div className="flex items-center justify-between px-2 py-2 mb-2">
+                  <Image src="/img/es_logo_blue.svg" alt="Единая среда" width={140} height={38} className="h-9 w-auto" />
+                  <button type="button" onClick={() => setMenuOpen(false)} aria-label="Закрыть меню"
+                    className="w-10 h-10 rounded-full bg-[var(--es-tile)] grid place-items-center text-[var(--es-ink)]">
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto flex flex-col gap-1" onClick={() => setMenuOpen(false)}>
+                  {NAV_FLAT.map((item) => menuRow(item))}
+                </div>
+              </nav>
             </div>
-          </div>
+          )}
 
           {status && (
             <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-xl">

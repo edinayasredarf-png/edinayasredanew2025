@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
-  ExternalLink, ListFilter, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
+  BarChart3, ExternalLink, Home, ListFilter, PhoneCall, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
 } from 'lucide-react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
@@ -4396,6 +4396,62 @@ function CallFiltersButton() {
   );
 }
 
+const GROUP_ICON: Record<string, React.ReactNode> = {
+  main: <Home className="w-5 h-5" />,
+  reviews: <PhoneCall className="w-5 h-5" />,
+  analytics: <BarChart3 className="w-5 h-5" />,
+  setup: <SlidersHorizontal className="w-5 h-5" />,
+};
+
+/** Нижнее меню на телефоне/планшете: 4 группы; нажатие открывает шторку с подразделами группы. */
+function MobileBottomNav({ activeGroupKey, view, callsTotal, onPick }: {
+  activeGroupKey: string; view: View; callsTotal: number | null; onPick: (v: View) => void;
+}) {
+  const [sheet, setSheet] = useState<NavGroup | null>(null);
+  useEffect(() => {
+    if (!sheet) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSheet(null); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [sheet]);
+  return (
+    <div className="lg:hidden">
+      <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] grid grid-cols-4 gap-1" aria-label="Разделы речевой аналитики">
+        {GROUPS.map((g) => {
+          const active = g.key === activeGroupKey;
+          return (
+            <button key={g.key} type="button" onClick={() => setSheet(g)} aria-haspopup="dialog"
+              className={`flex flex-col items-center gap-0.5 py-1.5 rounded-2xl text-[11px] font-medium transition ${active ? 'bg-[#029cda]/10 text-[#029cda]' : 'text-gray-500 hover:bg-gray-50'}`}>
+              {GROUP_ICON[g.key]}
+              {g.label}
+            </button>
+          );
+        })}
+      </nav>
+      {sheet && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end" onClick={() => setSheet(null)}>
+          <div role="dialog" aria-label={sheet.label} className="w-full bg-white rounded-t-3xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] max-h-[75vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-200" />
+            <h3 className="text-lg font-semibold text-[#1b2a4a] mb-2 px-1">{sheet.label}</h3>
+            <div className="space-y-1">
+              {sheet.views.map((s) => (
+                <button key={s.view} type="button" onClick={() => { setSheet(null); onPick(s.view); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-sm transition ${view === s.view ? 'bg-[#029cda]/10 text-[#029cda] font-medium' : 'text-[#1b2a4a] hover:bg-gray-50'}`}>
+                  <span className="flex-1">{s.label}</span>
+                  {s.view === 'calls' && callsTotal != null && (
+                    <span className="inline-grid min-w-5 h-5 px-1.5 place-items-center rounded-full bg-[#029cda]/10 text-[#029cda] text-xs font-medium">{callsTotal}</span>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-gray-300" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Размер порции результатов поиска; дальше — «Показать ещё». */
 const SEARCH_PAGE = 30;
 
@@ -4589,7 +4645,7 @@ export default function AiSalesSection() {
     return () => { alive = false; };
   }, [period, cf.temp, cf.status, cf.tag, cf.manager, cf.department, setCallsTotal]);
   const groupNav = (
-    <div className="inline-flex max-w-full overflow-x-auto bg-[#F6F7F9] rounded-full p-1 gap-0.5" role="tablist" aria-label="Разделы речевой аналитики">
+    <div className="hidden lg:inline-flex max-w-full overflow-x-auto bg-[#F6F7F9] rounded-full p-1 gap-0.5" role="tablist" aria-label="Разделы речевой аналитики">
       {GROUPS.map((g) => (
         <button key={g.key} type="button" role="tab" aria-selected={g.key === activeGroup.key} onClick={() => openGroup(g)}
           className={`px-4 py-1.5 text-sm rounded-full whitespace-nowrap transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] ${g.key === activeGroup.key ? 'bg-white text-[#1b2a4a] font-medium shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}>
@@ -4600,7 +4656,7 @@ export default function AiSalesSection() {
   );
 
   const subTabs = (
-    <ScrollX className="mb-5 border-b border-gray-200">
+    <ScrollX className="hidden lg:block mb-5 border-b border-gray-200">
       <div className="flex gap-1 min-w-max sm:justify-center" role="tablist" aria-label={activeGroup.label}>
         {activeGroup.views.map((s) => (
           <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
@@ -4682,6 +4738,11 @@ export default function AiSalesSection() {
           {body}
         </>
       )}
+
+      {/* Отступ под нижнее меню + само меню (телефон/планшет) */}
+      <div className="h-20 lg:hidden" aria-hidden />
+      <MobileBottomNav activeGroupKey={activeGroup.key} view={view} callsTotal={callStore.total}
+        onPick={(v) => { go(v); if (GROUPS.find((g) => g.key === 'setup')?.views.some((x) => x.view === v)) setOpenSetup(v); }} />
     </div>
   );
 }
