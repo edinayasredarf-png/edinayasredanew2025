@@ -4437,12 +4437,12 @@ function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string)
                       </span>
                       <ChevronRight className="shrink-0 w-4 h-4 text-gray-300" />
                     </button>
-                    {c.bitrixDealId && (
+                    {c.bitrixDealId ? (
                       <button type="button" onClick={() => { close(); onOpenDeal(c.bitrixDealId as string); }} title="Открыть сделку"
-                        className="shrink-0 px-3 rounded-xl border border-gray-100 bg-white text-xs text-[#029cda] hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition">
+                        className="shrink-0 w-[72px] rounded-xl border border-gray-100 bg-white text-xs text-[#029cda] hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition">
                         Сделка
                       </button>
-                    )}
+                    ) : <span className="shrink-0 w-[72px]" aria-hidden />}
                   </li>
                 ))}
               </ul>
