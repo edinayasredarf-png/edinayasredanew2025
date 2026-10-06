@@ -188,6 +188,7 @@ export interface CallListItem {
   dealStageKey: string | null;
   dealStageLabel: string | null;
   callType: string | null;
+  dealTitle: string | null;
 }
 
 export interface CallListFilters {
@@ -197,6 +198,7 @@ export interface CallListFilters {
   temperature?: string | null;
   status?: string | null;
   tag?: string | null; // slug тега
+  q?: string | null; // поиск по клиенту / сделке / телефону (за все даты, если from/to не заданы)
   from?: string | null;
   to?: string | null;
   sort?: "asc" | "desc"; // по дате звонка
@@ -226,6 +228,12 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
   if (f.status) { where.push(`c.status = $${i++}`); params.push(f.status); }
   if (f.from) { where.push(`c.started_at >= $${i++}::date`); params.push(f.from); }
   if (f.to) { where.push(`c.started_at < ($${i++}::date + interval '1 day')`); params.push(f.to); }
+  const q = f.q?.trim();
+  if (q) {
+    const like = `%${q.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`;
+    where.push(`(co.title ilike $${i} or ct.full_name ilike $${i} or c.client_title ilike $${i} or d.title ilike $${i} or c.phone_number ilike $${i} or c.bitrix_deal_id::text = $${i + 1})`);
+    params.push(like, q); i += 2;
+  }
   if (f.tag) {
     where.push(`exists (select 1 from ai_call_tags cct join ai_tags tg on tg.id = cct.tag_id where cct.call_id = c.id and tg.slug = $${i++})`);
     params.push(f.tag);
@@ -247,7 +255,7 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
     bitrix_deal_id: string | null; bitrix_lead_id: string | null; duration_sec: number | null; product: string | null;
     deal_score: number | null; manager_score: string | null; deal_temperature: string | null;
     result_type: string | null; next_step: string | null; status: string;
-    deal_stage_key: string | null; deal_stage_label: string | null; call_type: string | null;
+    deal_stage_key: string | null; deal_stage_label: string | null; call_type: string | null; deal_title: string | null;
   }>(
     `select c.id, c.started_at, m.full_name as manager_name, co.title as company_title,
             ct.full_name as contact_name, c.client_title, c.phone_number,
@@ -255,7 +263,8 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
             a.deal_score, a.manager_score, a.deal_temperature, a.result_type, a.next_step, c.status,
             a.data->'dealStage'->>'key' as deal_stage_key,
             a.data->'dealStage'->>'label' as deal_stage_label,
-            a.data->>'callType' as call_type
+            a.data->>'callType' as call_type,
+            d.title as deal_title
        from ai_calls c ${CALL_JOINS}
       where ${whereSql}
       order by c.started_at ${sort} nulls last
@@ -286,6 +295,7 @@ export async function listCalls(f: CallListFilters): Promise<{ items: CallListIt
       dealStageKey: r.deal_stage_key,
       dealStageLabel: r.deal_stage_label,
       callType: r.call_type,
+      dealTitle: r.deal_title,
     })),
   };
 }

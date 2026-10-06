@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
-  ListFilter, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
+  ListFilter, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
 } from 'lucide-react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
@@ -586,7 +586,7 @@ interface CallItem {
   bitrixDealId: string | null; dealUrl: string | null; durationSec: number | null; product: string | null;
   dealScore: number | null; managerScore: number | null; temperature: string | null;
   resultType: string | null; nextStep: string | null; status: string;
-  dealStageKey: string | null; dealStageLabel: string | null; callType: string | null;
+  dealStageKey: string | null; dealStageLabel: string | null; callType: string | null; dealTitle?: string | null;
 }
 
 function Calls({ initialTemperature, initialTag }: { initialTemperature?: string; initialTag?: string }) {
@@ -4363,6 +4363,97 @@ function CallFiltersButton() {
   );
 }
 
+/** Поиск по звонкам в шапке: клиент / сделка / телефон за ВСЕ даты. Результат — модалка со списком, у каждой строки дата звонка. */
+function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string) => void; onOpenDeal: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const [items, setItems] = useState<CallItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 50); }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const term = q.trim();
+    if (term.length < 2) { setItems([]); setTotal(0); setErr(''); setLoading(false); return; }
+    let alive = true;
+    setLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const qs = new URLSearchParams({ q: term, sort: 'desc', limit: '40' });
+        const r = await fetch(`/api/ai-sales/calls?${qs}`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Ошибка');
+        if (alive) { setItems(j.items); setTotal(j.total); setErr(''); }
+      } catch (e) { if (alive) setErr(e instanceof Error ? e.message : 'Ошибка'); }
+      finally { if (alive) setLoading(false); }
+    }, 300);
+    return () => { alive = false; clearTimeout(t); };
+  }, [q, open]);
+
+  const close = () => setOpen(false);
+  const fmtWhen = (iso: string | null) => iso ? new Date(iso).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)} title="Поиск по клиентам и сделкам" aria-label="Поиск по клиентам и сделкам"
+        className="size-11 grid place-items-center rounded-2xl bg-[#F6F7F9] text-[#1b2a4a] hover:bg-gray-100 transition">
+        <SearchIcon className="w-5 h-5" />
+      </button>
+      {open && (
+        <Modal title="Поиск звонков" onClose={close} maxWidth="max-w-2xl">
+          <div className="relative">
+            <SearchIcon className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)}
+              placeholder="Компания, сделка, телефон — за все даты"
+              className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#F6F7F9] text-sm text-[#1b2a4a] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#029cda]/40" />
+          </div>
+          {err && <div className="p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
+          {q.trim().length < 2 ? (
+            <p className="text-sm text-gray-400 text-center py-6">Введите минимум 2 символа — поиск идёт по всем датам.</p>
+          ) : loading && items.length === 0 ? (
+            <LoadingBlock />
+          ) : items.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">Ничего не найдено.</p>
+          ) : (
+            <>
+              <p className="text-xs text-gray-400">Найдено звонков: {total}{total > items.length ? ` · показаны последние ${items.length}` : ''}</p>
+              <ul className="space-y-1.5 max-h-[55vh] overflow-y-auto -mr-2 pr-2">
+                {items.map((c) => (
+                  <li key={c.id} className="flex items-stretch gap-2">
+                    <button type="button" onClick={() => { close(); onOpenCall(c.id); }}
+                      className="flex-1 min-w-0 flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-gray-100 hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition text-left">
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium text-[#1b2a4a] truncate">{c.companyTitle || c.phone || 'Без названия'}</span>
+                        <span className="block text-xs text-gray-400 truncate">
+                          {[c.dealTitle, c.managerName, c.phone && c.companyTitle ? c.phone : null].filter(Boolean).join(' · ') || '—'}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="block text-xs font-medium text-[#1b2a4a] whitespace-nowrap">{fmtWhen(c.startedAt)}</span>
+                        {c.temperature && <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[11px] ${TEMP_BADGE[c.temperature] || ''}`}>{tempRu(c.temperature)}</span>}
+                      </span>
+                      <ChevronRight className="shrink-0 w-4 h-4 text-gray-300" />
+                    </button>
+                    {c.bitrixDealId && (
+                      <button type="button" onClick={() => { close(); onOpenDeal(c.bitrixDealId as string); }} title="Открыть сделку"
+                        className="shrink-0 px-3 rounded-xl border border-gray-100 bg-white text-xs text-[#029cda] hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition">
+                        Сделка
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </Modal>
+      )}
+    </>
+  );
+}
+
 /** Экраны, которые учитывают общий период — для них в шапке показывается календарь. */
 const PERIOD_VIEWS = new Set<View>(['dashboard', 'calls', 'deals', 'signals', 'insights', 'checklists', 'lost', 'tags', 'managers', 'search', 'triggers']);
 
@@ -4384,6 +4475,7 @@ export default function AiSalesSection() {
     setView(map[t.tab] ?? 'dashboard');
   };
   const openCallAt = (id: string, startMs: number | null) => { setOpenCall(id); setOpenCallSeek(startMs); };
+  const openDealFromSearch = (dealId: string) => { closeCall(); setView('deals'); setOpenDeal(dealId); };
 
   // URL-состояние: вкладка/открытый звонок/сделка → query (браузерный «Назад»,
   // F5 и ссылки). Параметры с префиксом as* — чтобы не мешать родительской админке.
@@ -4496,6 +4588,7 @@ export default function AiSalesSection() {
           {groupNav}
           {!isSetup && PERIOD_VIEWS.has(view) && !openCall && <PeriodBar value={period} onChange={setPeriod} center iconOnly />}
           {!isSetup && view === 'calls' && !openCall && <CallFiltersButton />}
+          {!isSetup && view === 'calls' && !openCall && <CallSearchButton onOpenCall={(id) => openCallAt(id, null)} onOpenDeal={openDealFromSearch} />}
         </div>
       </div>
 
