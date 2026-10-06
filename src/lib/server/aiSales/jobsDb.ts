@@ -21,7 +21,10 @@ export type AiJobType =
   | "deal.analyze"
   | "manager.analyze"
   | "ai.report"
-  | "followup.check";
+  | "followup.check"
+  | "brief.scan"
+  | "brief.lead"
+  | "brief.deal";
 
 export type AiJobStatus =
   | "PENDING"

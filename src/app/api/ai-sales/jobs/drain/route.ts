@@ -3,6 +3,7 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { drainQueue } from "@/lib/server/aiSales/jobRunner";
 import { queueStats } from "@/lib/server/aiSales/jobsDb";
 import { registerAllHandlers } from "@/lib/server/aiSales/handlers";
+import { scheduleBriefScan } from "@/lib/server/aiSales/briefScan";
 import { VERCEL_JOB_TYPES } from "@/lib/server/aiSales/settingsDb";
 
 /**
@@ -62,6 +63,8 @@ async function handle(request: NextRequest) {
     // (раз в минуту) и самопродолжением через after() меньший бюджет на
     // вызов не теряет в итоговой пропускной способности, зато вызов
     // стабильно укладывается в тайм-аут внешнего крона.
+    // Раз в час ставим сканер брифов (новые лиды + еженедельно «Отложенный спрос»).
+    await scheduleBriefScan().catch(() => {});
     const report = await drainQueue(10_000, VERCEL_JOB_TYPES);
     const stats = await queueStats();
 

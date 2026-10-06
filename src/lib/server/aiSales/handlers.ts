@@ -1,6 +1,8 @@
 import "server-only";
 
 import { registerJobHandler } from "@/lib/server/aiSales/jobRunner";
+import { runBrief } from "@/lib/server/aiSales/briefService";
+import { runBriefScan } from "@/lib/server/aiSales/briefScan";
 import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncService";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ingestCallActivity } from "@/lib/server/aiSales/callIngestService";
@@ -108,5 +110,18 @@ export function registerAllHandlers(): void {
     const dealId = String(job.payload.dealId || "");
     if (!dealId) throw new Error("deal.analyze: пустой dealId");
     return runDealInsight(dealId, { force: Boolean(job.payload.force) });
+  });
+
+  // AI-брифы: сканер (новые лиды + еженедельно «Отложенный спрос») и сама генерация.
+  registerJobHandler("brief.scan", async () => runBriefScan());
+  registerJobHandler("brief.lead", async (job) => {
+    const id = String(job.payload.leadId || "");
+    if (!id) throw new Error("brief.lead: пустой leadId");
+    return runBrief("lead", id, { notifyAlways: true });
+  });
+  registerJobHandler("brief.deal", async (job) => {
+    const id = String(job.payload.dealId || "");
+    if (!id) throw new Error("brief.deal: пустой dealId");
+    return runBrief("deal", id);
   });
 }

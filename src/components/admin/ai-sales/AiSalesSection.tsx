@@ -20,7 +20,7 @@ const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'От
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers' | 'briefs';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -587,6 +587,20 @@ interface CallItem {
   dealScore: number | null; managerScore: number | null; temperature: string | null;
   resultType: string | null; nextStep: string | null; status: string;
   dealStageKey: string | null; dealStageLabel: string | null; callType: string | null; dealTitle?: string | null;
+}
+
+/* Счётчик брифов с новыми триггерами, которые ещё не открывали (бейдж вкладки «Брифы»). */
+let sharedBriefsUnseen = 0;
+const briefsListeners = new Set<() => void>();
+const setBriefsUnseen = (n: number) => { if (n !== sharedBriefsUnseen) { sharedBriefsUnseen = n; briefsListeners.forEach((f) => f()); } };
+function useBriefsUnseen(): number {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const l = () => tick((n) => n + 1);
+    briefsListeners.add(l);
+    return () => { briefsListeners.delete(l); };
+  }, []);
+  return sharedBriefsUnseen;
 }
 
 /** Размер порции списка звонков; следующие подгружаются кнопкой «Показать ещё». */
@@ -4303,6 +4317,7 @@ const GROUPS: NavGroup[] = [
   { key: 'main', label: 'Главная', views: [
     { view: 'dashboard', label: 'Обзор' },
     { view: 'signals', label: 'Сигналы' },
+    { view: 'briefs', label: 'Брифы' },
     { view: 'followups', label: 'Follow-up' },
     { view: 'assistant', label: 'Ассистент' },
   ] },
@@ -4391,6 +4406,198 @@ function CallFiltersButton() {
               className="w-full text-sm text-[#029cda] hover:underline pt-1">Сбросить фильтры</button>
           )}
         </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────── Брифы: данные CRM + поиск в интернете по новым лидам и «Отложенному спросу» ─────────── */
+interface BriefTriggerUi { title: string; date: string | null; url: string | null; source: string | null; kind: string | null; isNew?: boolean }
+interface BriefItem {
+  id: string; entityType: 'lead' | 'deal'; entityId: string; title: string | null; companyTitle: string | null; managerName: string | null;
+  briefText: string | null; triggers: BriefTriggerUi[]; newTriggers: number; status: 'READY' | 'FAILED'; error: string | null;
+  pushedAt: string | null; notifiedAt: string | null; seenAt: string | null; createdAt: string; bitrixUrl: string | null;
+}
+const TRIGGER_KIND_RU: Record<string, string> = { news: 'Новости', procurement: 'Закупки', budget: 'Бюджет/программы', competitor: 'Конкуренты', neighbors: 'Соседи', other: 'Другое' };
+const fmtWhenShort = (iso: string) => new Date(iso).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' });
+
+function BriefDetailModal({ id, onClose, onChanged }: { id: string; onClose: () => void; onChanged: () => void }) {
+  const [data, setData] = useState<{ brief: BriefItem; history: Array<{ id: string; createdAt: string; newTriggers: number }> } | null>(null);
+  const [err, setErr] = useState('');
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    setData(null); setErr('');
+    fetch(`/api/ai-sales/briefs/${id}`).then(async (r) => {
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      if (alive) { setData(j); onChanged(); }
+    }).catch((e) => { if (alive) setErr(e instanceof Error ? e.message : 'Ошибка'); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+  const refresh = async () => {
+    if (!data) return;
+    setBusy(true); setMsg('');
+    try {
+      const r = await fetch('/api/ai-sales/briefs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ entityType: data.brief.entityType, id: data.brief.entityId }) });
+      const j = await r.json();
+      setMsg(r.ok ? 'Обновление поставлено в очередь — новый бриф появится в списке через 1–2 минуты.' : (j.error || 'Ошибка'));
+    } finally { setBusy(false); }
+  };
+  const b = data?.brief;
+  return (
+    <Modal title={b ? `${b.entityType === 'lead' ? 'Лид' : 'Сделка'}: ${b.companyTitle || b.title || b.entityId}` : 'Бриф'} onClose={onClose} maxWidth="max-w-3xl">
+      {err && <div className="p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
+      {!data && !err && <LoadingBlock />}
+      {b && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span>{fmtWhenShort(b.createdAt)}</span>
+            {b.managerName && <span>· {b.managerName}</span>}
+            {b.pushedAt && <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-700">записан в Bitrix</span>}
+            {b.notifiedAt && <span className="px-2 py-0.5 rounded-full bg-sky-50 text-sky-700">уведомление отправлено</span>}
+            {b.newTriggers > 0 && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">новых триггеров: {b.newTriggers}</span>}
+          </div>
+          {b.status === 'FAILED' && <div className="p-3 bg-red-50 text-red-700 rounded-xl text-sm">Не удалось подготовить бриф: {b.error}</div>}
+          {b.briefText && <div className="whitespace-pre-wrap text-sm text-[#1b2a4a] leading-relaxed bg-[#F6F7F9] rounded-2xl p-4">{b.briefText}</div>}
+          {b.triggers.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-[#1b2a4a] mb-2">Информационные триггеры</h4>
+              <ul className="space-y-1.5">
+                {b.triggers.map((t, i) => (
+                  <li key={i} className={`rounded-xl border px-3 py-2 text-sm ${t.isNew ? 'border-amber-300 bg-amber-50' : 'border-gray-100 bg-white'}`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {t.isNew && <span className="px-1.5 py-0.5 rounded-md bg-amber-200 text-amber-900 text-[11px] font-medium">новое</span>}
+                      {t.kind && <span className="text-[11px] text-gray-400">{TRIGGER_KIND_RU[t.kind] || t.kind}</span>}
+                      {t.date && <span className="text-[11px] text-gray-400">{t.date}</span>}
+                    </div>
+                    <div className="text-[#1b2a4a]">{t.title}</div>
+                    {t.url && <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#029cda] hover:underline break-all">{t.source || t.url}</a>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {data && data.history.length > 1 && (
+            <p className="text-xs text-gray-400">Версий брифа: {data.history.length} · первая {fmtWhenShort(data.history[data.history.length - 1].createdAt)}</p>
+          )}
+          {msg && <div className="p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{msg}</div>}
+          <div className="flex flex-wrap gap-2">
+            {b.bitrixUrl && (
+              <a href={b.bitrixUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white hover:brightness-95">
+                <ExternalLink className="w-4 h-4" /> Открыть в Bitrix
+              </a>
+            )}
+            <button type="button" onClick={refresh} disabled={busy} className="px-4 py-2 rounded-xl text-sm border border-gray-300 text-gray-700 disabled:opacity-50">Обновить бриф</button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function Briefs() {
+  const [items, setItems] = useState<BriefItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [type, setType] = useState<'' | 'lead' | 'deal'>('');
+  const [onlyNew, setOnlyNew] = useState(false);
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createVal, setCreateVal] = useState('');
+  const [createMsg, setCreateMsg] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    setErr('');
+    try {
+      const qs = new URLSearchParams({ limit: '100' });
+      if (type) qs.set('type', type);
+      if (onlyNew) qs.set('onlyNew', '1');
+      if (q.trim()) qs.set('q', q.trim());
+      const r = await fetch(`/api/ai-sales/briefs?${qs}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setItems(j.items); setTotal(j.total); setBriefsUnseen(j.unseenNew ?? 0);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoading(false); }
+  }, [type, onlyNew, q]);
+  useEffect(() => { const t = setTimeout(() => load(), q ? 300 : 0); return () => clearTimeout(t); }, [load, q]);
+
+  const create = async () => {
+    const v = createVal.trim();
+    if (!v) return;
+    setCreating(true); setCreateMsg('');
+    try {
+      const isUrl = /crm\/(lead|deal)\/details\/\d+/.test(v);
+      const body = isUrl ? { url: v } : { entityType: v.toLowerCase().startsWith('л') ? 'lead' : 'deal', id: v.replace(/\D/g, '') };
+      const r = await fetch('/api/ai-sales/briefs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await r.json();
+      setCreateMsg(r.ok ? 'Поставлено в очередь — бриф появится в списке через 1–2 минуты.' : (j.error || 'Ошибка'));
+    } finally { setCreating(false); }
+  };
+
+  const chip = (active: boolean) => `px-3.5 py-1.5 rounded-full text-sm transition ${active ? 'bg-[#029cda] text-white' : 'bg-[#F6F7F9] text-gray-600 hover:bg-gray-100'}`;
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <button type="button" className={chip(type === '' && !onlyNew)} onClick={() => { setType(''); setOnlyNew(false); }}>Все</button>
+        <button type="button" className={chip(type === 'lead')} onClick={() => setType(type === 'lead' ? '' : 'lead')}>Лиды</button>
+        <button type="button" className={chip(type === 'deal')} onClick={() => setType(type === 'deal' ? '' : 'deal')}>Отложенный спрос</button>
+        <button type="button" className={chip(onlyNew)} onClick={() => setOnlyNew(!onlyNew)}>Только новое</button>
+        <div className="relative flex-1 min-w-[180px] max-w-xs ml-auto">
+          <SearchIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Компания или ID"
+            className="w-full pl-9 pr-3 py-2 rounded-2xl bg-[#F6F7F9] text-sm focus:outline-none focus:ring-2 focus:ring-[#029cda]/40" />
+        </div>
+        <button type="button" onClick={() => { setCreateOpen(true); setCreateMsg(''); setCreateVal(''); }}
+          className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white hover:brightness-95">Создать бриф</button>
+      </div>
+      <p className="text-sm text-gray-500 mb-4">Бриф собирается автоматически по каждому новому лиду и раз в неделю по сделкам на этапе «Отложенный спрос»: данные CRM плюс свежие новости, программы и закупки из интернета. Текст записывается в поле «Бриф» карточки в Bitrix.</p>
+      {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
+      {loading ? <LoadingBlock /> : items.length === 0 ? (
+        <p className="text-center text-gray-400 py-10 text-sm">Брифов пока нет. Они появятся после новой заявки или проверки отложенного спроса — или создайте вручную.</p>
+      ) : (
+        <>
+          <ul className="space-y-2">
+            {items.map((b) => {
+              const hot = b.newTriggers > 0 && !b.seenAt;
+              return (
+                <li key={b.id}>
+                  <button type="button" onClick={() => setOpenId(b.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border text-left transition ${hot ? 'border-amber-300 bg-amber-50 hover:bg-amber-100/60' : 'border-gray-100 bg-white hover:border-[#029cda]/40 hover:bg-[#FAFDFF]'}`}>
+                    <span className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium ${b.entityType === 'lead' ? 'bg-sky-100 text-sky-700' : 'bg-violet-100 text-violet-700'}`}>{b.entityType === 'lead' ? 'Лид' : 'Сделка'}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-medium text-[#1b2a4a] truncate">{b.companyTitle || b.title || `#${b.entityId}`}</span>
+                      <span className="block text-xs text-gray-400 truncate">{[b.title && b.title !== b.companyTitle ? b.title : null, b.managerName, `${b.triggers.length} тригг.`].filter(Boolean).join(' · ')}</span>
+                    </span>
+                    {b.status === 'FAILED' && <span className="shrink-0 text-xs text-red-600">ошибка</span>}
+                    {b.newTriggers > 0 && <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-xs font-medium">новое: {b.newTriggers}</span>}
+                    {b.pushedAt && <span className="shrink-0 text-xs text-green-600" title="Записан в Bitrix">✓ Bitrix</span>}
+                    <span className="shrink-0 text-xs text-gray-400 whitespace-nowrap">{fmtWhenShort(b.createdAt)}</span>
+                    <ChevronRight className="shrink-0 w-4 h-4 text-gray-300" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="text-xs text-gray-400 text-center mt-3">Показано: {items.length} из {total}</p>
+        </>
+      )}
+      {openId && <BriefDetailModal id={openId} onClose={() => setOpenId(null)} onChanged={() => load(true)} />}
+      {createOpen && (
+        <Modal title="Создать бриф" onClose={() => setCreateOpen(false)} maxWidth="max-w-lg">
+          <p className="text-sm text-gray-500">Вставьте ссылку на лид или сделку из Bitrix (или «лид 123» / «сделка 456»).</p>
+          <input value={createVal} onChange={(e) => setCreateVal(e.target.value)} placeholder="https://…bitrix24.ru/crm/deal/details/14033/"
+            className="w-full px-4 py-3 rounded-2xl bg-[#F6F7F9] text-sm focus:outline-none focus:ring-2 focus:ring-[#029cda]/40" />
+          {createMsg && <div className="p-3 bg-blue-50 text-blue-800 rounded-xl text-sm">{createMsg}</div>}
+          <button type="button" onClick={create} disabled={creating || !createVal.trim()} className="px-4 py-2 rounded-xl text-sm bg-[#029cda] text-white disabled:opacity-50">{creating ? 'Отправляю…' : 'Подготовить бриф'}</button>
+        </Modal>
       )}
     </div>
   );
@@ -4630,6 +4837,10 @@ export default function AiSalesSection() {
 
   const [period, setPeriod] = usePersistentPeriod();
   const callStore = useCallStore();
+  const briefsUnseen = useBriefsUnseen();
+  useEffect(() => {
+    fetch('/api/ai-sales/briefs?onlyNew=1&limit=1').then((r) => r.json()).then((j) => { if (typeof j.unseenNew === 'number') setBriefsUnseen(j.unseenNew); }).catch(() => {});
+  }, []);
   const { filters: cf, setTotal: setCallsTotal } = callStore;
   useEffect(() => {
     const qs = periodQS(period);
@@ -4662,6 +4873,9 @@ export default function AiSalesSection() {
           <button key={s.view} type="button" role="tab" aria-selected={view === s.view} aria-current={view === s.view ? 'page' : undefined} onClick={() => go(s.view)}
             className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#029cda] focus-visible:ring-inset ${view === s.view ? 'border-[#029cda] text-[#029cda] font-medium' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
             {s.label}
+            {s.view === 'briefs' && briefsUnseen > 0 && (
+              <span className="ml-1.5 inline-grid min-w-5 h-5 px-1.5 place-items-center rounded-full bg-amber-200 text-amber-900 text-xs font-medium">{briefsUnseen}</span>
+            )}
             {s.view === 'calls' && callStore.total != null && (
               <span className="ml-1.5 inline-grid min-w-5 h-5 px-1.5 place-items-center rounded-full bg-[#029cda]/10 text-[#029cda] text-xs font-medium">{callStore.total}</span>
             )}
@@ -4681,6 +4895,7 @@ export default function AiSalesSection() {
     if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'triggers') return <Triggers onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'assistant') return <Assistant />;
+    if (view === 'briefs') return <Briefs />;
     if (view === 'kb') return <KnowledgeBase />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
     if (view === 'departments') return <Departments />;

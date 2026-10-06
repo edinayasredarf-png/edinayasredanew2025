@@ -115,4 +115,7 @@ export const VERCEL_JOB_TYPES: AiJobType[] = [
   "call.transcribe",
   "call.diarize",
   ...ANALYSIS_JOB_TYPES,
+  "brief.scan",
+  "brief.lead",
+  "brief.deal",
 ];
