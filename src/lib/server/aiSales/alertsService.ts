@@ -89,7 +89,7 @@ export async function getSignals(
       kind: "commitment",
       title: `Просрочены обещания клиентам: ${overdue.length}`,
       detail: (top.length ? `Например: ${top.join("; ")}. ` : "Обещанные менеджерами действия не выполнены в срок. ") + "Список актуален на сейчас (не зависит от выбранного периода).",
-      action: "Закрыть просроченные follow-up или перенести срок клиенту.",
+      action: "Закрыть просроченные обещания или перенести срок клиенту.",
       link: null,
       manager: null,
       count: overdue.length,

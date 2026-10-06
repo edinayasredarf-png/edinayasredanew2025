@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // Лист 1 — менеджеры.
     const mgrRows: Cell[][] = [
-      ["Менеджер", "Звонки", "Проанализировано", "Сделки", "Горячие", "Ср. оценка (0–10)", "Ср. Deal Score (0–100)"],
+      ["Менеджер", "Звонки", "Проанализировано", "Сделки", "Горячие", "Ср. оценка (0–10)", "Ср. оценка сделки (0–100)"],
       ...managers.map((m) => [
         m.name || `ID ${m.bitrixUserId}`, m.calls, m.analyzed, m.deals, m.hotDeals,
         m.avgManagerScore ?? "", m.avgDealScore ?? "",

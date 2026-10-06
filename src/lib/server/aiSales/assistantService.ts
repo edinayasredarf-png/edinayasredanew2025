@@ -38,8 +38,8 @@ async function callContext(callId: string): Promise<string | null> {
     | undefined;
   if (a) {
     if (a.summary) parts.push(`Сводка: ${a.summary}`);
-    if (a.dealScore?.score != null) parts.push(`Оценка сделки LLM: ${a.dealScore.score}/100`);
-    if (a.managerPerformance?.overall != null) parts.push(`Оценка менеджера LLM: ${a.managerPerformance.overall}/10`);
+    if (a.dealScore?.score != null) parts.push(`Оценка сделки ИИ: ${a.dealScore.score}/100`);
+    if (a.managerPerformance?.overall != null) parts.push(`Оценка менеджера ИИ: ${a.managerPerformance.overall}/10`);
     if (a.managerPerformance?.mistakes?.length) parts.push(`Ошибки менеджера: ${a.managerPerformance.mistakes.join("; ")}`);
     if (a.managerPerformance?.didWell?.length) parts.push(`Сделано хорошо: ${a.managerPerformance.didWell.join("; ")}`);
     if (a.objections?.length) parts.push(`Возражения: ${a.objections.map((o) => `${o.text}${o.handled ? " (отработано)" : " (не отработано)"}`).join("; ")}`);

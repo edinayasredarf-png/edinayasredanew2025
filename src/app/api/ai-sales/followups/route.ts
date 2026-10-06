@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const data = await listFollowUps({ managerBitrixId: managerFilterFor(user), status: sp.get("status") });
     return NextResponse.json(data);
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Ошибка follow-up";
+    const message = e instanceof Error ? e.message : "Ошибка списка обещаний";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

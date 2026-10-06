@@ -172,7 +172,7 @@ const AI_SUBVIEWS: Array<{ label: string; view: string; kind: string }> = [
   { label: 'Сигналы РОП', view: 'signals', kind: 'Раздел' },
   { label: 'AI РОП', view: 'rop', kind: 'Раздел' },
   { label: 'Динамика (тренды)', view: 'trends', kind: 'Отчёт' },
-  { label: 'Follow-up (обещания)', view: 'followups', kind: 'Раздел' },
+  { label: 'Обещания менеджеров', view: 'followups', kind: 'Раздел' },
   { label: 'Коммуникации (звонки)', view: 'calls', kind: 'Раздел' },
   { label: 'Поиск по звонкам', view: 'search', kind: 'Раздел' },
   { label: 'Сделки (AI)', view: 'deals', kind: 'Раздел' },

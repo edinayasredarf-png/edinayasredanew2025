@@ -40,7 +40,7 @@ const CRITERION_LABEL: Record<string, string> = {
   pain_identification: "выявление проблем", current_situation: "текущая ситуация",
   decision_maker: "выявление ЛПР", budget: "обсуждение бюджета", timeline: "сроки",
   procurement: "закупки", objections: "работа с возражениями",
-  product_presentation: "презентация продукта", next_step: "следующий шаг", follow_up: "follow-up",
+  product_presentation: "презентация продукта", next_step: "следующий шаг", follow_up: "договорённость о следующем контакте",
 };
 
 export async function getInsights(

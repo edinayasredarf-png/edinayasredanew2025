@@ -368,7 +368,7 @@ function Dashboard({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
           <Kpi tall label="Звонки" value={data.calls.total} onClick={onNavigate ? () => onNavigate({ tab: 'ai-calls' }) : undefined} />
           <Kpi tall label="Средняя длительность" value={fmtDur(data.calls.avgDurationSec)} />
           <Kpi tall label="Ср. оценка менеджера" value={data.calls.avgManagerScore != null ? `${data.calls.avgManagerScore}/10` : '—'} />
-          <Kpi tall label="Ср. Deal Score" value={data.calls.avgDealScore != null ? `${data.calls.avgDealScore}/100` : '—'} />
+          <Kpi tall label="Ср. оценка сделки" value={data.calls.avgDealScore != null ? `${data.calls.avgDealScore}/100` : '—'} />
         </div>
 
         <div>
@@ -438,11 +438,11 @@ const JOB_TYPE_LABELS: Record<string, string> = {
   'call.transcribe': 'Транскрибация',
   'call.diarize': 'Диаризация',
   'call.roles': 'Разметка ролей',
-  'call.analyze': 'AI-анализ звонка',
+  'call.analyze': 'ИИ-анализ звонка',
   'deal.analyze': 'Анализ сделки',
   'manager.analyze': 'Анализ менеджера',
   'ai.report': 'Формирование отчёта',
-  'followup.check': 'Проверка follow-up',
+  'followup.check': 'Проверка обещаний',
 };
 const jobLabel = (t: string) => JOB_TYPE_LABELS[t] || t;
 
@@ -751,7 +751,7 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                     onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}>
                   Дата {sort === 'desc' ? '↓' : '↑'}
                 </th>
-                {['Менеджер', 'Клиент', 'Этап', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
+                {['Менеджер', 'Клиент', 'Этап', 'Длит.', 'Продукт', 'Оц. сделки', 'Оц. менеджера', 'Темп.', 'Статус'].map((h) => (
                   <th key={h} className="text-left font-medium px-2 py-2 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -883,7 +883,7 @@ const ms2tc = (ms: number | null) => {
   return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
 };
 
-/* Эталонная оценка звонка (контроль качества LLM, §33 ТЗ). */
+/* Эталонная оценка звонка (контроль качества ИИ, §33 ТЗ). */
 function ReviewWidget({ callId, llmDeal, llmManager }: { callId: string; llmDeal: number | null; llmManager: number | null }) {
   const [deal, setDeal] = useState('');
   const [mgr, setMgr] = useState('');
@@ -942,7 +942,7 @@ function ReviewWidget({ callId, llmDeal, llmManager }: { callId: string; llmDeal
           <div className="flex items-center gap-2">
             <input type="number" min={0} max={100} value={deal} onChange={(e) => setDeal(e.target.value)}
               className="w-24 px-2 py-1.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
-            <span className="text-xs text-gray-400">LLM: {llmDeal ?? '—'}{dDeal != null && <span className={Math.abs(dDeal) <= 10 ? 'text-emerald-600' : 'text-red-600'}> (Δ {dDeal > 0 ? '+' : ''}{dDeal})</span>}</span>
+            <span className="text-xs text-gray-400">ИИ: {llmDeal ?? '—'}{dDeal != null && <span className={Math.abs(dDeal) <= 10 ? 'text-emerald-600' : 'text-red-600'}> (разн. {dDeal > 0 ? '+' : ''}{dDeal})</span>}</span>
           </div>
         </div>
         <div>
@@ -950,7 +950,7 @@ function ReviewWidget({ callId, llmDeal, llmManager }: { callId: string; llmDeal
           <div className="flex items-center gap-2">
             <input type="number" min={0} max={10} step={0.5} value={mgr} onChange={(e) => setMgr(e.target.value)}
               className="w-20 px-2 py-1.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-[#029cda]" />
-            <span className="text-xs text-gray-400">LLM: {llmManager ?? '—'}{dMgr != null && <span className={Math.abs(dMgr) <= 2 ? 'text-emerald-600' : 'text-red-600'}> (Δ {dMgr > 0 ? '+' : ''}{dMgr})</span>}</span>
+            <span className="text-xs text-gray-400">ИИ: {llmManager ?? '—'}{dMgr != null && <span className={Math.abs(dMgr) <= 2 ? 'text-emerald-600' : 'text-red-600'}> (разн. {dMgr > 0 ? '+' : ''}{dMgr})</span>}</span>
           </div>
         </div>
         <div className="flex-1 min-w-[180px]">
@@ -1127,7 +1127,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
             className="w-9 h-9 rounded-xl border border-gray-300 text-gray-600 hover:text-[#029cda] hover:border-[#029cda] flex items-center justify-center disabled:opacity-50">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a4 4 0 00-4 4v4a4 4 0 008 0V7a4 4 0 00-4-4z M5 11a7 7 0 0014 0 M12 18v3" /></svg>
           </button>
-          <button onClick={reanalyze} disabled={busy} title="Переанализировать — заново прогнать AI-разбор звонка"
+          <button onClick={reanalyze} disabled={busy} title="Переанализировать — заново прогнать ИИ-разбор звонка"
             className="w-9 h-9 rounded-xl bg-[#029cda] text-white hover:bg-[#0280b5] flex items-center justify-center disabled:opacity-50">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3 M12 18v3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M3 12h3 M18 12h3 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1" /></svg>
           </button>
@@ -1139,7 +1139,7 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
         <div className={`mb-4 rounded-2xl border p-4 ${brief.newTriggers > 0 ? 'border-amber-300 bg-amber-50' : 'border-gray-100 bg-white'}`}>
           <div className="flex flex-wrap items-center gap-2">
             <FileText className="w-4 h-4 text-[#029cda]" />
-            <span className="text-sm font-semibold text-[#1b2a4a]">AI-бриф по {brief.entityType === 'deal' ? 'сделке' : 'лиду'}</span>
+            <span className="text-sm font-semibold text-[#1b2a4a]">ИИ-бриф по {brief.entityType === 'deal' ? 'сделке' : 'лиду'}</span>
             <span className="text-xs text-gray-400">{fmtWhenShort(brief.createdAt)}</span>
             {brief.newTriggers > 0 && <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-xs font-medium">новых триггеров: {brief.newTriggers}</span>}
             <button type="button" onClick={() => setBriefOpen((v) => !v)} className="ml-auto text-xs text-[#029cda] hover:underline">{briefOpen ? 'Свернуть' : 'Показать бриф'}</button>
@@ -1229,9 +1229,9 @@ function CallDetail({ id, onBack, backLabel = '← К списку', initialSeek
           )}
         </div>
 
-        {/* AI-анализ */}
+        {/* ИИ-анализ */}
         <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <p className="font-semibold text-gray-800 mb-3">AI-анализ</p>
+          <p className="font-semibold text-gray-800 mb-3">ИИ-анализ</p>
           {!a ? <p className="text-gray-400 text-sm">Анализ ещё не выполнен.</p> : a.connected === false ? (
             <div className="text-sm">
               <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 text-gray-600 mb-3">
@@ -1515,7 +1515,7 @@ function Deals({ onOpen, initialTemperature }: { onOpen: (id: string) => void; i
         <ScrollX className="bg-white rounded-2xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
-              <tr>{['Клиент / Сделка', 'Менеджер', 'Звонков', 'Темп.', 'Score', 'Оценка мен.', 'Следующий шаг'].map((h) => (
+              <tr>{['Клиент / Сделка', 'Менеджер', 'Звонков', 'Темп.', 'Оц. сделки', 'Оц. менеджера', 'Следующий шаг'].map((h) => (
                 <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>))}
               </tr>
             </thead>
@@ -1752,7 +1752,7 @@ function DealBitrixTimeline({ dealId, collapsible = false }: { dealId: string | 
   );
 }
 
-/* ─────────── AI рекомендует — кому звонить сегодня ─────────── */
+/* ─────────── ИИ рекомендует — кому звонить сегодня ─────────── */
 interface RecoItem {
   bitrixDealId: string; title: string | null; company: string | null; manager: string | null;
   dealUrl: string | null; severity: string; reason: string; action: string | null;
@@ -2047,11 +2047,11 @@ function Trends() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <DeltaKpi label="Звонки за период" value={data.delta.calls} prev={data.delta.callsPrev} />
             <DeltaKpi label="🔥 Горячие" value={data.delta.hot} prev={data.delta.hotPrev} />
-            <DeltaKpi label="Ср. Deal Score" value={data.delta.avgDealScore} prev={data.delta.avgDealScorePrev} />
+            <DeltaKpi label="Ср. оценка сделки" value={data.delta.avgDealScore} prev={data.delta.avgDealScorePrev} />
             <DeltaKpi label="Ср. оценка менеджера" value={data.delta.avgManagerScore} prev={data.delta.avgManagerScorePrev} suffix="/10" />
           </div>
           <MiniChart points={data.weekly} barKey="calls" lineKey="avgDealScore" lineMax={100}
-            title="Звонки и качество сделок по неделям" barLabel="звонки" lineLabel="Deal Score (0–100)" />
+            title="Звонки и качество сделок по неделям" barLabel="звонки" lineLabel="Оценка сделки (0–100)" />
           <MiniChart points={data.weekly} barKey="calls" lineKey="avgManagerScore" lineMax={10}
             title="Звонки и оценка менеджеров по неделям" barLabel="звонки" lineLabel="оценка (0–10)" />
         </div>
@@ -2060,7 +2060,7 @@ function Trends() {
   );
 }
 
-/* ─────────── AI Insights ─────────── */
+/* ─────────── ИИ Insights ─────────── */
 interface InsightsData {
   totalAnalyzed: number;
   topProducts: Array<{ name: string; count: number }>;
@@ -2078,7 +2078,7 @@ const CRIT_LABEL: Record<string, string> = {
   pain_identification: 'выявление проблем', current_situation: 'текущая ситуация',
   decision_maker: 'выявление ЛПР', budget: 'обсуждение бюджета', timeline: 'сроки',
   procurement: 'закупки', objections: 'работа с возражениями',
-  product_presentation: 'презентация продукта', next_step: 'следующий шаг', follow_up: 'follow-up',
+  product_presentation: 'презентация продукта', next_step: 'следующий шаг', follow_up: 'договорённость о следующем контакте',
 };
 const RESULT_LABEL: Record<string, string> = {
   agreed: 'договорились', not_agreed: 'не договорились', callback: 'перезвонить',
@@ -2653,7 +2653,7 @@ function Checklists({ onOpen, onOpenCall }: { onOpen: (id: string) => void; onOp
   );
 }
 
-/* ─────────── Follow-up (обещания менеджеров) ─────────── */
+/* ─────────── Обещания менеджеров (follow-up) ─────────── */
 interface FollowUpItem {
   id: string; action: string; deadline: string | null; status: string; overdue: boolean;
   bitrixDealId: string | null; dealUrl: string | null; company: string | null; manager: string | null; createdAt: string | null;
@@ -2691,7 +2691,7 @@ function FollowUps() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-xl font-semibold text-[#1b2a4a]">
-          Follow-up <span className="text-gray-400 text-base font-normal">· активных {openCount}{overdueCount ? <span className="text-red-500">, просрочено {overdueCount}</span> : null}</span>
+          Обещания менеджеров <span className="text-gray-400 text-base font-normal">· активных {openCount}{overdueCount ? <span className="text-red-500">, просрочено {overdueCount}</span> : null}</span>
         </h2>
         <Select value={status} onChange={setStatus} className="w-full sm:w-[180px]" ariaLabel="Статус"
           options={[{ value: 'active', label: 'Активные' }, { value: 'overdue', label: 'Просроченные' }, { value: 'done', label: 'Выполненные' }]} />
@@ -2757,7 +2757,7 @@ function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
   return (
     <div>
       <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Проигранные сделки</h2>
-      <p className="text-sm text-gray-500 mb-4">Причины проигрыша по AI-разбору звонков (не только по полю Bitrix).</p>
+      <p className="text-sm text-gray-500 mb-4">Причины проигрыша по ИИ-разбору звонков (не только по полю Bitrix).</p>
       {loading ? <LoadingBlock /> : !data ? null : data.total === 0 ? (
         <p className="text-gray-400 py-8">Проигранных сделок с разбором за период нет. (Убедитесь, что синхронизация обновила статусы сделок.)</p>
       ) : (
@@ -2795,7 +2795,7 @@ function LostDeals({ onOpen }: { onOpen: (id: string) => void }) {
   );
 }
 
-/* ─────────── Настройки AI ─────────── */
+/* ─────────── Настройки ИИ ─────────── */
 function Settings() {
   const [s, setS] = useState<Record<string, unknown> | null>(null);
   const [err, setErr] = useState('');
@@ -2888,7 +2888,7 @@ function Settings() {
   return (
     <div className="max-w-2xl">
       <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Настройки AI</h2>
-      <p className="text-sm text-gray-500 mb-4">Влияют на следующий анализ. Ключи Yandex/Anthropic/STT задаются в переменных окружения (Vercel).</p>
+      <p className="text-sm text-gray-500 mb-4">Влияют на следующий анализ. Ключи Yandex, Anthropic и распознавания речи задаются в переменных окружения (Vercel).</p>
 
       <div className="bg-white rounded-xl border border-gray-100 px-5">
         <Field label="Провайдер транскрибации" hint="yandex_v3 — облако Yandex со спикерами (моно); selfhosted — свой сервер faster-whisper + pyannote (диаризация как у Voicee); yandex — SpeechKit v2 без диаризации; whisper — свой Whisper-endpoint. Меняется на лету, применится к следующим звонкам.">
@@ -2907,8 +2907,8 @@ function Settings() {
           <Select value={str('diarization.provider', 'yandex')} onChange={(v) => set('diarization.provider', v)} className="w-full" ariaLabel="Диаризация"
             options={[{ value: 'yandex', label: 'Yandex (встроенная)' }, { value: 'pyannote', label: 'pyannote (свой сервер, точнее)' }]} />
         </Field>
-        <Field label="AI-провайдер анализа" hint="anthropic (Claude), yandex (YandexGPT) или selfhosted — любой OpenAI-совместимый шлюз/сервер (напр. Timeweb AI Gateway). Для selfhosted задайте в env Vercel: SELFHOSTED_LLM_URL, SELFHOSTED_LLM_API_KEY.">
-          <Select value={str('ai.provider', 'yandex')} onChange={(v) => set('ai.provider', v)} className="w-full" ariaLabel="AI-провайдер"
+        <Field label="ИИ-провайдер анализа" hint="anthropic (Claude), yandex (YandexGPT) или selfhosted — любой OpenAI-совместимый шлюз/сервер (напр. Timeweb AI Gateway). Для selfhosted задайте в env Vercel: SELFHOSTED_LLM_URL, SELFHOSTED_LLM_API_KEY.">
+          <Select value={str('ai.provider', 'yandex')} onChange={(v) => set('ai.provider', v)} className="w-full" ariaLabel="ИИ-провайдер"
             options={[{ value: 'yandex', label: 'YandexGPT' }, { value: 'anthropic', label: 'Anthropic Claude' }, { value: 'selfhosted', label: 'OpenAI-совместимый шлюз (напр. Timeweb AI Gateway)' }]} />
         </Field>
         {s['ai.provider'] === 'selfhosted' && (
@@ -2924,8 +2924,8 @@ function Settings() {
                   ? `Не удалось получить каталог моделей шлюза: ${modelsErr}. Впишите id вручную — его можно скопировать со страницы шлюза (не отображаемое имя, а API id, напр. dashscope/qwen3.5-flash).`
                   : models == null
                     ? 'Загружаю каталог моделей шлюза…'
-                    : `Каталог шлюза: ${models.length} моделей — начните печатать, появятся подсказки. Общая модель по умолчанию для всех AI-задач ниже, если для них не задана своя.`)
-              : 'напр. claude-opus-5 (Anthropic) или имя модели YandexGPT. Общая модель по умолчанию для всех AI-задач ниже, если для них не задана своя.'
+                    : `Каталог шлюза: ${models.length} моделей — начните печатать, появятся подсказки. Общая модель по умолчанию для всех ИИ-задач ниже, если для них не задана своя.`)
+              : 'напр. claude-opus-5 (Anthropic) или имя модели YandexGPT. Общая модель по умолчанию для всех ИИ-задач ниже, если для них не задана своя.'
           }
         >
           <input value={str('ai.model.analysis')} onChange={(e) => set('ai.model.analysis', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="claude-opus-5" />
@@ -2933,10 +2933,10 @@ function Settings() {
         <Field label="Модель для разметки ролей" hint="Менеджер/Клиент по репликам — задача попроще, можно взять модель подешевле. Пусто — используется «Модель анализа звонка/сделки» выше.">
           <input value={str('ai.model.roles')} onChange={(e) => set('ai.model.roles', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
         </Field>
-        <Field label="Модель для RAG-ассистента" hint="Ответы на вопросы по базе знаний (§31 ТЗ). Пусто — используется «Модель анализа звонка/сделки» выше.">
+        <Field label="Модель для ассистента по базе знаний" hint="Ответы на вопросы по базе знаний (§31 ТЗ). Пусто — используется «Модель анализа звонка/сделки» выше.">
           <input value={str('ai.model.rag')} onChange={(e) => set('ai.model.rag', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель анализа)" />
         </Field>
-        <Field label="Поиск для брифов (AI-агент Timeweb)" hint="Поиск в интернете выполняет AI-агент Timeweb с включённой опцией «Поиск в интернете» (у AI Gateway веб-поиска нет). Подключение — переменные BRIEF_SEARCH_AGENT_URL и BRIEF_SEARCH_AGENT_KEY на Vercel; модель агента выбирается в кабинете Timeweb. Ниже поле нужно только для OpenAI-совместимого агента, если он требует имя модели.">
+        <Field label="Поиск для брифов (ИИ-агент Timeweb)" hint="Поиск в интернете выполняет ИИ-агент Timeweb с включённой опцией «Поиск в интернете» (у шлюза Timeweb веб-поиска нет). Подключение — переменные BRIEF_SEARCH_AGENT_URL и BRIEF_SEARCH_AGENT_KEY на Vercel; модель агента выбирается в кабинете Timeweb. Ниже поле нужно только для OpenAI-совместимого агента, если он требует имя модели.">
           <input value={str('ai.model.briefSearch')} onChange={(e) => set('ai.model.briefSearch', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(модель шлюза по умолчанию)" />
           <div className="mt-2">
             <button type="button" onClick={testSearch} disabled={searchTesting}
@@ -2960,10 +2960,10 @@ function Settings() {
             </div>
           )}
         </Field>
-        <Field label="Модель анализа для брифов" hint="Модель AI Gateway, которая из данных CRM и найденного собирает итоговый бриф. Пусто — используется модель поиска.">
+        <Field label="Модель анализа для брифов" hint="Модель шлюза Timeweb, которая из данных CRM и найденного собирает итоговый бриф. Пусто — используется модель поиска.">
           <input value={str('ai.model.brief')} onChange={(e) => set('ai.model.brief', e.target.value)} list="ai-model-catalog" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="(как модель поиска)" />
         </Field>
-        <Field label="Промт поиска для брифов" hint="Инструкция AI-агенту с веб-поиском: что искать по организации и региону. Пусто или стандартный текст — используется встроенный. Изменения действуют на новые брифы.">
+        <Field label="Промт поиска для брифов" hint="Инструкция ИИ-агенту с веб-поиском: что искать по организации и региону. Пусто или стандартный текст — используется встроенный. Изменения действуют на новые брифы.">
           <textarea value={String(s?.['ai.brief.promptSearch'] || BRIEF_SEARCH_PROMPT_DEFAULT)} onChange={(e) => set('ai.brief.promptSearch', e.target.value)} rows={10}
             className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full font-mono leading-relaxed" />
           <button type="button" onClick={() => set('ai.brief.promptSearch', BRIEF_SEARCH_PROMPT_DEFAULT)} className="mt-1 text-xs text-[#029cda] hover:underline">Вернуть стандартный</button>
@@ -2976,7 +2976,7 @@ function Settings() {
         <Field label="Анализ включён">
           <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>
         </Field>
-        <Field label="Порог уверенности" hint="0..1 — ниже AI помечает «недостаточно данных»">
+        <Field label="Порог уверенности" hint="0..1 — ниже ИИ помечает «недостаточно данных»">
           <input type="number" step="0.05" min="0" max="1" value={str('ai.confidence_threshold', '0.5')} onChange={(e) => set('ai.confidence_threshold', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-32" />
         </Field>
         <Field label="Автозапись в Bitrix" hint="Пока не активно — запись в CRM (задачи/комментарии) будет с подтверждением человеком.">
@@ -2985,7 +2985,7 @@ function Settings() {
             <label className="inline-flex items-center gap-2"><input type="checkbox" checked={bool('bitrix.auto_create_tasks')} onChange={(e) => set('bitrix.auto_create_tasks', e.target.checked)} /> авто-создание задач</label>
           </div>
         </Field>
-        <Field label="Хранение транскриптов, дней" hint="Retention (§56). Очистка — отдельным заданием (позже).">
+        <Field label="Хранение транскриптов, дней" hint="Через сколько дней удалять расшифровки звонков. Автоочистка пока не включена (будет отдельным заданием).">
           <input type="number" min="0" value={str('retention.transcript_days', '365')} onChange={(e) => set('retention.transcript_days', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-32" />
         </Field>
       </div>
@@ -3106,7 +3106,7 @@ function StageDictionaryPanel() {
   );
 }
 
-/* ─────────── AI-теги ─────────── */
+/* ─────────── ИИ-теги ─────────── */
 interface TagStat { slug: string; category: string; categoryLabel: string; label: string; count: number }
 interface TagsData { groups: Array<{ category: string; categoryLabel: string; tags: TagStat[] }>; total: number }
 const TAG_CAT_COLOR: Record<string, string> = {
@@ -3138,7 +3138,7 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">AI-теги</h2>
+      <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">ИИ-теги</h2>
       <p className="text-sm text-gray-500 mb-4">Автотеги из разборов звонков. Клик по тегу — звонки с этим тегом.</p>
       {loading ? <LoadingBlock /> : !data ? null : data.groups.length === 0 ? (
         <p className="text-gray-400 py-8">Тегов пока нет — появятся после анализа звонков.</p>
@@ -3200,7 +3200,7 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
         <ScrollX className="bg-white rounded-2xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
-              <tr>{['Менеджер', 'Звонков', 'Сделок', '🔥 Горячих', 'Оценка', 'Deal Score'].map((h) => (
+              <tr>{['Менеджер', 'Звонков', 'Сделок', '🔥 Горячих', 'Оц. менеджера', 'Оц. сделки'].map((h) => (
                 <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>))}
               </tr>
             </thead>
@@ -3319,7 +3319,7 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
         <Kpi label="Звонков" value={m.calls} sub={`Проанализировано: ${m.analyzed}`} />
         <Kpi label="Сделок" value={m.deals} />
         <Kpi label="🔥 Горячих" value={m.hotDeals} />
-        <Kpi label="Ср. Deal Score" value={m.avgDealScore ?? '—'} />
+        <Kpi label="Ср. оценка сделки" value={m.avgDealScore ?? '—'} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TopList title="Навыки по критериям (0–10)" max={10} rows={data.criteria.map((c) => ({ label: c.label, count: c.avg }))} />
@@ -3466,7 +3466,7 @@ function Search({ onOpen }: { onOpen: (callId: string, startMs: number | null) =
   );
 }
 
-/* ─────────── Контроль качества LLM (эталон руководителя vs модель) ─────────── */
+/* ─────────── Контроль качества ИИ (эталон руководителя vs модель) ─────────── */
 interface QcMetricT { count: number; mae: number | null; bias: number | null; pearson: number | null; within: number | null }
 interface QcRowT {
   callId: string; startedAt: string | null; managerName: string | null; clientTitle: string | null;
@@ -3578,7 +3578,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
   return (
     <div>
       <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Контроль качества</h2>
-      <p className="text-sm text-gray-500 mb-5">Эталонные оценки руководителя против оценок LLM. Главная цель — чтобы оценка модели <b>коррелировала</b> с оценкой человека. Эталон ставится в карточке звонка.</p>
+      <p className="text-sm text-gray-500 mb-5">Эталонные оценки руководителя против оценок ИИ. Главная цель — чтобы оценка модели <b>коррелировала</b> с оценкой человека. Эталон ставится в карточке звонка.</p>
 
       {s.count === 0 ? (
         <div className="bg-[#F6F7F9] rounded-xl p-6 text-sm text-gray-500">
@@ -3589,14 +3589,14 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             <Kpi label="Оценено звонков" value={s.count} />
-            <Kpi label="Корреляция (сделка)" value={corrLabel(s.deal.pearson)} sub={`MAE ${s.deal.mae ?? '—'} · ±10: ${s.deal.within ?? '—'}%`} />
-            <Kpi label="Корреляция (менеджер)" value={corrLabel(s.manager.pearson)} sub={`MAE ${s.manager.mae ?? '—'} · ±2: ${s.manager.within ?? '—'}%`} />
-            <Kpi label="Смещение LLM" value={`${s.deal.bias != null ? (s.deal.bias > 0 ? '+' : '') + s.deal.bias : '—'} / ${s.manager.bias != null ? (s.manager.bias > 0 ? '+' : '') + s.manager.bias : '—'}`} sub="сделка / менеджер (человек − LLM)" />
+            <Kpi label="Корреляция (сделка)" value={corrLabel(s.deal.pearson)} sub={`ср. ошибка ${s.deal.mae ?? '—'} · в пределах ±10: ${s.deal.within ?? '—'}%`} />
+            <Kpi label="Корреляция (менеджер)" value={corrLabel(s.manager.pearson)} sub={`ср. ошибка ${s.manager.mae ?? '—'} · в пределах ±2: ${s.manager.within ?? '—'}%`} />
+            <Kpi label="Смещение ИИ" value={`${s.deal.bias != null ? (s.deal.bias > 0 ? '+' : '') + s.deal.bias : '—'} / ${s.manager.bias != null ? (s.manager.bias > 0 ? '+' : '') + s.manager.bias : '—'}`} sub="сделка / менеджер (человек − ИИ)" />
           </div>
 
           {s.byVersion.length > 1 && (
             <div className="bg-[#F6F7F9] rounded-xl p-4 mb-5">
-              <p className="text-sm font-semibold text-gray-700 mb-2">По версиям промта (MAE — чем меньше, тем ближе к человеку)</p>
+              <p className="text-sm font-semibold text-gray-700 mb-2">По версиям промта (средняя ошибка — чем меньше, тем ближе ИИ к человеку)</p>
               <div className="flex flex-wrap gap-2">
                 {s.byVersion.map((v) => (
                   <span key={v.promptVersion} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-sm text-gray-700">
@@ -3611,7 +3611,7 @@ function Qc({ onOpen }: { onOpen: (callId: string) => void }) {
           <ScrollX className="bg-white rounded-2xl border border-gray-100">
             <table className="min-w-full text-sm">
               <thead className="bg-[#F6F7F9] text-gray-600">
-                <tr>{['Дата', 'Менеджер', 'Клиент', 'Сделка: чел./LLM/Δ', 'Менеджер: чел./LLM/Δ', 'Ревьюер'].map((h) => (
+                <tr>{['Дата', 'Менеджер', 'Клиент', 'Сделка: человек / ИИ / разница', 'Менеджер: человек / ИИ / разница', 'Ревьюер'].map((h) => (
                   <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
                 ))}</tr>
               </thead>
@@ -3811,7 +3811,7 @@ function KnowledgeBase() {
         <h2 className="text-xl font-semibold text-[#1b2a4a]">База знаний</h2>
         <button onClick={openNew} className="px-3 py-2 rounded-xl text-sm bg-[#029cda] text-white">+ Документ</button>
       </div>
-      <p className="text-sm text-gray-500 mb-3">Материалы для ассистента: продукты, цены, FAQ, скрипты, регламенты, возражения, примеры звонков. При сохранении текст индексируется (эмбеддинги Yandex).</p>
+      <p className="text-sm text-gray-500 mb-3">Материалы для ассистента: продукты, цены, частые вопросы, скрипты, регламенты, возражения, примеры звонков. При сохранении текст индексируется (эмбеддинги Yandex).</p>
 
       {/* Массовая загрузка файлов */}
       <div className="mb-5">
@@ -4272,7 +4272,7 @@ function Scripts() {
   return (
     <div>
       <h2 className="text-xl font-semibold text-[#1b2a4a] mb-1">Скрипт продаж</h2>
-      <p className="text-sm text-gray-500 mb-5">Чек-лист шагов, по которому LLM оценивает каждый звонок. Можно завести отдельный чек-лист под конкретный этап воронки (напр. «Заявка получена» ≠ «Просроченная задолженность») — иначе применяется общий/отдела вне зависимости от этапа. Изменение шагов повышает версию.</p>
+      <p className="text-sm text-gray-500 mb-5">Чек-лист шагов, по которому ИИ оценивает каждый звонок. Можно завести отдельный чек-лист под конкретный этап воронки (напр. «Заявка получена» ≠ «Просроченная задолженность») — иначе применяется общий/отдела вне зависимости от этапа. Изменение шагов повышает версию.</p>
       {err && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{err}</div>}
 
       <div className="flex flex-wrap gap-2 mb-5">
@@ -4470,7 +4470,7 @@ const GROUPS: NavGroup[] = [
     { view: 'dashboard', label: 'Обзор' },
     { view: 'signals', label: 'Сигналы' },
     { view: 'briefs', label: 'Брифы' },
-    { view: 'followups', label: 'Follow-up' },
+    { view: 'followups', label: 'Обещания' },
     { view: 'assistant', label: 'Ассистент' },
   ] },
   { key: 'reviews', label: 'Разборы', views: [
@@ -4502,8 +4502,8 @@ const SETUP_SUBTITLE: Partial<Record<View, string>> = {
   departments: 'Структура компании и состав отделов',
   scripts: 'Скрипт продаж для анализа звонков',
   kb: 'Документы для ассистента и анализа',
-  prompts: 'Промты AI по отделам',
-  settings: 'AI-провайдер, модели по задачам',
+  prompts: 'Промты ИИ по отделам',
+  settings: 'ИИ-провайдер, модели по задачам',
 };
 function SetupIcon({ view }: { view: View }) {
   const cls = 'w-5 h-5';
