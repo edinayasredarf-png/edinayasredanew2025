@@ -82,7 +82,18 @@ export function registerAllHandlers(): void {
   registerJobHandler("call.roles", async (job) => {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("call.roles: пустой callId");
-    const result = await runRoleSplit(callId);
+    let result: unknown;
+    try {
+      result = await runRoleSplit(callId);
+    } catch (e) {
+      // Роли — вспомогательный шаг. Если модель разметки так и не ответила за все попытки, не блокируем
+      // конвейер: ставим анализ звонка без ролей (раньше такие звонки навсегда застревали без разбора).
+      if (job.attempts >= job.max_attempts) {
+        await enqueueJob({ type: "call.analyze", payload: { callId }, priority: 60 });
+        return { skipped: `роли не размечены: ${e instanceof Error ? e.message.slice(0, 200) : String(e)}` };
+      }
+      throw e;
+    }
     // Без ключа идемпотентности: защита от повторной работы — кэш анализа по
     // input_hash (меняется вместе с ролями), поэтому бэкфилл ролей перезапустит анализ.
     await enqueueJob({ type: "call.analyze", payload: { callId }, priority: 60 });
