@@ -1,6 +1,7 @@
 import "server-only";
 
 import { fetchCallActivity } from "@/lib/server/bitrix/entities";
+import { BitrixError } from "@/lib/server/bitrix/client";
 import { upsertCallFromActivity } from "@/lib/server/aiSales/callsDb";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 
@@ -17,7 +18,18 @@ export interface IngestResult {
 }
 
 export async function ingestCallActivity(activityId: string): Promise<IngestResult> {
-  const activity = await fetchCallActivity(activityId);
+  let activity;
+  try {
+    activity = await fetchCallActivity(activityId);
+  } catch (e) {
+    // Событие ONCRMACTIVITYADD приходит на ЛЮБУЮ активность (задачи, письма, запланированные звонки),
+    // многие из них Bitrix удаляет/заменяет сразу — crm.activity.get отвечает 400/404. Это не сбой
+    // загрузки звонка: повторы бессмысленны, в «ошибки» не пишем, причина остаётся в результате задачи.
+    if (e instanceof BitrixError && (e.httpStatus === 400 || e.httpStatus === 404)) {
+      return { hasRecording: false, skipped: `активность недоступна в Bitrix: ${e.message.slice(0, 200)}` };
+    }
+    throw e;
+  }
 
   // Реальный звонок = активность С ЗАПИСЬЮ. Задачи/планы «связаться» (без записи)
   // НЕ заводим как звонки — иначе в списке появляются фантомные «звонки» в будущем.

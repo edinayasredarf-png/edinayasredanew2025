@@ -25,9 +25,14 @@ function webhookBase(): string {
 
 class BitrixError extends Error {
   status: number;
-  constructor(message: string, status = 502) {
+  /** HTTP-статус ответа Bitrix (status выше «нормализован»: 401/403 или 502). */
+  httpStatus?: number;
+  method?: string;
+  constructor(message: string, status = 502, extra?: { httpStatus?: number; method?: string }) {
     super(message);
     this.status = status;
+    this.httpStatus = extra?.httpStatus;
+    this.method = extra?.method;
   }
 }
 
@@ -48,18 +53,24 @@ export async function bitrixCall<T = unknown>(
     next: { revalidate: 60 },
   });
 
-  const json = (await res.json().catch(() => ({}))) as {
+  const rawBody = await res.text().catch(() => "");
+  let json: {
     result?: T;
     total?: number;
     next?: number;
     error?: string;
     error_description?: string;
-  };
+  } = {};
+  try { json = rawBody ? JSON.parse(rawBody) : {}; } catch { /* не JSON (например, HTML от прокси) */ }
 
   if (!res.ok || json.error) {
+    // В сообщении — метод и тело ответа: «Битрикс вернул 400» без деталей не диагностируется.
+    const detail = json.error_description || json.error
+      || `Битрикс вернул ${res.status} (${method})${rawBody ? `: ${rawBody.replace(/\s+/g, " ").slice(0, 200)}` : " (пустое тело)"}`;
     throw new BitrixError(
-      json.error_description || json.error || `Битрикс вернул ${res.status}`,
-      res.status === 401 || res.status === 403 ? res.status : 502
+      detail,
+      res.status === 401 || res.status === 403 ? res.status : 502,
+      { httpStatus: res.status, method }
     );
   }
   return { result: json.result as T, total: json.total, next: json.next };
