@@ -684,12 +684,12 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
               <tr>
-                <th className="text-left font-medium px-3 py-2 whitespace-nowrap cursor-pointer select-none hover:text-[#029cda]"
+                <th className="text-left font-medium px-2 py-2 whitespace-nowrap cursor-pointer select-none hover:text-[#029cda]"
                     onClick={() => setSort((s) => (s === 'desc' ? 'asc' : 'desc'))}>
                   Дата {sort === 'desc' ? '↓' : '↑'}
                 </th>
                 {['Менеджер', 'Клиент', 'Этап', 'Длит.', 'Продукт', 'Score', 'Оценка', 'Темп.', 'Статус'].map((h) => (
-                  <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>
+                  <th key={h} className="text-left font-medium px-2 py-2 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -706,24 +706,24 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                   {/* Строка-группа */}
                   <tr onClick={() => single ? toggleCall(one.id) : toggleGroup(g.key)}
                     className="hover:bg-sky-50/60 cursor-pointer">
-                    <td className="px-3 py-2 whitespace-nowrap">
+                    <td className="px-2 py-2 whitespace-nowrap">
                       <span className="text-gray-400 mr-1">{groupOpen ? '▾' : '▸'}</span>
                       {single
-                        ? (one.startedAt ? new Date(one.startedAt).toLocaleString('ru-RU') : '—')
+                        ? (one.startedAt ? new Date(one.startedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }) : '—')
                         : <span className="font-medium text-[#029cda]">{g.count} {pluralCalls(g.count)}</span>}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap">{g.manager || '—'}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-2 py-2">{g.manager || '—'}</td>
+                    <td className="px-2 py-2">
                       <div>{g.client || '—'}</div>
                       {g.phone && <div className="text-xs text-gray-400">{g.phone}</div>}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{(single ? one.dealStageLabel : g.stageLabel) || '—'}</td>
-                    <td className="px-3 py-2">{fmtDur(single ? one.durationSec : g.duration)}</td>
-                    <td className="px-3 py-2">{(single ? one.product : g.product) || '—'}</td>
-                    <td className="px-3 py-2 font-medium">{(single ? one.dealScore : g.dealScore) ?? '—'}</td>
-                    <td className="px-3 py-2">{(single ? one.managerScore : g.managerScore) ?? '—'}</td>
-                    <td className="px-3 py-2">{tempBadge(single ? one.temperature : g.temp)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-600">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">{(single ? one.dealStageLabel : g.stageLabel) || '—'}</td>
+                    <td className="px-2 py-2">{fmtDur(single ? one.durationSec : g.duration)}</td>
+                    <td className="px-2 py-2">{(single ? one.product : g.product) || '—'}</td>
+                    <td className="px-2 py-2 font-medium">{(single ? one.dealScore : g.dealScore) ?? '—'}</td>
+                    <td className="px-2 py-2">{(single ? one.managerScore : g.managerScore) ?? '—'}</td>
+                    <td className="px-2 py-2">{tempBadge(single ? one.temperature : g.temp)}</td>
+                    <td className="px-2 py-2 whitespace-nowrap text-gray-600">
                       {single ? (STATUS_LABEL[one.status] || one.status) : (
                         <div>
                           <div>{g.status ? (STATUS_LABEL[g.status] || g.status) : '—'}</div>
@@ -744,19 +744,19 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
                   {!single && groupOpen && g.calls.map((c) => (
                     <React.Fragment key={c.id}>
                       <tr onClick={() => toggleCall(c.id)} className="bg-gray-50/40 hover:bg-sky-50/60 cursor-pointer">
-                        <td className="px-3 py-2 whitespace-nowrap pl-8">
+                        <td className="px-2 py-2 whitespace-nowrap pl-8">
                           <span className="text-gray-400 mr-1">{expandedCall === c.id ? '▾' : '▸'}</span>
-                          {c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU') : '—'}
+                          {c.startedAt ? new Date(c.startedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap">{c.managerName || '—'}</td>
-                        <td className="px-3 py-2">{c.companyTitle || '—'}</td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{c.dealStageLabel || '—'}</td>
-                        <td className="px-3 py-2">{fmtDur(c.durationSec)}</td>
-                        <td className="px-3 py-2">{c.product || '—'}</td>
-                        <td className="px-3 py-2 font-medium">{c.dealScore ?? '—'}</td>
-                        <td className="px-3 py-2">{c.managerScore ?? '—'}</td>
-                        <td className="px-3 py-2">{tempBadge(c.temperature)}</td>
-                        <td className="px-3 py-2 whitespace-nowrap text-gray-600">{STATUS_LABEL[c.status] || c.status}</td>
+                        <td className="px-2 py-2 whitespace-nowrap">{c.managerName || '—'}</td>
+                        <td className="px-2 py-2">{c.companyTitle || '—'}</td>
+                        <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">{c.dealStageLabel || '—'}</td>
+                        <td className="px-2 py-2">{fmtDur(c.durationSec)}</td>
+                        <td className="px-2 py-2">{c.product || '—'}</td>
+                        <td className="px-2 py-2 font-medium">{c.dealScore ?? '—'}</td>
+                        <td className="px-2 py-2">{c.managerScore ?? '—'}</td>
+                        <td className="px-2 py-2">{tempBadge(c.temperature)}</td>
+                        <td className="px-2 py-2 whitespace-nowrap text-gray-600">{STATUS_LABEL[c.status] || c.status}</td>
                       </tr>
                       {expandedCall === c.id && (
                         <tr><td colSpan={10} className="p-4 bg-[#FAFBFC] border-t border-gray-100">
