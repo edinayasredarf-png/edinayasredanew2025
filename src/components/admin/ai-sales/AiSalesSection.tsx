@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
-  ListFilter, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
+  ExternalLink, ListFilter, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
 } from 'lucide-react';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
@@ -589,6 +589,9 @@ interface CallItem {
   dealStageKey: string | null; dealStageLabel: string | null; callType: string | null; dealTitle?: string | null;
 }
 
+/** Размер порции списка звонков; следующие подгружаются кнопкой «Показать ещё». */
+const CALLS_PAGE = 100;
+
 function Calls({ initialTemperature, initialTag }: { initialTemperature?: string; initialTag?: string }) {
   const [items, setItems] = useState<CallItem[]>([]);
   const { filters, setFilters, setTotal: publishTotal } = useCallStore();
@@ -597,6 +600,8 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
   const [sort, setSort] = useState<'asc' | 'desc'>('desc');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [total, setTotal] = useState(0);
 
   // Переход с главной (плитка температуры / тег) задаёт фильтр при открытии.
   useEffect(() => {
@@ -606,25 +611,42 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTemperature, initialTag]);
 
+  const buildQs = useCallback((offset: number) => {
+    const qs = periodQS(period);
+    if (temp) qs.set('temperature', temp);
+    if (status) qs.set('status', status);
+    if (tag) qs.set('tag', tag);
+    if (manager) qs.set('manager', manager);
+    if (department) qs.set('department', department);
+    qs.set('sort', sort);
+    qs.set('limit', String(CALLS_PAGE));
+    if (offset) qs.set('offset', String(offset));
+    return qs;
+  }, [temp, status, tag, manager, department, period, sort]);
+
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const qs = periodQS(period);
-      if (temp) qs.set('temperature', temp);
-      if (status) qs.set('status', status);
-      if (tag) qs.set('tag', tag);
-      if (manager) qs.set('manager', manager);
-      if (department) qs.set('department', department);
-      qs.set('sort', sort);
-      qs.set('limit', '200');
-      const r = await fetch(`/api/ai-sales/calls?${qs}`);
+      const r = await fetch(`/api/ai-sales/calls?${buildQs(0)}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Ошибка');
-      setItems(j.items); publishTotal(j.total);
+      setItems(j.items); setTotal(j.total); publishTotal(j.total);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Ошибка');
     } finally { setLoading(false); }
-  }, [temp, status, tag, manager, department, period, sort, publishTotal]);
+  }, [buildQs, publishTotal]);
+
+  const loadMore = async () => {
+    setLoadingMore(true); setErr('');
+    try {
+      const r = await fetch(`/api/ai-sales/calls?${buildQs(items.length)}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setItems((prev) => [...prev, ...j.items]); setTotal(j.total);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Ошибка');
+    } finally { setLoadingMore(false); }
+  };
 
   useEffect(() => { load(); }, [load]);
 
@@ -770,6 +792,17 @@ function Calls({ initialTemperature, initialTag }: { initialTemperature?: string
             })}
           </table>
         </ScrollX>
+      )}
+      {!loading && items.length > 0 && (
+        <div className="flex flex-col items-center gap-2 mt-4">
+          <p className="text-xs text-gray-400">Показано звонков: {items.length} из {total}</p>
+          {items.length < total && (
+            <button type="button" onClick={loadMore} disabled={loadingMore}
+              className="px-5 py-2.5 rounded-2xl bg-[#F6F7F9] text-sm font-medium text-[#1b2a4a] hover:bg-gray-100 transition disabled:opacity-50">
+              {loadingMore ? 'Загружаю…' : `Показать ещё ${Math.min(CALLS_PAGE, total - items.length)}`}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -4363,6 +4396,9 @@ function CallFiltersButton() {
   );
 }
 
+/** Размер порции результатов поиска; дальше — «Показать ещё». */
+const SEARCH_PAGE = 30;
+
 /** Поиск по звонкам в шапке: клиент / сделка / телефон за ВСЕ даты. Результат — модалка со списком, у каждой строки дата звонка. */
 function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string) => void; onOpenDeal: (id: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -4370,6 +4406,7 @@ function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string)
   const [items, setItems] = useState<CallItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [err, setErr] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -4382,7 +4419,7 @@ function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string)
     setLoading(true);
     const t = setTimeout(async () => {
       try {
-        const qs = new URLSearchParams({ q: term, sort: 'desc', limit: '40' });
+        const qs = new URLSearchParams({ q: term, sort: 'desc', limit: String(SEARCH_PAGE) });
         const r = await fetch(`/api/ai-sales/calls?${qs}`);
         const j = await r.json();
         if (!r.ok) throw new Error(j.error || 'Ошибка');
@@ -4392,6 +4429,18 @@ function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string)
     }, 300);
     return () => { alive = false; clearTimeout(t); };
   }, [q, open]);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const qs = new URLSearchParams({ q: q.trim(), sort: 'desc', limit: String(SEARCH_PAGE), offset: String(items.length) });
+      const r = await fetch(`/api/ai-sales/calls?${qs}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Ошибка');
+      setItems((prev) => [...prev, ...j.items]); setTotal(j.total);
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setLoadingMore(false); }
+  };
 
   const close = () => setOpen(false);
   const fmtWhen = (iso: string | null) => iso ? new Date(iso).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -4419,7 +4468,7 @@ function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string)
             <p className="text-sm text-gray-400 text-center py-6">Ничего не найдено.</p>
           ) : (
             <>
-              <p className="text-xs text-gray-400">Найдено звонков: {total}{total > items.length ? ` · показаны последние ${items.length}` : ''}</p>
+              <p className="text-xs text-gray-400">Найдено звонков: {total} · показано {items.length}</p>
               <ul className="space-y-1.5 max-h-[55vh] overflow-y-auto -mr-2 pr-2">
                 {items.map((c) => (
                   <li key={c.id} className="flex items-stretch gap-2">
@@ -4437,6 +4486,11 @@ function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string)
                       </span>
                       <ChevronRight className="shrink-0 w-4 h-4 text-gray-300" />
                     </button>
+                    <a href={`${typeof window !== 'undefined' ? window.location.pathname : ''}?tab=ai-analytics&asv=calls&asc=${c.id}`} target="_blank" rel="noopener noreferrer"
+                      title="Открыть звонок в новой вкладке" aria-label="Открыть звонок в новой вкладке"
+                      className="shrink-0 w-10 grid place-items-center rounded-xl border border-gray-100 bg-white text-gray-500 hover:text-[#029cda] hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition">
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
                     {c.bitrixDealId ? (
                       <button type="button" onClick={() => { close(); onOpenDeal(c.bitrixDealId as string); }} title="Открыть сделку"
                         className="shrink-0 w-[72px] rounded-xl border border-gray-100 bg-white text-xs text-[#029cda] hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition">
@@ -4445,6 +4499,14 @@ function CallSearchButton({ onOpenCall, onOpenDeal }: { onOpenCall: (id: string)
                     ) : <span className="shrink-0 w-[72px]" aria-hidden />}
                   </li>
                 ))}
+                {items.length < total && (
+                  <li className="pt-1 pb-0.5 text-center">
+                    <button type="button" onClick={loadMore} disabled={loadingMore}
+                      className="px-5 py-2.5 rounded-2xl bg-[#F6F7F9] text-sm font-medium text-[#1b2a4a] hover:bg-gray-100 transition disabled:opacity-50">
+                      {loadingMore ? 'Загружаю…' : `Показать ещё ${Math.min(SEARCH_PAGE, total - items.length)}`}
+                    </button>
+                  </li>
+                )}
               </ul>
             </>
           )}
