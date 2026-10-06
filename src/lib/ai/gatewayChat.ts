@@ -87,8 +87,8 @@ export async function gatewayChat(opts: {
  * AI-агент с включённой опцией «Поиск в интернете» (0,49 ₽ за поисковый запрос, агент сам решает,
  * когда искать). Настройка (env на Vercel):
  *   BRIEF_SEARCH_AGENT_URL — endpoint агента из «ИИ-сервисы → Агенты → API-доступ»:
- *       …/cloud-ai/agents/<id>/call               — «родной» формат ({message} → {message})
- *       …/cloud-ai/agents/<id>/v1[/chat/completions] — OpenAI-совместимый формат
+ *       https://agent.timeweb.cloud/api/v1/cloud-ai/agents/<id>/v1 — OpenAI-совместимый (рекомендуется;
+ *       поле model агент игнорирует), либо …/agents/<id>/call — «родной» формат ({message})
  *   BRIEF_SEARCH_AGENT_KEY — ключ доступа агента (Bearer).
  */
 export function agentSearchConfigured(): boolean {
@@ -111,7 +111,8 @@ export async function agentSearchChat(opts: { system: string; user: string; time
   try {
     res = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      // x-proxy-source помечен в документации агента Timeweb как обязательный заголовок.
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, "x-proxy-source": "edinayasreda" },
       signal: AbortSignal.timeout(opts.timeoutMs),
       body: JSON.stringify(body),
     });
