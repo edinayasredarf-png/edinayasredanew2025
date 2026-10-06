@@ -96,8 +96,10 @@ export function agentSearchConfigured(): boolean {
 }
 
 export async function agentSearchChat(opts: { system: string; user: string; timeoutMs: number; model?: string }): Promise<GatewayChatResult> {
-  const url = process.env.BRIEF_SEARCH_AGENT_URL?.trim() || "";
-  const key = process.env.BRIEF_SEARCH_AGENT_KEY?.trim() || "";
+  // Чистим типичные ошибки при вставке в Vercel: кавычки, пробелы/переводы строк, префикс «Bearer ».
+  const clean1 = (v?: string) => (v ?? "").trim().replace(/^["'`]+|["'`]+$/g, "").trim();
+  const url = clean1(process.env.BRIEF_SEARCH_AGENT_URL);
+  const key = clean1(process.env.BRIEF_SEARCH_AGENT_KEY).replace(/^Bearer\s+/i, "").replace(/\s+/g, "");
   if (!url || !key) {
     throw new AiProviderNotConfiguredError("Не настроен агент поиска: задайте BRIEF_SEARCH_AGENT_URL и BRIEF_SEARCH_AGENT_KEY (AI-агент Timeweb с включённым веб-поиском)");
   }
@@ -122,7 +124,10 @@ export async function agentSearchChat(opts: { system: string; user: string; time
   }
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    throw new Error(`Агент поиска ${res.status}: ${detail.slice(0, 300)}`);
+    const hint = res.status === 401
+      ? " (токен не принят: проверьте BRIEF_SEARCH_AGENT_KEY — значение без слова Bearer и кавычек; после изменения переменной на Vercel нужен новый деплой; ключ — из «API-доступ» именно этого агента)"
+      : "";
+    throw new Error(`Агент поиска ${res.status}: ${detail.slice(0, 300)}${hint}`);
   }
   const json = (await res.json()) as ChatResponse & { message?: string };
   const text = (native ? json.message : json.choices?.[0]?.message?.content ?? json.message) ?? "";
