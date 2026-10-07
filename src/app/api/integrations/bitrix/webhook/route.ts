@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
+import { kickDrain } from "@/lib/server/aiSales/drainKick";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /**
  * Приёмник исходящих вебхуков Bitrix24 (события CRM/телефонии).
@@ -80,6 +82,9 @@ export async function POST(request: NextRequest) {
       priority: 80,
     });
   }
+
+  // Страховка: запускаем обработку очереди после ответа (не задерживая Bitrix), если планировщик не работает.
+  after(() => kickDrain(request.url));
 
   // Bitrix ждёт быстрый 200.
   return NextResponse.json({ ok: true });
