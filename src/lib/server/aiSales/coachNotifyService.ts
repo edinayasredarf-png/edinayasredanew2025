@@ -57,6 +57,7 @@ export async function runCoachNotify(callId: string): Promise<unknown> {
     `${isDeal ? "Сделка" : "Лид"}: ${bbLink(link, name)}\n\n` +
     `[B]Как лучше было ответить:[/B]\n${better}`;
   const res = await sendBotMessage(r.bitrix_user_id, text);
+  if (res.notConfigured) return { skipped: res.error };
   if (!res.ok) throw new Error(`Не удалось отправить сообщение менеджеру: ${res.error}`);
   return { sentTo: r.bitrix_user_id, via: res.via };
 }

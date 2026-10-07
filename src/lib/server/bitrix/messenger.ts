@@ -68,7 +68,12 @@ export function bbLink(url: string, text: string): string {
  * Личное сообщение пользователю. Сначала im.message.add (живой личный диалог от бота), при отказе — системное
  * уведомление (колокольчик). Возвращает, чем доставлено.
  */
-export async function sendBotMessage(userId: string, text: string): Promise<{ ok: boolean; via?: "dialog" | "notify"; error?: string }> {
+export async function sendBotMessage(userId: string, text: string): Promise<{ ok: boolean; via?: "dialog" | "notify"; error?: string; notConfigured?: boolean }> {
+  // Без отдельного вебхука бота сообщения пришли бы от владельца основного вебхука, а не от «Эко_бота» —
+  // такого отправителя менеджерам не показываем. Разрешить принудительно: BITRIX_ALLOW_MAIN_WEBHOOK_MESSAGES=1.
+  if (!botWebhookConfigured() && process.env.BITRIX_ALLOW_MAIN_WEBHOOK_MESSAGES !== "1") {
+    return { ok: false, notConfigured: true, error: "Не задан BITRIX_BOT_WEBHOOK_URL (вебхук под пользователем «Эко_бот»)" };
+  }
   const base = botBase();
   const message = text.length > 15000 ? `${text.slice(0, 14980)}\n…` : text;
   try {
