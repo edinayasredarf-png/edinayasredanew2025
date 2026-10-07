@@ -22,7 +22,7 @@ export async function scheduleBriefScan(): Promise<void> {
   // Заодно раз в час актуализируем зеркало сделок/лидов (финансовая сводка, брифы): только изменённые за последние 3 часа.
   const since = new Date(Date.now() - 3 * 3600_000).toISOString();
   for (const entity of ["deals", "leads"] as const) {
-    await enqueueJob({ type: "bitrix.sync", payload: { entity, start: 0, since }, priority: 75, maxAttempts: 2, idempotencyKey: `bitrix.sync:${entity}:inc:${hour}` });
+    await enqueueJob({ type: "bitrix.sync", payload: { entity, start: 0, since }, priority: 35, maxAttempts: 2, idempotencyKey: `bitrix.sync:${entity}:inc:${hour}` });
   }
 }
 

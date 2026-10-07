@@ -36,7 +36,7 @@ export function registerAllHandlers(): void {
     // «all» — разложить на отдельные задачи по сущностям (каждая пойдёт по страницам).
     if (entity === "all") {
       for (const e of SYNC_ENTITIES) {
-        await enqueueJob({ type: "bitrix.sync", payload: { entity: e, start: 0 }, priority: 70 });
+        await enqueueJob({ type: "bitrix.sync", payload: { entity: e, start: 0 }, priority: 35 });
       }
       return { fannedOut: SYNC_ENTITIES };
     }
@@ -46,7 +46,7 @@ export function registerAllHandlers(): void {
     const res = await syncEntityPage(entity, start, { since });
     // Есть следующая страница — доложить в очередь (с тем же since для инкрементального прохода).
     if (res.next !== null) {
-      await enqueueJob({ type: "bitrix.sync", payload: { entity, start: res.next, ...(since ? { since } : {}) }, priority: 70 });
+      await enqueueJob({ type: "bitrix.sync", payload: { entity, start: res.next, ...(since ? { since } : {}) }, priority: 35 });
     }
     return res;
   });

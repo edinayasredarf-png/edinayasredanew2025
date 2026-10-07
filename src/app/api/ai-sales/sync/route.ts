@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   const jobId = await enqueueJob({
     type: "bitrix.sync",
     payload: { entity },
-    priority: 60,
+    priority: 35,
   });
 
   return NextResponse.json({ ok: true, jobId, entity });
