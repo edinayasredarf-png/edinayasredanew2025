@@ -38,11 +38,18 @@ async function call(base: string, method: string, params: Record<string, unknown
 }
 
 /** Кто автор сообщений (владелец вебхука бота и основного вебхука) — для диагностики. */
-export async function whoAmI(): Promise<{ bot: { id: string; name: string } | null; main: { id: string; name: string } | null; botConfigured: boolean }> {
+export async function whoAmI(): Promise<{
+  bot: { id: string; name: string; scopes: string[] } | null;
+  main: { id: string; name: string; scopes: string[] } | null;
+  botConfigured: boolean;
+}> {
   const info = async (base: string) => {
     try {
       const u = (await call(base, "user.current", {})) as { ID?: string; NAME?: string; LAST_NAME?: string };
-      return { id: String(u.ID ?? ""), name: [u.NAME, u.LAST_NAME].filter(Boolean).join(" ") };
+      // Права вебхука (scope): нужны im (личные сообщения) и user (поиск сотрудников).
+      let scopes: string[] = [];
+      try { scopes = ((await call(base, "scope", {})) as string[]) ?? []; } catch { /* метод может быть недоступен */ }
+      return { id: String(u.ID ?? ""), name: [u.NAME, u.LAST_NAME].filter(Boolean).join(" "), scopes };
     } catch { return null; }
   };
   const mainRaw = (process.env.BITRIX24_WEBHOOK_URL || "").trim();
