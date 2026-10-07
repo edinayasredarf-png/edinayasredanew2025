@@ -9,7 +9,7 @@ import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
  * нужен ОТДЕЛЬНЫЙ входящий вебхук, созданный под «Эко_ботом» (права: «Чат и уведомления» (im), «Пользователи» (user)):
  *   BITRIX_BOT_WEBHOOK_URL=https://<портал>.bitrix24.ru/rest/<id бота>/<код>/
  * Если переменная не задана, используется основной вебхук (BITRIX24_WEBHOOK_URL) — тогда автор сообщения
- * будет владелец основного вебхука.
+ * владелец основного вебхука (решение заказчика: пока сообщения идут от Александра Низельского).
  */
 
 function botBase(): string {
@@ -76,9 +76,9 @@ export function bbLink(url: string, text: string): string {
  * уведомление (колокольчик). Возвращает, чем доставлено.
  */
 export async function sendBotMessage(userId: string, text: string): Promise<{ ok: boolean; via?: "dialog" | "notify"; error?: string; notConfigured?: boolean }> {
-  // Без отдельного вебхука бота сообщения пришли бы от владельца основного вебхука, а не от «Эко_бота» —
-  // такого отправителя менеджерам не показываем. Разрешить принудительно: BITRIX_ALLOW_MAIN_WEBHOOK_MESSAGES=1.
-  if (!botWebhookConfigured() && process.env.BITRIX_ALLOW_MAIN_WEBHOOK_MESSAGES !== "1") {
+  // Без отдельного вебхука бота (BITRIX_BOT_WEBHOOK_URL) сообщения идут через основной вебхук — автор
+  // владелец основного вебхука (сейчас Александр Низельский). Запретить такой режим: BITRIX_REQUIRE_BOT_WEBHOOK=1.
+  if (!botWebhookConfigured() && process.env.BITRIX_REQUIRE_BOT_WEBHOOK === "1") {
     return { ok: false, notConfigured: true, error: "Не задан BITRIX_BOT_WEBHOOK_URL (вебхук под пользователем «Эко_бот»)" };
   }
   const base = botBase();
