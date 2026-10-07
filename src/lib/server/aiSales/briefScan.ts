@@ -19,6 +19,11 @@ function isoWeek(d = new Date()): string {
 export async function scheduleBriefScan(): Promise<void> {
   const hour = new Date().toISOString().slice(0, 13);
   await enqueueJob({ type: "brief.scan", idempotencyKey: `brief.scan:${hour}`, priority: 200, maxAttempts: 2 });
+  // Заодно раз в час актуализируем зеркало сделок/лидов (финансовая сводка, брифы): только изменённые за последние 3 часа.
+  const since = new Date(Date.now() - 3 * 3600_000).toISOString();
+  for (const entity of ["deals", "leads"] as const) {
+    await enqueueJob({ type: "bitrix.sync", payload: { entity, start: 0, since }, priority: 75, maxAttempts: 2, idempotencyKey: `bitrix.sync:${entity}:inc:${hour}` });
+  }
 }
 
 /** Новые лиды (за последние 3 дня) без брифа → задача brief.lead. */

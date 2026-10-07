@@ -44,8 +44,11 @@ type Row = Record<string, unknown>;
 /** Обработать одну страницу указанной сущности. */
 export async function syncEntityPage(
   entity: SyncEntity,
-  start = 0
+  start = 0,
+  opts: { since?: string } = {}
 ): Promise<PageResult> {
+  // Инкрементальный режим: только сущности, изменённые после since (почасовая актуализация сделок/лидов).
+  const incFilter = opts.since ? { ">DATE_MODIFY": opts.since } : undefined;
   let upserted = 0;
   let next: number | null = null;
   let total: number | null = null;
@@ -90,6 +93,7 @@ export async function syncEntityPage(
           "ID", "TITLE", "COMPANY_ID", "CONTACT_ID", "ASSIGNED_BY_ID", "STAGE_ID",
           "OPPORTUNITY", "CURRENCY_ID", "CLOSED", "CLOSEDATE", "CATEGORY_ID", "DATE_CREATE", "DATE_MODIFY",
         ],
+        ...(incFilter ? { filter: incFilter } : {}),
         order: { ID: "ASC" },
         start,
       });
@@ -101,6 +105,7 @@ export async function syncEntityPage(
     case "leads": {
       const p = await bitrixListPage<Row>("crm.lead.list", {
         select: ["ID", "TITLE", "COMPANY_ID", "CONTACT_ID", "ASSIGNED_BY_ID", "STATUS_ID", "DATE_CREATE", "DATE_MODIFY"],
+        ...(incFilter ? { filter: incFilter } : {}),
         order: { ID: "ASC" },
         start,
       });
