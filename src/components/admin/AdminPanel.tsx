@@ -4,8 +4,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import nextDynamic from 'next/dynamic';
 import {
-  AudioWaveform, BarChart3, FileEdit, FolderKanban, LayoutDashboard, LayoutGrid, Link2, MailOpen,
-  Mail, Megaphone, MessageCircle, Newspaper, Radar, Share2, SquarePen, Star, Users,
+  AudioWaveform, BarChart3, FileEdit, FolderKanban, LayoutGrid, Link2, MailOpen,
+  Mail, Megaphone, MessageCircle, Newspaper, Radar, Share2, SquarePen, Star, Users, Wallet,
 } from 'lucide-react';
 import { authStore } from '@/lib/authStore';
 
@@ -52,7 +52,7 @@ const wrapIcon = (Lucide: React.ComponentType<{ className?: string }>) =>
   };
 
 const IconGrid = wrapIcon(LayoutGrid);
-const IconDashboard = wrapIcon(LayoutDashboard);
+const IconDashboard = wrapIcon(Wallet);
 const IconNews = wrapIcon(Newspaper);
 const IconLink = wrapIcon(Link2);
 const IconMail = wrapIcon(Mail);
