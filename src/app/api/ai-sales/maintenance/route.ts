@@ -129,5 +129,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(r);
   }
 
+  if (body.action === "finance-debug") {
+    const q = async (sql: string) => { try { return (await pool.query(sql)).rows; } catch (e) { return { error: e instanceof Error ? e.message : String(e) }; } };
+    return NextResponse.json({
+      ok: true,
+      totals: await q(`select count(*)::int total, count(*) filter (where is_won)::int won, count(*) filter (where is_closed)::int closed, count(*) filter (where close_date is not null)::int with_close_date, max(bitrix_updated_at) last_updated, max(close_date) last_close from ai_deals`),
+      wonByMonth: await q(`select to_char(coalesce(close_date, bitrix_updated_at::date), 'YYYY-MM') m, count(*)::int n, round(sum(coalesce(opportunity,0)))::bigint s from ai_deals where is_won group by 1 order by 1 desc limit 8`),
+      closedStages: await q(`select stage_id, is_won, count(*)::int n from ai_deals where is_closed group by 1,2 order by n desc limit 12`),
+      syncState: await q(`select * from ai_sync_state order by 1 limit 10`),
+    });
+  }
+
   return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls, bitrix-whoami, bot-test" }, { status: 400 });
 }
