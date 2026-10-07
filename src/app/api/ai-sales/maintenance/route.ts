@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
+import { bitrixCall } from "@/lib/server/bitrix";
+import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
 import { parseResult, plainForBitrix, pushBriefToBitrix } from "@/lib/server/aiSales/briefService";
 
@@ -10,6 +12,8 @@ export const maxDuration = 60;
 
 /**
  * Разовое обслуживание (только админ). POST { action }:
+ *  - "backfill-calls" { days = 14, dryRun = true }: сверка звонков Bitrix с ai_calls — события, не дошедшие через
+ *    nginx, подтягиваются заново (call.ingest). По умолчанию только подсчёт; dryRun=false ставит задачи.
  *  - "reschedule-briefs": ожидающие задачи brief.deal растягиваются по дням (по BRIEF_DEALS_PER_DAY в сутки,
  *    первая порция — через 12 часов), чтобы не упереться в дневной лимит платного поиска.
  *  - "repair-briefs": брифы, сохранённые с оборванным блоком ```json, разбираются заново (без нового поиска):
@@ -66,5 +70,47 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, fixed, repushed, pushFailed, remaining: Number(left.rows[0]?.n ?? 0) });
   }
 
-  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs" }, { status: 400 });
+  if (body.action === "backfill-calls") {
+    const days = Math.min(60, Math.max(1, Number((body as { days?: number }).days) || 14));
+    const dryRun = (body as { dryRun?: boolean }).dryRun !== false;
+    const since = new Date(Date.now() - days * 86400000);
+    const sinceIso = `${since.toISOString().slice(0, 10)}T00:00:00+03:00`;
+    type Act = { ID?: string; CREATED?: string; FILES?: unknown };
+    const acts: Act[] = [];
+    let start = 0;
+    const t0 = Date.now();
+    // Звонки CRM (TYPE_ID=2) с даты; страницы по 50, укладываемся в ~35 с.
+    while (Date.now() - t0 < 35_000) {
+      const { result, next } = await bitrixCall<Act[]>("crm.activity.list", {
+        filter: { TYPE_ID: 2, ">=CREATED": sinceIso }, order: { ID: "ASC" }, select: ["ID", "CREATED", "FILES"], start,
+      });
+      acts.push(...(Array.isArray(result) ? result : []));
+      if (next == null) break;
+      start = next;
+    }
+    const complete = Date.now() - t0 < 35_000;
+    const ids = acts.map((a) => String(a.ID)).filter(Boolean);
+    const have = new Set<string>();
+    for (let i = 0; i < ids.length; i += 500) {
+      const { rows } = await pool.query<{ bitrix_activity_id: string }>(`select bitrix_activity_id from ai_calls where bitrix_activity_id = any($1::text[])`, [ids.slice(i, i + 500)]);
+      for (const r of rows) have.add(r.bitrix_activity_id);
+    }
+    const missing = acts.filter((a) => a.ID && !have.has(String(a.ID)));
+    const withRecording = missing.filter((a) => Array.isArray(a.FILES) && a.FILES.length > 0);
+    const byDay: Record<string, number> = {};
+    for (const a of withRecording) { const d = String(a.CREATED ?? "").slice(0, 10); byDay[d] = (byDay[d] ?? 0) + 1; }
+    let enqueued = 0;
+    if (!dryRun) {
+      for (const a of withRecording) {
+        await enqueueJob({ type: "call.ingest", payload: { activityId: String(a.ID) }, priority: 45, maxAttempts: 2, idempotencyKey: `ingest:backfill:${a.ID}` });
+        enqueued++;
+      }
+    }
+    return NextResponse.json({
+      ok: true, dryRun, days, since: sinceIso, bitrixCallActivities: acts.length, listComplete: complete, inDatabase: have.size,
+      missingTotal: missing.length, missingWithRecording: withRecording.length, filesFieldReturned: acts.some((a) => a.FILES !== undefined), byDay, enqueued,
+    });
+  }
+
+  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls" }, { status: 400 });
 }
