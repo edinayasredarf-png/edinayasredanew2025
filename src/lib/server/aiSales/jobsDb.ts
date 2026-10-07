@@ -122,7 +122,11 @@ export async function reapStuckJobs(maxMinutes = 3, types?: AiJobType[]): Promis
  * времени) так, чтобы они не претендовали на одни и те же задачи — см.
  * scripts/ai-worker/README.md.
  */
-export async function claimBatch(limit = 5, types?: AiJobType[]): Promise<AiJobRow[]> {
+export async function claimBatch(
+  limit = 5,
+  types?: AiJobType[],
+  opts: { allowBrief?: boolean } = {}
+): Promise<AiJobRow[]> {
   const pool = getTimewebPool();
   const params: unknown[] = [limit];
   let typeFilter = "";
@@ -130,6 +134,16 @@ export async function claimBatch(limit = 5, types?: AiJobType[]): Promise<AiJobR
     params.push(types);
     typeFilter = `and type = any($2::text[])`;
   }
+  // Брифы (поиск в интернете + сборка, до ~55 с на задачу) не должны мешать конвейеру звонков
+  // (загрузка → транскрибация → роли → анализ → разбор сделки):
+  //  - не больше BRIEF_MAX_PARALLEL брифов одновременно (по умолчанию 1);
+  //  - брать бриф можно только в начале вызова дренажа (allowBrief), иначе он не уложится в лимит 60 с.
+  const briefMax = Math.max(1, Number(process.env.BRIEF_MAX_PARALLEL) || 1);
+  const briefFilter =
+    opts.allowBrief === false
+      ? `and type not like 'brief.%'`
+      : `and (type not like 'brief.%' or (select count(*) from ai_jobs r where r.status = 'RUNNING' and r.type like 'brief.%') < ${briefMax})`;
+  typeFilter += ` ${briefFilter}`;
   const { rows } = await pool.query<AiJobRow>(
     `update ai_jobs j
         set status = 'RUNNING', locked_at = now(), attempts = attempts + 1, updated_at = now()

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixCall } from "@/lib/server/bitrix";
-import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
 import { parseResult, plainForBitrix, pushBriefToBitrix } from "@/lib/server/aiSales/briefService";
 
@@ -100,11 +99,16 @@ export async function POST(request: NextRequest) {
     const byDay: Record<string, number> = {};
     for (const a of withRecording) { const d = String(a.CREATED ?? "").slice(0, 10); byDay[d] = (byDay[d] ?? 0) + 1; }
     let enqueued = 0;
-    if (!dryRun) {
-      for (const a of withRecording) {
-        await enqueueJob({ type: "call.ingest", payload: { activityId: String(a.ID) }, priority: 45, maxAttempts: 2, idempotencyKey: `ingest:backfill:${a.ID}` });
-        enqueued++;
-      }
+    if (!dryRun && withRecording.length) {
+      // Одним запросом (не 200+ по одному — укладываемся в лимит функции).
+      const idsToQueue = withRecording.map((a) => String(a.ID));
+      const r = await pool.query(
+        `insert into ai_jobs (type, payload, priority, max_attempts, idempotency_key)
+         select 'call.ingest', jsonb_build_object('activityId', x), 45, 2, 'ingest:backfill:' || x from unnest($1::text[]) as x
+         on conflict (idempotency_key) do nothing`,
+        [idsToQueue]
+      );
+      enqueued = r.rowCount ?? 0;
     }
     return NextResponse.json({
       ok: true, dryRun, days, since: sinceIso, bitrixCallActivities: acts.length, listComplete: complete, inDatabase: have.size,

@@ -72,14 +72,16 @@ export async function drainQueue(
     skipped: 0,
   };
 
-  const deadline = Date.now() + timeBudgetMs;
+  const startedAt = Date.now();
+  const deadline = startedAt + timeBudgetMs;
   // Задачи в основном ждут ответа LLM/шлюза (I/O) — выполняем несколько параллельно, каждый
   // «рабочий» сам берёт следующую задачу (SKIP LOCKED не даёт взять одну дважды). Раньше шёл один
   // цикл: при тайм-аутах LLM (до 45 с) за вызов обрабатывалась одна задача — бэклог не рассасывался.
   const concurrency = Math.max(1, Number(process.env.AI_DRAIN_CONCURRENCY) || 4);
   const worker = async () => {
     while (Date.now() < deadline) {
-      const [job] = await claimBatch(1, types);
+      // Брифы берём только в первые секунды вызова: им нужно ~55 с, а функция живёт 60 с.
+      const [job] = await claimBatch(1, types, { allowBrief: Date.now() - startedAt < 3000 });
       if (!job) break; // очередь пуста
       report.claimed += 1;
       onJob?.({ job, phase: "start" });
