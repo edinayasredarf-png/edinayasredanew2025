@@ -233,6 +233,11 @@ export async function runAnalysis(
 
   await setCallStatus(callId, "COMPLETED");
 
+  // Менеджеру — личное сообщение от бота «как лучше было ответить» (только по свежим звонкам, см. coachNotifyService).
+  if (data.managerPerformance.exampleBetterResponse) {
+    await enqueueJob({ type: "notify.coach", payload: { callId }, priority: 65, maxAttempts: 2, idempotencyKey: `coach:${callId}` });
+  }
+
   // Пересчёт агрегата по сделке (кэш по дайджесту не даст лишней работы LLM).
   if (call.bitrix_deal_id) {
     await enqueueJob({ type: "deal.analyze", payload: { dealId: call.bitrix_deal_id }, priority: 70 });

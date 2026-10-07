@@ -1,10 +1,10 @@
 import "server-only";
 
 import { bitrixCall } from "@/lib/server/bitrix";
-import { bitrixPortalOrigin } from "@/lib/server/bitrix/client";
+import { bbLink, crmLink, sendBotMessage } from "@/lib/server/bitrix/messenger";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { agentSearchChat, gatewayChat } from "@/lib/ai/gatewayChat";
-import { getBriefModels, getBriefPrompts } from "@/lib/server/aiSales/settingsDb";
+import { getBriefModels, getBriefPrompts, getBriefRopIds } from "@/lib/server/aiSales/settingsDb";
 import { BRIEF_JSON_SUFFIX } from "@/lib/ai/prompts/briefPrompts";
 import {
   insertBrief, markBrief, previousTriggerUrls,
@@ -191,17 +191,21 @@ async function ropBitrixIds(): Promise<string[]> {
   return rows.map((r) => r.bitrix_user_id);
 }
 
+/** Личные сообщения от бота (Эко_бот) нескольким получателям; true — если дошло хотя бы одному. */
 async function notify(userIds: string[], message: string): Promise<boolean> {
   let ok = false;
   for (const uid of [...new Set(userIds.filter(Boolean))]) {
-    try {
-      await bitrixCall("im.notify.system.add", { USER_ID: uid, MESSAGE: message });
-      ok = true;
-    } catch {
-      try { await bitrixCall("im.notify", { to: uid, message, type: "SYSTEM" }); ok = true; } catch { /* нет прав im — пропускаем */ }
-    }
+    const r = await sendBotMessage(uid, message);
+    if (r.ok) ok = true;
   }
   return ok;
+}
+
+/** Кому слать брифы по отложенным сделкам: настройка «РОП для брифов», иначе пользователи с ролью «РОП». */
+async function ropRecipients(): Promise<string[]> {
+  const fromSettings = await safe(getBriefRopIds);
+  if (fromSettings && fromSettings.length) return fromSettings;
+  return (await safe(ropBitrixIds)) ?? [];
 }
 
 /* ───────────────────────── 4. Оркестрация ───────────────────────── */
@@ -237,17 +241,31 @@ export async function runBrief(entityType: BriefEntity, id: string, opts: { noti
     if (pushed) await markBrief(briefId, { pushed: true });
   }
 
-  // Уведомляем: по новому лиду — всегда; по отложенным сделкам — только при новых триггерах.
+  // Личные сообщения в Bitrix от бота. Лид — ответственному менеджеру и РОПу; отложенная сделка — только РОПу
+  // (и только если нашлось что-то содержательное: триггеры при первом брифе или новые при повторном).
   let notified = false;
-  if (opts.notifyAlways || newCount > 0) {
-    const origin = bitrixPortalOrigin();
-    const url = origin ? `${origin}/crm/${entityType}/details/${id}/` : "";
-    const head = entityType === "lead" ? "Новый лид — готов AI-бриф" : "Отложенный спрос — найдено новое";
-    const top = triggers.filter((t) => t.isNew || !hadBefore).slice(0, 3).map((t) => `• ${t.title}${t.date ? ` (${t.date})` : ""}`).join("\n");
-    const msg = `${head}: ${url ? `[URL=${url}]${snap.companyTitle || snap.title}[/URL]` : snap.companyTitle || snap.title}${top ? `\n${top}` : ""}\nПодробности — в поле «Бриф» карточки и в админке (Речевая аналитика → Брифы).`;
-    const rops = (await safe(ropBitrixIds)) ?? [];
-    notified = await notify([...(snap.responsibleId ? [snap.responsibleId] : []), ...rops], msg);
-    if (notified) await markBrief(briefId, { notified: true });
+  const link = crmLink(entityType, id);
+  const label = snap.companyTitle || snap.title || `#${id}`;
+  const body = research.text.length > 3500 ? `${research.text.slice(0, 3480)}…` : research.text;
+  const managerName = snap.responsibleId
+    ? (await safe(async () => (await getTimewebPool().query<{ full_name: string | null }>(`select full_name from ai_managers where bitrix_user_id = $1`, [snap.responsibleId])).rows[0]?.full_name)) ?? null
+    : null;
+
+  if (entityType === "lead") {
+    const recipients = [...(snap.responsibleId ? [snap.responsibleId] : []), ...(await ropRecipients())];
+    if (opts.notifyAlways && recipients.length) {
+      const msg = `[B]Новый лид — ИИ-бриф перед звонком[/B]\nЛид: ${bbLink(link, label)}${managerName ? `\nОтветственный: ${managerName}` : ""}\n\n${body}\n\nТот же бриф записан в поле «Бриф» карточки лида.`;
+      notified = await notify(recipients, msg);
+    }
+  } else if (triggers.length > 0 && (!hadBefore || newCount > 0)) {
+    const recipients = await ropRecipients();
+    if (recipients.length) {
+      const fresh = triggers.filter((t) => t.isNew || !hadBefore).slice(0, 5)
+        .map((t) => `• ${t.date ? `[${t.date}] ` : ""}${t.title}${t.url ? ` — ${t.url}` : ""}`).join("\n");
+      const msg = `[B]Отложенный спрос — ИИ-бриф[/B]${hadBefore ? ` (новых триггеров: ${newCount})` : ""}\nСделка: ${bbLink(link, label)}${managerName ? `\nОтветственный: ${managerName}` : ""}\n\n${body}${fresh ? `\n\n[B]${hadBefore ? "Новое" : "Главные триггеры"}:[/B]\n${fresh}` : ""}\n\nТот же бриф записан в поле «Бриф» карточки сделки.`;
+      notified = await notify(recipients, msg);
+    }
   }
+  if (notified) await markBrief(briefId, { notified: true });
   return { briefId, newTriggers: newCount, pushed, notified };
 }

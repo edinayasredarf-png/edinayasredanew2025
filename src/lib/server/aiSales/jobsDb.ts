@@ -24,7 +24,8 @@ export type AiJobType =
   | "followup.check"
   | "brief.scan"
   | "brief.lead"
-  | "brief.deal";
+  | "brief.deal"
+  | "notify.coach";
 
 export type AiJobStatus =
   | "PENDING"

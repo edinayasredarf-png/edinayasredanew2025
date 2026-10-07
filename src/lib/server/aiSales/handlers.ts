@@ -3,6 +3,7 @@ import "server-only";
 import { registerJobHandler } from "@/lib/server/aiSales/jobRunner";
 import { runBrief } from "@/lib/server/aiSales/briefService";
 import { runBriefScan } from "@/lib/server/aiSales/briefScan";
+import { runCoachNotify } from "@/lib/server/aiSales/coachNotifyService";
 import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncService";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ingestCallActivity } from "@/lib/server/aiSales/callIngestService";
@@ -135,4 +136,12 @@ export function registerAllHandlers(): void {
     if (!id) throw new Error("brief.deal: пустой dealId");
     return runBrief("deal", id);
   });
+
+  // Личное сообщение менеджеру из бота: «как лучше было ответить» по разбору звонка.
+  registerJobHandler("notify.coach", async (job) => {
+    const callId = String(job.payload.callId || "");
+    if (!callId) throw new Error("notify.coach: пустой callId");
+    return runCoachNotify(callId);
+  });
 }
+

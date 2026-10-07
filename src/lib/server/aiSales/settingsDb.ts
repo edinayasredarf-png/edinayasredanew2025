@@ -46,6 +46,9 @@ export const EDITABLE_KEYS = new Set<string>([
   // Свои тексты промтов брифа (пусто — стандартные из src/lib/ai/prompts/briefPrompts.ts).
   "ai.brief.promptSearch",
   "ai.brief.promptBrief",
+  // Рассылка в Bitrix: Bitrix-ID РОПов (через запятую) для брифов по отложенным сделкам; личные сообщения менеджерам «как лучше ответить».
+  "briefs.ropBitrixUserIds",
+  "briefs.coachEnabled",
   "ai.analysis_enabled",
   "ai.confidence_threshold",
   "transcription.provider",
@@ -105,6 +108,18 @@ export async function getTaskModel(task: "roles" | "rag"): Promise<string | unde
   return analysisModel?.trim() || undefined;
 }
 
+/** Произвольная настройка по ключу (с запасным значением) — для сервисов рассылки. */
+export async function getSettingValue<T>(key: string, fallback: T): Promise<T> {
+  return getSetting<T>(key, fallback);
+}
+
+/** Bitrix-ID РОПов для брифов по отложенным сделкам (настройка «briefs.ropBitrixUserIds»; через запятую или массив). */
+export async function getBriefRopIds(): Promise<string[]> {
+  const v = await getSetting<unknown>("briefs.ropBitrixUserIds", undefined);
+  const list = Array.isArray(v) ? v : typeof v === "string" ? v.split(/[,\s;]+/) : [];
+  return list.map((x) => String(x).trim()).filter((x) => /^\d+$/.test(x));
+}
+
 /** Промты брифа: свой текст из настроек, иначе стандартный. */
 export async function getBriefPrompts(): Promise<{ search: string; brief: string }> {
   const [search, brief] = await Promise.all([
@@ -148,4 +163,5 @@ export const VERCEL_JOB_TYPES: AiJobType[] = [
   "brief.scan",
   "brief.lead",
   "brief.deal",
+  "notify.coach",
 ];

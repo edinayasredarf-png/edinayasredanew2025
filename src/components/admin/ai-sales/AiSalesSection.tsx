@@ -2846,6 +2846,8 @@ function Settings() {
         'ai.model.briefSearch': s['ai.model.briefSearch'],
         'ai.model.brief': s['ai.model.brief'],
         // Промты брифа: если текст не отличается от стандартного — храним пусто (подхватятся будущие правки стандарта).
+        'briefs.ropBitrixUserIds': String(s['briefs.ropBitrixUserIds'] ?? ''),
+        'briefs.coachEnabled': s['briefs.coachEnabled'] !== false,
         'ai.brief.promptSearch': String(s['ai.brief.promptSearch'] ?? '').trim() === BRIEF_SEARCH_PROMPT_DEFAULT.trim() ? '' : String(s['ai.brief.promptSearch'] ?? ''),
         'ai.brief.promptBrief': String(s['ai.brief.promptBrief'] ?? '').trim() === BRIEF_COMPOSE_PROMPT_DEFAULT.trim() ? '' : String(s['ai.brief.promptBrief'] ?? ''),
         'ai.analysis_enabled': s['ai.analysis_enabled'],
@@ -2972,6 +2974,12 @@ function Settings() {
           <textarea value={String(s?.['ai.brief.promptBrief'] || BRIEF_COMPOSE_PROMPT_DEFAULT)} onChange={(e) => set('ai.brief.promptBrief', e.target.value)} rows={12}
             className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full font-mono leading-relaxed" />
           <button type="button" onClick={() => set('ai.brief.promptBrief', BRIEF_COMPOSE_PROMPT_DEFAULT)} className="mt-1 text-xs text-[#029cda] hover:underline">Вернуть стандартный</button>
+        </Field>
+        <Field label="Кому слать брифы по отложенным сделкам" hint="Bitrix-ID руководителя отдела продаж (РОП), через запятую. Брифы по сделкам на этапе «Отложенный спрос» приходят ему личным сообщением от Эко_бота. Пусто — пользователям с ролью «РОП» в админке.">
+          <input value={String(s?.['briefs.ropBitrixUserIds'] ?? '')} onChange={(e) => set('briefs.ropBitrixUserIds', e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-full" placeholder="например 67" />
+        </Field>
+        <Field label="Разбор «как лучше ответить»">
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={s?.['briefs.coachEnabled'] !== false} onChange={(e) => set('briefs.coachEnabled', e.target.checked)} /> присылать менеджеру личным сообщением от Эко_бота (название сделки, ссылка и текст ответа) — по звонкам за последние 2 суток</label>
         </Field>
         <Field label="Анализ включён">
           <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={bool('ai.analysis_enabled')} onChange={(e) => set('ai.analysis_enabled', e.target.checked)} /> обрабатывать новые звонки</label>

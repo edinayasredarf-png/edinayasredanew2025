@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixCall } from "@/lib/server/bitrix";
+import { bbLink, crmLink, sendBotMessage, whoAmI } from "@/lib/server/bitrix/messenger";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
 import { parseResult, plainForBitrix, pushBriefToBitrix } from "@/lib/server/aiSales/briefService";
 
@@ -116,5 +117,17 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls" }, { status: 400 });
+  if (body.action === "bitrix-whoami") {
+    return NextResponse.json({ ok: true, ...(await whoAmI()) });
+  }
+
+  if (body.action === "bot-test") {
+    // Тестовое личное сообщение от бота: { userId } — кому (по умолчанию никому: сначала whoami).
+    const userId = String((body as { userId?: string }).userId ?? "").trim();
+    if (!/^\d+$/.test(userId)) return NextResponse.json({ error: "Укажите userId (число)" }, { status: 400 });
+    const r = await sendBotMessage(userId, `[B]Проверка связи[/B]\nЭто тестовое сообщение от Эко_бота: рассылка разборов звонков и брифов настроена. ${bbLink(crmLink("deal", "14033"), "Пример ссылки на сделку")}`);
+    return NextResponse.json(r);
+  }
+
+  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls, bitrix-whoami, bot-test" }, { status: 400 });
 }
