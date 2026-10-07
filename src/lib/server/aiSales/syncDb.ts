@@ -85,16 +85,31 @@ export async function upsertContacts(contacts: BxContact[]): Promise<number> {
   return n;
 }
 
+let dealFinanceColumns: Promise<void> | null = null;
+/** Колонки для финансовой сводки (дата закрытия, воронка) — добавляются идемпотентно при первой записи. */
+export function ensureDealFinanceColumns(): Promise<void> {
+  if (!dealFinanceColumns) {
+    dealFinanceColumns = (async () => {
+      const pool = getTimewebPool();
+      await pool.query(`alter table ai_deals add column if not exists close_date date, add column if not exists category_id text`);
+      await pool.query(`create index if not exists idx_ai_deals_close_date on ai_deals (close_date) where is_won`);
+    })().catch((e) => { dealFinanceColumns = null; throw e; });
+  }
+  return dealFinanceColumns;
+}
+
 export async function upsertDeals(deals: BxDeal[]): Promise<number> {
   if (!deals.length) return 0;
+  await ensureDealFinanceColumns();
   const pool = getTimewebPool();
   let n = 0;
   for (const d of deals) {
     await pool.query(
       `insert into ai_deals (
          bitrix_deal_id, title, bitrix_company_id, bitrix_contact_id, bitrix_user_id,
-         stage_id, opportunity, currency, is_closed, is_won, bitrix_created_at, bitrix_updated_at, raw, updated_at
-       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb, now())
+         stage_id, opportunity, currency, is_closed, is_won, bitrix_created_at, bitrix_updated_at, raw,
+         close_date, category_id, updated_at
+       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15, now())
        on conflict (bitrix_deal_id) do update set
          title = excluded.title,
          bitrix_company_id = excluded.bitrix_company_id,
@@ -107,11 +122,14 @@ export async function upsertDeals(deals: BxDeal[]): Promise<number> {
          is_won = excluded.is_won,
          bitrix_updated_at = excluded.bitrix_updated_at,
          raw = excluded.raw,
+         close_date = excluded.close_date,
+         category_id = excluded.category_id,
          updated_at = now()`,
       [
         d.bitrixDealId, d.title, d.bitrixCompanyId, d.bitrixContactId, d.bitrixUserId,
         d.stageId, d.opportunity, d.currency, d.isClosed, d.isWon,
         d.bitrixCreatedAt, d.bitrixUpdatedAt, JSON.stringify(d.raw),
+        d.closeDate ? d.closeDate.toISOString().slice(0, 10) : null, d.categoryId,
       ]
     );
     n++;

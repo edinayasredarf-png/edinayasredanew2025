@@ -120,6 +120,8 @@ export interface BxDeal {
   isWon: boolean | null; // true — выиграна, false — проиграна, null — не закрыта/неясно
   bitrixCreatedAt: Date | null;
   bitrixUpdatedAt: Date | null;
+  closeDate: Date | null;     // CLOSEDATE — для финансовой сводки (доход по дате закрытия)
+  categoryId: string | null;  // CATEGORY_ID — воронка сделки
   raw: Record<string, unknown>;
 }
 
@@ -130,7 +132,7 @@ export async function fetchDeals(sinceModify?: Date): Promise<BxDeal[]> {
     filter,
     select: [
       "ID", "TITLE", "COMPANY_ID", "CONTACT_ID", "ASSIGNED_BY_ID", "STAGE_ID",
-      "OPPORTUNITY", "CURRENCY_ID", "CLOSED", "DATE_CREATE", "DATE_MODIFY",
+      "OPPORTUNITY", "CURRENCY_ID", "CLOSED", "CLOSEDATE", "CATEGORY_ID", "DATE_CREATE", "DATE_MODIFY",
     ],
     order: { DATE_MODIFY: "ASC" },
   });
@@ -159,6 +161,8 @@ export function mapDeal(r: Record<string, unknown>): BxDeal {
     isWon,
     bitrixCreatedAt: bxDate(r.DATE_CREATE),
     bitrixUpdatedAt: bxDate(r.DATE_MODIFY),
+    closeDate: bxDate(r.CLOSEDATE),
+    categoryId: bxStr(r.CATEGORY_ID) || null,
     raw: r,
   };
 }

@@ -88,7 +88,7 @@ export async function syncEntityPage(
       const p = await bitrixListPage<Row>("crm.deal.list", {
         select: [
           "ID", "TITLE", "COMPANY_ID", "CONTACT_ID", "ASSIGNED_BY_ID", "STAGE_ID",
-          "OPPORTUNITY", "CURRENCY_ID", "CLOSED", "DATE_CREATE", "DATE_MODIFY",
+          "OPPORTUNITY", "CURRENCY_ID", "CLOSED", "CLOSEDATE", "CATEGORY_ID", "DATE_CREATE", "DATE_MODIFY",
         ],
         order: { ID: "ASC" },
         start,
