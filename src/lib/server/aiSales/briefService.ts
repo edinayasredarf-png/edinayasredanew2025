@@ -114,7 +114,7 @@ export async function gatherCrm(entityType: BriefEntity, id: string): Promise<Cr
 
 export interface ResearchResult { text: string; triggers: BriefTrigger[] }
 
-function parseResult(raw: string): ResearchResult {
+export function parseResult(raw: string): ResearchResult {
   // Блок ```json со списком триггеров — в конце ответа. Ответ может оборваться по лимиту длины прямо
   // внутри блока: тогда достаём все ЦЕЛЫЕ объекты, а оборванный хвост не пускаем ни в текст брифа,
   // ни в поле Bitrix.
@@ -171,16 +171,17 @@ export async function researchWeb(snap: CrmSnapshot): Promise<ResearchResult> {
 
 /* ───────────────────────── 3. Запись в Bitrix и уведомления ───────────────────────── */
 
-function plainForBitrix(snap: CrmSnapshot, text: string, triggers: BriefTrigger[]): string {
+export function plainForBitrix(text: string, triggers: BriefTrigger[]): string {
   const date = new Date().toLocaleDateString("ru-RU");
   const links = triggers.filter((t) => t.url).map((t) => `• ${t.date ? `[${t.date}] ` : ""}${t.title} — ${t.url}`).join("\n");
   const body = `AI-бриф от ${date}\n\n${text}${links ? `\n\nИсточники:\n${links}` : ""}`;
   return body.length > FIELD_MAX_CHARS ? `${body.slice(0, FIELD_MAX_CHARS - 20)}\n…(обрезано)` : body;
 }
 
-async function pushToBitrix(snap: CrmSnapshot, text: string): Promise<void> {
-  const field = snap.entityType === "lead" ? LEAD_FIELD : DEAL_FIELD;
-  await bitrixCall(snap.entityType === "lead" ? "crm.lead.update" : "crm.deal.update", { id: snap.entityId, fields: { [field]: text } });
+/** Записать готовый текст брифа в пользовательское поле лида/сделки Bitrix. */
+export async function pushBriefToBitrix(entityType: BriefEntity, id: string, text: string): Promise<void> {
+  const field = entityType === "lead" ? LEAD_FIELD : DEAL_FIELD;
+  await bitrixCall(entityType === "lead" ? "crm.lead.update" : "crm.deal.update", { id, fields: { [field]: text } });
 }
 
 /** Bitrix-ID пользователей с ролью «РОП» в админке (user_profiles.role = 'rop'). */
@@ -232,7 +233,7 @@ export async function runBrief(entityType: BriefEntity, id: string, opts: { noti
   // В поле Bitrix пишем всегда для первого брифа; для повторных — только если есть новое.
   let pushed = false;
   if (!hadBefore || newCount > 0) {
-    pushed = !!(await safe(async () => { await pushToBitrix(snap, plainForBitrix(snap, research.text, triggers)); return true; }));
+    pushed = !!(await safe(async () => { await pushBriefToBitrix(entityType, id, plainForBitrix(research.text, triggers)); return true; }));
     if (pushed) await markBrief(briefId, { pushed: true });
   }
 
