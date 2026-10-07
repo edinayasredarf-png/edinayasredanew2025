@@ -51,8 +51,17 @@ async function scanDeferredDeals(): Promise<number> {
     `select bitrix_deal_id from ai_deals where stage_id = any($1::text[]) and not is_closed order by bitrix_updated_at desc nulls last limit 300`,
     [stages]);
   const week = isoWeek();
-  for (const r of rows) {
-    await enqueueJob({ type: "brief.deal", payload: { dealId: r.bitrix_deal_id }, priority: 160, maxAttempts: 2, idempotencyKey: `brief:deal:${r.bitrix_deal_id}:${week}` });
+  // Растягиваем недельную проверку по дням: поиск платный (0,49 ₽/запрос, у агента дневной лимит) —
+  // по умолчанию 25 сделок в сутки; остальные получают run_after на следующие дни.
+  const perDay = Math.max(1, Number(process.env.BRIEF_DEALS_PER_DAY) || 25);
+  const now = Date.now();
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    await enqueueJob({
+      type: "brief.deal", payload: { dealId: r.bitrix_deal_id }, priority: 160, maxAttempts: 2,
+      idempotencyKey: `brief:deal:${r.bitrix_deal_id}:${week}`,
+      runAfter: new Date(now + Math.floor(i / perDay) * 24 * 3600 * 1000),
+    });
   }
   return rows.length;
 }
