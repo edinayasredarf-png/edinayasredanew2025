@@ -9,7 +9,6 @@ import {
 import { sb_listPosts } from '@/lib/blogStore';
 import { DatePicker } from '@/components/admin/ui/DatePicker';
 import type { TabId } from '@/components/admin/AdminPanel';
-import FinanceOverview from '@/components/admin/finance/FinanceOverview';
 
 /* «Главная» — обзорная страница админки: KPI за период, быстрый переход к
    написанию материала и плитки-ссылки на разделы отдела продаж/базы знаний.
@@ -149,8 +148,7 @@ export default function AdminDashboard({ onNavigate }: { onNavigate?: (tab: TabI
   const go = (tab: TabId, view?: string) => () => onNavigate?.(tab, view);
 
   return (
-    <div className="max-w-[1100px] mx-auto">
-     <div className="max-w-[600px] mx-auto">
+    <div className="max-w-[600px] mx-auto">
       {/* Заголовок + фильтр периода */}
       <div className="flex flex-col items-center text-center gap-5 mb-10">
         <h1 className="text-xl font-semibold text-[var(--es-ink)]">Главная</h1>
@@ -191,12 +189,6 @@ export default function AdminDashboard({ onNavigate }: { onNavigate?: (tab: TabI
         </button>
       </div>
 
-     </div>
-
-      {/* Финансы компании (только РОП/админ — иначе блок скрыт) */}
-      <FinanceOverview onNavigate={(tab, view) => onNavigate?.(tab, view)} />
-
-     <div className="max-w-[600px] mx-auto">
       {/* Написать */}
       <div className="mb-10">
         <h2 className="text-xl font-semibold text-[var(--es-ink)] mb-1">Написать</h2>
@@ -285,7 +277,6 @@ export default function AdminDashboard({ onNavigate }: { onNavigate?: (tab: TabI
           </div>
         </div>
       )}
-     </div>
     </div>
   );
 }

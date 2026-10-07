@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import nextDynamic from 'next/dynamic';
 import {
-  AudioWaveform, BarChart3, FileEdit, FolderKanban, LayoutGrid, Link2, MailOpen,
+  AudioWaveform, BarChart3, FileEdit, FolderKanban, LayoutDashboard, LayoutGrid, Link2, MailOpen,
   Mail, Megaphone, MessageCircle, Newspaper, Radar, Share2, SquarePen, Star, Users,
 } from 'lucide-react';
 import { authStore } from '@/lib/authStore';
@@ -20,6 +20,7 @@ const lazyTab = <P extends object>(loader: () => Promise<{ default: React.Compon
   nextDynamic(loader, { ssr: false, loading: TabLoading });
 
 const AdminDashboard = lazyTab<{ onNavigate?: (tab: TabId, view?: string) => void }>(() => import('./AdminDashboard'));
+const FinanceOverview = lazyTab<{ onNavigate?: (tab: 'ai-analytics', view?: string) => void; standalone?: boolean }>(() => import('./finance/FinanceOverview'));
 const UtmGenerator = lazyTab(() => import('./UtmGenerator'));
 const PressAdmin = lazyTab(() => import('./PressAdmin'));
 const AdsAdmin = lazyTab(() => import('./AdsAdmin'));
@@ -51,6 +52,7 @@ const wrapIcon = (Lucide: React.ComponentType<{ className?: string }>) =>
   };
 
 const IconGrid = wrapIcon(LayoutGrid);
+const IconDashboard = wrapIcon(LayoutDashboard);
 const IconNews = wrapIcon(Newspaper);
 const IconLink = wrapIcon(Link2);
 const IconMail = wrapIcon(Mail);
@@ -121,8 +123,8 @@ function AdminLogin() {
   );
 }
 
-export type TabId = 'dashboard' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp' | 'content-os';
-const ALL_TAB_IDS: TabId[] = ['dashboard', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp', 'content-os'];
+export type TabId = 'dashboard' | 'finance' | 'metrika' | 'email' | 'leads' | 'social' | 'utm' | 'press' | 'ads' | 'letters' | 'radar' | 'feedback' | 'ai-analytics' | 'write' | 'kp' | 'content-os';
+const ALL_TAB_IDS: TabId[] = ['dashboard', 'finance', 'metrika', 'email', 'leads', 'social', 'utm', 'press', 'ads', 'letters', 'radar', 'feedback', 'ai-analytics', 'write', 'kp', 'content-os'];
 
 /** metrika/email/leads/social рендерят один и тот же AnalyticsDashboard с разным `only`
  *  — для keep-alive это одна панель, а не четыре. */
@@ -134,6 +136,7 @@ const panelOf = (t: TabId): string => (isAnalyticsTab(t) ? 'analytics' : t);
 const NAV: Array<{ group: string; items: Array<{ id: TabId; label: string; icon: (p: IconProps) => React.ReactElement }> }> = [
   { group: 'Контент', items: [
     { id: 'dashboard', label: 'Главная', icon: IconGrid },
+    { id: 'finance', label: 'Дашборд', icon: IconDashboard },
     { id: 'write', label: 'Написать', icon: IconPencil },
     { id: 'press', label: 'СМИ о нас', icon: IconNews },
     { id: 'ads', label: 'Реклама', icon: IconAds },
@@ -539,6 +542,7 @@ export default function AdminPanel() {
           )}
 
           {visitedPanels.has('dashboard') && <div className={activeTab === 'dashboard' ? '' : 'hidden'}><AdminDashboard onNavigate={navigateTo} /></div>}
+          {visitedPanels.has('finance') && <div className={activeTab === 'finance' ? '' : 'hidden'}><div className="max-w-[1100px] mx-auto"><FinanceOverview standalone onNavigate={navigateTo} /></div></div>}
         </div>
       </div>
     </div>

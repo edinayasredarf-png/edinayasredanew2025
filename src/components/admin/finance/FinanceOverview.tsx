@@ -181,7 +181,7 @@ function LinePlanModal({ data, only, onClose, onSave }: { data: Overview; only?:
 
 /* ───────────── основной компонент ───────────── */
 
-export default function FinanceOverview({ onNavigate }: { onNavigate?: (tab: 'ai-analytics', view?: string) => void }) {
+export default function FinanceOverview({ onNavigate, standalone = false }: { onNavigate?: (tab: 'ai-analytics', view?: string) => void; standalone?: boolean }) {
   const [period, setPeriod] = useState<Period>('month');
   const [dept, setDept] = useState<Dept>('sales');
   const [data, setData] = useState<Overview | null>(null);
@@ -213,7 +213,7 @@ export default function FinanceOverview({ onNavigate }: { onNavigate?: (tab: 'ai
 
   const todayLabel = useMemo(() => new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }), []);
 
-  if (state === 'denied') return null; // сводка только для РОП/админа
+  if (state === 'denied') return standalone ? <section className="py-16 text-center text-sm text-[var(--es-ink-2)]">Финансовый дашборд доступен руководителю отдела продаж и администратору.</section> : null;
   if (state === 'loading' && !data) return <section className="mb-10"><LoadingBlock /></section>;
   if (state === 'error' && !data) return <section className="mb-10 p-4 rounded-2xl bg-[var(--es-bad-soft)] text-[var(--es-bad)] text-sm">Не удалось загрузить финансовую сводку: {err}</section>;
   if (!data) return null;
