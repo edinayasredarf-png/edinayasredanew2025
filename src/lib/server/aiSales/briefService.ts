@@ -115,21 +115,29 @@ export async function gatherCrm(entityType: BriefEntity, id: string): Promise<Cr
 export interface ResearchResult { text: string; triggers: BriefTrigger[] }
 
 function parseResult(raw: string): ResearchResult {
-  const m = raw.match(/```json\s*([\s\S]*?)```/i);
+  // Блок ```json со списком триггеров — в конце ответа. Ответ может оборваться по лимиту длины прямо
+  // внутри блока: тогда достаём все ЦЕЛЫЕ объекты, а оборванный хвост не пускаем ни в текст брифа,
+  // ни в поле Bitrix.
+  const m = raw.match(/```json/i);
+  const text = (m && m.index != null ? raw.slice(0, m.index) : raw).trim();
+  const block = m && m.index != null ? raw.slice(m.index).replace(/^```json\s*/i, "").replace(/```[\s\S]*$/, "") : "";
+
+  const toTrigger = (t: Row): BriefTrigger => ({
+    title: s(t.title).slice(0, 300), date: s(t.date) && s(t.date) !== "null" ? s(t.date).slice(0, 10) : null,
+    url: s(t.url) || null, source: s(t.source) || null, kind: s(t.kind) || "other",
+  });
   let triggers: BriefTrigger[] = [];
-  if (m) {
+  if (block.trim()) {
     try {
-      const arr = JSON.parse(m[1]);
-      if (Array.isArray(arr)) {
-        triggers = arr.map((t: Row): BriefTrigger => ({
-          title: s(t.title).slice(0, 300), date: s(t.date) && s(t.date) !== "null" ? s(t.date).slice(0, 10) : null,
-          url: s(t.url) || null, source: s(t.source) || null, kind: s(t.kind) || "other",
-        })).filter((t) => t.title);
+      const arr = JSON.parse(block);
+      if (Array.isArray(arr)) triggers = arr.map(toTrigger);
+    } catch {
+      for (const o of block.match(/\{[^{}]*\}/g) ?? []) {
+        try { triggers.push(toTrigger(JSON.parse(o))); } catch { /* оборванный объект */ }
       }
-    } catch { /* оставляем пусто — текст всё равно полезен */ }
+    }
   }
-  const text = (m ? raw.slice(0, m.index) : raw).trim();
-  return { text, triggers };
+  return { text, triggers: triggers.filter((t) => t.title) };
 }
 
 export async function researchWeb(snap: CrmSnapshot): Promise<ResearchResult> {
