@@ -138,13 +138,17 @@ export async function claimBatch(
   }
   // Брифы (поиск в интернете + сборка, до ~55 с на задачу) не должны мешать конвейеру звонков
   // (загрузка → транскрибация → роли → анализ → разбор сделки):
+  //  - бриф берётся ТОЛЬКО если нет других готовых к выполнению задач (звонки, синхронизация и т.п. всегда первыми);
   //  - не больше BRIEF_MAX_PARALLEL брифов одновременно (по умолчанию 1);
   //  - брать бриф можно только в начале вызова дренажа (allowBrief), иначе он не уложится в лимит 60 с.
   const briefMax = Math.max(1, Number(process.env.BRIEF_MAX_PARALLEL) || 1);
   const briefFilter =
     opts.allowBrief === false
       ? `and type not like 'brief.%'`
-      : `and (type not like 'brief.%' or (select count(*) from ai_jobs r where r.status = 'RUNNING' and r.type like 'brief.%') < ${briefMax})`;
+      : `and (type not like 'brief.%' or (
+           (select count(*) from ai_jobs r where r.status = 'RUNNING' and r.type like 'brief.%') < ${briefMax}
+           and not exists (select 1 from ai_jobs x where x.status in ('PENDING','RETRY_PENDING') and x.run_after <= now() and x.type not like 'brief.%')
+         ))`;
   typeFilter += ` ${briefFilter}`;
   const { rows } = await pool.query<AiJobRow>(
     `update ai_jobs j

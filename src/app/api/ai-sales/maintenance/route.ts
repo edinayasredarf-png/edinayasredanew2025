@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
+import { bitrixCall } from "@/lib/server/bitrix";
 import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { bbLink, crmLink, sendBotMessage, whoAmI } from "@/lib/server/bitrix/messenger";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
@@ -76,6 +77,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, ...(await reconcileCalls({ days, dryRun })) });
   }
 
+  if (body.action === "calls-today-debug") {
+    // Что в Bitrix по звонкам за последние сутки: активности (с записью/без) и статистика телефонии.
+    const since = new Date(Date.now() - 36 * 3600_000).toISOString().slice(0, 10) + "T00:00:00+03:00";
+    type Act = { ID?: string; CREATED?: string; DIRECTION?: string; COMPLETED?: string; FILES?: unknown; PROVIDER_ID?: string; PROVIDER_TYPE_ID?: string };
+    const acts = (await bitrixCall<Act[]>("crm.activity.list", { filter: { TYPE_ID: 2, ">=CREATED": since }, order: { ID: "DESC" }, select: ["ID", "CREATED", "DIRECTION", "COMPLETED", "FILES", "PROVIDER_ID", "PROVIDER_TYPE_ID"] })).result ?? [];
+    const withFiles = acts.filter((a) => Array.isArray(a.FILES) && a.FILES.length > 0);
+    let stat: unknown = null;
+    try {
+      const r = await bitrixCall<Array<Record<string, unknown>>>("voximplant.statistic.get", { FILTER: { ">=CALL_START_DATE": since }, SORT: "CALL_START_DATE", ORDER: "DESC" });
+      const rows = Array.isArray(r.result) ? r.result : [];
+      stat = {
+        total: rows.length,
+        connected: rows.filter((x) => Number(x.CALL_DURATION) > 0).length,
+        withRecordUrl: rows.filter((x) => x.CALL_RECORD_URL).length,
+        withRecordId: rows.filter((x) => x.CALL_RECORD_ID).length,
+        sample: rows.slice(0, 5).map((x) => ({ start: x.CALL_START_DATE, dur: x.CALL_DURATION, failed: x.CALL_FAILED_CODE, hasUrl: !!x.CALL_RECORD_URL, activity: x.CRM_ACTIVITY_ID })),
+      };
+    } catch (e) { stat = { error: e instanceof Error ? e.message.slice(0, 160) : String(e) }; }
+    const ids = acts.map((a) => String(a.ID));
+    const have = ids.length ? (await pool.query<{ n: string }>(`select count(*)::text n from ai_calls where bitrix_activity_id = any($1::text[])`, [ids])).rows[0].n : "0";
+    return NextResponse.json({
+      ok: true, since, activities: acts.length, withFiles: withFiles.length, inDb: Number(have),
+      byDirection: acts.reduce<Record<string, number>>((a, x) => { const k = String(x.DIRECTION ?? "?"); a[k] = (a[k] ?? 0) + 1; return a; }, {}),
+      newest: acts.slice(0, 8).map((a) => ({ id: a.ID, created: a.CREATED, dir: a.DIRECTION, files: Array.isArray(a.FILES) ? a.FILES.length : null, provider: a.PROVIDER_ID })),
+      telephony: stat,
+    });
+  }
+
   if (body.action === "bitrix-whoami") {
     return NextResponse.json({ ok: true, ...(await whoAmI()) });
   }
@@ -99,5 +128,5 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls, bitrix-whoami, bot-test" }, { status: 400 });
+  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls, calls-today-debug, bitrix-whoami, bot-test" }, { status: 400 });
 }
