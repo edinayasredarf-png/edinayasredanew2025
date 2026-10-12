@@ -1,6 +1,6 @@
 import "server-only";
 
-import { resolveDiskDownloadUrl } from "@/lib/server/bitrix/entities";
+import { resolveRecordingUrl } from "@/lib/server/bitrix/entities";
 import { getCallById, getTranscript, replaceSegments } from "@/lib/server/aiSales/callsDb";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 
@@ -35,11 +35,6 @@ function authHeaders(json = false): Record<string, string> {
   return h;
 }
 
-function fileIdFromRaw(raw: unknown): string | null {
-  const r = raw as { FILES?: Array<{ id?: unknown }> } | null;
-  const f = r?.FILES?.[0]?.id;
-  return f != null ? String(f) : null;
-}
 
 /** Спикер, говоривший в момент t (сек): по включению, иначе — ближайший интервал. */
 function speakerAt(turns: Turn[], t: number): string | null {
@@ -137,12 +132,8 @@ export async function runDiarization(payload: DiarPayload): Promise<unknown> {
     await enqueueJob({ type: "call.roles", payload: { callId: call.id }, idempotencyKey: `roles:${call.id}`, priority: 55 });
     return { skipped: "no recording" };
   }
-  const fileId = fileIdFromRaw((call as unknown as { raw?: unknown }).raw)
-    || call.recording_url.match(/[?&]id=(\d+)/)?.[1]
-    || null;
-  if (!fileId) throw new Error("Не удалось определить fileId записи для диаризации");
-  const downloadUrl = await resolveDiskDownloadUrl(fileId);
-  if (!downloadUrl) throw new Error("Не удалось получить DOWNLOAD_URL записи");
+  const downloadUrl = await resolveRecordingUrl(call);
+  if (!downloadUrl) throw new Error("Не удалось получить ссылку на запись звонка для диаризации");
 
   const res = await fetch(`${base}/v1/diarize`, {
     method: "POST",

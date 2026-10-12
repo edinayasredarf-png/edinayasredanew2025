@@ -238,6 +238,54 @@ export async function resolveDiskDownloadUrl(fileId: string): Promise<string | n
   return url ? String(url) : null;
 }
 
+/** Маркер recording_url для записи из телефонии: «vox:<ID активности>» (у активности нет вложения FILES). */
+export const VOX_PREFIX = "vox:";
+
+/**
+ * Запись звонка из телефонии Bitrix (voximplant.statistic.get → CALL_RECORD_URL) по ID CRM-активности.
+ * Нужна, когда к активности не прикреплён файл записи (FILES пуст), а запись в телефонии есть.
+ * Ссылка может быть короткоживущей — резолвим непосредственно перед скачиванием.
+ */
+export async function fetchVoxRecord(activityId: string, createdIso?: string | null): Promise<{ url: string | null; durationSec: number | null }> {
+  type Row = Record<string, unknown>;
+  const pick = (rows: Row[]) => {
+    const r = rows.find((x) => String(x.CRM_ACTIVITY_ID ?? "") === activityId && x.CALL_RECORD_URL) ?? null;
+    return r ? { url: String(r.CALL_RECORD_URL), durationSec: Number(r.CALL_DURATION) > 0 ? Number(r.CALL_DURATION) : null } : null;
+  };
+  // 1) прямой фильтр по активности
+  try {
+    const { result } = await bitrixCall<Row[]>("voximplant.statistic.get", { FILTER: { CRM_ACTIVITY_ID: activityId } });
+    const hit = pick(Array.isArray(result) ? result : []);
+    if (hit) return hit;
+  } catch { /* фильтр может не поддерживаться — пробуем по дате */ }
+  // 2) окно по дате звонка (±1 день), сопоставляем по CRM_ACTIVITY_ID
+  if (createdIso) {
+    const t = new Date(createdIso).getTime();
+    if (Number.isFinite(t)) {
+      let start = 0;
+      for (let page = 0; page < 6; page++) {
+        const { result, next } = await bitrixCall<Row[]>("voximplant.statistic.get", {
+          FILTER: { ">=CALL_START_DATE": new Date(t - 86400000).toISOString(), "<=CALL_START_DATE": new Date(t + 86400000).toISOString() },
+          SORT: "CALL_START_DATE", ORDER: "DESC", start,
+        });
+        const hit = pick(Array.isArray(result) ? result : []);
+        if (hit) return hit;
+        if (next == null) break;
+        start = next;
+      }
+    }
+  }
+  return { url: null, durationSec: null };
+}
+
+/** Прямая ссылка на запись звонка: из телефонии («vox:<activity>») или через Диск Bitrix (disk.file.get?id=…). */
+export async function resolveRecordingUrl(call: { recording_url: string | null; started_at?: Date | null }): Promise<string | null> {
+  const u = call.recording_url ?? "";
+  if (u.startsWith(VOX_PREFIX)) return (await fetchVoxRecord(u.slice(VOX_PREFIX.length), call.started_at?.toISOString() ?? null)).url;
+  const fileId = u.match(/[?&]id=(\d+)/)?.[1];
+  return fileId ? resolveDiskDownloadUrl(fileId) : null;
+}
+
 /** Получить активность-звонок по ID и извлечь запись + привязки. */
 export async function fetchCallActivity(activityId: string): Promise<BxCallActivity> {
   const { result } = await bitrixCall<Record<string, unknown>>("crm.activity.get", {

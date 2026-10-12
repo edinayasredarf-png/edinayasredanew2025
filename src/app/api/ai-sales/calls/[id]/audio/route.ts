@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSalesAccess } from "@/lib/server/authFromBearer";
 import { getCallById } from "@/lib/server/aiSales/callsDb";
-import { resolveDiskDownloadUrl } from "@/lib/server/bitrix/entities";
+import { resolveRecordingUrl } from "@/lib/server/bitrix/entities";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,12 +27,9 @@ export async function GET(
     return NextResponse.json({ error: "Запись недоступна" }, { status: 404 });
   }
 
-  const fileId = call.recording_url.match(/[?&]id=(\d+)/)?.[1] ?? null;
-  if (!fileId) return NextResponse.json({ error: "Нет fileId" }, { status: 404 });
-
   try {
-    const url = await resolveDiskDownloadUrl(fileId);
-    if (!url) return NextResponse.json({ error: "Нет DOWNLOAD_URL" }, { status: 404 });
+    const url = await resolveRecordingUrl(call);
+    if (!url) return NextResponse.json({ error: "Нет ссылки на запись" }, { status: 404 });
 
     // Пробрасываем Range клиента в Bitrix → браузер сможет перематывать запись
     // (без Range плеер каждый раз тянет файл с нуля и не умеет seek).

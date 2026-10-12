@@ -87,7 +87,17 @@ export async function POST(request: NextRequest) {
     try {
       const r = await bitrixCall<Array<Record<string, unknown>>>("voximplant.statistic.get", { FILTER: { ">=CALL_START_DATE": since }, SORT: "CALL_START_DATE", ORDER: "DESC" });
       const rows = Array.isArray(r.result) ? r.result : [];
+      // Скачивается ли запись по ссылке из телефонии (проверяем первые байты, ссылку наружу не отдаём).
+      let download: unknown = null;
+      const withUrl = rows.find((x) => x.CALL_RECORD_URL);
+      if (withUrl) {
+        try {
+          const dr = await fetch(String(withUrl.CALL_RECORD_URL), { headers: { Range: "bytes=0-1023" }, signal: AbortSignal.timeout(15_000), redirect: "follow" });
+          download = { status: dr.status, contentType: dr.headers.get("content-type"), contentRange: dr.headers.get("content-range"), length: dr.headers.get("content-length"), host: new URL(String(withUrl.CALL_RECORD_URL)).hostname };
+        } catch (e) { download = { error: e instanceof Error ? e.message.slice(0, 120) : String(e) }; }
+      }
       stat = {
+        download,
         total: rows.length,
         connected: rows.filter((x) => Number(x.CALL_DURATION) > 0).length,
         withRecordUrl: rows.filter((x) => x.CALL_RECORD_URL).length,

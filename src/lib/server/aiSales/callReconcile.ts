@@ -41,7 +41,20 @@ export async function reconcileCalls(opts: { days?: number; dryRun?: boolean; ti
     for (const r of rows) have.add(r.bitrix_activity_id);
   }
   const missing = acts.filter((a) => a.ID && !have.has(String(a.ID)));
-  const withRecording = missing.filter((a) => Array.isArray(a.FILES) && a.FILES.length > 0);
+  // Запись есть, если вложение FILES ИЛИ ссылка на запись в телефонии (у части звонков вложение не прикрепляется).
+  const voxIds = new Set<string>();
+  try {
+    let vstart = 0;
+    while (Date.now() - t0 < budget) {
+      const { result, next } = await bitrixCall<Array<Record<string, unknown>>>("voximplant.statistic.get", {
+        FILTER: { ">=CALL_START_DATE": sinceIso }, SORT: "CALL_START_DATE", ORDER: "ASC", start: vstart,
+      });
+      for (const r of Array.isArray(result) ? result : []) if (r.CRM_ACTIVITY_ID && r.CALL_RECORD_URL) voxIds.add(String(r.CRM_ACTIVITY_ID));
+      if (next == null) break;
+      vstart = next;
+    }
+  } catch { /* телефония недоступна — считаем только по вложениям */ }
+  const withRecording = missing.filter((a) => (Array.isArray(a.FILES) && a.FILES.length > 0) || voxIds.has(String(a.ID)));
   const byDay: Record<string, number> = {};
   for (const a of withRecording) { const d = String(a.CREATED ?? "").slice(0, 10); byDay[d] = (byDay[d] ?? 0) + 1; }
 

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import { resolveDiskDownloadUrl } from "@/lib/server/bitrix/entities";
+import { resolveRecordingUrl } from "@/lib/server/bitrix/entities";
 import { getTranscriptionProviderFromSettings } from "@/lib/transcription";
 import { putObject, objectStorageConfigured } from "@/lib/storage/objectStorage";
 import {
@@ -27,13 +27,6 @@ interface TranscribePayload {
   callId: string;
   operationId?: string;
   polls?: number;
-}
-
-/** Извлечь fileId из raw активности звонка. */
-function fileIdFromRaw(raw: unknown): string | null {
-  const r = raw as { FILES?: Array<{ id?: unknown }> } | null;
-  const f = r?.FILES?.[0]?.id;
-  return f != null ? String(f) : null;
 }
 
 async function afterTranscribed(callId: string): Promise<void> {
@@ -93,16 +86,10 @@ export async function runTranscription(payload: TranscribePayload): Promise<unkn
   }
 
   // ── Фаза start ──
-  const fileId = fileIdFromRaw(call as unknown as { raw?: unknown }) || null;
-  // recording_url = disk.file.get?id=<fileId>; извлечём fileId из него, если нет в raw.
-  const idFromUrl = call.recording_url.match(/[?&]id=(\d+)/)?.[1] ?? null;
-  const resolvedFileId = fileId || idFromUrl;
-  if (!resolvedFileId) throw new Error("Не удалось определить fileId записи");
-
   await setCallStatus(call.id, "DOWNLOADING");
   // Прямая ссылка на запись (self-hosted сервис скачает сам; иначе — качаем байты).
-  const downloadUrl = await resolveDiskDownloadUrl(resolvedFileId);
-  if (!downloadUrl) throw new Error("Не удалось получить DOWNLOAD_URL записи");
+  const downloadUrl = await resolveRecordingUrl(call);
+  if (!downloadUrl) throw new Error("Не удалось получить ссылку на запись звонка");
 
   // sync ИЛИ async с Object Storage — нужны байты (для распознавания/загрузки + хэш).
   const needBytes = provider.mode === "sync" || provider.needsObjectStorage !== false;

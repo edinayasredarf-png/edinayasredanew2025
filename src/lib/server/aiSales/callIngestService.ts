@@ -1,6 +1,6 @@
 import "server-only";
 
-import { fetchCallActivity } from "@/lib/server/bitrix/entities";
+import { fetchCallActivity, fetchVoxRecord, VOX_PREFIX } from "@/lib/server/bitrix/entities";
 import { BitrixError } from "@/lib/server/bitrix/client";
 import { upsertCallFromActivity } from "@/lib/server/aiSales/callsDb";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
@@ -33,6 +33,17 @@ export async function ingestCallActivity(activityId: string, retry = 0): Promise
 
   // Реальный звонок = активность С ЗАПИСЬЮ. Задачи/планы «связаться» (без записи)
   // НЕ заводим как звонки — иначе в списке появляются фантомные «звонки» в будущем.
+  // Нет вложения FILES — пробуем запись из телефонии (CALL_RECORD_URL): у части звонков вложение не прикрепляется.
+  if (!activity.recordingUrl && String(activity.raw?.TYPE_ID ?? "") === "2") {
+    try {
+      const vox = await fetchVoxRecord(activityId, activity.startedAt?.toISOString() ?? null);
+      if (vox.url) {
+        activity.recordingUrl = `${VOX_PREFIX}${activityId}`;
+        if (vox.durationSec) activity.durationSec = vox.durationSec;
+      }
+    } catch { /* телефония недоступна — как раньше */ }
+  }
+
   if (!activity.recordingUrl) {
     // Запись к только что завершённому звонку прикрепляется с задержкой — перепроверим несколько раз (до ~20 мин).
     const isCall = String(activity.raw?.TYPE_ID ?? "") === "2";
