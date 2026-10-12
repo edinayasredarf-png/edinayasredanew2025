@@ -94,7 +94,11 @@ export async function POST(request: NextRequest) {
         try {
           const dr = await fetch(String(withUrl.CALL_RECORD_URL), { headers: { Range: "bytes=0-1023" }, signal: AbortSignal.timeout(15_000), redirect: "follow" });
           download = { status: dr.status, contentType: dr.headers.get("content-type"), contentRange: dr.headers.get("content-range"), length: dr.headers.get("content-length"), host: new URL(String(withUrl.CALL_RECORD_URL)).hostname };
-        } catch (e) { download = { error: e instanceof Error ? e.message.slice(0, 120) : String(e) }; }
+        } catch (e) {
+          const cause = (e as { cause?: { code?: string; message?: string } }).cause;
+          let host = "?"; try { host = new URL(String(withUrl.CALL_RECORD_URL)).hostname; } catch { /* нет */ }
+          download = { error: e instanceof Error ? e.message.slice(0, 120) : String(e), cause: cause ? `${cause.code ?? ""} ${cause.message ?? ""}`.trim().slice(0, 160) : null, host };
+        }
       }
       stat = {
         download,
