@@ -17,7 +17,7 @@ export interface IngestResult {
   skipped?: string;
 }
 
-export async function ingestCallActivity(activityId: string): Promise<IngestResult> {
+export async function ingestCallActivity(activityId: string, retry = 0): Promise<IngestResult> {
   let activity;
   try {
     activity = await fetchCallActivity(activityId);
@@ -34,6 +34,14 @@ export async function ingestCallActivity(activityId: string): Promise<IngestResu
   // Реальный звонок = активность С ЗАПИСЬЮ. Задачи/планы «связаться» (без записи)
   // НЕ заводим как звонки — иначе в списке появляются фантомные «звонки» в будущем.
   if (!activity.recordingUrl) {
+    // Запись к только что завершённому звонку прикрепляется с задержкой — перепроверим несколько раз (до ~20 мин).
+    const isCall = String(activity.raw?.TYPE_ID ?? "") === "2";
+    if (isCall && retry < 4) {
+      await enqueueJob({
+        type: "call.ingest", payload: { activityId, retry: retry + 1 }, priority: 45, maxAttempts: 2,
+        runAfter: new Date(Date.now() + 5 * 60_000), idempotencyKey: `ingest:activity:${activityId}:retry:${retry + 1}`,
+      });
+    }
     return { hasRecording: false, skipped: "no recording (task/planned activity)" };
   }
 

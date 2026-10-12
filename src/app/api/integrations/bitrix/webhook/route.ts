@@ -68,18 +68,26 @@ export async function POST(request: NextRequest) {
   const ev = event.toUpperCase();
   if (ev.includes("ONCRMACTIVITYADD") || ev.includes("ONCRMACTIVITYUPDATE")) {
     if (entityId) {
+      // ADD — один раз на активность. UPDATE (например, к звонку прикрепилась запись) — отдельная задача
+      // не чаще раза в 10 минут: раньше UPDATE отбрасывался как дубль ADD, и звонки, у которых запись
+      // появилась позже, не загружались.
+      const isUpdate = ev.includes("ONCRMACTIVITYUPDATE");
       await enqueueJob({
         type: "call.ingest",
         payload: { activityId: entityId },
-        idempotencyKey: `ingest:activity:${entityId}`,
+        idempotencyKey: isUpdate ? `ingest:activity:${entityId}:upd:${Math.floor(Date.now() / 600_000)}` : `ingest:activity:${entityId}`,
         priority: 40,
       });
     }
   } else if (ev.includes("ONCRMDEAL")) {
+    // Событие по сделке — инкрементальная актуализация (изменённые за 3 часа), не чаще раза в 5 минут:
+    // раньше каждое событие запускало ПОЛНЫЙ проход по всем сделкам.
+    const slot = Math.floor(Date.now() / (5 * 60_000));
     await enqueueJob({
       type: "bitrix.sync",
-      payload: { entity: "deals", start: 0 },
-      priority: 80,
+      payload: { entity: "deals", start: 0, since: new Date(Date.now() - 3 * 3600_000).toISOString() },
+      priority: 35,
+      idempotencyKey: `bitrix.sync:deals:evt:${slot}`,
     });
   }
 

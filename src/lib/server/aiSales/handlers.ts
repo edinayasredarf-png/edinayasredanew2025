@@ -25,6 +25,10 @@ import type { SyncEntity } from "@/lib/server/aiSales/syncDb";
  */
 let registered = false;
 
+/** Приоритет страниц синхронизации: сделки/лиды лёгкие и нужны финансовой сводке — выше звонков;
+ *  компании/контакты (десятки тысяч строк, сотни страниц) — самые низкие, иначе встают перед обработкой звонков. */
+const syncPriority = (entity: string): number => (entity === "deals" || entity === "leads" ? 35 : 150);
+
 export function registerAllHandlers(): void {
   if (registered) return;
   registered = true;
@@ -36,7 +40,7 @@ export function registerAllHandlers(): void {
     // «all» — разложить на отдельные задачи по сущностям (каждая пойдёт по страницам).
     if (entity === "all") {
       for (const e of SYNC_ENTITIES) {
-        await enqueueJob({ type: "bitrix.sync", payload: { entity: e, start: 0 }, priority: 35 });
+        await enqueueJob({ type: "bitrix.sync", payload: { entity: e, start: 0 }, priority: syncPriority(e) });
       }
       return { fannedOut: SYNC_ENTITIES };
     }
@@ -46,7 +50,7 @@ export function registerAllHandlers(): void {
     const res = await syncEntityPage(entity, start, { since });
     // Есть следующая страница — доложить в очередь (с тем же since для инкрементального прохода).
     if (res.next !== null) {
-      await enqueueJob({ type: "bitrix.sync", payload: { entity, start: res.next, ...(since ? { since } : {}) }, priority: 35 });
+      await enqueueJob({ type: "bitrix.sync", payload: { entity, start: res.next, ...(since ? { since } : {}) }, priority: syncPriority(entity) });
     }
     return res;
   });
@@ -55,7 +59,7 @@ export function registerAllHandlers(): void {
   registerJobHandler("call.ingest", async (job) => {
     const activityId = String(job.payload.activityId || "");
     if (!activityId) throw new Error("call.ingest: пустой activityId");
-    return ingestCallActivity(activityId);
+    return ingestCallActivity(activityId, typeof job.payload.retry === "number" ? job.payload.retry : 0);
   });
 
   // Транскрипция (sync Whisper / async Yandex SpeechKit).
