@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixCall } from "@/lib/server/bitrix";
+import { voxUrlCandidates } from "@/lib/server/bitrix/entities";
 import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { bbLink, crmLink, sendBotMessage, whoAmI } from "@/lib/server/bitrix/messenger";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
@@ -90,6 +91,18 @@ export async function POST(request: NextRequest) {
       // Скачивается ли запись по ссылке из телефонии (проверяем первые байты, ссылку наружу не отдаём).
       let download: unknown = null;
       const withUrl = rows.find((x) => x.CALL_RECORD_URL);
+      let variants: unknown = null;
+      if (withUrl) {
+        // Доступность записи через разные узлы хранилища (только коды ответа, без самих ссылок).
+        const cands = await voxUrlCandidates(String(withUrl.CALL_RECORD_URL));
+        variants = await Promise.all(cands.map(async (c) => {
+          let host = "?"; try { host = new URL(c).hostname; } catch { /* нет */ }
+          try {
+            const r = await fetch(c, { headers: { Range: "bytes=0-1023" }, signal: AbortSignal.timeout(6000), redirect: "follow" });
+            return { host, status: r.status, contentType: r.headers.get("content-type"), range: r.headers.get("content-range") };
+          } catch (e) { return { host, error: e instanceof Error ? e.message.slice(0, 60) : String(e) }; }
+        }));
+      }
       if (withUrl) {
         try {
           const dr = await fetch(String(withUrl.CALL_RECORD_URL), { headers: { Range: "bytes=0-1023" }, signal: AbortSignal.timeout(15_000), redirect: "follow" });
@@ -101,6 +114,7 @@ export async function POST(request: NextRequest) {
         }
       }
       stat = {
+        variants,
         download,
         total: rows.length,
         connected: rows.filter((x) => Number(x.CALL_DURATION) > 0).length,

@@ -281,7 +281,10 @@ export async function fetchVoxRecord(activityId: string, createdIso?: string | n
 /** Прямая ссылка на запись звонка: из телефонии («vox:<activity>») или через Диск Bitrix (disk.file.get?id=…). */
 export async function resolveRecordingUrl(call: { recording_url: string | null; started_at?: Date | null }): Promise<string | null> {
   const u = call.recording_url ?? "";
-  if (u.startsWith(VOX_PREFIX)) return (await fetchVoxRecord(u.slice(VOX_PREFIX.length), call.started_at?.toISOString() ?? null)).url;
+  if (u.startsWith(VOX_PREFIX)) {
+    const url = (await fetchVoxRecord(u.slice(VOX_PREFIX.length), call.started_at?.toISOString() ?? null)).url;
+    return url ? pickReachableVoxUrl(url) : null;
+  }
   const fileId = u.match(/[?&]id=(\d+)/)?.[1];
   return fileId ? resolveDiskDownloadUrl(fileId) : null;
 }
@@ -342,4 +345,29 @@ export async function fetchCallActivity(activityId: string): Promise<BxCallActiv
     recordingUrl,
     raw: a,
   };
+}
+
+/**
+ * Узлы хранилища записей Voximplant (storage-gw-ru-01/02/03) иногда недоступны поодиночке — шлюзы работают с общим
+ * хранилищем, поэтому при недоступности исходного узла пробуем соседние и берём первый, который отвечает.
+ */
+export async function voxUrlCandidates(url: string): Promise<string[]> {
+  const m = url.match(/^(https?:\/\/storage-gw-[a-z]+-)(\d+)(\.voximplant\.com\/.*)$/i);
+  if (!m) return [url];
+  const alts = ["01", "02", "03", "04"].filter((n) => n !== m[2]).map((n) => `${m[1]}${n}${m[3]}`);
+  return [url, ...alts];
+}
+
+async function probe(url: string): Promise<number> {
+  try {
+    const r = await fetch(url, { headers: { Range: "bytes=0-0" }, signal: AbortSignal.timeout(4000), redirect: "follow" });
+    return r.status;
+  } catch { return 0; }
+}
+
+export async function pickReachableVoxUrl(url: string): Promise<string> {
+  const cands = await voxUrlCandidates(url);
+  const results = await Promise.all(cands.map(async (c) => ({ c, st: await probe(c) })));
+  const ok = results.find((r) => r.st === 200 || r.st === 206);
+  return ok ? ok.c : url;
 }
