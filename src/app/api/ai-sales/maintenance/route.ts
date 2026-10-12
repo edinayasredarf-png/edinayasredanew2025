@@ -119,6 +119,19 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  if (body.action === "requeue-failed") {
+    // Вернуть ошибочные задачи указанного типа в очередь: { type: "call.transcribe", match?: "voximplant" }.
+    const type = String((body as { type?: string }).type ?? "").trim();
+    const match = String((body as { match?: string }).match ?? "").trim();
+    if (!/^[a-z]+(\.[a-z]+)?$/.test(type)) return NextResponse.json({ error: "Укажите type, например call.transcribe" }, { status: 400 });
+    const r = await pool.query(
+      `update ai_jobs set status = 'PENDING', attempts = 0, run_after = now(), last_error = null, updated_at = now()
+        where type = $1 and status = 'FAILED' and ($2 = '' or last_error ilike '%' || $2 || '%')`,
+      [type, match]
+    );
+    return NextResponse.json({ ok: true, requeued: r.rowCount ?? 0 });
+  }
+
   if (body.action === "bitrix-whoami") {
     return NextResponse.json({ ok: true, ...(await whoAmI()) });
   }
@@ -142,5 +155,5 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls, calls-today-debug, bitrix-whoami, bot-test" }, { status: 400 });
+  return NextResponse.json({ error: "Неизвестное действие. Доступно: reschedule-briefs, repair-briefs, backfill-calls, calls-today-debug, requeue-failed, bitrix-whoami, bot-test" }, { status: 400 });
 }

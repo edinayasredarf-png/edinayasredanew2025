@@ -67,11 +67,27 @@ export function registerAllHandlers(): void {
   registerJobHandler("call.transcribe", async (job) => {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("call.transcribe: пустой callId");
-    return runTranscription({
-      callId,
-      operationId: job.payload.operationId ? String(job.payload.operationId) : undefined,
-      polls: typeof job.payload.polls === "number" ? job.payload.polls : undefined,
-    });
+    try {
+      return await runTranscription({
+        callId,
+        operationId: job.payload.operationId ? String(job.payload.operationId) : undefined,
+        polls: typeof job.payload.polls === "number" ? job.payload.polls : undefined,
+      });
+    } catch (e) {
+      // Хранилище записей телефонии (voximplant) бывает недоступно часами — это не сбой звонка. Вместо ошибки
+      // переносим транскрибацию (с нуля: старая операция распознавания уже упала) и пробуем снова каждые 15 минут до суток.
+      const msg = e instanceof Error ? e.message : String(e);
+      const first = typeof job.payload.firstAttemptAt === "string" ? Date.parse(job.payload.firstAttemptAt) : Date.now();
+      if (/voximplant|ConnectTimeout|Max retries exceeded|timed out|ECONNRESET|ENOTFOUND/i.test(msg) && Date.now() - first < 24 * 3600_000) {
+        await enqueueJob({
+          type: "call.transcribe", priority: 50, maxAttempts: 3,
+          payload: { callId, firstAttemptAt: new Date(first).toISOString() },
+          runAfter: new Date(Date.now() + 15 * 60_000),
+        });
+        return { deferred: msg.slice(0, 200) };
+      }
+      throw e;
+    }
   });
 
   // Гибридная диаризация (pyannote): разделение спикеров поверх текста Yandex.
