@@ -3,6 +3,7 @@ import "server-only";
 import { registerJobHandler } from "@/lib/server/aiSales/jobRunner";
 import { runBrief } from "@/lib/server/aiSales/briefService";
 import { runBriefScan } from "@/lib/server/aiSales/briefScan";
+import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { runCoachNotify } from "@/lib/server/aiSales/coachNotifyService";
 import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncService";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
@@ -148,5 +149,12 @@ export function registerAllHandlers(): void {
     if (!callId) throw new Error("notify.coach: пустой callId");
     return runCoachNotify(callId);
   });
+
+  // Сверка звонков Bitrix с базой (страховка от потерянных событий): недостающие звонки с записью ставятся на загрузку.
+  registerJobHandler("calls.reconcile", async (job) => {
+    const days = typeof job.payload.days === "number" ? job.payload.days : 3;
+    return reconcileCalls({ days, dryRun: false, timeBudgetMs: 30_000 });
+  });
 }
+
 

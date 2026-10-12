@@ -19,6 +19,9 @@ function isoWeek(d = new Date()): string {
 export async function scheduleBriefScan(): Promise<void> {
   const hour = new Date().toISOString().slice(0, 13);
   await enqueueJob({ type: "brief.scan", idempotencyKey: `brief.scan:${hour}`, priority: 200, maxAttempts: 2 });
+  // Сверка звонков Bitrix с базой каждые 15 минут (за 3 дня): подтягивает звонки, чьи события потерялись или опоздали.
+  const slot = Math.floor(Date.now() / 900_000);
+  await enqueueJob({ type: "calls.reconcile", payload: { days: 3 }, priority: 44, maxAttempts: 2, idempotencyKey: `calls.reconcile:${slot}` });
   // Заодно раз в час актуализируем зеркало сделок/лидов (финансовая сводка, брифы): только изменённые за последние 3 часа.
   const since = new Date(Date.now() - 3 * 3600_000).toISOString();
   for (const entity of ["deals", "leads"] as const) {

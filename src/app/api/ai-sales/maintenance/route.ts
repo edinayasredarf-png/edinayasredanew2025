@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
-import { bitrixCall } from "@/lib/server/bitrix";
+import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { bbLink, crmLink, sendBotMessage, whoAmI } from "@/lib/server/bitrix/messenger";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
 import { parseResult, plainForBitrix, pushBriefToBitrix } from "@/lib/server/aiSales/briefService";
@@ -71,50 +71,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.action === "backfill-calls") {
-    const days = Math.min(60, Math.max(1, Number((body as { days?: number }).days) || 14));
+    const days = Number((body as { days?: number }).days) || 14;
     const dryRun = (body as { dryRun?: boolean }).dryRun !== false;
-    const since = new Date(Date.now() - days * 86400000);
-    const sinceIso = `${since.toISOString().slice(0, 10)}T00:00:00+03:00`;
-    type Act = { ID?: string; CREATED?: string; FILES?: unknown };
-    const acts: Act[] = [];
-    let start = 0;
-    const t0 = Date.now();
-    // Звонки CRM (TYPE_ID=2) с даты; страницы по 50, укладываемся в ~35 с.
-    while (Date.now() - t0 < 35_000) {
-      const { result, next } = await bitrixCall<Act[]>("crm.activity.list", {
-        filter: { TYPE_ID: 2, ">=CREATED": sinceIso }, order: { ID: "ASC" }, select: ["ID", "CREATED", "FILES"], start,
-      });
-      acts.push(...(Array.isArray(result) ? result : []));
-      if (next == null) break;
-      start = next;
-    }
-    const complete = Date.now() - t0 < 35_000;
-    const ids = acts.map((a) => String(a.ID)).filter(Boolean);
-    const have = new Set<string>();
-    for (let i = 0; i < ids.length; i += 500) {
-      const { rows } = await pool.query<{ bitrix_activity_id: string }>(`select bitrix_activity_id from ai_calls where bitrix_activity_id = any($1::text[])`, [ids.slice(i, i + 500)]);
-      for (const r of rows) have.add(r.bitrix_activity_id);
-    }
-    const missing = acts.filter((a) => a.ID && !have.has(String(a.ID)));
-    const withRecording = missing.filter((a) => Array.isArray(a.FILES) && a.FILES.length > 0);
-    const byDay: Record<string, number> = {};
-    for (const a of withRecording) { const d = String(a.CREATED ?? "").slice(0, 10); byDay[d] = (byDay[d] ?? 0) + 1; }
-    let enqueued = 0;
-    if (!dryRun && withRecording.length) {
-      // Одним запросом (не 200+ по одному — укладываемся в лимит функции).
-      const idsToQueue = withRecording.map((a) => String(a.ID));
-      const r = await pool.query(
-        `insert into ai_jobs (type, payload, priority, max_attempts, idempotency_key)
-         select 'call.ingest', jsonb_build_object('activityId', x), 45, 2, 'ingest:backfill:' || x from unnest($1::text[]) as x
-         on conflict (idempotency_key) do nothing`,
-        [idsToQueue]
-      );
-      enqueued = r.rowCount ?? 0;
-    }
-    return NextResponse.json({
-      ok: true, dryRun, days, since: sinceIso, bitrixCallActivities: acts.length, listComplete: complete, inDatabase: have.size,
-      missingTotal: missing.length, missingWithRecording: withRecording.length, filesFieldReturned: acts.some((a) => a.FILES !== undefined), byDay, enqueued,
-    });
+    return NextResponse.json({ ok: true, ...(await reconcileCalls({ days, dryRun })) });
   }
 
   if (body.action === "bitrix-whoami") {

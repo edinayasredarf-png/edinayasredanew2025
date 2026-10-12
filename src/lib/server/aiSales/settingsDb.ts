@@ -164,4 +164,5 @@ export const VERCEL_JOB_TYPES: AiJobType[] = [
   "brief.lead",
   "brief.deal",
   "notify.coach",
+  "calls.reconcile",
 ];
