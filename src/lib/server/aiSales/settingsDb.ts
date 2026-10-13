@@ -53,6 +53,7 @@ export const EDITABLE_KEYS = new Set<string>([
   // Рассылка в Bitrix: Bitrix-ID РОПов (через запятую) для брифов по отложенным сделкам; личные сообщения менеджерам «как лучше ответить».
   "briefs.ropBitrixUserIds",
   "briefs.coachEnabled",
+  "notify.rules",
   "ai.analysis_enabled",
   "ai.confidence_threshold",
   "transcription.provider",
@@ -168,6 +169,7 @@ export const VERCEL_JOB_TYPES: AiJobType[] = [
   "brief.lead",
   "brief.deal",
   "notify.coach",
+  "notify.deal",
   "calls.reconcile",
   "meeting.process",
   "meeting.analyze",

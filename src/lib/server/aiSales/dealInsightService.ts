@@ -13,6 +13,7 @@ import {
   getDealInsightHash,
   saveDealInsight,
 } from "@/lib/server/aiSales/dealsDb";
+import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { resolveDealStage } from "@/lib/server/bitrix/dealStages";
 
@@ -87,6 +88,9 @@ export async function runDealInsight(
     data,
     lastCallAt: digest.lastCallAt,
   });
+
+  // Правила личных сообщений по сделке (кому и какие блоки — настройка «Уведомления»).
+  await enqueueJob({ type: "notify.deal", payload: { dealId: bitrixDealId }, priority: 66, maxAttempts: 2, idempotencyKey: `notify-deal:${bitrixDealId}:${inputHash.slice(0, 12)}` }).catch(() => undefined);
 
   return {
     analyzed: true,

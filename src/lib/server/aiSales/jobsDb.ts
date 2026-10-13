@@ -26,6 +26,7 @@ export type AiJobType =
   | "brief.lead"
   | "brief.deal"
   | "notify.coach"
+  | "notify.deal"
   | "calls.reconcile"
   | "meeting.process"
   | "meeting.analyze"

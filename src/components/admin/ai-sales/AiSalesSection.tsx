@@ -2,11 +2,12 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
+  BookOpen, Bell, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
   BarChart3, ExternalLink, FileText, Home, ListFilter, PhoneCall, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, Video, X,
 } from 'lucide-react';
 import MeetingsView from '@/components/admin/ai-sales/MeetingsView';
 import MeetingTypesSettings from '@/components/admin/ai-sales/MeetingTypesSettings';
+import NotifyRulesSettings from '@/components/admin/ai-sales/NotifyRulesSettings';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { Modal, SettingsRow } from '@/components/admin/ui/Modal';
@@ -23,7 +24,7 @@ const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'От
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers' | 'briefs' | 'meetings' | 'meetingSetup';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'notifyRules' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers' | 'briefs' | 'meetings' | 'meetingSetup';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -4505,6 +4506,7 @@ const GROUPS: NavGroup[] = [
     { view: 'kb', label: 'База знаний' },
     { view: 'prompts', label: 'Промты' },
     { view: 'meetingSetup', label: 'Встречи' },
+    { view: 'notifyRules', label: 'Уведомления' },
     { view: 'settings', label: 'Настройки' },
   ] },
 ];
@@ -4516,6 +4518,7 @@ const SETUP_SUBTITLE: Partial<Record<View, string>> = {
   kb: 'Документы для ассистента и анализа',
   prompts: 'Промты ИИ по отделам',
   meetingSetup: 'МТС Линк: типы встреч, промты и скрипты',
+  notifyRules: 'Кому и что присылать в личные сообщения Bitrix',
   settings: 'ИИ-провайдер, модели по задачам',
 };
 function SetupIcon({ view }: { view: View }) {
@@ -4524,6 +4527,7 @@ function SetupIcon({ view }: { view: View }) {
   if (view === 'scripts') return <ScrollText className={cls} />;
   if (view === 'kb') return <BookOpen className={cls} />;
   if (view === 'meetingSetup') return <Video className={cls} />;
+  if (view === 'notifyRules') return <Bell className={cls} />;
   if (view === 'prompts') return <Sparkles className={cls} />;
   return <SlidersHorizontal className={cls} />;
 }
@@ -5145,6 +5149,7 @@ export default function AiSalesSection() {
                 {openSetup === 'kb' && <KnowledgeBase />}
                 {openSetup === 'prompts' && <Prompts />}
                 {openSetup === 'meetingSetup' && <MeetingTypesSettings />}
+                {openSetup === 'notifyRules' && <NotifyRulesSettings />}
               {openSetup === 'settings' && <Settings />}
               </div>
             </Modal>

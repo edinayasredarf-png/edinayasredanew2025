@@ -5,7 +5,7 @@ import { runBrief } from "@/lib/server/aiSales/briefService";
 import { runBriefScan } from "@/lib/server/aiSales/briefScan";
 import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { analyzeMeeting, runMeetingStep, syncMeetings } from "@/lib/server/aiSales/meetingService";
-import { runCoachNotify } from "@/lib/server/aiSales/coachNotifyService";
+import { runCallNotify, runDealNotify } from "@/lib/server/aiSales/notifyService";
 import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncService";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { ingestCallActivity } from "@/lib/server/aiSales/callIngestService";
@@ -164,7 +164,12 @@ export function registerAllHandlers(): void {
   registerJobHandler("notify.coach", async (job) => {
     const callId = String(job.payload.callId || "");
     if (!callId) throw new Error("notify.coach: пустой callId");
-    return runCoachNotify(callId);
+    return runCallNotify(callId);
+  });
+  registerJobHandler("notify.deal", async (job) => {
+    const dealId = String(job.payload.dealId || "");
+    if (!dealId) throw new Error("notify.deal: пустой dealId");
+    return runDealNotify(dealId);
   });
 
   // Сверка звонков Bitrix с базой (страховка от потерянных событий): недостающие звонки с записью ставятся на загрузку.
