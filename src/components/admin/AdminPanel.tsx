@@ -178,6 +178,8 @@ const AI_SUBVIEWS: Array<{ label: string; view: string; kind: string }> = [
   { label: 'Обещания менеджеров', view: 'followups', kind: 'Раздел' },
   { label: 'Коммуникации (звонки)', view: 'calls', kind: 'Раздел' },
   { label: 'Поиск по звонкам', view: 'search', kind: 'Раздел' },
+  { label: 'Встречи ВКС (МТС Линк)', view: 'meetings', kind: 'Раздел' },
+  { label: 'Типы встреч, промты и скрипты', view: 'meetingSetup', kind: 'Настройки' },
   { label: 'Сделки (AI)', view: 'deals', kind: 'Раздел' },
   { label: 'Контроль качества (QC)', view: 'qc', kind: 'Раздел' },
   { label: 'Ассистент по базе знаний', view: 'assistant', kind: 'Раздел' },

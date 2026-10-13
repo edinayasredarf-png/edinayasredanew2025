@@ -2,6 +2,8 @@ import "server-only";
 
 import { getTimewebPool } from "@/lib/timewebPg";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
+import { mtsConfigured } from "@/lib/server/mtsLink/client";
+import { getSettingValue } from "@/lib/server/aiSales/settingsDb";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
 import { getDealStageDictionary, refreshDealStageDictionary } from "@/lib/server/bitrix/dealStages";
 
@@ -22,6 +24,10 @@ export async function scheduleBriefScan(): Promise<void> {
   // Сверка звонков Bitrix с базой каждые 15 минут (за 3 дня): подтягивает звонки, чьи события потерялись или опоздали.
   const slot = Math.floor(Date.now() / 900_000);
   await enqueueJob({ type: "calls.reconcile", payload: { days: 3 }, priority: 44, maxAttempts: 2, idempotencyKey: `calls.reconcile:${slot}` });
+  // Встречи МТС Линк: новые записи подтягиваем каждые 30 минут (если задан ключ API и автосинхронизация не выключена).
+  if (mtsConfigured() && (await getSettingValue<boolean>("meetings.autoSync", true)) !== false) {
+    await enqueueJob({ type: "meeting.sync", payload: { days: 3 }, priority: 92, maxAttempts: 2, idempotencyKey: `meeting.sync:${Math.floor(Date.now() / 1_800_000)}` });
+  }
   // Заодно раз в час актуализируем зеркало сделок/лидов (финансовая сводка, брифы): только изменённые за последние 3 часа.
   const since = new Date(Date.now() - 3 * 3600_000).toISOString();
   for (const entity of ["deals", "leads"] as const) {

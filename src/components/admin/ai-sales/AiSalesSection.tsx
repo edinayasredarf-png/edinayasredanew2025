@@ -3,8 +3,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BookOpen, Building2, Camera, CalendarDays, ChevronRight, ListChecks,
-  BarChart3, ExternalLink, FileText, Home, ListFilter, PhoneCall, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, X,
+  BarChart3, ExternalLink, FileText, Home, ListFilter, PhoneCall, Search as SearchIcon, ScrollText, SlidersHorizontal, Sparkles, Trash2, UserRound, Video, X,
 } from 'lucide-react';
+import MeetingsView from '@/components/admin/ai-sales/MeetingsView';
+import MeetingTypesSettings from '@/components/admin/ai-sales/MeetingTypesSettings';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { Modal, SettingsRow } from '@/components/admin/ui/Modal';
@@ -21,7 +23,7 @@ const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'От
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers' | 'briefs';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers' | 'briefs' | 'meetings' | 'meetingSetup';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -4483,6 +4485,7 @@ const GROUPS: NavGroup[] = [
   ] },
   { key: 'reviews', label: 'Разборы', views: [
     { view: 'calls', label: 'Звонки' },
+    { view: 'meetings', label: 'Встречи' },
     { view: 'deals', label: 'Сделки' },
     { view: 'lost', label: 'Проигрыши' },
     { view: 'search', label: 'Поиск' },
@@ -4501,6 +4504,7 @@ const GROUPS: NavGroup[] = [
     { view: 'scripts', label: 'Скрипт' },
     { view: 'kb', label: 'База знаний' },
     { view: 'prompts', label: 'Промты' },
+    { view: 'meetingSetup', label: 'Встречи' },
     { view: 'settings', label: 'Настройки' },
   ] },
 ];
@@ -4511,6 +4515,7 @@ const SETUP_SUBTITLE: Partial<Record<View, string>> = {
   scripts: 'Скрипт продаж для анализа звонков',
   kb: 'Документы для ассистента и анализа',
   prompts: 'Промты ИИ по отделам',
+  meetingSetup: 'МТС Линк: типы встреч, промты и скрипты',
   settings: 'ИИ-провайдер, модели по задачам',
 };
 function SetupIcon({ view }: { view: View }) {
@@ -4518,6 +4523,7 @@ function SetupIcon({ view }: { view: View }) {
   if (view === 'departments') return <Building2 className={cls} />;
   if (view === 'scripts') return <ScrollText className={cls} />;
   if (view === 'kb') return <BookOpen className={cls} />;
+  if (view === 'meetingSetup') return <Video className={cls} />;
   if (view === 'prompts') return <Sparkles className={cls} />;
   return <SlidersHorizontal className={cls} />;
 }
@@ -5090,6 +5096,7 @@ export default function AiSalesSection() {
     if (view === 'qc') return <Qc onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'triggers') return <Triggers onOpen={(cid) => openCallAt(cid, null)} />;
     if (view === 'assistant') return <Assistant />;
+    if (view === 'meetings') return <MeetingsView />;
     if (view === 'briefs') return <Briefs focusId={briefFocus} onOpenCall={(cid) => openCallAt(cid, null)} />;
     if (view === 'kb') return <KnowledgeBase />;
     if (view === 'tags') return <Tags onNavigate={nav} />;
@@ -5137,7 +5144,8 @@ export default function AiSalesSection() {
                 {openSetup === 'scripts' && <Scripts />}
                 {openSetup === 'kb' && <KnowledgeBase />}
                 {openSetup === 'prompts' && <Prompts />}
-                {openSetup === 'settings' && <Settings />}
+                {openSetup === 'meetingSetup' && <MeetingTypesSettings />}
+              {openSetup === 'settings' && <Settings />}
               </div>
             </Modal>
           )}

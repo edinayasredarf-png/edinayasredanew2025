@@ -4,6 +4,7 @@ import { registerJobHandler } from "@/lib/server/aiSales/jobRunner";
 import { runBrief } from "@/lib/server/aiSales/briefService";
 import { runBriefScan } from "@/lib/server/aiSales/briefScan";
 import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
+import { analyzeMeeting, runMeetingStep, syncMeetings } from "@/lib/server/aiSales/meetingService";
 import { runCoachNotify } from "@/lib/server/aiSales/coachNotifyService";
 import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncService";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
@@ -171,6 +172,16 @@ export function registerAllHandlers(): void {
     const days = typeof job.payload.days === "number" ? job.payload.days : 3;
     return reconcileCalls({ days, dryRun: false, timeBudgetMs: 30_000 });
   });
+
+  // Встречи МТС Линк: синхронизация записей, конвейер (конвертация → распознавание), анализ.
+  registerJobHandler("meeting.sync", async (job) => syncMeetings({ days: typeof job.payload.days === "number" ? job.payload.days : 7 }));
+  registerJobHandler("meeting.process", async (job) => runMeetingStep(job));
+  registerJobHandler("meeting.analyze", async (job) => {
+    const meetingId = String(job.payload.meetingId || "");
+    if (!meetingId) throw new Error("meeting.analyze: пустой meetingId");
+    return analyzeMeeting(meetingId, { chunk: typeof job.payload.chunk === "number" ? job.payload.chunk : undefined });
+  });
 }
+
 
 

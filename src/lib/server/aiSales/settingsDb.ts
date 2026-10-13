@@ -43,6 +43,10 @@ export const EDITABLE_KEYS = new Set<string>([
   // Брифы по лидам/сделкам (AI Gateway): модель поиска в интернете и модель сборки брифа.
   "ai.model.briefSearch",
   "ai.model.brief",
+  // Встречи (МТС Линк): модель анализа и минимальная длительность записи (сек).
+  "ai.model.meeting",
+  "meetings.minDurationSec",
+  "meetings.autoSync",
   // Свои тексты промтов брифа (пусто — стандартные из src/lib/ai/prompts/briefPrompts.ts).
   "ai.brief.promptSearch",
   "ai.brief.promptBrief",
@@ -165,4 +169,7 @@ export const VERCEL_JOB_TYPES: AiJobType[] = [
   "brief.deal",
   "notify.coach",
   "calls.reconcile",
+  "meeting.process",
+  "meeting.analyze",
+  "meeting.sync",
 ];

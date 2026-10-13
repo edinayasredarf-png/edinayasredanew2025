@@ -26,7 +26,10 @@ export type AiJobType =
   | "brief.lead"
   | "brief.deal"
   | "notify.coach"
-  | "calls.reconcile";
+  | "calls.reconcile"
+  | "meeting.process"
+  | "meeting.analyze"
+  | "meeting.sync";
 
 export type AiJobStatus =
   | "PENDING"
