@@ -8,6 +8,7 @@ import {
 import MeetingsView from '@/components/admin/ai-sales/MeetingsView';
 import MeetingTypesSettings from '@/components/admin/ai-sales/MeetingTypesSettings';
 import NotifyRulesSettings from '@/components/admin/ai-sales/NotifyRulesSettings';
+import KeywordRulesSettings from '@/components/admin/ai-sales/KeywordRulesSettings';
 import { Spinner, LoadingBlock } from '@/components/admin/ui/Spinner';
 import { Select } from '@/components/admin/ui/Select';
 import { Modal, SettingsRow } from '@/components/admin/ui/Modal';
@@ -24,7 +25,7 @@ const PIPELINE_LABEL_UI: Record<string, string> = { lead: 'Лид', sales: 'От
 /* Раздел «AI Продажи» админ-панели: дашборд, звонки, карточка звонка.
    Данные — из /api/ai-sales/*. Стиль — фирменный (#029cda), Tailwind. */
 
-type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'notifyRules' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers' | 'briefs' | 'meetings' | 'meetingSetup';
+type View = 'dashboard' | 'signals' | 'trends' | 'calls' | 'search' | 'deals' | 'insights' | 'checklists' | 'followups' | 'managers' | 'tags' | 'settings' | 'lost' | 'departments' | 'prompts' | 'notifyRules' | 'keywordRules' | 'scripts' | 'qc' | 'kb' | 'assistant' | 'triggers' | 'briefs' | 'meetings' | 'meetingSetup';
 export type NavTarget = { tab: 'ai-deals' | 'ai-calls' | 'ai-signals'; temperature?: string; tag?: string };
 
 const fmtDur = (sec: number | null) => {
@@ -1763,7 +1764,7 @@ interface RecoItem {
 }
 /* ─────────── Сигналы РОПа (проактивная лента) ─────────── */
 interface SignalItem {
-  id: string; severity: 'critical' | 'risk' | 'opportunity'; kind: 'deal' | 'commitment' | 'coaching' | 'lost' | 'no_contact';
+  id: string; severity: 'critical' | 'risk' | 'opportunity'; kind: 'deal' | 'commitment' | 'coaching' | 'lost' | 'no_contact' | 'keyword';
   title: string; detail: string; action: string | null; link: string | null; manager: string | null; count: number | null;
   hiddenStatus?: 'done' | 'snoozed'; hiddenUntil?: string | null;
 }
@@ -1780,7 +1781,7 @@ const SIG_STYLE: Record<SignalItem['severity'], { dot: string; ring: string; lab
   opportunity: { dot: 'bg-emerald-500', ring: 'border-emerald-200', label: '🟢 Возможность' },
 };
 const SIG_KIND: Record<SignalItem['kind'], string> = {
-  deal: 'Сделка', commitment: 'Обещания', coaching: 'Коучинг', lost: 'Проигрыши', no_contact: 'Брошен клиент',
+  deal: 'Сделка', commitment: 'Обещания', coaching: 'Коучинг', lost: 'Проигрыши', no_contact: 'Брошен клиент', keyword: 'Ключевые слова',
 };
 
 /** id сделки из сигнала вида deal-crit-<id> / deal-nc-<id> (для перехода в карточку). */
@@ -4507,6 +4508,7 @@ const GROUPS: NavGroup[] = [
     { view: 'prompts', label: 'Промты' },
     { view: 'meetingSetup', label: 'Встречи' },
     { view: 'notifyRules', label: 'Уведомления' },
+    { view: 'keywordRules', label: 'Ключевые слова' },
     { view: 'settings', label: 'Настройки' },
   ] },
 ];
@@ -4518,6 +4520,7 @@ const SETUP_SUBTITLE: Partial<Record<View, string>> = {
   kb: 'Документы для ассистента и анализа',
   prompts: 'Промты ИИ по отделам',
   meetingSetup: 'МТС Линк: типы встреч, промты и скрипты',
+  keywordRules: 'Фразы в разговоре (выход на торги и др.) → сигнал РОПу',
   notifyRules: 'Кому и что присылать в личные сообщения Bitrix',
   settings: 'ИИ-провайдер, модели по задачам',
 };
@@ -4527,6 +4530,7 @@ function SetupIcon({ view }: { view: View }) {
   if (view === 'scripts') return <ScrollText className={cls} />;
   if (view === 'kb') return <BookOpen className={cls} />;
   if (view === 'meetingSetup') return <Video className={cls} />;
+  if (view === 'keywordRules') return <SearchIcon className={cls} />;
   if (view === 'notifyRules') return <Bell className={cls} />;
   if (view === 'prompts') return <Sparkles className={cls} />;
   return <SlidersHorizontal className={cls} />;
@@ -5150,6 +5154,7 @@ export default function AiSalesSection() {
                 {openSetup === 'prompts' && <Prompts />}
                 {openSetup === 'meetingSetup' && <MeetingTypesSettings />}
                 {openSetup === 'notifyRules' && <NotifyRulesSettings />}
+                {openSetup === 'keywordRules' && <KeywordRulesSettings />}
               {openSetup === 'settings' && <Settings />}
               </div>
             </Modal>

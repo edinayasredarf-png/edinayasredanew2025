@@ -13,9 +13,11 @@ import { getInsights, CRITERION_LABEL } from "@/lib/server/aiSales/insightsDb";
 import { getLostDealAnalytics } from "@/lib/server/aiSales/lostDealsDb";
 import { getActiveSignalStates } from "@/lib/server/aiSales/signalStateDb";
 import { getAbandonedClients } from "@/lib/server/aiSales/noContactDb";
+import { listKeywordHits } from "@/lib/server/aiSales/keywordService";
+import { crmLink } from "@/lib/server/bitrix/messenger";
 
 export type Severity = "critical" | "risk" | "opportunity";
-export type SignalKind = "deal" | "commitment" | "coaching" | "lost" | "no_contact";
+export type SignalKind = "deal" | "commitment" | "coaching" | "lost" | "no_contact" | "keyword";
 
 export interface Signal {
   id: string;
@@ -54,13 +56,14 @@ export async function getSignals(
   range?: DateRange,
   includeHidden = false
 ): Promise<SignalsResult> {
-  const [reco, overdue, insights, lost, abandoned, states] = await Promise.all([
+  const [reco, overdue, insights, lost, abandoned, states, kwHits] = await Promise.all([
     getDailyRecommendations(managerBitrixId, range),
     getOverdueFollowUps(managerBitrixId),
     getInsights(managerBitrixId, range),
     getLostDealAnalytics(managerBitrixId, range),
     getAbandonedClients(managerBitrixId).catch(() => []),
     getActiveSignalStates(),
+    listKeywordHits(managerBitrixId).catch(() => []),
   ]);
 
   const signals: Signal[] = [];
@@ -76,6 +79,23 @@ export async function getSignals(
       action: r.action,
       link: r.dealUrl,
       manager: r.manager,
+      count: null,
+    });
+  }
+
+  // 1b) Ключевые слова в разговорах («готовимся выходить на торги» и т.п.) — клиента нельзя упустить.
+  for (const h of kwHits) {
+    const isDeal = Boolean(h.bitrix_deal_id);
+    const eid = h.bitrix_deal_id ?? h.bitrix_lead_id;
+    signals.push({
+      id: `kw-${h.id}`,
+      severity: h.severity,
+      kind: "keyword",
+      title: `${h.rule_name}: ${h.client_title || (eid ? `#${eid}` : "клиент")}`,
+      detail: `В разговоре${h.call_at ? ` ${new Date(h.call_at).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Moscow" })}` : ""}: «${h.snippet}»`,
+      action: h.action,
+      link: eid ? crmLink(isDeal ? "deal" : "lead", eid) || null : null,
+      manager: h.manager,
       count: null,
     });
   }

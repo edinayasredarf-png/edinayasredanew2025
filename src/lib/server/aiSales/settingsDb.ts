@@ -54,6 +54,7 @@ export const EDITABLE_KEYS = new Set<string>([
   "briefs.ropBitrixUserIds",
   "briefs.coachEnabled",
   "notify.rules",
+  "keywords.rules",
   "ai.analysis_enabled",
   "ai.confidence_threshold",
   "transcription.provider",

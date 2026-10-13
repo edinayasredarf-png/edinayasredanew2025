@@ -5,6 +5,7 @@ import { runBrief } from "@/lib/server/aiSales/briefService";
 import { runBriefScan } from "@/lib/server/aiSales/briefScan";
 import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { analyzeMeeting, runMeetingStep, syncMeetings } from "@/lib/server/aiSales/meetingService";
+import { scanCallKeywords } from "@/lib/server/aiSales/keywordService";
 import { runCallNotify, runDealNotify } from "@/lib/server/aiSales/notifyService";
 import { syncEntityPage, SYNC_ENTITIES } from "@/lib/server/aiSales/bitrixSyncService";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
@@ -113,11 +114,14 @@ export function registerAllHandlers(): void {
       // Роли — вспомогательный шаг. Если модель разметки так и не ответила за все попытки, не блокируем
       // конвейер: ставим анализ звонка без ролей (раньше такие звонки навсегда застревали без разбора).
       if (job.attempts >= job.max_attempts) {
+        await scanCallKeywords(callId).catch(() => undefined);
         await enqueueJob({ type: "call.analyze", payload: { callId }, priority: 60 });
         return { skipped: `роли не размечены: ${e instanceof Error ? e.message.slice(0, 200) : String(e)}` };
       }
       throw e;
     }
+    // Поиск ключевых слов («выходим на торги») — сразу после ролей, до анализа ИИ; сбой не мешает конвейеру.
+    await scanCallKeywords(callId).catch(() => undefined);
     // Без ключа идемпотентности: защита от повторной работы — кэш анализа по
     // input_hash (меняется вместе с ролями), поэтому бэкфилл ролей перезапустит анализ.
     await enqueueJob({ type: "call.analyze", payload: { callId }, priority: 60 });
