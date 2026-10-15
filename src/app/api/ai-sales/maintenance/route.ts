@@ -3,6 +3,7 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixCall } from "@/lib/server/bitrix";
 import { voxUrlCandidates } from "@/lib/server/bitrix/entities";
+import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { bbLink, crmLink, sendBotMessage, whoAmI } from "@/lib/server/bitrix/messenger";
 import { ensureBriefsSchema } from "@/lib/server/aiSales/briefsDb";
@@ -154,6 +155,29 @@ export async function POST(request: NextRequest) {
       newest: acts.slice(0, 8).map((a) => ({ id: a.ID, created: a.CREATED, dir: a.DIRECTION, files: Array.isArray(a.FILES) ? a.FILES.length : null, provider: a.PROVIDER_ID })),
       telephony: stat,
     });
+  }
+
+  if (body.action === "restart-transcribe") {
+    // Звонки без живой задачи расшифровки (упавшие после сбоя движка и «зависшие» в статусе TRANSCRIBING/DOWNLOADING) — запустить заново.
+    const { rows } = await pool.query<{ id: string }>(
+      `select c.id from ai_calls c
+        where c.status in ('TRANSCRIBING','DOWNLOADING','FAILED')
+          and c.started_at >= now() - interval '7 days'
+          and not exists (select 1 from ai_transcripts t where t.call_id = c.id)
+          and not exists (select 1 from ai_jobs j where j.type = 'call.transcribe' and j.status in ('PENDING','RETRY_PENDING','RUNNING') and j.payload->>'callId' = c.id::text and j.payload->>'operationId' is null)
+        order by c.started_at desc limit 300`
+    );
+    // Старые «ожидающие» операции этих звонков больше не нужны — сервис их потерял.
+    await pool.query(
+      `update ai_jobs set status = 'COMPLETED', result = '{"superseded":true}'::jsonb, updated_at = now()
+        where type = 'call.transcribe' and status in ('PENDING','RETRY_PENDING') and payload->>'operationId' is not null and payload->>'callId' = any($1::text[])`,
+      [rows.map((r) => r.id)]
+    );
+    let n = 0;
+    for (const r of rows) {
+      await enqueueJob({ type: "call.transcribe", payload: { callId: r.id }, priority: 50, maxAttempts: 3, runAfter: new Date(Date.now() + (n++ % 20) * 3000) });
+    }
+    return NextResponse.json({ ok: true, restarted: rows.length });
   }
 
   if (body.action === "requeue-failed") {

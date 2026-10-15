@@ -27,6 +27,7 @@ interface TranscribePayload {
   callId: string;
   operationId?: string;
   polls?: number;
+  restarts?: number;
 }
 
 async function afterTranscribed(callId: string): Promise<void> {
@@ -65,7 +66,24 @@ export async function runTranscription(payload: TranscribePayload): Promise<unkn
   // ── Фаза poll (async) ──
   if (payload.operationId) {
     if (!provider.pollAsync) throw new Error("Провайдер не поддерживает pollAsync");
-    const poll = await provider.pollAsync(payload.operationId);
+    let poll;
+    try {
+      poll = await provider.pollAsync(payload.operationId);
+    } catch (e) {
+      // Операция в сервисе распознавания упала (например, был остановлен движок) или потерялась после его перезапуска —
+      // запускаем расшифровку заново, а не оставляем звонок в «Транскрибируется».
+      const msg = e instanceof Error ? e.message : String(e);
+      const restarts = (payload.restarts ?? 0) + 1;
+      if (/Self-hosted STT (error|poll 404)/i.test(msg) && restarts <= 3) {
+        await enqueueJob({
+          type: "call.transcribe", priority: 50, maxAttempts: 3,
+          payload: { callId: call.id, restarts },
+          runAfter: new Date(Date.now() + restarts * 60_000),
+        });
+        return { restarted: restarts, reason: msg.slice(0, 200) };
+      }
+      throw e;
+    }
     if (!poll.done) {
       const polls = (payload.polls ?? 0) + 1;
       if (polls > MAX_POLLS) throw new Error("Превышено время ожидания транскрипции");
