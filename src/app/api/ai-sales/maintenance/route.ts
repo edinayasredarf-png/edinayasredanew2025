@@ -78,6 +78,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, ...(await reconcileCalls({ days, dryRun })) });
   }
 
+  if (body.action === "stt-debug") {
+    // Состояние сервиса распознавания: /health и статус нескольких ожидающих операций.
+    const base = (process.env.SELFHOSTED_STT_URL || "").trim().replace(/\/$/, "");
+    if (!base) return NextResponse.json({ ok: false, error: "SELFHOSTED_STT_URL не задан" });
+    const token = process.env.SELFHOSTED_STT_TOKEN?.trim();
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+    const probe = async (path: string) => {
+      const t0 = Date.now();
+      try {
+        const r = await fetch(`${base}${path}`, { headers, signal: AbortSignal.timeout(8000) });
+        const txt = await r.text();
+        return { path: path.slice(0, 40), status: r.status, ms: Date.now() - t0, body: txt.slice(0, 400) };
+      } catch (e) { return { path: path.slice(0, 40), error: e instanceof Error ? e.message : String(e), ms: Date.now() - t0 }; }
+    };
+    const { rows } = await getTimewebPool().query<{ op: string; polls: string | null }>(
+      `select payload->>'operationId' as op, payload->>'polls' as polls from ai_jobs
+        where type = 'call.transcribe' and status in ('PENDING','RETRY_PENDING') and payload->>'operationId' is not null order by created_at limit 5`
+    );
+    const out = { host: new URL(base).host, health: await probe("/health"), ops: [] as unknown[] };
+    for (const r of rows) out.ops.push({ polls: r.polls, ...(await probe(`/v1/jobs/${r.op}`)) });
+    return NextResponse.json({ ok: true, ...out });
+  }
+
   if (body.action === "calls-today-debug") {
     // Что в Bitrix по звонкам за последние сутки: активности (с записью/без) и статистика телефонии.
     const since = new Date(Date.now() - 36 * 3600_000).toISOString().slice(0, 10) + "T00:00:00+03:00";
