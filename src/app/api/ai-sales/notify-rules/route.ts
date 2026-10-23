@@ -31,6 +31,11 @@ function clean(raw: unknown): NotifyRule | null {
     recipients: { owner: r.recipients?.owner !== false, managerIds: ids(r.recipients?.managerIds), rop: Boolean(r.recipients?.rop) },
     onlyManagers: Array.isArray(r.onlyManagers) && r.onlyManagers.length ? ids(r.onlyManagers) : null,
     blocks: (Array.isArray(r.blocks) ? r.blocks : []).map(String).filter((k) => allowed.has(k)),
+    managerBlocks: Object.fromEntries(
+      Object.entries((r.managerBlocks ?? {}) as Record<string, unknown>)
+        .filter(([id, v]) => /^\d+$/.test(id) && Array.isArray(v))
+        .map(([id, v]) => [id, (v as unknown[]).map(String).filter((k) => allowed.has(k))])
+    ),
     conditions: {
       maxAgeHours: Math.min(720, Math.max(1, Number(c.maxAgeHours) || 48)),
       temperatures: (Array.isArray(c.temperatures) ? c.temperatures : []).filter((t: string) => ["HOT", "WARM", "COLD"].includes(t)),

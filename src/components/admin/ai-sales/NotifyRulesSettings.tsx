@@ -38,6 +38,20 @@ function MgrPicker({ mgrs, value, onChange }: { mgrs: Mgr[]; value: string[]; on
   );
 }
 
+function BlocksChecklist({ source, value, onChange }: { source: NotifySource; value: string[]; onChange: (v: string[]) => void }) {
+  return (
+    <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1">
+      {BLOCKS[source].map((b) => (
+        <label key={b.key} className="flex items-start gap-1.5 text-sm text-gray-700" title={b.hint}>
+          <input type="checkbox" className="mt-1" checked={value.includes(b.key)}
+            onChange={(e) => onChange(e.target.checked ? [...value, b.key] : value.filter((k) => k !== b.key))} />
+          <span>{b.title}<span className="block text-xs text-gray-400">{b.hint}</span></span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 function RuleCard({ rule, mgrs, onChange, onRemove }: { rule: NotifyRule; mgrs: Mgr[]; onChange: (r: NotifyRule) => void; onRemove: () => void }) {
   const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
@@ -45,10 +59,19 @@ function RuleCard({ rule, mgrs, onChange, onRemove }: { rule: NotifyRule; mgrs: 
   const setC = (p: Partial<NotifyRule['conditions']>) => onChange({ ...rule, conditions: { ...c, ...p } });
   const num = (v: string) => (v.trim() === '' ? null : Number(v));
 
-  const showPreview = async () => {
+  // Для кого можно задать свой набор: менеджеры правила (или все, если «по всем») и дополнительные получатели.
+  const personalIds = new Set<string>([...(rule.onlyManagers ?? mgrs.map((m) => m.bitrixUserId)), ...rule.recipients.managerIds, ...Object.keys(rule.managerBlocks ?? {})]);
+  const personal = mgrs.filter((m) => personalIds.has(m.bitrixUserId));
+  const setPersonal = (id: string, blocks: string[] | null) => {
+    const next = { ...(rule.managerBlocks ?? {}) };
+    if (blocks) next[id] = blocks; else delete next[id];
+    onChange({ ...rule, managerBlocks: next });
+  };
+
+  const showPreview = async (target: NotifyRule = rule) => {
     setBusy(true); setPreview('');
     try {
-      const r = await fetch('/api/ai-sales/notify-rules', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ preview: rule }) });
+      const r = await fetch('/api/ai-sales/notify-rules', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ preview: target }) });
       const j = await r.json();
       setPreview(j.text || j.error || 'Нет данных');
     } finally { setBusy(false); }
@@ -84,15 +107,38 @@ function RuleCard({ rule, mgrs, onChange, onRemove }: { rule: NotifyRule; mgrs: 
       </div>
 
       <div>
-        <div className="text-sm font-medium text-[#1b2a4a] mb-1">Что включить в сообщение</div>
-        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1">
-          {BLOCKS[rule.source].map((b) => (
-            <label key={b.key} className="flex items-start gap-1.5 text-sm text-gray-700" title={b.hint}>
-              <input type="checkbox" className="mt-1" checked={rule.blocks.includes(b.key)}
-                onChange={(e) => onChange({ ...rule, blocks: e.target.checked ? [...rule.blocks, b.key] : rule.blocks.filter((k) => k !== b.key) })} />
-              <span>{b.title}<span className="block text-xs text-gray-400">{b.hint}</span></span>
-            </label>
-          ))}
+        <div className="text-sm font-medium text-[#1b2a4a] mb-1">Что включить в сообщение — общий набор</div>
+        <div className="text-xs text-gray-500 mb-2">Получают все, у кого ниже не задан свой набор.</div>
+        <BlocksChecklist source={rule.source} value={rule.blocks} onChange={(v) => onChange({ ...rule, blocks: v })} />
+      </div>
+
+      <div>
+        <div className="text-sm font-medium text-[#1b2a4a] mb-1">Индивидуально для сотрудников</div>
+        <div className="text-xs text-gray-500 mb-2">Включите «свой набор» — этому человеку будут приходить только отмеченные блоки, остальным — общий набор.</div>
+        <div className="space-y-2">
+          {personal.map((m) => {
+            const own = rule.managerBlocks?.[m.bitrixUserId];
+            return (
+              <div key={m.bitrixUserId} className={`rounded-xl border px-3 py-2 ${own ? 'border-[#1b2a4a]/40 bg-gray-50' : 'border-gray-200'}`}>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-800 flex-1">{m.name || `ID ${m.bitrixUserId}`}</span>
+                  <span className="text-xs text-gray-400">{own ? `свой набор: ${own.length}` : 'общий набор'}</span>
+                  <label className="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                    <input type="checkbox" checked={Boolean(own)} onChange={(e) => setPersonal(m.bitrixUserId, e.target.checked ? [...rule.blocks] : null)} /> свой набор
+                  </label>
+                </div>
+                {own && (
+                  <div className="mt-2 space-y-2">
+                    <BlocksChecklist source={rule.source} value={own} onChange={(v) => setPersonal(m.bitrixUserId, v)} />
+                    <button type="button" onClick={() => showPreview({ ...rule, blocks: own })} disabled={busy} className="inline-flex items-center gap-1.5 text-xs text-[#1b2a4a] hover:underline disabled:opacity-50">
+                      <Eye className="w-3.5 h-3.5" /> Пример для этого сотрудника
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {!personal.length && <div className="text-xs text-gray-400">Выберите менеджеров выше — здесь появятся их индивидуальные наборы.</div>}
         </div>
       </div>
 
@@ -125,7 +171,7 @@ function RuleCard({ rule, mgrs, onChange, onRemove }: { rule: NotifyRule; mgrs: 
       </div>
 
       <div>
-        <button type="button" onClick={showPreview} disabled={busy} className="inline-flex items-center gap-1.5 text-sm text-[#1b2a4a] hover:underline disabled:opacity-50">
+        <button type="button" onClick={() => showPreview()} disabled={busy} className="inline-flex items-center gap-1.5 text-sm text-[#1b2a4a] hover:underline disabled:opacity-50">
           <Eye className="w-4 h-4" /> {busy ? 'Собираю…' : 'Посмотреть пример сообщения'}
         </button>
         {preview && <pre className="mt-2 p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-700 whitespace-pre-wrap font-sans">{preview}</pre>}

@@ -42,6 +42,8 @@ export interface NotifyRule {
   /** null — по всем менеджерам; иначе правило срабатывает только по разговорам/сделкам перечисленных сотрудников. */
   onlyManagers: string[] | null;
   blocks: string[];
+  /** Индивидуальный набор блоков для сотрудника (Bitrix-ID → блоки); у остальных — общий `blocks`. */
+  managerBlocks?: Record<string, string[]>;
   conditions: {
     maxAgeHours: number;            // для разговоров: не старше N часов
     temperatures: Array<"HOT" | "WARM" | "COLD">; // пусто — любая

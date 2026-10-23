@@ -160,6 +160,35 @@ async function deliver(rule: NotifyRule, entityKey: string, recipients: string[]
   return out;
 }
 
+/** Набор блоков для конкретного получателя: свой (если задан для сотрудника) или общий у правила. */
+export function blocksFor(rule: NotifyRule, recipientId: string): string[] {
+  return rule.managerBlocks?.[recipientId] ?? rule.blocks;
+}
+
+/** Сообщение у каждого получателя может быть своим: группируем по набору блоков и шлём каждой группе её текст. */
+async function deliverPerRecipient(
+  source: NotifySource, rule: NotifyRule, entityKey: string, to: string[], data: Any, managerScore: number | null, header: string,
+  opts: { resendAfterHours?: number } = {}
+): Promise<{ sent: string[]; failed: string[]; dup: number; via?: string } | null> {
+  const groups = new Map<string, { recipients: string[]; text: string }>();
+  for (const id of to) {
+    const blocks = blocksFor(rule, id);
+    const key = blocks.join("|");
+    const g = groups.get(key);
+    if (g) { g.recipients.push(id); continue; }
+    const body = buildBody(source, { ...rule, blocks }, data, managerScore);
+    if (!body) continue; // у этого сотрудника в разборе нет выбранных блоков — ему не пишем
+    groups.set(key, { recipients: [id], text: `${header}\n\n${body}` });
+  }
+  if (!groups.size) return null;
+  const total = { sent: [] as string[], failed: [] as string[], dup: 0, via: undefined as string | undefined };
+  for (const g of groups.values()) {
+    const res = await deliver(rule, entityKey, g.recipients, g.text, opts);
+    total.sent.push(...res.sent); total.failed.push(...res.failed); total.dup += res.dup; total.via = res.via ?? total.via;
+  }
+  return total;
+}
+
 const fmtWhen = (d: Date | null) => (d ? d.toLocaleString("ru-RU", { timeZone: "Europe/Moscow", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "");
 
 /** Правила по разбору звонка (после call.analyze). */
@@ -205,12 +234,12 @@ export async function runCallNotify(callId: string): Promise<unknown> {
     if (c.managerScoreBelow != null && !(mpScore != null && mpScore <= c.managerScoreBelow)) { skip("оценка менеджера выше порога"); continue; }
     if (c.dealScoreAtLeast != null && !(dealScore != null && dealScore >= c.dealScoreAtLeast)) { skip("оценка сделки ниже порога"); continue; }
 
-    const body = buildBody("call", rule, r.data, mpScore);
-    if (!body) { skip("в разборе нет выбранных блоков"); continue; }
     const to = await recipientsFor(rule, r.bitrix_user_id);
     if (!to.length) { skip("нет получателей"); continue; }
-    const text = `[B]Разбор звонка${when ? ` от ${when}` : ""}[/B]\n${isDeal ? "Сделка" : "Лид"}: ${bbLink(link, name)}\n\n${body}`;
-    result[rule.name] = await deliver(rule, `call:${callId}`, to, text);
+    const header = `[B]Разбор звонка${when ? ` от ${when}` : ""}[/B]\n${isDeal ? "Сделка" : "Лид"}: ${bbLink(link, name)}`;
+    const res = await deliverPerRecipient("call", rule, `call:${callId}`, to, r.data, mpScore, header);
+    if (!res) { skip("в разборе нет выбранных блоков"); continue; }
+    result[rule.name] = res;
   }
   return result;
 }
@@ -249,13 +278,13 @@ export async function runDealNotify(dealId: string): Promise<unknown> {
     if (c.managerScoreBelow != null && !(ms != null && ms <= c.managerScoreBelow)) { skip("оценка менеджера выше порога"); continue; }
     if (c.dealScoreAtLeast != null && !(dScore != null && dScore >= c.dealScoreAtLeast)) { skip("оценка сделки ниже порога"); continue; }
 
-    const body = buildBody("deal", rule, r.data, ms);
-    if (!body) { skip("в анализе нет выбранных блоков"); continue; }
     const to = await recipientsFor(rule, r.bitrix_user_id);
     if (!to.length) { skip("нет получателей"); continue; }
-    const text = `[B]Анализ сделки[/B]\nСделка: ${bbLink(crmLink("deal", dealId), name)}\n\n${body}`;
+    const header = `[B]Анализ сделки[/B]\nСделка: ${bbLink(crmLink("deal", dealId), name)}`;
     // Анализ сделки пересчитывается после каждого звонка: повторно шлём не чаще раза в сутки и только если текст изменился.
-    result[rule.name] = await deliver(rule, `deal:${dealId}`, to, text, { resendAfterHours: 24 });
+    const res = await deliverPerRecipient("deal", rule, `deal:${dealId}`, to, r.data, ms, header, { resendAfterHours: 24 });
+    if (!res) { skip("в анализе нет выбранных блоков"); continue; }
+    result[rule.name] = res;
   }
   return result;
 }
