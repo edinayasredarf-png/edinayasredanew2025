@@ -6,7 +6,7 @@ import { RichTextProvider } from 'reactjs-tiptap-editor';
 import { Document } from '@tiptap/extension-document';
 import { HardBreak } from '@tiptap/extension-hard-break';
 import { ListItem } from '@tiptap/extension-list';
-import { Paragraph } from '@tiptap/extension-paragraph';
+import { Paragraph as BaseParagraph } from '@tiptap/extension-paragraph';
 import { Text } from '@tiptap/extension-text';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Dropcursor, Gapcursor, Placeholder, TrailingNode, CharacterCount } from '@tiptap/extensions';
@@ -82,6 +82,38 @@ let imageEditBeforeUpload: ((file: File) => Promise<string>) | null = null;
 
 const DocumentColumn = Document.extend({
   content: '(block|columns)+',
+});
+
+// Абзац с «привязкой» к оригиналу (шаблоны КП в .docx): id абзаца, подпись нумерации и свои отступы.
+// Для обычных текстов (блог и т.п.) атрибуты пустые и в HTML не попадают.
+const Paragraph = BaseParagraph.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      kpId: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute('data-kp-id'),
+        renderHTML: (a: Record<string, unknown>) => (a.kpId != null ? { 'data-kp-id': a.kpId as string } : {}),
+      },
+      kpNum: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute('data-kp-num'),
+        renderHTML: (a: Record<string, unknown>) => (a.kpNum != null ? { 'data-kp-num': a.kpNum as string } : {}),
+      },
+      // Отступы и интервалы абзаца из документа (выравнивание и межстрочный интервал ведут свои расширения).
+      kpStyle: {
+        default: null,
+        parseHTML: (el: HTMLElement) => {
+          const keep = (el.getAttribute('style') || '')
+            .split(';')
+            .map((x) => x.trim())
+            .filter((x) => /^(padding-left|text-indent|margin-top|margin-bottom)\s*:/i.test(x));
+          return keep.length ? keep.join('; ') : null;
+        },
+        renderHTML: (a: Record<string, unknown>) => (a.kpStyle ? { style: a.kpStyle as string } : {}),
+      },
+    };
+  },
 });
 
 const BaseKit = [
@@ -309,6 +341,8 @@ export default function RichEditor({ initialHtml = '', onChange }: Props) {
 
   return (
     <RichTextProvider editor={editor}>
+      {/* Подпись нумерации/вставок шаблонов .docx — только для показа, в текст не попадает. */}
+      <style>{`.ProseMirror p[data-kp-num]::before{content:attr(data-kp-num) " ";color:#6b7280;margin-right:.35em;user-select:none}`}</style>
       <div className="overflow-hidden rounded-lg border border-border bg-background">
         <div className="flex max-h-full w-full flex-col">
           <RichTextToolbar />

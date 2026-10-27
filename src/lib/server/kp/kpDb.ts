@@ -1386,6 +1386,22 @@ export async function dbUpdateTemplate(
   );
 }
 
+/** Правка текста .docx-шаблона: файл остаётся оригинальным (с оформлением), прежний сохраняется как исходный. */
+export async function dbUpdateDocxTemplate(
+  id: number,
+  input: { name: string; serviceType: string; orgKey: string | null; skipAutoBlocks: boolean; data: Buffer; placeholders: string[] }
+): Promise<void> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  await pool.query(`alter table kp_templates add column if not exists data_original bytea`);
+  await pool.query(
+    `update kp_templates set name=$2, service_type=$3, org_key=$4, skip_auto_blocks=$5,
+       data_original = coalesce(data_original, data), data=$6, body_html='', placeholders=$7, size_bytes=$8, updated_at=now()
+     where id=$1`,
+    [id, input.name.slice(0, 300), input.serviceType, input.orgKey || null, input.skipAutoBlocks, input.data, JSON.stringify(input.placeholders), input.data.length]
+  );
+}
+
 export interface KpTemplateFull extends KpTemplateMeta {
   bodyHtml: string;
   hasDocx: boolean;

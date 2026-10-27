@@ -9,9 +9,11 @@ import {
   dbListTemplates,
   dbSetTemplateSkipAuto,
   dbUpdateTemplate,
+  dbUpdateDocxTemplate,
 } from "@/lib/server/kp/kpDb";
 import { extractPlaceholders } from "@/lib/server/kp/kpDocx";
 import { extractPlaceholdersFromHtml } from "@/lib/server/kp/kpHtmlDocx";
+import { docxToEditorHtml, patchDocxFromEditorHtml } from "@/lib/server/kp/kpDocxEdit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,19 +41,25 @@ export async function GET(request: NextRequest) {
     const full = await dbGetTemplateFull(id);
     if (!full) return NextResponse.json({ error: "Шаблон не найден" }, { status: 404 });
     let bodyHtml = full.bodyHtml;
-    // Загруженный .docx конвертируем в HTML для редактирования (один раз).
-    if (full.source === "docx" && full.hasDocx && !bodyHtml) {
+    let docxMode = false;
+    // Загруженный .docx показываем в редакторе С оформлением документа (шрифты, отступы, выравнивание);
+    // сохранение вносит правки в сам .docx, не пересобирая его.
+    if (full.source === "docx" && full.hasDocx) {
       const doc = await dbGetTemplateData(id);
       if (doc) {
         try {
-          const res = await mammoth.convertToHtml({ buffer: doc.data });
-          bodyHtml = res.value;
+          bodyHtml = await docxToEditorHtml(doc.data);
+          docxMode = true;
         } catch {
-          bodyHtml = "";
+          try {
+            bodyHtml = (await mammoth.convertToHtml({ buffer: doc.data })).value;
+          } catch {
+            bodyHtml = "";
+          }
         }
       }
     }
-    return NextResponse.json({ template: { ...full, bodyHtml } });
+    return NextResponse.json({ template: { ...full, bodyHtml, docxMode } });
   }
 
   const templates = await dbListTemplates();
@@ -158,6 +166,30 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
   }
   if (!body.id) return NextResponse.json({ error: "Не указан id" }, { status: 400 });
+
+  // Редактирование загруженного .docx: правки текста переносим в исходный файл, оформление сохраняется.
+  if (typeof body.bodyHtml === "string" && body.serviceType) {
+    const full = await dbGetTemplateFull(body.id);
+    if (full && full.source === "docx" && full.hasDocx) {
+      const doc = await dbGetTemplateData(body.id);
+      if (doc) {
+        try {
+          const patched = await patchDocxFromEditorHtml(doc.data, body.bodyHtml);
+          await dbUpdateDocxTemplate(body.id, {
+            name: body.name || "Шаблон",
+            serviceType: body.serviceType,
+            orgKey: body.orgKey || null,
+            skipAutoBlocks: body.skipAutoBlocks ?? false,
+            data: patched,
+            placeholders: await extractPlaceholders(patched),
+          });
+          return NextResponse.json({ ok: true, preserved: true });
+        } catch (e) {
+          return NextResponse.json({ error: `Не удалось применить правки к .docx: ${e instanceof Error ? e.message : "ошибка"}` }, { status: 500 });
+        }
+      }
+    }
+  }
 
   // Полное редактирование (HTML-тело задано).
   if (typeof body.bodyHtml === "string" && body.serviceType) {
