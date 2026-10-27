@@ -134,8 +134,10 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       }
 
       const op = req.orgParams?.[orgKey];
-      const executor = await getExecutor(op?.executorId ?? req.executorId);
-      const doRegistry = op?.recordRegistry ?? req.recordRegistry;
+      // Если у организации заданы свои параметры — используем только их: не заданное (например, исполнитель) остаётся пустым,
+      // а не подставляется из другой компании. Общие поля запроса — только для старых вызовов без orgParams.
+      const executor = await getExecutor(op ? op.executorId : req.executorId);
+      const doRegistry = op ? Boolean(op.recordRegistry) : req.recordRegistry;
 
       const tierRow = await dbResolveComposedTier(orgKey, serviceType);
       const tier: PriceTier = tierRow
@@ -186,14 +188,14 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         rows: pricedRows,
         client: {
           ...req.form.client,
-          requestNumber: op?.requestNumber ?? req.form.client?.requestNumber,
-          requestDate: op?.requestDate ?? req.form.client?.requestDate,
+          requestNumber: op ? op.requestNumber : req.form.client?.requestNumber,
+          requestDate: op ? op.requestDate : req.form.client?.requestDate,
         },
         kp: {
           ...req.form.kp,
-          date: op?.date || req.form.kp?.date,
-          validityPeriod: op?.validityPeriod || req.form.kp?.validityPeriod,
-          number: assignedNumber ? String(assignedNumber) : op?.number?.trim() || req.form.kp?.numbers?.[orgKey]?.trim() || req.form.kp?.number,
+          date: op ? op.date : req.form.kp?.date,
+          validityPeriod: op ? op.validityPeriod : req.form.kp?.validityPeriod,
+          number: assignedNumber ? String(assignedNumber) : op ? op.number?.trim() : req.form.kp?.numbers?.[orgKey]?.trim() || req.form.kp?.number,
         },
         ais: req.form.ais?.pricePerLicense
           ? req.form.ais
