@@ -207,8 +207,18 @@ function processParagraph(
   for (const dt of DANGER_TOKENS) {
     if (text.includes(`{{${dt}}}`) && !(tags[dt] || "").trim()) return "";
   }
+  // Исполнитель не выбран — строка «Исполнитель: …, тел. …» в шаблоне не должна остаться пустой оболочкой.
+  let paraText = text;
+  const execTokens = [...text.matchAll(/\{\{\s*(executor_[a-z_]+)\s*\}\}/g)].map((m) => m[1]);
+  if (execTokens.length) {
+    if (execTokens.every((t) => !(tags[t] || "").trim())) return "";
+    // ФИО есть, телефона нет — убираем «, тел. {{executor_phone}}».
+    if (!(tags.executor_phone || "").trim()) {
+      paraText = paraText.replace(/\s*[,;]?\s*тел(?:ефон)?\.?\s*:?\s*\{\{\s*executor_phone\s*\}\}/gi, "");
+    }
+  }
   const rPr = firstRunRpr(pXml);
-  return `${paragraphOpenTag(pXml)}${paragraphPropsXml(pXml)}<w:r>${rPr}${buildRunInner(text, tags, imageRuns)}</w:r></w:p>`;
+  return `${paragraphOpenTag(pXml)}${paragraphPropsXml(pXml)}<w:r>${rPr}${buildRunInner(paraText, tags, imageRuns)}</w:r></w:p>`;
 }
 
 function fillDocumentXml(
