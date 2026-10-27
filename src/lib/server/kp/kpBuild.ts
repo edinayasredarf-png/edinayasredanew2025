@@ -72,6 +72,8 @@ export interface KpGenerateRequest {
   recordRegistry?: boolean;
   /** Параметры по организациям (orgKey → параметры); не заданное берётся из общих полей запроса. */
   orgParams?: Record<string, KpOrgParams>;
+  /** Таблица расчёта, отредактированная для конкретной организации (orgKey → строки): берётся как есть, без пересчёта цен из тарифа. */
+  orgTables?: Record<string, KpFormPayload["rows"]>;
 }
 
 function todayYmd(): string {
@@ -156,7 +158,8 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       for (const svc of serviceComponents(serviceType)) {
         compTiers.set(svc, await dbGetTier(orgKey, svc));
       }
-      const pricedRows = (req.form.rows || []).map((r) => {
+      const ownRows = req.orgTables?.[orgKey];
+      const pricedRows = ownRows ? ownRows : (req.form.rows || []).map((r) => {
         const svc = (r as Record<string, string>).__svc;
         const line = (r as Record<string, string>).__line;
         if (!svc || !line) return r;

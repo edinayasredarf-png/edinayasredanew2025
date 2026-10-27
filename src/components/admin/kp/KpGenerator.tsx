@@ -220,8 +220,14 @@ export default function KpGenerator() {
   }, [clientOrgFull]);
 
   // Параметры КП — у каждой выбранной организации свои (дата, номер, срок, запрос заказчика, исполнитель, реестр).
-  // Примечания под таблицей: в документ попадают как «* текст», по строке на примечание.
+  // Примечания под таблицей: два типовых (включаются галочкой) и свои строки; в документ — «* текст».
+  const [presetNotes, setPresetNotes] = useState<Array<{ on: boolean; text: string }>>([
+    { on: false, text: 'Если площадь до 1Га, то стоимость считается за 1 Га.' },
+    { on: false, text: 'В труднодоступные места логистика просчитывается отдельно.' },
+  ]);
   const [notes, setNotes] = useState<string[]>(['']);
+  // Таблица расчёта, отредактированная для отдельной компании (orgKey → строки); пока нет правок — общая таблица с ценами компании.
+  const [orgTables, setOrgTables] = useState<Record<string, RowData[]>>({});
   const [orgParams, setOrgParams] = useState<Record<string, OrgParamsUi>>({});
   const patchParams = (key: string, patch: Partial<OrgParamsUi>) =>
     setOrgParams((m) => ({ ...m, [key]: { ...(m[key] ?? DEFAULT_ORG_PARAMS), ...patch } }));
@@ -326,6 +332,7 @@ export default function KpGenerator() {
     if (!t) return;
     setSelectedTableKey(key);
     setRows([{}]);
+    setOrgTables({});
   };
 
   // Импорт таблицы из Excel «как есть» → применяем как выбранную.
@@ -333,6 +340,7 @@ export default function KpGenerator() {
     setSelectedTableKey(key);
     setColumns(cols);
     setRows(newRows.length ? newRows : [{}]);
+    setOrgTables({});
   }, []);
 
   // Строки-услуги выбранной услуги (для комбинированной — объединение компонентов),
@@ -373,6 +381,7 @@ export default function KpGenerator() {
   // Смена услуги → таблица по умолчанию + авто-строки услуги (если заданы).
   const onSelectService = (name: string) => {
     setServiceType(name);
+    setOrgTables({});
     const svc = services.find((s) => s.name === name);
     const def = svc?.defaultTable;
     const orgKey = selectedOrgs[0] || orgs[0]?.key || '';
@@ -425,6 +434,42 @@ export default function KpGenerator() {
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
 
+  // Цены строк-услуг компании (тот же расчёт, что у превью первой компании).
+  const priceRowFor = useCallback((r: RowData, orgKey: string): RowData => {
+    if (!r.__line) return r;
+    const lp = tiers.find((x) => x.orgKey === orgKey && x.serviceType === r.__svc)?.linePrices?.[r.__line as string];
+    if (!lp) return r;
+    const out: RowData = { ...r };
+    out.__pd = lp.direct ? String(lp.direct) : '';
+    out.__pt = lp.tender ? String(lp.tender) : '';
+    out.__p = lp.direct ? String(lp.direct) : '';
+    if ('unit_price' in out) out.unit_price = lp.direct ? String(lp.direct) : '';
+    if ('cost_direct' in out) out.cost_direct = lp.direct ? String(lp.direct) : '';
+    if ('cost_tender' in out) out.cost_tender = lp.tender ? String(lp.tender) : '';
+    if ('cost' in out && !('cost_direct' in out)) out.cost = lp.direct ? String(lp.direct) : '';
+    return out;
+  }, [tiers]);
+
+  // Таблица компании: свои правки, иначе общая таблица с ценами этой компании.
+  const rowsForOrg = useCallback(
+    (key: string): RowData[] => orgTables[key] ?? rows.map((r) => priceRowFor(r, key)),
+    [orgTables, rows, priceRowFor]
+  );
+  const setOrgRows = (key: string, upd: React.SetStateAction<RowData[]>) =>
+    setOrgTables((m) => {
+      const cur = m[key] ?? rows.map((r) => priceRowFor(r, key));
+      return { ...m, [key]: typeof upd === 'function' ? (upd as (p: RowData[]) => RowData[])(cur) : upd };
+    });
+  const scopeFor = (key: string) => {
+    const t = tierFor(key);
+    return {
+      price: mode === 'tender' ? t?.pricePerHaTender ?? 0 : t?.pricePerHaDirect ?? 0,
+      price_direct: t?.pricePerHaDirect ?? 0,
+      price_tender: t?.pricePerHaTender ?? 0,
+      min_ha: t?.minHectares ?? 1,
+    };
+  };
+
   // Живой расчёт итога по каждой выбранной организации (матрица «3 КП»).
   const perOrgTotals = useMemo(() => {
     return selectedOrgs.map((key) => {
@@ -437,7 +482,7 @@ export default function KpGenerator() {
         price_tender: tier?.pricePerHaTender ?? 0,
         min_ha: tier?.minHectares ?? 1,
       };
-      const serviceTotal = inc.service ? computeServiceTotal(columns, rows, scope, areaUnit) : 0;
+      const serviceTotal = inc.service ? computeServiceTotal(columns, rowsForOrg(key), scope, areaUnit) : 0;
       const ais = inc.ais ? toNum(tier?.aisPrice || 0) / (ruralSettlement ? 1.6 : 1) : 0;
       const renewal = inc.renewal ? toNum(tier?.renewalPerYear || 0) : 0;
       const hasTemplate = templates.some(
@@ -453,7 +498,7 @@ export default function KpGenerator() {
         hasTemplate,
       };
     });
-  }, [selectedOrgs, orgs, tierFor, mode, areaUnit, ruralSettlement, inc.service, inc.ais, inc.renewal, rows, columns, templates, serviceType]);
+  }, [selectedOrgs, orgs, tierFor, mode, areaUnit, ruralSettlement, inc.service, inc.ais, inc.renewal, rowsForOrg, columns, templates, serviceType]);
 
   // Предупреждения о незаполненных ценах (не блокируют, но подсвечивают).
   const priceWarnings = useMemo(() => {
@@ -492,13 +537,8 @@ export default function KpGenerator() {
         price: active ?? 0,
         min_ha: tier?.minHectares ?? 1,
       };
-      const rowsForOrg = rows.map((r) => {
-        if (!r.__line) return r;
-        const lp = tiers.find((t) => t.orgKey === key && t.serviceType === r.__svc)?.linePrices?.[r.__line as string];
-        if (!lp) return r;
-        return { ...r, __pd: lp.direct ? String(lp.direct) : '', __pt: lp.tender ? String(lp.tender) : '', __p: lp.direct ? String(lp.direct) : '' };
-      });
-      const table = inc.service ? computePreviewTable(columns, rowsForOrg, base, areaUnit) : null;
+      const orgRows = rowsForOrg(key);
+      const table = inc.service ? computePreviewTable(columns, orgRows, base, areaUnit) : null;
       const tot = perOrgTotals.find((t) => t.key === key);
       return {
         key,
@@ -509,7 +549,7 @@ export default function KpGenerator() {
         grand: tot?.grand ?? 0,
       };
     });
-  }, [selectedOrgs, tierFor, mode, areaUnit, rows, tiers, columns, perOrgTotals, orgs, inc.service]);
+  }, [selectedOrgs, tierFor, mode, areaUnit, rowsForOrg, columns, perOrgTotals, orgs, inc.service]);
 
   const previewTier = tierFor(selectedOrgs[0] || '');
   const previewScope = {
@@ -539,7 +579,7 @@ export default function KpGenerator() {
       },
       kp: { date: paramsOf(selectedOrgs[0] || '').date || undefined, validityPeriod: paramsOf(selectedOrgs[0] || '').validity },
       object: clientQuantity ? { quantityUnits: toNum(clientQuantity) } : undefined,
-      notes: notes.map((n) => n.trim()).filter(Boolean),
+      notes: [...presetNotes.filter((n) => n.on).map((n) => n.text), ...notes].map((n) => n.trim()).filter(Boolean),
       table: { key: selectedTableKey, name: calcTables.find((t) => t.key === selectedTableKey)?.name, columns },
       rows: rows.filter((r) => Object.values(r).some((v) => (v || '').trim())),
       ais: inc.ais ? { licenses: 1 } : undefined,
@@ -549,6 +589,7 @@ export default function KpGenerator() {
     orgKeys: selectedOrgs,
     executorId: paramsOf(selectedOrgs[0] || '').executorId || undefined,
     recordRegistry: paramsOf(selectedOrgs[0] || '').record,
+    orgTables: Object.fromEntries(selectedOrgs.filter((k) => orgTables[k]).map((k) => [k, orgTables[k]])),
     orgParams: Object.fromEntries(selectedOrgs.map((k) => {
       const p = paramsOf(k);
       return [k, {
@@ -744,7 +785,7 @@ export default function KpGenerator() {
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-            paramsOf, patchParams, notes, setNotes,
+            paramsOf, patchParams, notes, setNotes, presetNotes, setPresetNotes, rowsForOrg, setOrgRows, scopeFor, orgTables, setOrgTables,
             executors,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
@@ -806,7 +847,7 @@ function CreateTab(p: CreateProps) {
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-    paramsOf, patchParams, notes, setNotes,
+    paramsOf, patchParams, notes, setNotes, presetNotes, setPresetNotes, rowsForOrg, setOrgRows, scopeFor, orgTables, setOrgTables,
     executors,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
@@ -831,6 +872,9 @@ function CreateTab(p: CreateProps) {
     lockBinding: boolean; setLockBinding: (v: boolean) => void;
     paramsOf: (key: string) => OrgParamsUi; patchParams: (key: string, patch: Partial<OrgParamsUi>) => void;
     notes: string[]; setNotes: React.Dispatch<React.SetStateAction<string[]>>;
+    presetNotes: Array<{ on: boolean; text: string }>; setPresetNotes: React.Dispatch<React.SetStateAction<Array<{ on: boolean; text: string }>>>;
+    rowsForOrg: (key: string) => RowData[]; setOrgRows: (key: string, upd: React.SetStateAction<RowData[]>) => void; scopeFor: (key: string) => { price: number; price_direct: number; price_tender: number; min_ha: number };
+    orgTables: Record<string, RowData[]>; setOrgTables: React.Dispatch<React.SetStateAction<Record<string, RowData[]>>>;
     executors: Executor[];
     calcTables: CalcTableDef[]; selectedTableKey: string; onSelectTable: (k: string) => void;
     columns: CalcColumn[]; setColumns: React.Dispatch<React.SetStateAction<CalcColumn[]>>;
@@ -853,6 +897,10 @@ function CreateTab(p: CreateProps) {
   const panel = 'bg-white rounded-2xl border border-gray-100 p-5 space-y-4';
   const chip = 'flex items-center gap-2.5 bg-[#F6F7F9] rounded-xl px-4 py-2.5';
   const [tableModalOpen, setTableModalOpen] = React.useState(false);
+  // Вкладка таблицы: у каждой выбранной компании своя таблица расчёта (правки применяются в её документе).
+  const [tableOrgSel, setTableOrgSel] = React.useState('');
+  const tableOrg = selectedOrgs.includes(tableOrgSel) ? tableOrgSel : selectedOrgs[0] || '';
+  const tableRows = tableOrg ? rowsForOrg(tableOrg) : rows;
   const fieldLabel = (text: React.ReactNode, hint?: string, required?: boolean) => (
     <div className="flex items-center gap-1.5 mb-1">
       <span className="text-xs font-medium text-gray-500">{text}{required && <span className="text-red-500"> *</span>}</span>
@@ -1118,6 +1166,20 @@ function CreateTab(p: CreateProps) {
         {/* Таблица расчёта — конфигурируемая (Excel-стиль); сам редактор открывается в модалке */}
         <div className={panel}>
           <div className="text-sm font-semibold text-[#1b2a4a]">Таблица расчёта</div>
+          {selectedOrgs.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1 p-1 rounded-xl bg-[#F6F7F9] w-fit max-w-full">
+              {selectedOrgs.map((k) => {
+                const o = orgs.find((x) => x.key === k);
+                const active = k === tableOrg;
+                return (
+                  <button key={k} type="button" onClick={() => setTableOrgSel(k)}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition ${active ? 'bg-white text-[#1b2a4a] shadow-sm' : 'text-gray-500 hover:text-[#1b2a4a]'}`}>
+                    {o?.shortName || o?.name || k}{orgTables[k] ? ' •' : ''}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <button type="button" onClick={() => setTableModalOpen(true)}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-100 hover:border-[#029cda]/40 hover:bg-[#FAFDFF] transition text-left">
             <span className="shrink-0 size-10 rounded-xl bg-[#F6F7F9] grid place-items-center text-[#1b2a4a]">
@@ -1127,23 +1189,40 @@ function CreateTab(p: CreateProps) {
               <span className="block text-sm font-medium text-[#1b2a4a] truncate">
                 {calcTables.find((t) => t.key === selectedTableKey)?.name || 'Выберите таблицу'}
               </span>
-              <span className="block text-xs text-gray-400">{rows.length} {rows.length === 1 ? 'строка' : 'строк'} · Настроить</span>
+              <span className="block text-xs text-gray-400">{tableRows.length} {tableRows.length === 1 ? 'строка' : 'строк'} · Настроить{tableOrg && orgTables[tableOrg] ? ' · изменена вручную' : ''}</span>
             </span>
             <svg className="shrink-0 w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="none" aria-hidden><path d="M7.5 15l5-5-5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
 
+          {tableOrg && orgTables[tableOrg] && (
+            <button type="button" className="text-xs text-[#029cda] hover:underline"
+              onClick={() => setOrgTables((m) => { const n = { ...m }; delete n[tableOrg]; return n; })}>
+              Сбросить правки таблицы для «{orgs.find((x) => x.key === tableOrg)?.shortName || tableOrg}» (вернуть общую)
+            </button>
+          )}
+
           {/* Примечания под таблицей */}
           <div>
-            {fieldLabel('Примечания', 'Печатаются под таблицей отдельными строками со звёздочкой (* текст). Кнопка «+» добавляет ещё одну строку.')}
+            {fieldLabel('Примечания', 'Отметьте галочкой типовые примечания — они напечатаются под таблицей со звёздочкой. Свои строки добавляются кнопкой «+».')}
             <div className="space-y-2">
+              {presetNotes.map((n, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input type="checkbox" checked={n.on} onChange={(e) => setPresetNotes((arr) => arr.map((x, j) => (j === i ? { ...x, on: e.target.checked } : x)))}
+                    className="shrink-0 size-4 accent-[#029cda]" title="Включить в документ" />
+                  <span className="text-gray-400 w-3 text-center">*</span>
+                  <input value={n.text} onChange={(e) => setPresetNotes((arr) => arr.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))}
+                    className={`${input} flex-1 ${n.on ? '' : 'text-gray-400'}`} />
+                </div>
+              ))}
               {notes.map((n, i) => (
                 <div key={i} className="flex items-center gap-2">
+                  <span className="shrink-0 size-4" />
                   <span className="text-gray-400 w-3 text-center">*</span>
                   <input
                     value={n}
                     onChange={(e) => setNotes((arr) => arr.map((x, j) => (j === i ? e.target.value : x)))}
                     className={`${input} flex-1`}
-                    placeholder={i === 0 ? 'Например: стоимость указана без учёта логистики' : 'Ещё одно примечание'}
+                    placeholder={i === 0 ? 'Своё примечание' : 'Ещё одно примечание'}
                   />
                   {i === 0 ? (
                     <button type="button" onClick={() => setNotes((arr) => [...arr, ''])} title="Добавить строку"
@@ -1159,16 +1238,16 @@ function CreateTab(p: CreateProps) {
         </div>
 
         {tableModalOpen && (
-          <Modal title="Таблица расчёта" onClose={() => setTableModalOpen(false)} maxWidth="max-w-5xl">
+          <Modal title={`Таблица расчёта${tableOrg ? ` — ${orgs.find((x) => x.key === tableOrg)?.shortName || tableOrg}` : ''}`} onClose={() => setTableModalOpen(false)} maxWidth="max-w-5xl">
             <KpCalcGrid
               calcTables={calcTables}
               selectedKey={selectedTableKey}
               onSelectTable={onSelectTable}
               columns={columns}
               setColumns={setColumns}
-              rows={rows}
-              setRows={setRows}
-              previewScope={previewScope}
+              rows={tableRows}
+              setRows={tableOrg ? ((u) => setOrgRows(tableOrg, u)) : setRows}
+              previewScope={tableOrg ? scopeFor(tableOrg) : previewScope}
               areaUnit={areaUnit}
               onTablesChanged={onTablesChanged}
               onImportedTable={onImportedTable}
