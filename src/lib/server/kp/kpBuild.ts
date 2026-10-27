@@ -162,7 +162,7 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       const form: KpFormPayload = {
         ...req.form,
         rows: pricedRows,
-        kp: { ...req.form.kp, number: assignedNumber ? String(assignedNumber) : req.form.kp?.number },
+        kp: { ...req.form.kp, number: assignedNumber ? String(assignedNumber) : req.form.kp?.numbers?.[orgKey]?.trim() || req.form.kp?.number },
         ais: req.form.ais?.pricePerLicense
           ? req.form.ais
           : { licenses: req.form.ais?.licenses ?? 1, pricePerLicense: tier.aisPrice },

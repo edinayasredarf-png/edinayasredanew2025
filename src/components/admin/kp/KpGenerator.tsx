@@ -217,7 +217,7 @@ export default function KpGenerator() {
   }, [clientOrgFull]);
 
   const [kpDate, setKpDate] = useState('');
-  const [kpNumber, setKpNumber] = useState('');
+  const [kpNumbers, setKpNumbers] = useState<Record<string, string>>({});
   const [recordRegistry, setRecordRegistry] = useState(false);
   const [requestNumber, setRequestNumber] = useState('');
   const [requestDate, setRequestDate] = useState('');
@@ -534,7 +534,7 @@ export default function KpGenerator() {
         requestNumber: requestNumber || undefined,
         requestDate: requestDate || undefined,
       },
-      kp: { date: kpDate || undefined, number: kpNumber || undefined, validityPeriod },
+      kp: { date: kpDate || undefined, numbers: Object.fromEntries(selectedOrgs.map((k) => [k, (kpNumbers[k] || '').trim()]).filter(([, v]) => v)), validityPeriod },
       object: clientQuantity ? { quantityUnits: toNum(clientQuantity) } : undefined,
       table: { key: selectedTableKey, name: calcTables.find((t) => t.key === selectedTableKey)?.name, columns },
       rows: rows.filter((r) => Object.values(r).some((v) => (v || '').trim())),
@@ -728,7 +728,7 @@ export default function KpGenerator() {
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-            kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
+            kpDate, setKpDate, kpNumbers, setKpNumbers, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
             requestDate, setRequestDate, validityPeriod, setValidityPeriod,
             executors, executorId, setExecutorId,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
@@ -791,7 +791,7 @@ function CreateTab(p: CreateProps) {
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-    kpDate, setKpDate, kpNumber, setKpNumber, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
+    kpDate, setKpDate, kpNumbers, setKpNumbers, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
     requestDate, setRequestDate, validityPeriod, setValidityPeriod,
     executors, executorId, setExecutorId,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
@@ -815,7 +815,7 @@ function CreateTab(p: CreateProps) {
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
     lockBinding: boolean; setLockBinding: (v: boolean) => void;
-    kpDate: string; setKpDate: (v: string) => void; kpNumber: string; setKpNumber: (v: string) => void;
+    kpDate: string; setKpDate: (v: string) => void; kpNumbers: Record<string, string>; setKpNumbers: React.Dispatch<React.SetStateAction<Record<string, string>>>;
     recordRegistry: boolean; setRecordRegistry: (v: boolean) => void;
     requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
     validityPeriod: string; setValidityPeriod: (v: string) => void;
@@ -1041,10 +1041,26 @@ function CreateTab(p: CreateProps) {
               <DatePicker value={kpDate} onChange={setKpDate} placeholder="Сегодня" />
             </div>
             <div className="md:flex-1 min-w-0">
-              {fieldLabel('Номер КП', 'Оставьте пустым — номер сформируется автоматически.')}
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input value={kpNumber} onChange={(e) => setKpNumber(e.target.value)} className={`${input} flex-1`} placeholder="КП-…" disabled={recordRegistry} />
-                <ToggleRow bordered checked={recordRegistry} onChange={setRecordRegistry} className="sm:w-auto shrink-0"
+              {fieldLabel('Номер КП', 'Оставьте пустым — в документе будет «№ б/н».')}
+              <div className="space-y-2">
+                {selectedOrgs.length === 0 && <div className="text-xs text-gray-400 py-2">Выберите организации — для каждой появится своё поле номера.</div>}
+                {selectedOrgs.map((key) => {
+                  const o = orgs.find((x) => x.key === key);
+                  const numbered = o?.writeKpNumber !== false;
+                  return (
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="sm:w-[190px] shrink-0 text-sm text-[#313131] truncate" title={o?.name}>{o?.shortName || o?.name || key}</span>
+                      <input
+                        value={numbered && !recordRegistry ? (kpNumbers[key] || '') : ''}
+                        onChange={(e) => setKpNumbers((m) => ({ ...m, [key]: e.target.value }))}
+                        className={`${input} flex-1`}
+                        placeholder={!numbered ? '№ б/н (в настройках компании)' : recordRegistry ? 'Присвоится из реестра' : '№ б/н'}
+                        disabled={!numbered || recordRegistry}
+                      />
+                    </div>
+                  );
+                })}
+                <ToggleRow bordered checked={recordRegistry} onChange={setRecordRegistry} className="sm:w-auto"
                   hint="При включении номер присваивается автоматически по каждой компании и записывается в реестр.">
                   Записать в реестр
                 </ToggleRow>

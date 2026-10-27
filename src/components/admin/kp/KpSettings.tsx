@@ -542,7 +542,7 @@ function OrgEditor({
         </div>
         <div className="flex items-end gap-4">
           <ToggleRow checked={d.writeKpNumber} onChange={(v) => set({ writeKpNumber: v })}>
-            Писать номер КП/письма
+            Нумеровать КП (номер из реестра или введённый); если номера нет — писать «№ б/н». Выключено — всегда «№ б/н»
           </ToggleRow>
         </div>
       </div>

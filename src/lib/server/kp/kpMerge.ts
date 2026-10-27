@@ -31,7 +31,8 @@ export interface KpFormPayload {
   };
   kp: {
     date?: string; // ISO или пусто → сегодня
-    number?: string; // пусто → автоген
+    number?: string; // пусто → «б/н»
+    numbers?: Record<string, string>; // номер по организациям (orgKey → номер)
     validityPeriod?: string; // «30 дней»
   };
   object?: {
@@ -97,14 +98,6 @@ function shortDateRu(d?: string): string {
   const date = new Date(d);
   if (isNaN(date.getTime())) return d;
   return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`;
-}
-
-function autoKpNumber(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `КП-${y}${m}${day}-001`;
 }
 
 /** «Иванов И.И.» из полного ФИО. */
@@ -234,8 +227,8 @@ export function buildKpContext(input: {
     ? `${fioInitials(signerParsed.first, signerParsed.middle)} ${signerParsed.last}`.trim()
     : "";
 
-  // Номер КП: включён флаг — номер (или авто), выключен — «б/н».
-  const kpNumber = org.writeKpNumber ? payload.kp.number?.trim() || autoKpNumber() : "б/н";
+  // Номер КП: организация нумерует КП — берём введённый/присвоенный номер, иначе «б/н»; не нумерует — всегда «б/н».
+  const kpNumber = (org.writeKpNumber && (payload.kp.number?.trim() || payload.kp.numbers?.[org.key]?.trim())) || "б/н";
 
   const tags: Record<string, string> = {
     // КП
