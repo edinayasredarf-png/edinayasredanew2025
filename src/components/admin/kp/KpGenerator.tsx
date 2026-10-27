@@ -220,6 +220,8 @@ export default function KpGenerator() {
   }, [clientOrgFull]);
 
   // Параметры КП — у каждой выбранной организации свои (дата, номер, срок, запрос заказчика, исполнитель, реестр).
+  // Примечания под таблицей: в документ попадают как «* текст», по строке на примечание.
+  const [notes, setNotes] = useState<string[]>(['']);
   const [orgParams, setOrgParams] = useState<Record<string, OrgParamsUi>>({});
   const patchParams = (key: string, patch: Partial<OrgParamsUi>) =>
     setOrgParams((m) => ({ ...m, [key]: { ...(m[key] ?? DEFAULT_ORG_PARAMS), ...patch } }));
@@ -537,6 +539,7 @@ export default function KpGenerator() {
       },
       kp: { date: paramsOf(selectedOrgs[0] || '').date || undefined, validityPeriod: paramsOf(selectedOrgs[0] || '').validity },
       object: clientQuantity ? { quantityUnits: toNum(clientQuantity) } : undefined,
+      notes: notes.map((n) => n.trim()).filter(Boolean),
       table: { key: selectedTableKey, name: calcTables.find((t) => t.key === selectedTableKey)?.name, columns },
       rows: rows.filter((r) => Object.values(r).some((v) => (v || '').trim())),
       ais: inc.ais ? { licenses: 1 } : undefined,
@@ -741,7 +744,7 @@ export default function KpGenerator() {
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-            paramsOf, patchParams,
+            paramsOf, patchParams, notes, setNotes,
             executors,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
@@ -803,7 +806,7 @@ function CreateTab(p: CreateProps) {
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-    paramsOf, patchParams,
+    paramsOf, patchParams, notes, setNotes,
     executors,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
@@ -827,6 +830,7 @@ function CreateTab(p: CreateProps) {
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
     lockBinding: boolean; setLockBinding: (v: boolean) => void;
     paramsOf: (key: string) => OrgParamsUi; patchParams: (key: string, patch: Partial<OrgParamsUi>) => void;
+    notes: string[]; setNotes: React.Dispatch<React.SetStateAction<string[]>>;
     executors: Executor[];
     calcTables: CalcTableDef[]; selectedTableKey: string; onSelectTable: (k: string) => void;
     columns: CalcColumn[]; setColumns: React.Dispatch<React.SetStateAction<CalcColumn[]>>;
@@ -1127,6 +1131,31 @@ function CreateTab(p: CreateProps) {
             </span>
             <svg className="shrink-0 w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="none" aria-hidden><path d="M7.5 15l5-5-5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
+
+          {/* Примечания под таблицей */}
+          <div>
+            {fieldLabel('Примечания', 'Печатаются под таблицей отдельными строками со звёздочкой (* текст). Кнопка «+» добавляет ещё одну строку.')}
+            <div className="space-y-2">
+              {notes.map((n, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-gray-400 w-3 text-center">*</span>
+                  <input
+                    value={n}
+                    onChange={(e) => setNotes((arr) => arr.map((x, j) => (j === i ? e.target.value : x)))}
+                    className={`${input} flex-1`}
+                    placeholder={i === 0 ? 'Например: стоимость указана без учёта логистики' : 'Ещё одно примечание'}
+                  />
+                  {i === 0 ? (
+                    <button type="button" onClick={() => setNotes((arr) => [...arr, ''])} title="Добавить строку"
+                      className="shrink-0 size-10 grid place-items-center rounded-xl border border-gray-200 text-[#029cda] hover:bg-[#EAF6FC] text-xl leading-none">+</button>
+                  ) : (
+                    <button type="button" onClick={() => setNotes((arr) => arr.filter((_, j) => j !== i))} title="Убрать строку"
+                      className="shrink-0 size-10 grid place-items-center rounded-xl border border-gray-200 text-gray-400 hover:text-red-500 hover:bg-red-50 text-xl leading-none">×</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {tableModalOpen && (

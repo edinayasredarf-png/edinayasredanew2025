@@ -106,10 +106,15 @@ function tableXml(table: KpTableData): string {
   const footerRows = table.footers
     .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, ci === 0 ? "left" : al(ci), true, pct[ci])).join("") + `</w:tr>`)
     .join("");
+  // Примечания под таблицей: каждое отдельным абзацем «* текст» (первое — с небольшим отступом от таблицы).
+  const notes = (table.notes || [])
+    .filter((n) => n && n.trim())
+    .map((n, i) => `<w:p><w:pPr><w:spacing w:before="${i === 0 ? 120 : 0}" w:after="0"/><w:jc w:val="left"/></w:pPr><w:r>${valueToTextRuns("* " + n.trim())}</w:r></w:p>`)
+    .join("");
   return (
     `<w:tbl><w:tblPr><w:tblW w:w="${PCT_TOTAL}" w:type="pct"/><w:jc w:val="center"/>${borders}` +
     `<w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>` +
-    `</w:tblPr>${grid}${headerRow}${bodyRows}${footerRows}</w:tbl>`
+    `</w:tblPr>${grid}${headerRow}${bodyRows}${footerRows}</w:tbl>${notes}`
   );
 }
 

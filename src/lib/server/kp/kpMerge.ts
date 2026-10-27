@@ -42,6 +42,8 @@ export interface KpFormPayload {
   };
   /** Конфигурируемая таблица расчёта: колонки + ключ-алиас. */
   table: { key: string; name?: string; columns: CalcColumn[] };
+  /** Примечания под таблицей — каждое отдельной строкой со звёздочкой. */
+  notes?: string[];
   /** Строки таблицы: карта ключ_колонки → значение. */
   rows: Array<Record<string, string>>;
   ais?: { licenses: number; pricePerLicense: number };
@@ -325,6 +327,8 @@ export function buildKpContext(input: {
 
   // Строка «ВСЕГО с АИС» в подвале таблицы — под каждой денежной колонкой (обе цены).
   const table = ct.data;
+  const notes = (payload.notes || []).map((n) => n.trim().replace(/^\*+\s*/, "")).filter(Boolean);
+  if (notes.length) table.notes = notes;
   if (payload.includes.ais && aisTotal > 0 && ct.moneyCols.length) {
     table.footers.push(
       table.headers.map((_, ci) =>

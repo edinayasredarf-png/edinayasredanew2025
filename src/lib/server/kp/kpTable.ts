@@ -37,6 +37,7 @@ export interface KpTableData {
   weights: number[]; // относительная ширина колонок (для растяжки на всю страницу)
   rows: string[][];
   footers: string[][]; // строки ИТОГО (жирные), совпадают по числу колонок
+  notes?: string[]; // примечания под таблицей (выводятся как «* текст»)
 }
 
 const KIND_WEIGHT: Record<ColKind, number> = {
