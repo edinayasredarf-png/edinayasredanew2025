@@ -3,6 +3,7 @@ import { requireAdminAccess } from "@/lib/server/authFromBearer";
 import { getTimewebPool } from "@/lib/timewebPg";
 import { bitrixCall } from "@/lib/server/bitrix";
 import { voxUrlCandidates } from "@/lib/server/bitrix/entities";
+import { listGatewayModels } from "@/lib/ai/providers/openaiCompat";
 import { enqueueJob } from "@/lib/server/aiSales/jobsDb";
 import { reconcileCalls } from "@/lib/server/aiSales/callReconcile";
 import { bbLink, crmLink, sendBotMessage, whoAmI } from "@/lib/server/bitrix/messenger";
@@ -77,6 +78,20 @@ export async function POST(request: NextRequest) {
     const days = Number((body as { days?: number }).days) || 14;
     const dryRun = (body as { dryRun?: boolean }).dryRun !== false;
     return NextResponse.json({ ok: true, ...(await reconcileCalls({ days, dryRun })) });
+  }
+
+  if (body.action === "llm-models") {
+    // Какие модели сейчас отдаёт шлюз (после «Model is no longer supported» — выбрать рабочую в Настройках).
+    const base = (process.env.SELFHOSTED_LLM_URL || process.env.SELFHOSTED_LLM_BASE_URL || "").trim().replace(/\/+$/, "");
+    if (!base) return NextResponse.json({ ok: false, error: "SELFHOSTED_LLM_URL не задан" });
+    const key = process.env.SELFHOSTED_LLM_API_KEY?.trim();
+    try {
+      const models = await listGatewayModels(base, key ? { Authorization: `Bearer ${key}` } : {});
+      const cfg = await getTimewebPool().query(`select key, value from ai_settings where key like 'ai.model.%' or key = 'ai.provider'`);
+      return NextResponse.json({ ok: true, models, configured: Object.fromEntries(cfg.rows.map((r) => [r.key, r.value])) });
+    } catch (e) {
+      return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) });
+    }
   }
 
   if (body.action === "stt-debug") {

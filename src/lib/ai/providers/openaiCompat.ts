@@ -84,6 +84,42 @@ function extractJson(text: string): unknown | null {
   return null; // до конца текста скобки не сбалансировались — объект оборван (упёрлись в max_tokens)
 }
 
+/** Модель снята с обслуживания шлюзом («Model is no longer supported»): HTTP 410/404/400 с таким текстом. */
+const MODEL_GONE_RE = /no longer supported|model[^"]{0,40}(not found|does not exist|deprecated|unavailable)|unknown model|invalid model/i;
+
+// Заменители снятых моделей (запрошенная → найденная), помним на время работы инстанса.
+const substituteCache = new Map<string, { model: string; at: number }>();
+const SUBSTITUTE_TTL_MS = 30 * 60_000;
+
+/** Список моделей шлюза и подбор замены снятой: та же «семья» (deepseek/…), иначе любая подходящая текстовая модель. */
+export async function listGatewayModels(base: string, headers: Record<string, string>): Promise<string[]> {
+  const res = await fetch(`${base}/models`, { headers, signal: AbortSignal.timeout(8_000) });
+  if (!res.ok) throw new Error(`models ${res.status}`);
+  const j = (await res.json()) as { data?: Array<{ id?: string }> };
+  return (j.data ?? []).map((m) => String(m.id || "")).filter(Boolean);
+}
+
+function pickSubstitute(all: string[], bad: string): string | null {
+  const chat = all.filter((id) => id !== bad && !/embed|whisper|tts|rerank|image|moderation|stt|speech|vision-only|dall|flux|sdxl/i.test(id));
+  if (!chat.length) return null;
+  const family = bad.includes("/") ? bad.split("/")[0].toLowerCase() : "";
+  const score = (id: string) => {
+    const l = id.toLowerCase();
+    let sc = 0;
+    if (family && l.startsWith(`${family}/`)) sc += 100;
+    if (/flash|chat|turbo|mini|lite|fast/.test(l)) sc += 20;
+    if (/latest/.test(l)) sc += 10;
+    const pref = ["deepseek", "gemini", "qwen", "gpt", "claude", "glm", "kimi", "llama", "mistral"];
+    const pi = pref.findIndex((x) => l.includes(x));
+    if (pi >= 0) sc += 10 - pi;
+    // Новее — лучше: берём наибольшую версию в названии (v4 > v3).
+    const v = l.match(/v?(\d+(?:\.\d+)?)/);
+    if (v) sc += Math.min(5, parseFloat(v[1]) / 2);
+    return sc;
+  };
+  return [...chat].sort((a, b) => score(b) - score(a))[0] ?? null;
+}
+
 export class OpenAiCompatProvider implements AiProvider {
   readonly name = "selfhosted";
   readonly defaultModel: string;
@@ -109,7 +145,10 @@ export class OpenAiCompatProvider implements AiProvider {
 
   async generateStructured<T>(req: StructuredRequest<T>): Promise<StructuredResult<T>> {
     const { endpoint, apiKey } = this.cfg();
-    const model = req.model || this.defaultModel;
+    const requestedModel = req.model || this.defaultModel;
+    const cachedSub = substituteCache.get(requestedModel);
+    let model = cachedSub && Date.now() - cachedSub.at < SUBSTITUTE_TTL_MS ? cachedSub.model : requestedModel;
+    let substituted = model !== requestedModel;
 
     const system =
       req.system +
@@ -175,6 +214,23 @@ export class OpenAiCompatProvider implements AiProvider {
 
       if (!res.ok) {
         const detail = await res.text().catch(() => "");
+        // Шлюз снял модель с обслуживания — подбираем замену из его списка и повторяем запрос (один раз за вызов).
+        if ((res.status === 410 || res.status === 404 || res.status === 400) && !substituted && MODEL_GONE_RE.test(detail)) {
+          try {
+            const base = endpoint.replace(/\/chat\/completions$/, "");
+            const sub = pickSubstitute(await listGatewayModels(base, headers), model);
+            if (sub) {
+              console.error(`[openaiCompat] модель «${model}» снята шлюзом (${res.status}); заменяю на «${sub}»`);
+              substituteCache.set(requestedModel, { model: sub, at: Date.now() });
+              model = sub;
+              substituted = true;
+              attempt--; // замена — не расходует попытку
+              continue;
+            }
+          } catch (e) {
+            lastErr = new Error(`Свой LLM ${res.status}: модель «${model}» снята, список моделей шлюза недоступен (${(e as Error).message})`);
+          }
+        }
         if (res.status >= 400 && res.status < 500 && res.status !== 429) {
           throw new Error(`Свой LLM ${res.status}: ${detail.slice(0, 300)}`);
         }
