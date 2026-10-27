@@ -227,7 +227,8 @@ export default function KpGenerator() {
   ]);
   const [notes, setNotes] = useState<string[]>(['']);
   // Таблица расчёта, отредактированная для отдельной компании (orgKey → строки); пока нет правок — общая таблица с ценами компании.
-  const [orgTables, setOrgTables] = useState<Record<string, RowData[]>>({});
+  // Общие поля (территория, кадастровый номер, площадь…) едины для всех компаний; у компании свои только цены: orgTables[орг][id строки] = её цены.
+  const [orgTables, setOrgTables] = useState<Record<string, Record<string, RowData>>>({});
   const [orgParams, setOrgParams] = useState<Record<string, OrgParamsUi>>({});
   const patchParams = (key: string, patch: Partial<OrgParamsUi>) =>
     setOrgParams((m) => ({ ...m, [key]: { ...(m[key] ?? DEFAULT_ORG_PARAMS), ...patch } }));
@@ -450,16 +451,59 @@ export default function KpGenerator() {
     return out;
   }, [tiers]);
 
-  // Таблица компании: свои правки, иначе общая таблица с ценами этой компании.
-  const rowsForOrg = useCallback(
-    (key: string): RowData[] => orgTables[key] ?? rows.map((r) => priceRowFor(r, key)),
-    [orgTables, rows, priceRowFor]
+  // Колонки с ценой/стоимостью — у каждой компании свои; всё остальное в таблице едино для всех.
+  const isPriceKey = useCallback(
+    (k: string) => {
+      if (k === '__p' || k === '__pd' || k === '__pt') return true;
+      const c = columns.find((x) => x.key === k);
+      return Boolean(c && (c.money || c.isCost)) || ['cost', 'cost_direct', 'cost_tender', 'unit_price', 'price', 'price_direct', 'price_tender'].includes(k);
+    },
+    [columns]
   );
-  const setOrgRows = (key: string, upd: React.SetStateAction<RowData[]>) =>
-    setOrgTables((m) => {
-      const cur = m[key] ?? rows.map((r) => priceRowFor(r, key));
-      return { ...m, [key]: typeof upd === 'function' ? (upd as (p: RowData[]) => RowData[])(cur) : upd };
-    });
+
+  // Таблица компании = общая таблица + цены этой компании (из тарифа, поверх — её ручные правки цен).
+  const buildOrgRows = useCallback(
+    (key: string, shared: RowData[], ot: Record<string, Record<string, RowData>>): RowData[] =>
+      shared.map((r) => {
+        const own = r.__id ? ot[key]?.[r.__id as string] : undefined;
+        const base = priceRowFor(r, key);
+        return own ? { ...base, ...own } : base;
+      }),
+    [priceRowFor]
+  );
+  const rowsForOrg = useCallback((key: string): RowData[] => buildOrgRows(key, rows, orgTables), [buildOrgRows, rows, orgTables]);
+
+  const latest = useRef({ rows, orgTables });
+  latest.current = { rows, orgTables };
+  const idSeq = useRef(0);
+  const newRowId = () => `r${Date.now().toString(36)}${(idSeq.current++).toString(36)}`;
+
+  // Правка таблицы в окне компании: общие поля — в общую таблицу (увидят все компании), цены — только этой компании.
+  const setOrgRows = (key: string, upd: React.SetStateAction<RowData[]>) => {
+    const { rows: shared, orgTables: ot } = latest.current;
+    const cur = buildOrgRows(key, shared, ot);
+    const next = typeof upd === 'function' ? (upd as (p: RowData[]) => RowData[])(cur) : upd;
+    const byId = new Map(shared.filter((r) => r.__id).map((r) => [r.__id as string, r]));
+    const newShared: RowData[] = [];
+    const mine: Record<string, RowData> = {};
+    for (const [ri, row] of next.entries()) {
+      const id = (row.__id as string) || newRowId();
+      // Строки без id (таблица ещё не правилась по компаниям) сопоставляем по порядку — чтобы не потерять общие значения.
+      const prev = row.__id ? byId.get(id) : shared[ri] && !shared[ri].__id ? shared[ri] : undefined;
+      const sharedRow: RowData = { ...(prev ?? {}), __id: id };
+      for (const [k, v] of Object.entries(row)) if (k !== '__id' && !isPriceKey(k)) sharedRow[k] = v;
+      newShared.push(sharedRow);
+      // Цены, отличающиеся от тарифа компании, запоминаем как её собственные.
+      const base = priceRowFor(sharedRow, key);
+      const diff: RowData = {};
+      for (const [k, v] of Object.entries(row)) if (isPriceKey(k) && (base[k] ?? '') !== (v ?? '')) diff[k] = v;
+      if (Object.keys(diff).length) mine[id] = diff;
+    }
+    const nextOt = { ...ot, [key]: mine };
+    latest.current = { rows: newShared, orgTables: nextOt };
+    setRows(newShared);
+    setOrgTables(nextOt);
+  };
   const scopeFor = (key: string) => {
     const t = tierFor(key);
     return {
@@ -589,7 +633,7 @@ export default function KpGenerator() {
     orgKeys: selectedOrgs,
     executorId: paramsOf(selectedOrgs[0] || '').executorId || undefined,
     recordRegistry: paramsOf(selectedOrgs[0] || '').record,
-    orgTables: Object.fromEntries(selectedOrgs.filter((k) => orgTables[k]).map((k) => [k, orgTables[k]])),
+    orgTables: Object.fromEntries(selectedOrgs.filter((k) => orgTables[k] && Object.keys(orgTables[k]).length).map((k) => [k, rowsForOrg(k)])),
     orgParams: Object.fromEntries(selectedOrgs.map((k) => {
       const p = paramsOf(k);
       return [k, {
@@ -874,7 +918,7 @@ function CreateTab(p: CreateProps) {
     notes: string[]; setNotes: React.Dispatch<React.SetStateAction<string[]>>;
     presetNotes: Array<{ on: boolean; text: string }>; setPresetNotes: React.Dispatch<React.SetStateAction<Array<{ on: boolean; text: string }>>>;
     rowsForOrg: (key: string) => RowData[]; setOrgRows: (key: string, upd: React.SetStateAction<RowData[]>) => void; scopeFor: (key: string) => { price: number; price_direct: number; price_tender: number; min_ha: number };
-    orgTables: Record<string, RowData[]>; setOrgTables: React.Dispatch<React.SetStateAction<Record<string, RowData[]>>>;
+    orgTables: Record<string, Record<string, RowData>>; setOrgTables: React.Dispatch<React.SetStateAction<Record<string, Record<string, RowData>>>>;
     executors: Executor[];
     calcTables: CalcTableDef[]; selectedTableKey: string; onSelectTable: (k: string) => void;
     columns: CalcColumn[]; setColumns: React.Dispatch<React.SetStateAction<CalcColumn[]>>;
@@ -1174,7 +1218,7 @@ function CreateTab(p: CreateProps) {
                 return (
                   <button key={k} type="button" onClick={() => setTableOrgSel(k)}
                     className={`px-3 py-1.5 rounded-lg text-sm transition ${active ? 'bg-white text-[#1b2a4a] shadow-sm' : 'text-gray-500 hover:text-[#1b2a4a]'}`}>
-                    {o?.shortName || o?.name || k}{orgTables[k] ? ' •' : ''}
+                    {o?.shortName || o?.name || k}{orgTables[k] && Object.keys(orgTables[k]).length ? ' •' : ''}
                   </button>
                 );
               })}
@@ -1189,15 +1233,15 @@ function CreateTab(p: CreateProps) {
               <span className="block text-sm font-medium text-[#1b2a4a] truncate">
                 {calcTables.find((t) => t.key === selectedTableKey)?.name || 'Выберите таблицу'}
               </span>
-              <span className="block text-xs text-gray-400">{tableRows.length} {tableRows.length === 1 ? 'строка' : 'строк'} · Настроить{tableOrg && orgTables[tableOrg] ? ' · изменена вручную' : ''}</span>
+              <span className="block text-xs text-gray-400">{tableRows.length} {tableRows.length === 1 ? 'строка' : 'строк'} · Настроить{tableOrg && orgTables[tableOrg] && Object.keys(orgTables[tableOrg]).length ? ' · свои цены' : ''}</span>
             </span>
             <svg className="shrink-0 w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="none" aria-hidden><path d="M7.5 15l5-5-5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
 
-          {tableOrg && orgTables[tableOrg] && (
+          {tableOrg && orgTables[tableOrg] && Object.keys(orgTables[tableOrg]).length > 0 && (
             <button type="button" className="text-xs text-[#029cda] hover:underline"
               onClick={() => setOrgTables((m) => { const n = { ...m }; delete n[tableOrg]; return n; })}>
-              Сбросить правки таблицы для «{orgs.find((x) => x.key === tableOrg)?.shortName || tableOrg}» (вернуть общую)
+              Сбросить ручные цены для «{orgs.find((x) => x.key === tableOrg)?.shortName || tableOrg}» (вернуть цены из тарифа)
             </button>
           )}
 
