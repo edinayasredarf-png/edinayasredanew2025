@@ -260,6 +260,8 @@ const RichTextToolbar = () => (
 type Props = {
   initialHtml?: string;
   onChange?: (html: string) => void;
+  /** Режим «лист A4»: серое поле и белая страница 210 мм с полями документа — для шаблонов КП. */
+  paper?: boolean;
 };
 
 type PendingEdit = {
@@ -269,7 +271,7 @@ type PendingEdit = {
   reject: (err: unknown) => void;
 };
 
-export default function RichEditor({ initialHtml = '', onChange }: Props) {
+export default function RichEditor({ initialHtml = '', onChange, paper = false }: Props) {
   const onChangeRef = React.useRef(onChange);
   onChangeRef.current = onChange;
 
@@ -342,11 +344,19 @@ export default function RichEditor({ initialHtml = '', onChange }: Props) {
   return (
     <RichTextProvider editor={editor}>
       {/* Подпись нумерации/вставок шаблонов .docx — только для показа, в текст не попадает. */}
-      <style>{`.ProseMirror p[data-kp-num]::before{content:attr(data-kp-num) " ";color:#6b7280;margin-right:.35em;user-select:none}`}</style>
+      <style>{`.kp-paper .ProseMirror{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.15;outline:none;min-height:250mm}.kp-paper .ProseMirror p{margin:0}.ProseMirror p[data-kp-num]::before{content:attr(data-kp-num) " ";color:#6b7280;margin-right:.35em;user-select:none}`}</style>
       <div className="overflow-hidden rounded-lg border border-border bg-background">
         <div className="flex max-h-full w-full flex-col">
           <RichTextToolbar />
-          <EditorContent editor={editor} className="min-h-[400px] p-4" />
+          {paper ? (
+            <div className="kp-paper-wrap bg-gray-100 py-6 px-2 overflow-x-auto">
+              <div className="kp-paper mx-auto bg-white shadow-md border border-gray-200" style={{ width: '210mm', minHeight: '297mm', padding: '20mm 15mm 20mm 30mm', boxSizing: 'border-box' }}>
+                <EditorContent editor={editor} />
+              </div>
+            </div>
+          ) : (
+            <EditorContent editor={editor} className="min-h-[400px] p-4" />
+          )}
 
           <RichTextBubbleColumns />
           <RichTextBubbleIframe />

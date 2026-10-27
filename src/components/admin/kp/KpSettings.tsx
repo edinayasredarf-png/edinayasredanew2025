@@ -104,7 +104,7 @@ export default function KpSettings({
       })}
 
       {open === 'templates' && (
-        <Modal title="Шаблоны" onClose={close} maxWidth="max-w-5xl">
+        <Modal title="Шаблоны" onClose={close} maxWidth="max-w-[1480px]">
           <TemplatesTab orgs={orgs} serviceTypes={serviceTypes} templates={templates} aliases={aliases} onChanged={onChanged} setStatus={setStatus} />
         </Modal>
       )}
@@ -1332,6 +1332,8 @@ interface TemplateDraft {
   orgKey: string;
   bodyHtml: string;
   skipAuto: boolean;
+  /** Шаблон когда-то сохранён в упрощённом виде, а исходный .docx ещё хранится — можно вернуть. */
+  restorable?: boolean;
 }
 
 function TemplatesTab({
@@ -1357,7 +1359,7 @@ function TemplatesTab({
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'Ошибка');
       const t = d.template;
-      setDraft({ id: t.id, name: t.name, serviceType: t.serviceType, orgKey: t.orgKey || '', bodyHtml: t.bodyHtml || '', skipAuto: t.skipAutoBlocks });
+      setDraft({ id: t.id, name: t.name, serviceType: t.serviceType, orgKey: t.orgKey || '', bodyHtml: t.bodyHtml || '', skipAuto: t.skipAutoBlocks, restorable: t.source === 'html' && Boolean(t.hasDocx) });
     } catch (e) {
       setStatus((e as Error).message);
     }
@@ -1422,8 +1424,8 @@ function TemplatesTab({
 
   if (draft) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-4">
+        <div className="space-y-3 min-w-0">
           <div className="text-sm font-semibold text-[#1b2a4a]">{draft.id ? 'Редактирование шаблона' : 'Новый шаблон'}</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
@@ -1439,10 +1441,19 @@ function TemplatesTab({
               <Select value={draft.orgKey} onChange={(v) => setDraft({ ...draft, orgKey: v })} placeholder="Для всех компаний" options={[{ value: '', label: 'Для всех компаний' }, ...orgs.map((o) => ({ value: o.key, label: o.name }))]} />
             </div>
           </div>
+          {draft.restorable && draft.id && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Этот шаблон раньше был сохранён в упрощённом виде — оформление исходного файла (шрифты, отступы, нумерация) утрачено.{' '}
+              <button type="button" className="underline font-medium" onClick={async () => { await restoreDocx(draft.id!); await openEdit(draft.id!); }}>
+                Вернуть исходный .docx
+              </button>{' '}
+              и править текст уже без потери оформления.
+            </div>
+          )}
           <div>
             <div className={label}>Тело шаблона (форматируйте как в Word; вставляйте алиасы {'{{...}}'} из панели справа)</div>
             <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-              <RichEditor key={draft.id || 'new'} initialHtml={draft.bodyHtml} onChange={(html) => setDraft((d) => (d ? { ...d, bodyHtml: html } : d))} />
+              <RichEditor key={draft.id || 'new'} paper initialHtml={draft.bodyHtml} onChange={(html) => setDraft((d) => (d ? { ...d, bodyHtml: html } : d))} />
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm text-[#313131] cursor-pointer">
