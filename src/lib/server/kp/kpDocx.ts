@@ -347,7 +347,10 @@ function autoExecutorBlock(fio?: string, phone?: string): string {
   const parts = [`Исполнитель: ${fio.trim()}`];
   if (phone && phone.trim()) parts.push(`тел. ${phone.trim()}`);
   const text = parts.join(", ");
-  return `<w:p/><w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r>${valueToTextRuns(text)}</w:r></w:p>`;
+  // Рамка у нижнего поля: строка исполнителя всегда внизу последнего листа (как принято в деловых письмах),
+  // а не сразу под подписью. Рамка привязана к абзацу в конце документа, поэтому попадает на последнюю страницу.
+  const frame = '<w:framePr w:w="9000" w:hSpace="0" w:wrap="around" w:vAnchor="margin" w:hAnchor="margin" w:xAlign="left" w:yAlign="bottom"/>';
+  return `<w:p><w:pPr>${frame}<w:jc w:val="left"/></w:pPr><w:r>${valueToTextRuns(text)}</w:r></w:p><w:p/>`;
 }
 
 /* ─────────────── Единый шрифт ─────────────── */
