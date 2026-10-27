@@ -52,6 +52,17 @@ async function orgImages(org: KpOrganization): Promise<KpImage[]> {
   return out;
 }
 
+/** Параметры КП отдельно для организации (у каждой своя дата, номер, срок, запрос заказчика, исполнитель). */
+export interface KpOrgParams {
+  date?: string;
+  number?: string;
+  validityPeriod?: string;
+  requestNumber?: string;
+  requestDate?: string;
+  executorId?: number;
+  recordRegistry?: boolean;
+}
+
 /** Запрос генерации: одна форма (клиент + расчёт) → несколько организаций. */
 export interface KpGenerateRequest {
   form: KpFormPayload;
@@ -59,6 +70,8 @@ export interface KpGenerateRequest {
   executorId?: number;
   /** Записать в реестр КП и присвоить № по каждой компании. */
   recordRegistry?: boolean;
+  /** Параметры по организациям (orgKey → параметры); не заданное берётся из общих полей запроса. */
+  orgParams?: Record<string, KpOrgParams>;
 }
 
 function todayYmd(): string {
@@ -99,7 +112,12 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
   const docs: KpBuiltDoc[] = [];
   const errors: Array<{ orgKey: string; message: string }> = [];
 
-  const executor = req.executorId ? await dbGetExecutor(req.executorId) : null;
+  const executorCache = new Map<number, Awaited<ReturnType<typeof dbGetExecutor>>>();
+  const getExecutor = async (id?: number) => {
+    if (!id) return null;
+    if (!executorCache.has(id)) executorCache.set(id, await dbGetExecutor(id));
+    return executorCache.get(id) ?? null;
+  };
   const serviceType = req.form.serviceType;
   const [headerLayout, customAliases, docStyle] = await Promise.all([
     dbGetHeaderLayout(),
@@ -114,6 +132,10 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         errors.push({ orgKey, message: "Организация не найдена" });
         continue;
       }
+
+      const op = req.orgParams?.[orgKey];
+      const executor = await getExecutor(op?.executorId ?? req.executorId);
+      const doRegistry = op?.recordRegistry ?? req.recordRegistry;
 
       const tierRow = await dbResolveComposedTier(orgKey, serviceType);
       const tier: PriceTier = tierRow
@@ -154,7 +176,7 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
 
       // Реестр КП: присваиваем № по компании (если попросили и номер пишется).
       let assignedNumber: number | undefined;
-      if (req.recordRegistry && org.writeKpNumber) {
+      if (doRegistry && org.writeKpNumber) {
         assignedNumber = await dbNextRegistryNumber(orgKey);
       }
 
@@ -162,7 +184,17 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       const form: KpFormPayload = {
         ...req.form,
         rows: pricedRows,
-        kp: { ...req.form.kp, number: assignedNumber ? String(assignedNumber) : req.form.kp?.numbers?.[orgKey]?.trim() || req.form.kp?.number },
+        client: {
+          ...req.form.client,
+          requestNumber: op?.requestNumber ?? req.form.client?.requestNumber,
+          requestDate: op?.requestDate ?? req.form.client?.requestDate,
+        },
+        kp: {
+          ...req.form.kp,
+          date: op?.date || req.form.kp?.date,
+          validityPeriod: op?.validityPeriod || req.form.kp?.validityPeriod,
+          number: assignedNumber ? String(assignedNumber) : op?.number?.trim() || req.form.kp?.numbers?.[orgKey]?.trim() || req.form.kp?.number,
+        },
         ais: req.form.ais?.pricePerLicense
           ? req.form.ais
           : { licenses: req.form.ais?.licenses ?? 1, pricePerLicense: tier.aisPrice },
@@ -211,13 +243,13 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       });
 
       // Авто-запись строки реестра с данными формы.
-      if (req.recordRegistry && assignedNumber) {
-        const cl = req.form.client as { position?: string; fioFull?: string };
+      if (doRegistry && assignedNumber) {
+        const cl = form.client as { position?: string; fioFull?: string };
         const addressee = [cl.position, cl.fioFull].map((s) => (s || "").trim()).filter(Boolean).join(" ");
         await dbAddRegistryRow({
           orgKey,
           number: assignedNumber,
-          letterDate: (req.form.kp?.date || "").trim() || todayYmd(),
+          letterDate: (form.kp?.date || "").trim() || todayYmd(),
           addressee,
           subject: `КП ${serviceType}`,
           executor: executor?.fio || "",

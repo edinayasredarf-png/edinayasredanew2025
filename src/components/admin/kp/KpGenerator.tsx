@@ -23,6 +23,9 @@ import KpAutocomplete from './KpAutocomplete';
 import type { Organization, Tier, Executor, TemplateMeta, HistoryRow, PriceMode, ServiceType, HeaderLayout, DocStyle, Alias, CalcColumn, CalcTableDef, RowData } from './types';
 
 /* ─────────────── Утилиты расчёта (клиентские, для превью) ─────────────── */
+interface OrgParamsUi { date: string; number: string; validity: string; record: boolean; reqNumber: string; reqDate: string; executorId: number | '' }
+const DEFAULT_ORG_PARAMS: OrgParamsUi = { date: '', number: '', validity: '30 дней', record: false, reqNumber: '', reqDate: '', executorId: '' };
+
 function toNum(v: string | number | undefined): number {
   if (v == null) return 0;
   if (typeof v === 'number') return isFinite(v) ? v : 0;
@@ -216,13 +219,11 @@ export default function KpGenerator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientOrgFull]);
 
-  const [kpDate, setKpDate] = useState('');
-  const [kpNumbers, setKpNumbers] = useState<Record<string, string>>({});
-  const [recordRegistry, setRecordRegistry] = useState(false);
-  const [requestNumber, setRequestNumber] = useState('');
-  const [requestDate, setRequestDate] = useState('');
-  const [validityPeriod, setValidityPeriod] = useState('30 дней');
-  const [executorId, setExecutorId] = useState<number | ''>('');
+  // Параметры КП — у каждой выбранной организации свои (дата, номер, срок, запрос заказчика, исполнитель, реестр).
+  const [orgParams, setOrgParams] = useState<Record<string, OrgParamsUi>>({});
+  const patchParams = (key: string, patch: Partial<OrgParamsUi>) =>
+    setOrgParams((m) => ({ ...m, [key]: { ...(m[key] ?? DEFAULT_ORG_PARAMS), ...patch } }));
+  const paramsOf = (key: string): OrgParamsUi => orgParams[key] ?? DEFAULT_ORG_PARAMS;
 
   const [calcTables, setCalcTables] = useState<CalcTableDef[]>([]);
   const [selectedTableKey, setSelectedTableKey] = useState('');
@@ -531,10 +532,10 @@ export default function KpGenerator() {
         territory: clientTerritory || undefined,
         areaTotal: clientAreaTotal || undefined,
         salutation: salutation || undefined,
-        requestNumber: requestNumber || undefined,
-        requestDate: requestDate || undefined,
+        requestNumber: paramsOf(selectedOrgs[0] || '').reqNumber || undefined,
+        requestDate: paramsOf(selectedOrgs[0] || '').reqDate || undefined,
       },
-      kp: { date: kpDate || undefined, numbers: Object.fromEntries(selectedOrgs.map((k) => [k, (kpNumbers[k] || '').trim()]).filter(([, v]) => v)), validityPeriod },
+      kp: { date: paramsOf(selectedOrgs[0] || '').date || undefined, validityPeriod: paramsOf(selectedOrgs[0] || '').validity },
       object: clientQuantity ? { quantityUnits: toNum(clientQuantity) } : undefined,
       table: { key: selectedTableKey, name: calcTables.find((t) => t.key === selectedTableKey)?.name, columns },
       rows: rows.filter((r) => Object.values(r).some((v) => (v || '').trim())),
@@ -543,8 +544,20 @@ export default function KpGenerator() {
     },
     bitrix: uploadToBitrix && dealId ? { dealId, upload: true } : undefined,
     orgKeys: selectedOrgs,
-    executorId: executorId || undefined,
-    recordRegistry,
+    executorId: paramsOf(selectedOrgs[0] || '').executorId || undefined,
+    recordRegistry: paramsOf(selectedOrgs[0] || '').record,
+    orgParams: Object.fromEntries(selectedOrgs.map((k) => {
+      const p = paramsOf(k);
+      return [k, {
+        date: p.date || undefined,
+        number: p.number.trim() || undefined,
+        validityPeriod: p.validity || undefined,
+        requestNumber: p.reqNumber || undefined,
+        requestDate: p.reqDate || undefined,
+        executorId: p.executorId || undefined,
+        recordRegistry: p.record,
+      }];
+    })),
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -728,9 +741,8 @@ export default function KpGenerator() {
             clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-            kpDate, setKpDate, kpNumbers, setKpNumbers, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
-            requestDate, setRequestDate, validityPeriod, setValidityPeriod,
-            executors, executorId, setExecutorId,
+            paramsOf, patchParams,
+            executors,
             calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
             onTablesChanged: loadMeta, onImportedTable, setStatus,
             perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, libAttachments, busy,
@@ -791,9 +803,8 @@ function CreateTab(p: CreateProps) {
     clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
-    kpDate, setKpDate, kpNumbers, setKpNumbers, recordRegistry, setRecordRegistry, requestNumber, setRequestNumber,
-    requestDate, setRequestDate, validityPeriod, setValidityPeriod,
-    executors, executorId, setExecutorId,
+    paramsOf, patchParams,
+    executors,
     calcTables, selectedTableKey, onSelectTable, columns, setColumns, rows, setRows, previewScope,
     onTablesChanged, onImportedTable, setStatus,
     perOrgTotals, priceWarnings, computePreview, fetchDocPreview, generate, sendEmail, mailAccounts, libAttachments, busy,
@@ -815,11 +826,8 @@ function CreateTab(p: CreateProps) {
     deals: Array<{ id: string; title: string; stage?: string }>; dealId: string; setDealId: (v: string) => void;
     uploadToBitrix: boolean; setUploadToBitrix: (v: boolean) => void;
     lockBinding: boolean; setLockBinding: (v: boolean) => void;
-    kpDate: string; setKpDate: (v: string) => void; kpNumbers: Record<string, string>; setKpNumbers: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-    recordRegistry: boolean; setRecordRegistry: (v: boolean) => void;
-    requestNumber: string; setRequestNumber: (v: string) => void; requestDate: string; setRequestDate: (v: string) => void;
-    validityPeriod: string; setValidityPeriod: (v: string) => void;
-    executors: Executor[]; executorId: number | ''; setExecutorId: (v: number | '') => void;
+    paramsOf: (key: string) => OrgParamsUi; patchParams: (key: string, patch: Partial<OrgParamsUi>) => void;
+    executors: Executor[];
     calcTables: CalcTableDef[]; selectedTableKey: string; onSelectTable: (k: string) => void;
     columns: CalcColumn[]; setColumns: React.Dispatch<React.SetStateAction<CalcColumn[]>>;
     rows: RowData[]; setRows: React.Dispatch<React.SetStateAction<RowData[]>>;
@@ -1030,69 +1038,78 @@ function CreateTab(p: CreateProps) {
           </div>
         </div>
 
-        {/* Параметры КП */}
-        <div className={panel}>
-          <div className="text-sm font-semibold text-[#1b2a4a]">Параметры КП</div>
+        {/* Параметры КП — отдельный блок для каждой выбранной организации */}
+        {(selectedOrgs.length ? selectedOrgs : ['']).map((key, idx) => {
+          const o = orgs.find((x) => x.key === key);
+          const p = paramsOf(key);
+          const numbered = !o || o.writeKpNumber !== false;
+          const upd = (patch: Partial<OrgParamsUi>) => key && patchParams(key, patch);
+          return (
+            <div key={key || 'none'} className={panel}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-semibold text-[#1b2a4a]">
+                  Параметры КП{o ? ` (${o.shortName || o.name})` : ''}
+                </div>
+                {idx > 0 && key && (
+                  <button type="button" className="text-xs text-[#029cda] hover:underline"
+                    onClick={() => { const f = paramsOf(selectedOrgs[0]); patchParams(key, { date: f.date, validity: f.validity, reqNumber: f.reqNumber, reqDate: f.reqDate, executorId: f.executorId }); }}>
+                    Скопировать из «{orgs.find((x) => x.key === selectedOrgs[0])?.shortName || 'первой'}»
+                  </button>
+                )}
+              </div>
+              {!o && <div className="text-xs text-gray-400">Выберите организации — для каждой появится свой блок параметров.</div>}
 
-          {/* Дата · Номер (+реестр) · Срок */}
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="md:w-[200px] shrink-0">
-              {fieldLabel('Дата КП', 'Оставьте пустым — подставится сегодняшняя дата.')}
-              <DatePicker value={kpDate} onChange={setKpDate} placeholder="Сегодня" />
-            </div>
-            <div className="md:flex-1 min-w-0">
-              {fieldLabel('Номер КП', 'Оставьте пустым — в документе будет «№ б/н».')}
-              <div className="space-y-2">
-                {selectedOrgs.length === 0 && <div className="text-xs text-gray-400 py-2">Выберите организации — для каждой появится своё поле номера.</div>}
-                {selectedOrgs.map((key) => {
-                  const o = orgs.find((x) => x.key === key);
-                  const numbered = o?.writeKpNumber !== false;
-                  return (
-                    <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="sm:w-[190px] shrink-0 text-sm text-[#313131] truncate" title={o?.name}>{o?.shortName || o?.name || key}</span>
-                      <input
-                        value={numbered && !recordRegistry ? (kpNumbers[key] || '') : ''}
-                        onChange={(e) => setKpNumbers((m) => ({ ...m, [key]: e.target.value }))}
-                        className={`${input} flex-1`}
-                        placeholder={!numbered ? '№ б/н (в настройках компании)' : recordRegistry ? 'Присвоится из реестра' : '№ б/н'}
-                        disabled={!numbered || recordRegistry}
-                      />
-                    </div>
-                  );
-                })}
-                <ToggleRow bordered checked={recordRegistry} onChange={setRecordRegistry} className="sm:w-auto"
-                  hint="При включении номер присваивается автоматически по каждой компании и записывается в реестр.">
-                  Записать в реестр
-                </ToggleRow>
+              {/* Дата · Номер (+реестр) · Срок */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="md:w-[200px] shrink-0">
+                  {fieldLabel('Дата КП', 'Оставьте пустым — подставится сегодняшняя дата.')}
+                  <DatePicker value={p.date} onChange={(v) => upd({ date: v })} placeholder="Сегодня" />
+                </div>
+                <div className="md:flex-1 min-w-0">
+                  {fieldLabel('Номер КП', 'Оставьте пустым — в документе будет «№ б/н».')}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      value={numbered && !p.record ? p.number : ''}
+                      onChange={(e) => upd({ number: e.target.value })}
+                      className={`${input} flex-1`}
+                      placeholder={!numbered ? '№ б/н (в настройках компании)' : p.record ? 'Присвоится из реестра' : '№ б/н'}
+                      disabled={!numbered || p.record}
+                    />
+                    <ToggleRow bordered checked={p.record} onChange={(v) => upd({ record: v })} className="sm:w-auto shrink-0"
+                      hint="При включении номер присваивается автоматически и записывается в реестр.">
+                      Записать в реестр
+                    </ToggleRow>
+                  </div>
+                </div>
+                <div className="md:w-[170px] shrink-0">
+                  {fieldLabel('Срок действия')}
+                  <input value={p.validity} onChange={(e) => upd({ validity: e.target.value })} className={input} placeholder="30 дней" />
+                </div>
+              </div>
+
+              {/* Запрос заказчика · Исполнитель */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  {fieldLabel('№ запроса заказчика', 'Если КП делается в ответ на входящий запрос — его номер попадёт в шапку.')}
+                  <input value={p.reqNumber} onChange={(e) => upd({ reqNumber: e.target.value })} className={input} />
+                </div>
+                <div>
+                  {fieldLabel('Дата запроса заказчика', 'Дата входящего запроса заказчика (для шапки письма).')}
+                  <DatePicker value={p.reqDate} onChange={(v) => upd({ reqDate: v })} placeholder="Дата запроса" />
+                </div>
+                <div>
+                  {fieldLabel('Исполнитель (менеджер)', 'Менеджер-исполнитель — попадёт в подпись и контакты КП.', true)}
+                  <Select
+                    value={p.executorId ? String(p.executorId) : ''}
+                    onChange={(v) => upd({ executorId: v ? Number(v) : '' })}
+                    placeholder="Выберите…"
+                    options={[{ value: '', label: 'Выберите…' }, ...executors.map((ex) => ({ value: String(ex.id), label: ex.fio }))]}
+                  />
+                </div>
               </div>
             </div>
-            <div className="md:w-[170px] shrink-0">
-              {fieldLabel('Срок действия')}
-              <input value={validityPeriod} onChange={(e) => setValidityPeriod(e.target.value)} className={input} placeholder="30 дней" />
-            </div>
-          </div>
-
-          {/* Запрос заказчика · Исполнитель */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              {fieldLabel('№ запроса заказчика', 'Если КП делается в ответ на входящий запрос — его номер попадёт в шапку.')}
-              <input value={requestNumber} onChange={(e) => setRequestNumber(e.target.value)} className={input} />
-            </div>
-            <div>
-              {fieldLabel('Дата запроса заказчика', 'Дата входящего запроса заказчика (для шапки письма).')}
-              <DatePicker value={requestDate} onChange={setRequestDate} placeholder="Дата запроса" />
-            </div>
-            <div>
-              {fieldLabel('Исполнитель (менеджер)', 'Менеджер-исполнитель — попадёт в подпись и контакты КП.', true)}
-              <Select
-                value={executorId ? String(executorId) : ''}
-                onChange={(v) => setExecutorId(v ? Number(v) : '')}
-                placeholder="Выберите…"
-                options={[{ value: '', label: 'Выберите…' }, ...executors.map((ex) => ({ value: String(ex.id), label: ex.fio }))]}
-              />
-            </div>
-          </div>
-        </div>
+          );
+        })}
 
         {/* Таблица расчёта — конфигурируемая (Excel-стиль); сам редактор открывается в модалке */}
         <div className={panel}>
