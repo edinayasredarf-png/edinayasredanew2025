@@ -61,6 +61,7 @@ export interface TemplateMeta {
   sizeBytes: number;
   skipAutoBlocks: boolean;
   source: string;
+  hasDocx?: boolean;
   updatedAt: string;
 }
 

@@ -1394,6 +1394,14 @@ function TemplatesTab({
     }
   };
 
+  const restoreDocx = async (id: number) => {
+    if (!confirm('Вернуть исходный .docx? Правки текста, сделанные в редакторе до этого, будут потеряны — их можно внести заново, уже без потери оформления.')) return;
+    const res = await fetch('/api/kp/templates', { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, restoreDocx: true }) });
+    const d = await res.json().catch(() => ({}));
+    setStatus(res.ok ? 'Исходный .docx возвращён' : d.error || 'Не удалось вернуть');
+    onChanged();
+  };
+
   const del = async (id: number) => {
     if (!confirm('Удалить шаблон?')) return;
     await fetch(`/api/kp/templates?id=${id}`, { method: 'DELETE', credentials: 'include' });
@@ -1473,6 +1481,11 @@ function TemplatesTab({
                 <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{t.orgKey ? orgs.find((o) => o.key === t.orgKey)?.shortName || t.orgKey : 'общий'}</span>{' '}
                 <span className="text-xs text-gray-400">{t.source === 'html' ? 'редактируемый' : '.docx'}</span>
               </div>
+              {t.source === 'html' && t.hasDocx && (
+                <button onClick={() => restoreDocx(t.id)} className="text-xs text-[#029cda] hover:underline mt-0.5">
+                  Вернуть исходный .docx (с оформлением)
+                </button>
+              )}
               <div className="text-xs text-gray-400 mt-0.5">плейсхолдеров: {t.placeholders.length}</div>
               <label className="flex items-center gap-2 text-xs text-gray-500 mt-1 cursor-pointer">
                 <input type="checkbox" checked={t.skipAutoBlocks} onChange={(e) => toggleSkip(t.id, e.target.checked)} />

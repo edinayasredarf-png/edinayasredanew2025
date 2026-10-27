@@ -8,6 +8,7 @@ import {
   dbInsertTemplate,
   dbListTemplates,
   dbSetTemplateSkipAuto,
+  dbRestoreDocxTemplate,
   dbUpdateTemplate,
   dbUpdateDocxTemplate,
 } from "@/lib/server/kp/kpDb";
@@ -166,6 +167,13 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
   }
   if (!body.id) return NextResponse.json({ error: "Не указан id" }, { status: 400 });
+
+  // Вернуть исходный .docx шаблону, который ранее «превратили» в редактируемый.
+  if ((body as { restoreDocx?: boolean }).restoreDocx) {
+    const ok = await dbRestoreDocxTemplate(body.id);
+    if (!ok) return NextResponse.json({ error: "Исходный .docx не сохранился — загрузите шаблон заново" }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  }
 
   // Редактирование загруженного .docx: правки текста переносим в исходный файл, оформление сохраняется.
   if (typeof body.bodyHtml === "string" && body.serviceType) {

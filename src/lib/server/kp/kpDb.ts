@@ -88,6 +88,8 @@ export interface KpTemplateMeta {
   sizeBytes: number;
   skipAutoBlocks: boolean; // шаблон уже содержит шапку/подписанта — не добавлять авто
   source: string; // 'docx' (загружен) | 'html' (редактируется в админке)
+  /** Сохранён исходный .docx (у шаблонов, превращённых в «редактируемые», его можно вернуть). */
+  hasDocx: boolean;
   updatedAt: string;
 }
 
@@ -1312,6 +1314,7 @@ function mapTemplateMeta(r: Record<string, unknown>): KpTemplateMeta {
     sizeBytes: Number(r.size_bytes ?? 0),
     skipAutoBlocks: Boolean(r.skip_auto_blocks),
     source: String(r.source ?? "docx"),
+    hasDocx: Boolean(r.has_docx),
     updatedAt: r.updated_at ? new Date(r.updated_at as string).toISOString() : "",
   };
 }
@@ -1320,7 +1323,7 @@ export async function dbListTemplates(): Promise<KpTemplateMeta[]> {
   await ensureTables();
   const pool = getTimewebPool();
   const { rows } = await pool.query(
-    "select id, name, service_type, org_key, filename, placeholders, size_bytes, skip_auto_blocks, source, updated_at from kp_templates order by updated_at desc"
+    "select id, name, service_type, org_key, filename, placeholders, size_bytes, skip_auto_blocks, source, (data is not null) as has_docx, updated_at from kp_templates order by updated_at desc"
   );
   return rows.map(mapTemplateMeta);
 }
@@ -1420,6 +1423,14 @@ export async function dbGetTemplateFull(id: number): Promise<KpTemplateFull | nu
     bodyHtml: String(rows[0].body_html ?? ""),
     hasDocx: Boolean(rows[0].has_docx),
   };
+}
+
+/** Вернуть шаблону исходный .docx (если он ещё хранится): убрать «редактируемую» HTML-версию с испорченным оформлением. */
+export async function dbRestoreDocxTemplate(id: number): Promise<boolean> {
+  await ensureTables();
+  const pool = getTimewebPool();
+  const r = await pool.query(`update kp_templates set source='docx', body_html='', updated_at=now() where id=$1 and data is not null`, [id]);
+  return (r.rowCount ?? 0) > 0;
 }
 
 export async function dbSetTemplateSkipAuto(id: number, skip: boolean): Promise<void> {
