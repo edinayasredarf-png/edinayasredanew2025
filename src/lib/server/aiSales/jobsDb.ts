@@ -162,7 +162,9 @@ export async function claimBatch(
          where status in ('PENDING','RETRY_PENDING')
            and run_after <= now()
            ${typeFilter}
-         order by priority asc, run_after asc
+         -- Разбор уже расшифрованных звонков (диаризация/роли/анализ) идёт раньше новых расшифровок: иначе при большом
+         -- бэклоге транскрибации анализ ждёт, пока расшифруются сотни звонков.
+         order by priority - (case when type in ('call.diarize','call.roles','call.analyze') then 20 else 0 end) asc, run_after asc
          limit $1
          for update skip locked
       )
