@@ -181,15 +181,13 @@ export function buildKpContext(input: {
 
   // Готовая ссылка на входящий запрос. Шаблон уже содержит «В ответ на ваш запрос …»,
   // поэтому здесь только «№ … от …» (без повтора «на запрос»).
-  const requestRef = payload.client.requestNumber?.trim()
-    ? `№ ${payload.client.requestNumber.trim()}${
-        payload.client.requestDate ? ` от ${shortDateRu(payload.client.requestDate)}` : ""
-      }`
-    : "";
+  const reqNum = payload.client.requestNumber?.trim() || "";
+  const reqDate = payload.client.requestDate ? shortDateRu(payload.client.requestDate) : "";
+  const requestRef = reqNum ? `№ ${reqNum}${reqDate ? ` от ${reqDate}` : ""}` : reqDate ? `от ${reqDate}` : "";
 
-  // Готовая вступительная фраза: есть номер запроса → «В ответ на ваш запрос …»,
+  // Готовая вступительная фраза: указан номер и/или дата запроса → «В ответ на ваш запрос …»,
   // иначе → «Направляем для вас КП на».
-  const requestIntro = payload.client.requestNumber?.trim()
+  const requestIntro = requestRef
     ? `В ответ на ваш запрос ${requestRef}`
     : "Направляем для вас КП на";
 
