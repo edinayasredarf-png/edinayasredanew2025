@@ -31,7 +31,9 @@ jobs:
             exit 1
           fi
       - name: Check deployment script
-        run: bash -n deploy/timeweb/deploy.sh
+        run: |
+          bash -n deploy/timeweb/deploy.sh
+          python3 deploy/timeweb/test_deploy.py
       - name: Build application outside the production server
         run: |
           docker build --secret id=public_env,src="$RUNNER_TEMP/public.env" \

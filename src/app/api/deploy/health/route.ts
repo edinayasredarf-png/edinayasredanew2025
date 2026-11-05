@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Read-only readiness check: no schema initialization or customer data.
 export async function GET() {
   try {
-    await getTimewebPool().query({ text: "SELECT 1", query_timeout: 5000 });
+    await getTimewebPool().query("SELECT 1");
     return NextResponse.json(
       { ok: true, revision: process.env.RELEASE_SHA || "unknown" },
       { headers: { "Cache-Control": "no-store" } },
