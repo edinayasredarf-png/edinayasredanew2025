@@ -109,5 +109,16 @@ mv "$BASE/active-sha.new" "$BASE/active-sha"
 mv "$BASE/active-slot.new" "$BASE/active-slot"
 COMMITTED=1
 echo "Ready: $NAME commit=$SHA"
-# Retain both containers/images for rollback; disk cleanup is project-scoped
-# and can be performed after the initial migration is validated.
+# Keep the active release, rollback release and one extra image. Never prune
+# Docker globally: PDF, speech and the other site's proxy share this VPS.
+PREVIOUS_SHA=$(cat "$BASE/previous-sha" 2>/dev/null || true)
+EXTRA_KEPT=0
+while IFS= read -r image_sha; do
+  [[ "$image_sha" =~ ^[0-9a-f]{40}$ ]] || continue
+  [[ "$image_sha" != "$SHA" && "$image_sha" != "$PREVIOUS_SHA" ]] || continue
+  if (( EXTRA_KEPT == 0 )); then
+    EXTRA_KEPT=1
+  else
+    docker image rm "edinayasreda:$image_sha" > /dev/null 2>&1 || true
+  fi
+done < <(docker image ls edinayasreda --format '{{.Tag}}')

@@ -36,6 +36,8 @@ a=sys.argv[1:]
 with open(os.environ['MOCK_LOG'],'a') as f: f.write(' '.join(a)+'\\n')
 scenario=os.environ['MOCK_SCENARIO']
 if a[:2]==['image','inspect']: print(os.environ['MOCK_SHA'])
+if a[:2]==['image','ls']:
+    print('\\n'.join([os.environ['MOCK_SHA'],'a'*40,'c'*40,'d'*40,'e'*40]))
 if a==['load']: sys.stdin.buffer.read()
 if len(a)>2 and a[0]=='exec' and a[2]=='node':
     if scenario=='not_ready': sys.exit(1)
@@ -88,6 +90,15 @@ if a==['exec','vercel-proxy','nginx','-s','reload'] and scenario=='reload_failur
         self.assertEqual(result["upstream"], "OLD UPSTREAM\n")
         self.assertEqual(result["sha"], OLD_SHA)
         self.assertNotIn("nginx -s reload", result["log"])
+
+    def test_cleanup_keeps_active_and_rollback_images(self):
+        result = self.exercise()
+        self.assertEqual(result["code"], 0, result["error"])
+        self.assertNotIn("image rm edinayasreda:" + SHA, result["log"])
+        self.assertNotIn("image rm edinayasreda:" + OLD_SHA, result["log"])
+        self.assertNotIn("image rm edinayasreda:" + "c" * 40, result["log"])
+        self.assertIn("image rm edinayasreda:" + "d" * 40, result["log"])
+        self.assertNotIn("system prune", result["log"])
 
     def test_reload_failure_restores_config(self):
         result = self.exercise("reload_failure")
