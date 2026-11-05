@@ -78,10 +78,13 @@ check() {
   local endpoint=${2:-http://$NAME:3000/api/deploy/health}
   docker exec "$target" node -e '
     const http=require("node:http");
-    const req=http.get(process.argv[1],r=>{let b="";r.on("data",x=>b+=x);r.on("end",()=>{
-      try {const d=JSON.parse(b);process.exit(r.statusCode===200&&d.ok===true&&d.revision===process.argv[2]?0:1)}
-      catch {process.exit(1)}
-    })});req.setTimeout(10000,()=>req.destroy());req.on("error",()=>process.exit(1));
+    const req=http.get(process.argv[1],{family:4,headers:{connection:"close"}},r=>{let b="";r.on("data",x=>b+=x);r.on("end",()=>{
+      try {const d=JSON.parse(b);const ok=r.statusCode===200&&d.ok===true&&d.revision===process.argv[2];
+        if(!ok) console.error("Readiness response:",r.statusCode,"revision:",d.revision||"none");process.exit(ok?0:1)}
+      catch {console.error("Readiness response is not JSON");process.exit(1)}
+    })});
+    const deadline=setTimeout(()=>{console.error("Readiness deadline exceeded");req.destroy();process.exit(1)},10000);
+    req.on("error",e=>{clearTimeout(deadline);console.error("Readiness connection:",e.code||e.name);process.exit(1)});
   ' "$endpoint" "$SHA"
 }
 READY=0
@@ -97,11 +100,19 @@ mv "$UPSTREAM.new" "$UPSTREAM"
 SWITCHED=1
 docker exec "$PROXY" nginx -t
 docker exec "$PROXY" nginx -s reload
-# Test the reloaded nginx route, not just direct container connectivity.
-for (( attempt=1; attempt<=3; attempt++ )); do
+# Nginx reload is asynchronous. Allow DNS/worker transition, but require two
+# consecutive successful probes through nginx before committing release state.
+PROXY_READY=0
+for (( attempt=1; attempt<=12; attempt++ )); do
   sleep 2
-  check "$NAME" 'http://es-web-proxy:8088/api/deploy/health'
+  if check "$NAME" 'http://es-web-proxy:8088/api/deploy/health'; then
+    PROXY_READY=$((PROXY_READY + 1))
+    if (( PROXY_READY >= 2 )); then break; fi
+  else
+    PROXY_READY=0
+  fi
 done
+(( PROXY_READY >= 2 )) || { echo 'Proxy readiness failed; restoring previous release.' >&2; exit 1; }
 if [[ -s "$BASE/active-sha" ]]; then cp "$BASE/active-sha" "$BASE/previous-sha"; fi
 printf '%s\n' "$SHA" > "$BASE/active-sha.new"
 printf '%s\n' "$SLOT" > "$BASE/active-slot.new"
