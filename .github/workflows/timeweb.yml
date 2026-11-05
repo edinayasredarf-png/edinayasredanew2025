@@ -30,6 +30,10 @@ jobs:
             echo 'Only single-line NEXT_PUBLIC_* settings are allowed.' >&2
             exit 1
           fi
+          if grep -qF '[SENSITIVE]' "$RUNNER_TEMP/public.env"; then
+            echo 'Public build settings contain masked export placeholders.' >&2
+            exit 1
+          fi
       - name: Check deployment script
         run: |
           bash -n deploy/timeweb/deploy.sh
