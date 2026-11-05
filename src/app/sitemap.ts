@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next'
 import { getTimewebPool } from '@/lib/timewebPg'
 import { IZN_CITY_SLUGS, IMZ_CITY_SLUGS, LES_CITY_SLUGS } from '@/lib/serviceCitySlugs'
 
-// ISR: карта пересобирается не чаще раза в час (свежий контент из БД
-// подхватывается автоматически), без запроса к БД на каждый заход робота.
-export const revalidate = 3600
+// CI intentionally has no production DB credentials. Generate the sitemap at
+// request time so a fresh image never ships a cached map without DB content.
+export const dynamic = 'force-dynamic'
 
 const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 

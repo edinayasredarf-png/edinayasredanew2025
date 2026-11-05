@@ -42,6 +42,9 @@ if a==['load']: sys.stdin.buffer.read()
 if len(a)>2 and a[0]=='exec' and a[2]=='node':
     if scenario=='not_ready': sys.exit(1)
     if scenario=='post_switch_failure' and 'es-web-proxy:8088' in a[-2]: sys.exit(1)
+    if scenario=='post_switch_transient' and 'es-web-proxy:8088' in a[-2]:
+        marker=Path(os.environ['MOCK_LOG']+'.proxy-ready')
+        if not marker.exists(): marker.touch();sys.exit(1)
 if a==['exec','vercel-proxy','nginx','-s','reload'] and scenario=='reload_failure':
     marker=Path(os.environ['MOCK_LOG']+'.reloaded')
     if not marker.exists(): marker.touch();sys.exit(1)
@@ -111,6 +114,12 @@ if a==['exec','vercel-proxy','nginx','-s','reload'] and scenario=='reload_failur
         self.assertNotEqual(result["code"], 0)
         self.assertEqual(result["upstream"], "OLD UPSTREAM\n")
         self.assertEqual(result["sha"], OLD_SHA)
+
+    def test_transient_proxy_probe_does_not_discard_healthy_release(self):
+        result = self.exercise("post_switch_transient")
+        self.assertEqual(result["code"], 0, result["error"])
+        self.assertEqual(result["sha"], SHA)
+        self.assertEqual(result["slot"], "green")
 
     def test_no_runtime_cannot_deploy(self):
         result = self.exercise(runtime=False)
