@@ -60,7 +60,8 @@ jobs:
           node -e 'const fs=require("fs");if(JSON.parse(fs.readFileSync(process.argv[1])).ok!==false)process.exit(1)' "$RUNNER_TEMP/health.json"
           docker exec es-ci test -s /app/prompts/brand-check.md
       - name: Deploy and check readiness
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.TIMEWEB_DEPLOY_ENABLED == 'true'
+        # One-time private preview. This branch never enables deployment on push.
+        if: github.ref == 'refs/heads/codex/timeweb-preview' && github.event_name == 'workflow_dispatch'
         env:
           DEPLOY_KEY: ${{ secrets.TIMEWEB_DEPLOY_KEY }}
           KNOWN_HOSTS: ${{ secrets.TIMEWEB_KNOWN_HOSTS }}
