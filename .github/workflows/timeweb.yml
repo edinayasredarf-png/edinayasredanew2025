@@ -39,6 +39,26 @@ jobs:
           docker build --secret id=public_env,src="$RUNNER_TEMP/public.env" \
             --build-arg RELEASE_SHA="$GITHUB_SHA" \
             --tag "edinayasreda:$GITHUB_SHA" .
+      - name: Check built application without production credentials
+        run: |
+          set -euo pipefail
+          docker run -d --name es-ci -p 127.0.0.1:3100:3000 \
+            --memory 3g --cpus 2 "edinayasreda:$GITHUB_SHA"
+          trap 'docker rm -f es-ci >/dev/null' EXIT
+          ready=false
+          for attempt in $(seq 1 30); do
+            if curl --max-time 10 -fsS http://127.0.0.1:3100/ > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = true
+          curl --max-time 10 -fsS http://127.0.0.1:3100/fonts/tinos/Tinos-Regular.ttf > /dev/null
+          code=$(curl --max-time 10 -sS -o "$RUNNER_TEMP/health.json" -w '%{http_code}' http://127.0.0.1:3100/api/deploy/health)
+          test "$code" = 503
+          node -e 'const fs=require("fs");if(JSON.parse(fs.readFileSync(process.argv[1])).ok!==false)process.exit(1)' "$RUNNER_TEMP/health.json"
+          docker exec es-ci test -s /app/prompts/brand-check.md
       - name: Deploy and check readiness
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.TIMEWEB_DEPLOY_ENABLED == 'true'
         env:
