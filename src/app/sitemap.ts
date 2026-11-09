@@ -14,6 +14,7 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: `${baseUrl}/services`,              changeFrequency: 'weekly',  priority: 0.9, lastModified: '2026-04-06' },
   { url: `${baseUrl}/services/imz`,          changeFrequency: 'monthly', priority: 0.9, lastModified: '2026-04-06' },
   { url: `${baseUrl}/services/izn`,          changeFrequency: 'monthly', priority: 0.9, lastModified: '2026-04-06' },
+  { url: `${baseUrl}/services/dendrologicheskaya-ekspertiza`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-11-09' },
   { url: `${baseUrl}/services/les`,          changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
   { url: `${baseUrl}/services/green-inventory`,      changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
   { url: `${baseUrl}/services/inventory-burials`,    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },

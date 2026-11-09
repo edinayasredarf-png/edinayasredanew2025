@@ -83,6 +83,13 @@ export default function ServicesPage() {
       image: "/img/услуга_изн.png",
     },
     {
+      icon: "/icons/Tree.svg",
+      title: "Дендрологическая экспертиза",
+      desc: "Оценка состояния деревьев и кустарников, причин повреждения и гибели. Заключение для согласований, страховых случаев и споров.",
+      href: "/services/dendrologicheskaya-ekspertiza",
+      image: "/img/услуга_изн.png",
+    },
+    {
       icon: "/icons/archive_outline_28.svg",
       title: "Лесоустройство",
       desc:
@@ -164,7 +171,7 @@ export default function ServicesPage() {
           </div>
 
           {/* Сетка карточек */}
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* “Единая среда” — первая карточка */}
             <div className="bg-[#F6F7F9] rounded-4xl p-3 md:p-4 h-auto flex flex-col gap-6 transition-all duration-300">
               <Image

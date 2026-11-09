@@ -17,6 +17,7 @@ const NAV_LINKS = [
 const SERVICE_LINKS = [
 	{ href: '/services/imz', label: 'Инвентаризация мест захоронений', icon: '/icons/Cemetery.svg' },
 	{ href: '/services/izn', label: 'Инвентаризация зеленых насаждений', icon: '/icons/Tree.svg' },
+	{ href: '/services/dendrologicheskaya-ekspertiza', label: 'Дендрологическая экспертиза', icon: '/icons/Tree.svg' },
 	{ href: '/services/les', label: 'Лесоустройство', icon: '/icons/Forest.svg' },
 ] as const;
 

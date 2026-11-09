@@ -89,6 +89,7 @@ export function RedesignFooter({ variant = 'default' }: { variant?: 'default' | 
 							<ul className="space-y-3">
 								<li><Link href="/services/imz" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация мест захоронений</Link></li>
 								<li><Link href="/services/izn" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Инвентаризация зеленых насаждений</Link></li>
+								<li><Link href="/services/dendrologicheskaya-ekspertiza" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Дендрологическая экспертиза</Link></li>
 								<li><Link href="/services/les" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Лесоустройство</Link></li>
 								<li><Link href="/services" className="text-[16px] lg:text-[15px] text-[#029cda] leading-6 hover:text-[#0280b5] transition-colors">Все сервисы</Link></li>
 							</ul>

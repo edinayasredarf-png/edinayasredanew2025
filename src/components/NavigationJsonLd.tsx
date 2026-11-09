@@ -49,6 +49,11 @@ export function NavigationJsonLd() {
           },
           {
             '@type': 'SiteNavigationElement',
+            'name': 'Дендрологическая экспертиза',
+            'url': `${SITE_CONFIG.url}/services/dendrologicheskaya-ekspertiza`
+          },
+          {
+            '@type': 'SiteNavigationElement',
             'name': 'Лесоустройство',
             'url': `${SITE_CONFIG.url}/services/les`
           }
