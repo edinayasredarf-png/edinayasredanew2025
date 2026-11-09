@@ -15,6 +15,7 @@ interface BreadcrumbItem {
 interface BreadcrumbsProps {
   items?: BreadcrumbItem[]
   customLabels?: Record<string, string>
+  variant?: 'default' | 'hero'
 }
 
 const DEFAULT_SITE_URL = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
@@ -87,12 +88,12 @@ const MOBILE_LABELS: Record<string, string> = {
   'forest-management': 'Лесоустройство',
 }
 
-export default function Breadcrumbs({ items, customLabels }: BreadcrumbsProps) {
+export default function Breadcrumbs({ items, customLabels, variant = 'default' }: BreadcrumbsProps) {
   const pathname = usePathname()
 
   // Если переданы кастомные items, используем их
   if (items && items.length > 0) {
-    return <BreadcrumbsDisplay items={items} />
+    return <BreadcrumbsDisplay items={items} variant={variant} />
   }
 
   // Автоматическая генерация из URL
@@ -123,11 +124,11 @@ export default function Breadcrumbs({ items, customLabels }: BreadcrumbsProps) {
     })
   })
 
-  return <BreadcrumbsDisplay items={breadcrumbItems} />
+  return <BreadcrumbsDisplay items={breadcrumbItems} variant={variant} />
 }
 
 // Компонент отображения
-function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
+function BreadcrumbsDisplay({ items, variant }: { items: BreadcrumbItem[]; variant: 'default' | 'hero' }) {
   const siteUrl = resolveSiteUrl()
 
   // JSON-LD для Schema.org
@@ -156,7 +157,22 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      {/* Визуальные хлебные крошки */}
+      {variant === 'hero' ? (
+        <nav aria-label="Навигационная цепочка" className="font-involve text-sm font-medium leading-5 tracking-tight">
+          <ol className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+            {items.map((item, index) => (
+              <li key={item.href} className="contents">
+                {index > 0 && <span aria-hidden="true" className="text-[#050c26]">/</span>}
+                {index === items.length - 1 ? (
+                  <span aria-current="page" className="text-[#646b85]">{item.label}</span>
+                ) : (
+                  <Link href={item.href} className="text-[#050c26] hover:text-[#029cda] focus-visible:outline-2 focus-visible:outline-[#029cda]">{item.label}</Link>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      ) : (
       <nav aria-label="Навигационная цепочка" className="breadcrumbs-wrapper font-[Raleway] bg-white">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 font-medium">
           <ol className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
@@ -224,6 +240,7 @@ function BreadcrumbsDisplay({ items }: { items: BreadcrumbItem[] }) {
           </ol>
         </div>
       </nav>
+      )}
     </>
   )
 }

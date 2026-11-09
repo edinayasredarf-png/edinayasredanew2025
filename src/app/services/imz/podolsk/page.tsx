@@ -1,7 +1,7 @@
 "use client";
+import ServiceHero from '@/components/services/ServiceHero';
 
 import Layout from "../../../../components/Layout";
-import Image from "next/image";
 import DemoIframeSection from "../../../../components/DemoIframeSection";
 
 // Секции
@@ -22,57 +22,19 @@ export default function InventoryBurialsPage() {
     window.dispatchEvent(new CustomEvent("openConsultModal"));
 
   return (
-    <Layout>
+    <Layout hideBreadcrumbs>
       <div className="font-raleway font-medium lining-nums">
 
         {/* HERO */}
-        <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
-          <div className="rd-content-column py-10 md:py-20 relative z-10">
-            <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
-
-              {/* Текст */}
-              <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
-                <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
-                  Инвентаризация<br /> мест захоронений<br />  <span className="text-[#029cda]">в Подольске</span>
-                </h1>
-
-                <p className="mt-8 text-lg md:text-[22.7px] leading-[1.37] text-gray-300 max-w-2xl font-raleway">
-                  Выполняем инвентаризацию кладбищ и инвентаризацию мест
+        <ServiceHero
+          service="imz"
+          title={<>Инвентаризация<br /> мест захоронений<br />  <span className="text-[#029cda]">в Подольске</span></>}
+          description={<>Выполняем инвентаризацию кладбищ и инвентаризацию мест
                   захоронений в Подольске с созданием электронной карты, реестра захоронений и удобного
-                  поиска для муниципалитетов, операторов кладбищ и граждан.
-                </p>
-
-                <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={handleKP}
-                    className="inline-flex items-center justify-center bg-[#029cda] text-white font-medium text-xl px-16 py-5 rounded-2xl hover:bg-[#029cda]/90 transition"
-                  >
-                    Получить КП
-                  </button>
-
-                  <button
-                    onClick={handleConsult}
-                    className="inline-flex items-center justify-center border border-white text-white font-medium text-xl px-16 py-5 rounded-2xl hover:bg-[#F6F7F9]/10 transition"
-                  >
-                    Получить консультацию
-                  </button>
-                </div>
-              </div>
-
-              {/* Изображение */}
-              <div className="hidden lg:block absolute right-0 bottom-0 w-[40%] max-w-[500px]">
-                <Image
-                  src="/img/cemetery1.png"
-                  alt="Инвентаризация и оцифровка кладбищ"
-                  width={500}
-                  height={400}
-                  className="w-full object-contain"
-                />
-              </div>
-
-            </div>
-          </div>
-        </section>
+                  поиска для муниципалитетов, операторов кладбищ и граждан.</>}
+          onRequest={handleKP}
+          onConsult={handleConsult}
+        />
 
         {/* Остальные секции */}
         <AudienceSection />
