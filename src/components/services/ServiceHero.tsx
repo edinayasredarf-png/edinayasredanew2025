@@ -6,6 +6,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import styles from './ServiceHero.module.css';
 
 const imagery = {
+  dendrology: { src: '/img/services/izn/hero.avif', alt: 'Дендрологическая экспертиза: обследование деревьев и подготовка заключения', width: 1142, height: 1377 },
   imz: { src: '/img/services/imz/hero.avif', alt: 'Инвентаризация мест захоронений: реестр, карта и геопривязка', width: 1142, height: 1377 },
   izn: { src: '/img/services/izn/hero.avif', alt: 'Инвентаризация зелёных насаждений: учёт деревьев и карта территории', width: 1142, height: 1377 },
   les: { src: '/img/services/les/hero.avif', alt: 'Лесоустройство: обследование лесов, документация и картографирование', width: 1141, height: 1378 },

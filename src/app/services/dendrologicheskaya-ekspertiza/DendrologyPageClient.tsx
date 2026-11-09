@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import FAQ from '@/components/FAQ';
+import ServiceHero from '@/components/services/ServiceHero';
 import ServiceLeadDefinition from '@/components/services/ServiceLeadDefinition';
 import { useModal } from '@/components/ModalProvider';
 
@@ -66,23 +67,15 @@ export default function DendrologyPageClient() {
   const { openKP, openConsult } = useModal();
 
   return (
-    <Layout>
+    <Layout hideBreadcrumbs>
       <div className="min-h-screen bg-white font-raleway font-medium lining-nums">
-        <section className="page-hero rounded-b-[20px] relative overflow-hidden min-h-[400px]">
-          <div className="rd-content-column py-10 md:py-20">
-            <div className="grid lg:grid-cols-[3fr_2fr] items-center gap-10 lg:gap-12">
-              <div className="relative z-10 min-w-0">
-                <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium [overflow-wrap:anywhere]">Дендрологическая<br />экспертиза</h1>
-                <p className="mt-8 text-lg md:text-[22px] leading-[1.4] text-gray-300 max-w-2xl">Официальное заключение о состоянии деревьев и кустарников — для суда, застройки, страховой компании и администрации.</p>
-                <div className="mt-10 flex flex-col sm:flex-row flex-wrap gap-4">
-                  <button type="button" onClick={openKP} className={button}>Получить расчёт</button>
-                  <button type="button" onClick={openConsult} className="inline-flex items-center justify-center text-white border border-white text-lg px-7 py-4 rounded-xl hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Бесплатная консультация</button>
-                </div>
-              </div>
-              <Image src="/img/izn.png" alt="Обследование деревьев и зелёных насаждений" width={500} height={400} priority className="w-full max-w-[500px] h-auto mx-auto self-end" />
-            </div>
-          </div>
-        </section>
+        <ServiceHero
+          service="dendrology"
+          title={<>Дендрологическая<br />экспертиза</>}
+          description="Официальное заключение о состоянии деревьев и кустарников — для суда, застройки, страховой компании и администрации."
+          onRequest={openKP}
+          onConsult={openConsult}
+        />
 
         <ServiceLeadDefinition
           heading="Что такое дендрологическая экспертиза"
