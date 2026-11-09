@@ -37,7 +37,7 @@ export default function ServiceHero({ service, title, description, onRequest, on
           </div>
         </div>
         <div className={styles.visual}>
-          <Image {...image} priority sizes="(max-width: 767px) 85vw, (max-width: 1023px) 40vw, 430px" className={styles.image} />
+          <Image {...image} priority sizes="(max-width: 767px) 240px, (max-width: 1023px) 36vw, 390px" className={styles.image} />
         </div>
       </section>
     </div>
