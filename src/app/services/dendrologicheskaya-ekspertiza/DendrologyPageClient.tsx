@@ -163,16 +163,16 @@ export default function DendrologyPageClient() {
 
         <section className="py-14 md:py-24 bg-[#f5f7fa]">
           <div className="rd-content-column">
-            <h2 className={`${heading} text-center mb-10 md:mb-14`}>Сроки и формат работы</h2>
+            <h2 className={`${heading} text-center mb-10 md:mb-16`}>Сроки и формат работы</h2>
             <div className="grid md:grid-cols-3 gap-3">
               {[
-                ['1–3 рабочих дня', 'Выезд эксперта', 'С момента обращения по Ростову-на-Дону и Ростовской области.'],
-                ['3–10 рабочих дней', 'Готовое заключение', 'В зависимости от сложности и объёма объекта. Срочный формат — по согласованию.'],
-                ['Ростов-на-Дону и область', 'География работы', 'Возможен выезд в другие регионы. Сроки и условия согласуем отдельно.'],
-              ].map(([value, title, description]) => (
-                <div key={title} className="bg-white rounded-3xl p-6 md:p-8">
-                  <p className="text-[#029cda] text-2xl md:text-3xl font-involve font-medium mb-6">{value}</p>
-                  <h3 className="text-[#313131] text-xl font-medium mb-3">{title}</h3>
+                { value: 'от 1–3 рабочих дня', title: 'Выезд эксперта', description: 'С момента обращения по Ростову-на-Дону и Ростовской области.' },
+                { value: 'от 3–10 рабочих дней', title: 'Готовое заключение', description: 'В зависимости от сложности и объёма объекта. Срочный формат — по согласованию.' },
+                { value: 'Ростов-на-Дону и область', title: 'География работы', description: <><strong className="font-bold text-[#313131]">Возможен выезд в другие регионы.</strong> Сроки и условия согласуем отдельно.</> },
+              ].map(({ value, title, description }) => (
+                <div key={title} className="bg-white rounded-3xl p-6 md:p-8 md:min-h-[288px]">
+                  <p className="text-[#029cda] text-2xl xl:text-[28px] 2xl:text-[30px] leading-[1.2] font-involve font-medium mb-7">{value}</p>
+                  <h3 className="text-[#313131] text-xl font-medium mb-4">{title}</h3>
                   <p className={text}>{description}</p>
                 </div>
               ))}
@@ -209,14 +209,14 @@ export default function DendrologyPageClient() {
           </div>
         </section>
 
-        <section className="rd-content-column py-14 md:py-24">
-          <div className="bg-[#F6F7F9] rounded-3xl p-6 md:p-10 grid lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <h2 className="text-[#313131] text-3xl md:text-4xl font-medium leading-tight mb-6">Получите заключение по вашей задаче</h2>
+        <section className="max-w-[1200px] mx-auto px-4 py-14 md:py-24">
+          <div className="bg-[#F6F7F9] rounded-3xl p-2 flex flex-col lg:flex-row gap-8 lg:gap-12 lg:min-h-[440px]">
+            <div className="lg:w-1/2 flex flex-col justify-center items-start p-6">
+              <h2 className="text-[#313131] text-3xl md:text-[28px] font-medium leading-snug mb-6">Получите заключение по вашей задаче</h2>
               <p className={`${text} mb-8`}>Если от состояния дерева зависят деньги, сроки или ответственность, начните с консультации. Оставьте заявку — свяжемся, уточним детали и предложим подходящий формат экспертизы.</p>
               <button type="button" onClick={openKP} className={button}>Оставить заявку</button>
             </div>
-            <div className="bg-white rounded-2xl p-6 flex justify-center">
+            <div className="lg:w-1/2 bg-white rounded-2xl p-6 flex items-center justify-center">
               <Image src="/img/imz_cta.png" alt="Консультация по дендрологической экспертизе" width={320} height={320} className="w-full max-w-[320px] h-auto" />
             </div>
           </div>
