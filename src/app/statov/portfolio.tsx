@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import Image from 'next/image';
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Plus, X } from 'lucide-react';
-import { SITE_CONFIG } from '@/lib/config';
 import snapshot from './telegram-snapshot.json';
 import { Portrait } from './portrait';
 import { PhotoRail } from './photos';
@@ -12,12 +11,13 @@ import type { StatovPhoto } from './telegram';
 import styles from './portfolio.module.css';
 
 const channel = 'https://t.me/StatovLIVE';
+const maxChannel = 'https://max.ru/channel_StatovLive';
 const vk = 'https://vk.ru/avstatov';
 const email = 'mailto:proeco09@ya.ru';
 
 const bio = [
   'Мой профессиональный путь связан с развитием предпринимательства, реализацией экологических инициатив, внедрением современных решений и созданием проектов, имеющих долгосрочную общественную ценность.',
-  'Сегодня в центре моей деятельности — развитие группы компаний «Экострой», цифровых социальных инициатив и проектов, направленных на сохранение природного, культурного и исторического наследия.',
+  'Сегодня в центре моей деятельности — развитие группы компаний «Единая среда», цифровых социальных инициатив и проектов, направленных на сохранение природного, культурного и исторического наследия.',
   'Я открыт к сотрудничеству с органами государственной власти, научным и образовательным сообществом, общественными организациями и предпринимателями.',
   'Особое значение для меня имеет объединение людей вокруг идей, способных приносить реальные изменения.',
 ];
@@ -187,7 +187,7 @@ export function StatovPortfolio({ fontClass }: { fontClass: string }) {
     </section>
     <section id="statov-about" className={styles.about} aria-label="Об Андрее Статове">
       <div className={styles.manifesto}>
-        <div><strong>17 лет</strong><p>предпринимательского опыта. Владелец природоохранной научно-практической группы компаний «Экострой».</p></div>
+        <div><strong>17 лет</strong><p>предпринимательского опыта. Владелец природоохранной научно-практической группы компаний «Единая среда».</p></div>
         <blockquote>Моя философия — оставлять после себя не только результаты, но и ценность для следующих поколений.</blockquote>
         <p>Я убеждён, что настоящий успех предпринимателя измеряется и тем, какой след его деятельность оставляет в обществе.</p>
       </div>
@@ -199,11 +199,10 @@ export function StatovPortfolio({ fontClass }: { fontClass: string }) {
     </section>
     <Journal />
     <footer id="statov-contacts" className={styles.footer}>
-      <p>Помимо работы, люблю свою жену и своих детей.</p>
       <h2>Статов Андрей</h2>
       <div className={styles.contacts}>
         <a href={channel}>Telegram <ArrowUpRight size={22} /></a>
-        <a href="https://max.ru/channel_StatovLive">MAX <ArrowUpRight size={22} /></a>
+        <a href={maxChannel}>MAX <ArrowUpRight size={22} /></a>
         <a href={vk}>ВКонтакте <ArrowUpRight size={22} /></a>
         <a href={email}>Почта <ArrowUpRight size={22} /></a>
       </div>
@@ -223,7 +222,7 @@ export function StatovPortfolio({ fontClass }: { fontClass: string }) {
         <div className={styles.contactMethods}>
           <a href={channel}>Телеграм</a>
           <a href={vk}>Вконтакте</a>
-          <a href={'tel:' + SITE_CONFIG.contact.phone.replaceAll('-', '')} title="Номер Единой Среды">Позвонить</a>
+          <a href={maxChannel}>MAX</a>
           <a href={email}>Почта</a>
         </div>
       </div>
