@@ -196,7 +196,7 @@ export function StatovPortfolio({ fontClass }: { fontClass: string }) {
         <a href={channel}>Telegram <ArrowUpRight size={22} /></a>
         <a href="https://max.ru/channel_StatovLive">MAX <ArrowUpRight size={22} /></a>
         <a href="https://vk.ru/avstatov">ВКонтакте <ArrowUpRight size={22} /></a>
-        <a href="/contacts">Контакты Единой Среды <ArrowUpRight size={22} /></a>
+        <a href="mailto:proeco09@ya.ru"><span>proeco09@ya.ru</span> <ArrowUpRight size={22} /></a>
       </div>
     </footer>
   </main>;

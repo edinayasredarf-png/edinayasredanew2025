@@ -106,7 +106,7 @@ export function PhotoRail({ photos, channel }: { photos: StatovPhoto[]; channel:
       {photos.map((photo) => (
         <a key={photo.id} href={channel + '/' + photo.postId} aria-label={'Открыть публикацию в Telegram: ' + photo.label} draggable={false}>
           <Image src={photo.src} alt="" fill unoptimized draggable={false} />
-          <span>{photo.label}</span>
+          {!['Ростов', 'StatovLIVE'].includes(photo.label) && <span>{photo.label}</span>}
         </a>
       ))}
     </div>

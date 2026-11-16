@@ -58,10 +58,10 @@
 }
 .portrait {
   position: absolute;
-  inset: 8% auto auto 50%;
+  inset: 7% auto auto 50%;
   transform: translateX(-50%);
   width: min(76vw, 950px);
-  height: 67%;
+  height: 62%;
   z-index: -1;
   overflow: hidden;
 }
@@ -168,6 +168,7 @@
 .contacts a:first-child { color: #000; background: var(--paper); }
 .contacts a:hover { color: #000; background: var(--accent); }
 .contacts svg { flex-shrink: 0; }
+.contacts span { min-width: 0; overflow-wrap: anywhere; }
 
 @media (max-width: 760px) {
   .header { padding-block: 23px; }
