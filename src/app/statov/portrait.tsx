@@ -1,15 +1,18 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
-const width = 678;
-const height = 604;
-const eyes = [{ x: 266, y: 292 }, { x: 423, y: 289 }];
-const radiusX = 29;
-const radiusY = 14;
+const size = 720;
+const eyes = [{ x: 276, y: 294 }, { x: 453, y: 295 }];
+const radiusX = 31;
+const radiusY = 15;
+type Expression = 'smile' | 'wink';
 
 export function Portrait() {
+  const [expression, setExpression] = useState<Expression | null>(null);
+  const smile = useRef<HTMLVideoElement>(null);
+  const wink = useRef<HTMLVideoElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const container = useRef<HTMLDivElement>(null);
   const still = useRef<HTMLImageElement>(null);
@@ -21,7 +24,58 @@ export function Portrait() {
     const area = box?.closest('section');
     const context = surface?.getContext('2d', { willReadFrequently: true });
     if (!surface || !photo || !box || !area || !context) return;
-    const motion = matchMedia('(pointer: fine) and (prefers-reduced-motion: no-preference)');
+    const motion = matchMedia('(prefers-reduced-motion: no-preference)');
+    let idle = 0;
+    let idleStage = 0;
+    let navigation = 0;
+    let active: HTMLVideoElement | null = null;
+
+    const visible = () => {
+      const bounds = box.getBoundingClientRect();
+      return !document.hidden && bounds.top < innerHeight && bounds.bottom > innerHeight * 0.25;
+    };
+
+    function play(next: Expression) {
+      const video = next === 'smile' ? smile.current : wink.current;
+      if (!video || !motion.matches || !visible()) return false;
+      active?.pause();
+      active = video;
+      video.currentTime = 0;
+      void video.play().catch(() => {});
+      return true;
+    }
+
+    function idleTick() {
+      if (!motion.matches || !visible()) return;
+      play(idleStage % 2 === 0 ? 'smile' : 'wink');
+      idleStage++;
+      idle = window.setTimeout(idleTick, 9500);
+    }
+
+    function activity() {
+      clearTimeout(idle);
+      idleStage = 0;
+      if (motion.matches && visible()) idle = window.setTimeout(idleTick, 7500);
+    }
+
+    function click(event: MouseEvent) {
+      if (!(event.target instanceof Element) || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const control = event.target.closest('button, a');
+      if (!control || !play('smile')) return;
+      activity();
+      const destination = control.getAttribute('href');
+      if (destination?.startsWith('#') && destination !== '#statov-top') {
+        event.preventDefault();
+        clearTimeout(navigation);
+        navigation = window.setTimeout(() => {
+          window.location.hash = destination;
+          const target = document.getElementById(destination.slice(1));
+          target?.setAttribute('tabindex', '-1');
+          target?.focus({ preventScroll: true });
+        }, 660);
+      }
+    }
+
     let targetX = 0;
     let targetY = 0;
     let x = 0;
@@ -30,14 +84,14 @@ export function Portrait() {
 
     const patches = () => {
       if (!photo.complete || !photo.naturalWidth) return [];
-      context.drawImage(photo, 0, 0, width, height);
+      context.drawImage(photo, 0, 0, size, size);
       const result = eyes.map((eye) => ({
         left: eye.x - radiusX,
         top: eye.y - radiusY,
         source: context.getImageData(eye.x - radiusX, eye.y - radiusY, radiusX * 2, radiusY * 2),
         output: context.createImageData(radiusX * 2, radiusY * 2),
       }));
-      context.clearRect(0, 0, width, height);
+      context.clearRect(0, 0, size, size);
       return result;
     };
     let samples: ReturnType<typeof patches> = [];
@@ -86,22 +140,39 @@ export function Portrait() {
       targetX = 0;
       targetY = 0;
       if (motion.matches) request();
-      else context.clearRect(0, 0, width, height);
+      else {
+        active?.pause();
+        setExpression(null);
+        context.clearRect(0, 0, size, size);
+      }
     };
     const move = (event: PointerEvent) => {
       if (!motion.matches || event.pointerType !== 'mouse') return;
       const bounds = box.getBoundingClientRect();
       const clamp = (value: number) => Math.min(1, Math.max(-1, value));
       targetX = clamp((event.clientX - bounds.left - bounds.width / 2) / (bounds.width * 0.4)) * 7;
-      targetY = clamp((event.clientY - bounds.top - bounds.height * 0.47) / (bounds.height * 0.36)) * 4;
+      targetY = clamp((event.clientY - bounds.top - bounds.height * 0.41) / (bounds.height * 0.36)) * 4;
       request();
     };
 
     area.addEventListener('pointermove', move);
     area.addEventListener('pointerleave', reset);
+    box.closest('main')?.addEventListener('click', click);
+    window.addEventListener('scroll', activity, { passive: true });
+    window.addEventListener('pointermove', activity, { passive: true });
+    document.addEventListener('visibilitychange', activity);
+    motion.addEventListener('change', activity);
     motion.addEventListener('change', reset);
+    activity();
     return () => {
       cancelAnimationFrame(frame);
+      clearTimeout(idle);
+      clearTimeout(navigation);
+      box.closest('main')?.removeEventListener('click', click);
+      window.removeEventListener('scroll', activity);
+      window.removeEventListener('pointermove', activity);
+      document.removeEventListener('visibilitychange', activity);
+      motion.removeEventListener('change', activity);
       area.removeEventListener('pointermove', move);
       area.removeEventListener('pointerleave', reset);
       motion.removeEventListener('change', reset);
@@ -109,7 +180,12 @@ export function Portrait() {
   }, []);
 
   return <div ref={container} style={{ width: '100%', height: '100%' }}>
-    <Image ref={still} src="/statov/portrait.jpg" alt="Андрей Статов" width={width} height={height} priority unoptimized />
-    <canvas ref={canvas} width={width} height={height} aria-hidden="true" />
+    <Image ref={still} src="/statov/portrait-video.jpg" alt="Андрей Статов" width={size} height={size} priority unoptimized />
+    <canvas ref={canvas} width={size} height={size} aria-hidden="true" hidden={expression !== null} />
+    {(['smile', 'wink'] as const).map((clip) => (
+      <video key={clip} ref={clip === 'smile' ? smile : wink} src={'/statov/' + clip + '.mp4'}
+        preload="auto" muted playsInline aria-hidden="true" data-active={expression === clip}
+        onPlaying={() => setExpression(clip)} onEnded={() => setExpression((shown) => shown === clip ? null : shown)} />
+    ))}
   </div>;
 }

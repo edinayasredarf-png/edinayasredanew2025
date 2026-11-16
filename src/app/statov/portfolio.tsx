@@ -5,6 +5,9 @@ import Image from 'next/image';
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Plus } from 'lucide-react';
 import snapshot from './telegram-snapshot.json';
 import { Portrait } from './portrait';
+import { PhotoRail } from './photos';
+import photoSnapshot from './photo-snapshot.json';
+import type { StatovPhoto } from './telegram';
 import styles from './portfolio.module.css';
 
 const channel = 'https://t.me/StatovLIVE';
@@ -125,33 +128,39 @@ function ProjectGallery({ project }: { project: typeof projects[number] }) {
 
 function Journal() {
   const [posts, setPosts] = useState(snapshot);
+  const [photos, setPhotos] = useState<StatovPhoto[]>(photoSnapshot);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/statov/feed', { signal: controller.signal })
+    fetch('/api/statov/feed?photos=1', { signal: controller.signal })
       .then((response) => response.ok ? response.json() : null)
-      .then((data: typeof snapshot | null) => { if (data?.length && !controller.signal.aborted) setPosts(data); })
+      .then((data: { posts: typeof snapshot; photos: StatovPhoto[] } | null) => {
+        if (!data?.posts.length || controller.signal.aborted) return;
+        setPosts(data.posts);
+        if (data.photos.length) setPhotos(data.photos.map((photo) => photoSnapshot.find((cached) => cached.id === photo.id) ?? photo));
+      })
       .catch(() => {});
     return () => controller.abort();
   }, []);
 
-  return <section id="statov-journal" className={styles.journal}>
-    <div className={styles.sectionHead}><h2>Что сейчас<br />в моей жизни</h2>
-      <a href={channel}>@StatovLIVE <ArrowUpRight size={19} /></a></div>
-    <div className={styles.posts}>{posts.map((post) => (
-      <a key={post.id} className={styles.post} href={channel + '/' + post.id}>
-        <time dateTime={post.date}>{dateFormat.format(new Date(post.date))}</time>
-        <h3>{post.title}</h3>
-        {post.text && <p>{post.text}</p>}
-        <ArrowUpRight className={styles.postArrow} size={22} aria-hidden="true" />
-      </a>
-    ))}</div>
-    <a href={channel} className={styles.readMore}>Читать в Telegram <ArrowUpRight size={18} /></a>
-  </section>;
+  return <>
+    <section id="statov-journal" className={styles.journal}>
+      <h2>Что сейчас в моей жизни</h2>
+      <div className={styles.posts}>{posts.map((post) => (
+        <a key={post.id} className={styles.post} href={channel + '/' + post.id}>
+          <div className={styles.postMeta}><span>Telegram / StatovLIVE</span><time dateTime={post.date}>{dateFormat.format(new Date(post.date))}</time></div>
+          <h3>{post.title}</h3>
+          {post.text && <p>{post.text}</p>}
+        </a>
+      ))}</div>
+      <a href={channel} className={styles.readMore}>Читать ещё <ArrowUpRight size={18} /></a>
+    </section>
+    {photos.length > 0 && <PhotoRail photos={photos} channel={channel} />}
+  </>;
 }
 
-export function StatovPortfolio() {
-  return <main className={styles.root} id="statov-top">
+export function StatovPortfolio({ fontClass }: { fontClass: string }) {
+  return <main className={styles.root + ' ' + fontClass} id="statov-top">
     <header className={styles.header}>
       <a className={styles.wordmark} href="#statov-top">Статов Андрей</a>
       <nav aria-label="Разделы страницы">
@@ -177,7 +186,7 @@ export function StatovPortfolio() {
     </section>
     <section id="statov-projects" className={styles.projects}>
       <div className={styles.sectionHead}><h2>Мои проекты</h2><p>Создаю проекты, которые меняют настоящее и формируют будущее.</p></div>
-      {projects.map((project) => <ProjectGallery key={project.name} project={project} />)}
+      <div className={styles.projectGrid}>{projects.map((project) => <ProjectGallery key={project.name} project={project} />)}</div>
     </section>
     <Journal />
     <footer id="statov-contacts" className={styles.footer}>
@@ -185,6 +194,8 @@ export function StatovPortfolio() {
       <h2>Статов Андрей</h2>
       <div className={styles.contacts}>
         <a href={channel}>Telegram <ArrowUpRight size={22} /></a>
+        <a href="https://max.ru/channel_StatovLive">MAX <ArrowUpRight size={22} /></a>
+        <a href="https://vk.ru/avstatov">ВКонтакте <ArrowUpRight size={22} /></a>
         <a href="/contacts">Контакты Единой Среды <ArrowUpRight size={22} /></a>
       </div>
     </footer>
