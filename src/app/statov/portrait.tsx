@@ -1,191 +1,184 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { createPortraitRenderer } from './portrait-renderer';
 
-const size = 448;
-const center = 4;
-const poseFile = '/statov/portrait-poses.webp';
-type Expression = 'smile' | 'wink';
+const frameUrl = '/statov/portrait-video.jpg';
+
+function smoothstep(value: number) {
+  const x = Math.max(0, Math.min(1, value));
+  return x * x * (3 - 2 * x);
+}
 
 export function Portrait() {
-  const [expression, setExpression] = useState<Expression | null>(null);
-  const smile = useRef<HTMLVideoElement>(null);
-  const wink = useRef<HTMLVideoElement>(null);
+  const image = useRef<HTMLImageElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const photo = image.current;
     const surface = canvas.current;
-    const area = container.current?.closest('section');
-    const context = surface?.getContext('2d', { alpha: false });
-    if (!surface || !area || !context) return;
+    const box = container.current;
+    const hero = box?.closest('section');
+    if (!photo || !surface || !box || !hero) return;
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-    const mouse = matchMedia('(any-pointer: fine)');
-    let poses: HTMLImageElement | undefined;
-    let active: HTMLVideoElement | null = null;
-    let idle = 0;
-    let frame = 0;
-    let lastFrame = 0;
+    let renderer: ReturnType<typeof createPortraitRenderer> = null;
     let visible = false;
-    let next: Expression = 'smile';
-    let targetX = center;
-    let targetY = center;
-    let x = center;
-    let y = center;
+    let frame = 0;
+    let timer = 0;
+    let previous = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let x = 0;
+    let y = 0;
+    let eyesX = 0;
+    let eyesY = 0;
+    let smile = 0;
+    let wink = 0;
+    let expression: { type: 'smile' | 'wink'; at: number } | null = null;
 
-    function loadPoses() {
-      if (poses || reduced.matches) return;
-      poses = new window.Image();
-      poses.onload = requestFrame;
-      poses.src = poseFile;
+    function schedule() {
+      if (!frame && visible && renderer && !document.hidden && !reduced.matches) {
+        frame = requestAnimationFrame(draw);
+      }
     }
 
     function draw(now: number) {
       frame = 0;
-      if (!surface || !context || !poses?.naturalWidth || reduced.matches) return;
-      const elapsed = lastFrame ? Math.min(now - lastFrame, 50) : 16;
-      lastFrame = now;
-      const easing = 1 - Math.exp(-elapsed / 82);
-      x += (targetX - x) * easing;
-      y += (targetY - y) * easing;
+      if (!renderer || !visible || document.hidden || reduced.matches) return;
+      const dt = previous ? Math.min(40, now - previous) : 16;
+      previous = now;
+      const headEase = 1 - Math.exp(-dt / 128);
+      const eyeEase = 1 - Math.exp(-dt / 70);
+      x += (targetX - x) * headEase;
+      y += (targetY - y) * headEase;
+      eyesX += (targetX - eyesX) * eyeEase;
+      eyesY += (targetY - eyesY) * eyeEase;
 
-      const remaining = Math.abs(targetX - x) + Math.abs(targetY - y);
-      if (remaining < 0.025) {
-        x = targetX;
-        y = targetY;
-      }
-
-      const offset = Math.abs(x - center) + Math.abs(y - center);
-      surface.style.opacity = String(Math.min(1, offset * 2));
-      if (offset) {
-        const left = Math.floor(x);
-        const top = Math.floor(y);
-        const across = x - left;
-        const down = y - top;
-        let drawn = 0;
-        for (const [column, row, weight] of [
-          [left, top, (1 - across) * (1 - down)],
-          [left + 1, top, across * (1 - down)],
-          [left, top + 1, (1 - across) * down],
-          [left + 1, top + 1, across * down],
-        ]) {
-          if (!weight) continue;
-          drawn += weight;
-          context.globalAlpha = weight / drawn;
-          context.drawImage(poses, column * size, row * size, size, size, 0, 0, size, size);
+      let smileTarget = 0;
+      let winkTarget = 0;
+      if (expression) {
+        const elapsed = now - expression.at;
+        if (expression.type === 'smile') {
+          smileTarget = smoothstep(elapsed / 660) * (1 - smoothstep((elapsed - 1160) / 700));
+          if (elapsed > 1860) expression = null;
+        } else {
+          winkTarget = smoothstep(elapsed / 108) * (1 - smoothstep((elapsed - 215) / 180));
+          smileTarget = winkTarget * 0.18;
+          if (elapsed > 395) expression = null;
         }
-        context.globalAlpha = 1;
       }
-      if (remaining >= 0.025) frame = requestAnimationFrame(draw);
-      else lastFrame = 0;
-    }
+      const expressionEase = 1 - Math.exp(-dt / 34);
+      smile += (smileTarget - smile) * expressionEase;
+      wink += (winkTarget - wink) * expressionEase;
+      renderer.draw(x, y, eyesX, eyesY, smile, wink);
 
-    function requestFrame() {
-      if (!frame) frame = requestAnimationFrame(draw);
-    }
-
-    function neutral() {
-      targetX = center;
-      targetY = center;
-      requestFrame();
-    }
-
-    function stopClip() {
-      if (!active) return;
-      active.pause();
-      active = null;
-      setExpression(null);
-    }
-
-    function canAnimate() {
-      return visible && !document.hidden && !reduced.matches;
-    }
-
-    function idleExpression() {
-      if (!canAnimate()) return;
-      const video = next === 'smile' ? smile.current : wink.current;
-      next = next === 'smile' ? 'wink' : 'smile';
-      if (video) {
-        active = video;
-        video.currentTime = 0;
-        void video.play().catch(() => {});
+      if (expression || Math.abs(x - targetX) + Math.abs(y - targetY) +
+          Math.abs(eyesX - targetX) + Math.abs(eyesY - targetY) + smile + wink > 0.002) {
+        schedule();
+      } else {
+        previous = 0;
       }
-      idle = window.setTimeout(idlePose, 9300);
     }
 
-    function idlePose() {
-      neutral();
-      idle = window.setTimeout(idleExpression, 320);
+    function play(type: 'smile' | 'wink') {
+      if (!visible || document.hidden || reduced.matches || !renderer) return;
+      expression = { type, at: performance.now() };
+      schedule();
+      timer = window.setTimeout(() => play(type === 'smile' ? 'wink' : 'smile'), type === 'smile' ? 8700 : 11000);
     }
 
-    function restartIdle() {
-      clearTimeout(idle);
-      stopClip();
-      next = 'smile';
-      if (canAnimate()) idle = window.setTimeout(idlePose, 7200);
+    function waitForIdle() {
+      clearTimeout(timer);
+      expression = null;
+      if (visible && !document.hidden && !reduced.matches && renderer) {
+        timer = window.setTimeout(() => play('smile'), 7200);
+      }
+      schedule();
     }
 
-    function move(event: PointerEvent) {
-      if (!area || !canAnimate()) return;
-      restartIdle();
-      if (event.pointerType !== 'mouse') return;
-      loadPoses();
-      const bounds = area.getBoundingClientRect();
-      const portrait = container.current?.getBoundingClientRect();
-      const eyes = portrait ? portrait.top + Math.min(portrait.width, portrait.height) * 0.41 : bounds.top + bounds.height * 0.35;
-      const clamp = (value: number) => Math.max(0, Math.min(2 * center, value));
-      targetX = clamp(center + ((event.clientX - bounds.left) / bounds.width - 0.5) * 2.5 * center);
-      targetY = clamp(center + (event.clientY - eyes) / (bounds.height * 0.41) * center);
-      requestFrame();
+    function point(event: PointerEvent) {
+      if (!hero || !box || !renderer || reduced.matches || !visible) return;
+      if (event.pointerType === 'mouse' || event.pointerType === 'pen') {
+        const section = hero.getBoundingClientRect();
+        const portrait = box.getBoundingClientRect();
+        const eyeLine = portrait.top + Math.min(portrait.width, portrait.height) * 0.44;
+        const clamp = (value: number) => Math.max(-1, Math.min(1, value));
+        targetX = clamp((event.clientX - portrait.left - portrait.width / 2) / (section.width * 0.39));
+        targetY = clamp((event.clientY - eyeLine) / (section.height * 0.36));
+      }
+      waitForIdle();
     }
 
-    function leave() {
-      neutral();
-      restartIdle();
+    function resize() {
+      if (!box || !surface || !renderer) return;
+      const bounds = box.getBoundingClientRect();
+      const pixels = Math.max(1, Math.min(1080, Math.round(Math.min(bounds.width, bounds.height) * devicePixelRatio)));
+      if (pixels !== surface.width || pixels !== surface.height) surface.width = surface.height = pixels;
+      renderer.draw(x, y, eyesX, eyesY, smile, wink);
     }
 
-    function changeMotion() {
-      if (reduced.matches) {
-        if (surface) surface.style.opacity = '0';
-        x = center;
-        y = center;
-      } else if (mouse.matches && visible) loadPoses();
-      leave();
+    function activate() {
+      if (!surface || !photo || reduced.matches || !photo.complete || !photo.naturalWidth || !visible) return;
+      if (!renderer) {
+        renderer = createPortraitRenderer(surface, photo);
+        if (!renderer) return;
+        resize();
+      }
+      surface.hidden = false;
+    }
+
+    function sync() {
+      if (!surface) return;
+      if (reduced.matches) surface.hidden = true;
+      else activate();
+      if (!visible) {
+        x = y = eyesX = eyesY = targetX = targetY = smile = wink = 0;
+        previous = 0;
+      }
+      waitForIdle();
+    }
+
+    function lost(event: Event) {
+      event.preventDefault();
+      renderer = null;
+      if (surface) surface.hidden = true;
+      waitForIdle();
     }
 
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.intersectionRatio >= 0.3;
-      if (visible && mouse.matches) loadPoses();
-      leave();
+      sync();
     }, { threshold: 0.3 });
-    observer.observe(area);
-    area.addEventListener('pointermove', move, { passive: true });
-    area.addEventListener('pointerleave', leave);
-    document.addEventListener('visibilitychange', leave);
-    reduced.addEventListener('change', changeMotion);
+    observer.observe(hero);
+    const sizes = new ResizeObserver(resize);
+    sizes.observe(box);
+    photo.addEventListener('load', sync);
+    hero.addEventListener('pointermove', point, { passive: true });
+    document.addEventListener('visibilitychange', sync);
+    surface.addEventListener('webglcontextlost', lost);
+    surface.addEventListener('webglcontextrestored', sync);
+    reduced.addEventListener('change', sync);
 
     return () => {
       observer.disconnect();
-      clearTimeout(idle);
+      sizes.disconnect();
+      clearTimeout(timer);
       cancelAnimationFrame(frame);
-      if (poses) poses.onload = null;
-      active?.pause();
-      area.removeEventListener('pointermove', move);
-      area.removeEventListener('pointerleave', leave);
-      document.removeEventListener('visibilitychange', leave);
-      reduced.removeEventListener('change', changeMotion);
+      renderer?.dispose();
+      photo.removeEventListener('load', sync);
+      hero.removeEventListener('pointermove', point);
+      document.removeEventListener('visibilitychange', sync);
+      surface.removeEventListener('webglcontextlost', lost);
+      surface.removeEventListener('webglcontextrestored', sync);
+      reduced.removeEventListener('change', sync);
     };
   }, []);
 
-  return <div ref={container} style={{ width: '100%', height: '100%' }}>
-    <Image src="/statov/portrait-video.jpg" alt="Андрей Статов" width={720} height={720} priority unoptimized />
-    <canvas ref={canvas} width={size} height={size} aria-hidden="true" hidden={expression !== null} style={{ opacity: 0 }} />
-    {(['smile', 'wink'] as const).map((clip) => (
-      <video key={clip} ref={clip === 'smile' ? smile : wink} src={'/statov/' + clip + '.mp4'}
-        preload="auto" muted playsInline aria-hidden="true" data-active={expression === clip}
-        onPlaying={() => setExpression(clip)} onEnded={() => setExpression((shown) => shown === clip ? null : shown)} />
-    ))}
+  return <div ref={container}>
+    <Image ref={image} src={frameUrl} alt="Андрей Статов" width={720} height={720} priority unoptimized />
+    <canvas ref={canvas} width={720} height={720} aria-hidden="true" hidden />
   </div>;
 }
