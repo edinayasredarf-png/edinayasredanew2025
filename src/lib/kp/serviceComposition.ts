@@ -40,6 +40,7 @@ export interface TierLike {
   aisPrice: number;
   renewalPerYear: number;
   minHectares: number;
+  linePrices?: Record<string, { direct: number; tender: number }>;
 }
 
 /** Позиция (строка-услуга) в таблице расчёта. */
@@ -55,8 +56,8 @@ export interface PricedLine {
   key: string; // ключ позиции внутри услуги
   name: string;
   unit: string;
-  direct: number;
-  tender: number;
+  direct?: number;
+  tender?: number;
   directMax: number;
   tenderMax: number;
 }
@@ -80,8 +81,8 @@ export function composeLines(
         key: it.key,
         name: it.name,
         unit: it.unit,
-        direct: p?.direct ?? 0,
-        tender: p?.tender ?? 0,
+        direct: p?.direct,
+        tender: p?.tender,
         directMax: p?.directMax ?? 0,
         tenderMax: p?.tenderMax ?? 0,
       });
@@ -90,10 +91,18 @@ export function composeLines(
   return out;
 }
 
+const AREA_PRICE_LINES: Record<string, string> = { "ИМЗ": "imz", "ИЗН": "izn_area" };
 const AREA_PRIORITY = ["ИМЗ", "ИЗН"];
 
+function withAreaPrice(tier: TierLike | undefined): TierLike | undefined {
+  if (!tier) return undefined;
+  const line = tier.linePrices?.[AREA_PRICE_LINES[tier.serviceType]];
+  if (!line) return tier;
+  return { ...tier, pricePerHaDirect: line.direct, pricePerHaTender: line.tender };
+}
+
 /**
- * Тариф услуги. Для атомарной — просто `find(serviceType)`. Для комбинированной —
+ * Тариф базовой услуги учитывает цену площадной позиции. Для комбинированной —
  * синтез из тарифов компонентов (цены не дублируются в отдельной «групповой» услуге).
  */
 export function composeTier(
@@ -102,9 +111,9 @@ export function composeTier(
   find: (svc: string) => TierLike | undefined,
 ): TierLike | undefined {
   const comps = serviceComponents(serviceType);
-  if (comps.length <= 1) return find(serviceType);
+  if (comps.length <= 1) return withAreaPrice(find(serviceType));
 
-  const tiers = comps.map((s) => find(s));
+  const tiers = comps.map((s) => withAreaPrice(find(s)));
 
   // Площадная услуга задаёт ₽/га: приоритет ИМЗ → ИЗН → первый с ненулевой ценой.
   let area: TierLike | undefined;

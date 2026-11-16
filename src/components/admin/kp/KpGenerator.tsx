@@ -283,16 +283,6 @@ export default function KpGenerator() {
     loadMeta();
   }, [loadMeta]);
 
-  // Инициализация выбранной таблицы расчёта.
-  useEffect(() => {
-    if (!calcTables.length) return;
-    if (!selectedTableKey || !calcTables.some((t) => t.key === selectedTableKey)) {
-      const t = calcTables[0];
-      setSelectedTableKey(t.key);
-      setRows(t.defaultRows?.length ? t.defaultRows.map((r) => ({ ...r })) : [{}]);
-    }
-  }, [calcTables, selectedTableKey]);
-
   // Колонки = из выбранной таблицы с учётом режима цены (прямой/торги) и единицы площади.
   const deriveColumns = useCallback((cols: CalcColumn[]): CalcColumn[] => {
     const out = cols
@@ -361,7 +351,7 @@ export default function KpGenerator() {
         // считают цена × площадь. Для не-формульных таблиц заполняем и cost напрямую.
         const r: RowData = {
           __svc: l.svc, __line: l.key,
-          __pd: l.direct ? String(l.direct) : '', __pt: l.tender ? String(l.tender) : '', __p: l.direct ? String(l.direct) : '',
+          __pd: l.direct?.toString() ?? '', __pt: l.tender?.toString() ?? '', __p: l.direct?.toString() ?? '',
         };
         if (nameCol) r[nameCol.key] = l.name;
         if (unitCol) r[unitCol.key] = l.unit;
@@ -369,15 +359,26 @@ export default function KpGenerator() {
         const ct = colByKey('cost_tender');
         const c1 = colByKey('cost');
         const up = colByKey('unit_price');
-        if (up && up.kind === 'number') r.unit_price = l.direct ? String(l.direct) : '';
-        if (cd && cd.kind === 'number') r.cost_direct = l.direct ? String(l.direct) : '';
-        if (ct && ct.kind === 'number') r.cost_tender = l.tender ? String(l.tender) : '';
-        if (c1 && c1.kind === 'number' && !cd) r.cost = l.direct ? String(l.direct) : '';
+        if (up && up.kind === 'number') r.unit_price = l.direct?.toString() ?? '';
+        if (cd && cd.kind === 'number') r.cost_direct = l.direct?.toString() ?? '';
+        if (ct && ct.kind === 'number') r.cost_tender = l.tender?.toString() ?? '';
+        if (c1 && c1.kind === 'number' && !cd) r.cost = l.direct?.toString() ?? '';
         return r;
       });
     },
     [services, tiers]
   );
+
+  // При первом открытии подставляем таблицу и позиции выбранной услуги.
+  useEffect(() => {
+    if (!calcTables.length || calcTables.some((t) => t.key === selectedTableKey)) return;
+    const defaultKey = services.find((s) => s.name === serviceType)?.defaultTable;
+    const table = calcTables.find((t) => t.key === defaultKey) ?? calcTables[0];
+    const orgKey = selectedOrgs[0] || orgs[0]?.key || '';
+    const built = buildRowsForService(serviceType, table.columns, orgKey);
+    setSelectedTableKey(table.key);
+    setRows(built.length ? built : table.defaultRows?.length ? table.defaultRows.map((r) => ({ ...r })) : [{}]);
+  }, [calcTables, selectedTableKey, services, serviceType, selectedOrgs, orgs, buildRowsForService]);
 
   // Смена услуги → таблица по умолчанию + авто-строки услуги (если заданы).
   const onSelectService = (name: string) => {
@@ -407,14 +408,14 @@ export default function KpGenerator() {
         const lp = tiers.find((x) => x.orgKey === orgKey && x.serviceType === r.__svc)?.linePrices?.[r.__line as string];
         if (!lp) return r;
         const out: RowData = { ...r };
-        out.__pd = lp.direct ? String(lp.direct) : '';
-        out.__pt = lp.tender ? String(lp.tender) : '';
-        out.__p = lp.direct ? String(lp.direct) : '';
+        out.__pd = String(lp.direct);
+        out.__pt = String(lp.tender);
+        out.__p = String(lp.direct);
         // Не-формульные ячейки стоимости заполняем напрямую (формулы считаются сами).
-        if ('unit_price' in out) out.unit_price = lp.direct ? String(lp.direct) : '';
-        if ('cost_direct' in out) out.cost_direct = lp.direct ? String(lp.direct) : '';
-        if ('cost_tender' in out) out.cost_tender = lp.tender ? String(lp.tender) : '';
-        if ('cost' in out && !('cost_direct' in out)) out.cost = lp.direct ? String(lp.direct) : '';
+        if ('unit_price' in out) out.unit_price = String(lp.direct);
+        if ('cost_direct' in out) out.cost_direct = String(lp.direct);
+        if ('cost_tender' in out) out.cost_tender = String(lp.tender);
+        if ('cost' in out && !('cost_direct' in out)) out.cost = String(lp.direct);
         return out;
       });
     });
@@ -441,13 +442,13 @@ export default function KpGenerator() {
     const lp = tiers.find((x) => x.orgKey === orgKey && x.serviceType === r.__svc)?.linePrices?.[r.__line as string];
     if (!lp) return r;
     const out: RowData = { ...r };
-    out.__pd = lp.direct ? String(lp.direct) : '';
-    out.__pt = lp.tender ? String(lp.tender) : '';
-    out.__p = lp.direct ? String(lp.direct) : '';
-    if ('unit_price' in out) out.unit_price = lp.direct ? String(lp.direct) : '';
-    if ('cost_direct' in out) out.cost_direct = lp.direct ? String(lp.direct) : '';
-    if ('cost_tender' in out) out.cost_tender = lp.tender ? String(lp.tender) : '';
-    if ('cost' in out && !('cost_direct' in out)) out.cost = lp.direct ? String(lp.direct) : '';
+    out.__pd = String(lp.direct);
+    out.__pt = String(lp.tender);
+    out.__p = String(lp.direct);
+    if ('unit_price' in out) out.unit_price = String(lp.direct);
+    if ('cost_direct' in out) out.cost_direct = String(lp.direct);
+    if ('cost_tender' in out) out.cost_tender = String(lp.tender);
+    if ('cost' in out && !('cost_direct' in out)) out.cost = String(lp.direct);
     return out;
   }, [tiers]);
 

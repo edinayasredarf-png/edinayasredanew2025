@@ -1218,13 +1218,10 @@ export async function dbGetTier(orgKey: string, serviceType: string): Promise<Kp
  */
 export async function dbResolveComposedTier(orgKey: string, serviceType: string): Promise<KpTier | null> {
   const comps = serviceComponents(serviceType);
-  if (comps.length <= 1) return dbGetTier(orgKey, serviceType);
   const found = await Promise.all(comps.map((s) => dbGetTier(orgKey, s)));
   const byName = new Map(comps.map((s, i) => [s, found[i] || undefined]));
   const t = composeTier(orgKey, serviceType, (s) => byName.get(s));
-  // Построчные цены комбинированной услуги берутся из тарифов компонентов при
-  // генерации (kpBuild), поэтому здесь line_prices не нужны.
-  return t ? { ...t, linePrices: {} } : null;
+  return t ? { ...t, linePrices: t.linePrices ?? {} } : null;
 }
 
 export async function dbUpsertTier(t: KpTier): Promise<void> {
