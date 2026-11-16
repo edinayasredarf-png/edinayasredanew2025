@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import Image from 'next/image';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Plus } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Plus, X } from 'lucide-react';
+import { SITE_CONFIG } from '@/lib/config';
 import snapshot from './telegram-snapshot.json';
 import { Portrait } from './portrait';
 import { PhotoRail } from './photos';
@@ -11,6 +12,8 @@ import type { StatovPhoto } from './telegram';
 import styles from './portfolio.module.css';
 
 const channel = 'https://t.me/StatovLIVE';
+const vk = 'https://vk.ru/avstatov';
+const email = 'mailto:proeco09@ya.ru';
 
 const bio = [
   'Мой профессиональный путь связан с развитием предпринимательства, реализацией экологических инициатив, внедрением современных решений и созданием проектов, имеющих долгосрочную общественную ценность.',
@@ -160,11 +163,17 @@ function Journal() {
 }
 
 export function StatovPortfolio({ fontClass }: { fontClass: string }) {
+  const contactDialog = useRef<HTMLDialogElement>(null);
+
+  function showContacts() {
+    contactDialog.current?.showModal();
+  }
+
   return <main className={styles.root + ' ' + fontClass} id="statov-top">
     <header className={styles.header}>
       <a className={styles.wordmark} href="#statov-top">Статов Андрей</a>
       <nav aria-label="Разделы страницы">
-        <a href="#statov-projects">Проекты</a><a href="#statov-journal">Дневник</a><a href="#statov-contacts">Связаться <ArrowUpRight size={14} /></a>
+        <a href="#statov-projects">Проекты</a><a href="#statov-journal">Дневник</a><button type="button" aria-haspopup="dialog" aria-controls="statov-contact-dialog" onClick={showContacts}>Связаться <ArrowUpRight size={14} /></button>
       </nav>
     </header>
     <section className={styles.hero} aria-labelledby="statov-title">
@@ -172,7 +181,7 @@ export function StatovPortfolio({ fontClass }: { fontClass: string }) {
       <div className={styles.heroCopy}>
         <h1 id="statov-title">Статов Андрей</h1>
         <p>Предприниматель. Создатель. Человек, меняющий среду вокруг себя.</p>
-        <a className={styles.contactButton} href="#statov-contacts"><span><Plus size={26} strokeWidth={1.4} /></span> Связаться</a>
+        <button type="button" className={styles.contactButton} aria-haspopup="dialog" aria-controls="statov-contact-dialog" onClick={showContacts}><span><Plus size={26} strokeWidth={1.4} /></span> Связаться</button>
       </div>
       <a className={styles.scrollLink} href="#statov-about" aria-label="Об Андрее Статове"><ArrowDown size={20} /></a>
     </section>
@@ -195,9 +204,29 @@ export function StatovPortfolio({ fontClass }: { fontClass: string }) {
       <div className={styles.contacts}>
         <a href={channel}>Telegram <ArrowUpRight size={22} /></a>
         <a href="https://max.ru/channel_StatovLive">MAX <ArrowUpRight size={22} /></a>
-        <a href="https://vk.ru/avstatov">ВКонтакте <ArrowUpRight size={22} /></a>
-        <a href="mailto:proeco09@ya.ru">Почта <ArrowUpRight size={22} /></a>
+        <a href={vk}>ВКонтакте <ArrowUpRight size={22} /></a>
+        <a href={email}>Почта <ArrowUpRight size={22} /></a>
       </div>
     </footer>
+    <dialog id="statov-contact-dialog" ref={contactDialog} className={styles.contactDialog}
+      aria-labelledby="statov-contact-title"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) event.currentTarget.close();
+      }}>
+      <div className={styles.contactPanel}>
+        <div className={styles.contactDialogHead}>
+          <h2 id="statov-contact-title">Способы связи</h2>
+          <button type="button" aria-label="Закрыть" onClick={() => contactDialog.current?.close()}>
+            <X size={36} strokeWidth={1.4} />
+          </button>
+        </div>
+        <div className={styles.contactMethods}>
+          <a href={channel}>Телеграм</a>
+          <a href={vk}>Вконтакте</a>
+          <a href={'tel:' + SITE_CONFIG.contact.phone.replaceAll('-', '')} title="Номер Единой Среды">Позвонить</a>
+          <a href={email}>Почта</a>
+        </div>
+      </div>
+    </dialog>
   </main>;
 }
