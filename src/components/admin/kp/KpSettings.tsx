@@ -1925,13 +1925,24 @@ function PricesTab({
         </div>
       </div>
 
-      <ScrollX className="bg-white border border-gray-200 rounded-xl">
-        <table className="w-full text-sm">
+      <ScrollX
+        className="@container bg-white border border-gray-200 rounded-xl [--service-column-width:clamp(6rem,38cqw,22rem)]"
+        innerClassName="[scroll-padding-left:var(--service-column-width)]"
+        controlsBelow
+      >
+        <table
+          className="w-full table-fixed border-separate border-spacing-0 text-sm"
+          style={{ minWidth: `calc(var(--service-column-width) + ${orgs.length * 120}px)` }}
+        >
+          <colgroup>
+            <col className="w-[var(--service-column-width)]" />
+            <col span={orgs.length} />
+          </colgroup>
           <thead>
-            <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
-              <th className="px-3 py-2 sticky left-0 bg-white">Услуга / позиция</th>
+            <tr className="text-left text-xs text-gray-500 [&>th]:border-b [&>th]:border-gray-100">
+              <th className="px-3 py-2 sticky left-0 z-10 bg-white">Услуга / позиция</th>
               {orgs.map((o) => (
-                <th key={o.key} className="px-3 py-2 min-w-[120px] text-right" title={o.name}>{o.shortName || o.name}</th>
+                <th key={o.key} className="px-3 py-2 text-right wrap-anywhere" title={o.name}>{o.shortName || o.name}</th>
               ))}
             </tr>
           </thead>
@@ -1944,13 +1955,15 @@ function PricesTab({
               </tr>
             )}
             {priceRows.map((row, i) => (
-              <tr key={`${row.svc}#${row.kind === 'line' ? row.lineKey : 'scalar'}`} className={i % 2 ? 'bg-[#FAFBFC]' : ''}>
-                <td className="px-3 py-1.5 text-[#313131] sticky left-0 bg-inherit whitespace-nowrap">{row.label}</td>
+              <tr key={`${row.svc}#${row.kind === 'line' ? row.lineKey : 'scalar'}`} className={i % 2 ? 'bg-[#FAFBFC]' : 'bg-white'}>
+                <th scope="row" className="sticky left-0 z-10 border-r border-gray-200 bg-inherit px-3 py-1.5 text-left font-normal text-[#313131] wrap-anywhere">{row.label}</th>
                 {orgs.map((o) => (
                   <td key={o.key} className="px-2 py-1">
                     <input
                       className={numCell}
                       inputMode="decimal"
+                      aria-label={`${row.label} — ${o.shortName || o.name}`}
+                      onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' })}
                       value={getVal(o.key, row) || ''}
                       onChange={(e) => setVal(o.key, row, Number(e.target.value) || 0)}
                       placeholder="0"
