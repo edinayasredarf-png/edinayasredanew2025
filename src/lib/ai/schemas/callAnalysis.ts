@@ -144,6 +144,7 @@ const ManagerCriterion = z
         "opening", "discovery", "questions", "pain_identification", "current_situation",
         "decision_maker", "budget", "timeline", "procurement", "objections",
         "product_presentation", "next_step", "follow_up",
+        "project_status", "project_risks", "project_commitments", "project_feedback",
       ])
       .catch("opening"),
     score: z.number().catch(0),

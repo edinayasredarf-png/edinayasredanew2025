@@ -163,7 +163,18 @@ export async function runAnalysis(
   const dept = await getDepartmentPromptForManager(call.bitrix_user_id);
   const customPrompt = dept?.analysisPrompt?.trim() || null;
   const stageBlock = (await getStagePromptOverride(stage.key)) || getStagePromptBlock(stage.key);
-  const systemPrompt = customPrompt || (stageBlock ? `${CALL_ANALYSIS_SYSTEM}\n\n${stageBlock}` : CALL_ANALYSIS_SYSTEM);
+  const projectCall = stage.key.startsWith("project_") ||
+    /управлени[ея]\s+проектами/i.test(dept?.departmentName ?? "");
+  const projectRubric = `ОЦЕНКА СОПРОВОЖДЕНИЯ КОНТРАКТА: если разговор касается исполнения действующего контракта, этот блок заменяет критерии продаж и инструкции о баллах за неприменимые критерии.
+Для содержательного разговора с заказчиком выставь managerScoreApplicable=true. Используй только применимые критерии managerPerformance.criteria:
+project_status — ясность статуса работ и сроков;
+project_risks — выявление препятствий, рисков и способа их устранения;
+project_commitments — фиксация следующего шага, ответственного и срока;
+project_feedback — работа с замечаниями заказчика и договорённость об обратной связи.
+Оцени каждый применимый критерий по шкале 0–10 с обоснованием по разговору. Не включай неприменимые критерии в список или среднюю оценку. Overall — среднее применимых баллов. Если контакта не было, разговор был внутренним или сводился к короткому техническому подтверждению, установи managerScoreApplicable=false, overall=null и criteria=[].
+Если разговор по сути про новую продажу, применяй правила оценки продаж.`;
+  const basePrompt = customPrompt || (stageBlock ? `${CALL_ANALYSIS_SYSTEM}\n\n${stageBlock}` : CALL_ANALYSIS_SYSTEM);
+  const systemPrompt = projectCall ? `${basePrompt}\n\n${projectRubric}` : basePrompt;
   // Версия промта в кэш-ключе: смена промта отдела/этапа инвалидирует кэш и
   // даёт повторный анализ этого звонка новым промтом.
   const promptVersion = customPrompt

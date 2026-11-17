@@ -40,6 +40,9 @@ export interface ManagerRow {
   analyzed: number;
   deals: number;
   hotDeals: number;
+  departmentName: string | null;
+  scoredCalls: number;
+  avgCallScore: number | null;
   avgManagerScore: number | null;
   avgDealScore: number | null;
 }
@@ -58,10 +61,15 @@ export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
   const pool = getTimewebPool();
 
   const callParams: unknown[] = [];
-  const callAgg = await pool.query<{ uid: string; calls: string; analyzed: string }>(
+  const callAgg = await pool.query<{ uid: string; calls: string; analyzed: string; scored: string; avg_call: string | null }>(
     `select c.bitrix_user_id uid, count(*)::text calls,
-            count(*) filter (where status='COMPLETED')::text analyzed
+            count(*) filter (where c.status='COMPLETED')::text analyzed,
+            count(a.manager_score)::text scored, avg(a.manager_score)::text avg_call
        from ai_calls c
+       left join lateral (
+         select aa.manager_score from ai_call_analysis aa
+          where aa.call_id=c.id order by aa.created_at desc, aa.id desc limit 1
+       ) a on true
       where c.bitrix_user_id is not null${callRange(range, callParams)}
       group by 1`,
     callParams
@@ -81,9 +89,11 @@ export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
     dealParams
   );
 
-  const names = await pool.query<{ bitrix_user_id: string; full_name: string | null; avatar_url: string | null }>(
-    `select bitrix_user_id, full_name, avatar_url from ai_managers`
+  const names = await pool.query<{ bitrix_user_id: string; full_name: string | null; department_name: string | null; avatar_url: string | null }>(
+    `select m.bitrix_user_id, m.full_name, m.avatar_url, d.name as department_name
+       from ai_managers m left join ai_departments d on d.id=m.department_id`
   );
+  const departmentMap = new Map(names.rows.map((r) => [r.bitrix_user_id, r.department_name]));
   const nameMap = new Map(names.rows.map((r) => [r.bitrix_user_id, r.full_name]));
   const avatarMap = new Map(names.rows.map((r) => [r.bitrix_user_id, r.avatar_url]));
   const dealMap = new Map(dealAgg.rows.map((r) => [r.uid, r]));
@@ -103,15 +113,20 @@ export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
       analyzed: Number(c?.analyzed ?? 0),
       deals: Number(dl?.deals ?? 0),
       hotDeals: Number(dl?.hot ?? 0),
+      departmentName: departmentMap.get(uid) ?? null,
+      scoredCalls: Number(c?.scored ?? 0),
+      avgCallScore: round(c?.avg_call),
       avgManagerScore: round(dl?.avg_mgr, 1),
       avgDealScore: round(dl?.avg_deal, 0),
     });
   }
-  rows.sort((a, b) => (b.avgManagerScore ?? -1) - (a.avgManagerScore ?? -1) || b.calls - a.calls);
+  rows.sort((a, b) => (b.avgCallScore ?? -1) - (a.avgCallScore ?? -1) || b.calls - a.calls);
   return rows;
 }
 
 const CRITERION_LABEL: Record<string, string> = {
+  project_status: "статус работ и сроки", project_risks: "риски и препятствия",
+  project_commitments: "следующий шаг, ответственный и срок", project_feedback: "работа с замечаниями заказчика",
   opening: "приветствие", discovery: "выявление потребности", questions: "вопросы",
   pain_identification: "выявление проблем", current_situation: "текущая ситуация",
   decision_maker: "выявление ЛПР", budget: "обсуждение бюджета", timeline: "сроки",
@@ -192,7 +207,7 @@ export async function getManagerDetail(bitrixUserId: string, range?: DateRange):
     avatarUrl: metrics?.avatarUrl ?? nameRow.rows[0]?.avatar_url ?? null,
     metrics: metrics ?? {
       bitrixUserId, name: nameRow.rows[0]?.full_name ?? null, avatarUrl: nameRow.rows[0]?.avatar_url ?? null,
-      calls: 0, analyzed: 0, deals: 0, hotDeals: 0, avgManagerScore: null, avgDealScore: null,
+      calls: 0, analyzed: 0, deals: 0, hotDeals: 0, departmentName: null, scoredCalls: 0, avgCallScore: null, avgManagerScore: null, avgDealScore: null,
     },
     criteria: crit.rows.map((r) => ({ key: r.key, label: CRITERION_LABEL[r.key] || r.key, avg: Number(r.avg) })),
     strengths: flat("strengths"),

@@ -2082,6 +2082,8 @@ const CRIT_LABEL: Record<string, string> = {
   pain_identification: 'выявление проблем', current_situation: 'текущая ситуация',
   decision_maker: 'выявление ЛПР', budget: 'обсуждение бюджета', timeline: 'сроки',
   procurement: 'закупки', objections: 'работа с возражениями',
+  project_status: 'статус работ и сроки', project_risks: 'риски и препятствия',
+  project_commitments: 'следующий шаг, ответственный и срок', project_feedback: 'работа с замечаниями заказчика',
   product_presentation: 'презентация продукта', next_step: 'следующий шаг', follow_up: 'договорённость о следующем контакте',
 };
 const RESULT_LABEL: Record<string, string> = {
@@ -3179,11 +3181,13 @@ function Tags({ onNavigate }: { onNavigate?: (t: NavTarget) => void }) {
 /* ─────────── Менеджеры ─────────── */
 interface ManagerRow {
   bitrixUserId: string; name: string | null; calls: number; analyzed: number;
+  departmentName: string | null; scoredCalls: number; avgCallScore: number | null;
   deals: number; hotDeals: number; avgManagerScore: number | null; avgDealScore: number | null;
 }
 
 function Managers({ onOpen }: { onOpen: (id: string) => void }) {
   const [items, setItems] = useState<ManagerRow[]>([]);
+  const [department, setDepartment] = useState('');
   const [period] = usePersistentPeriod();
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
@@ -3200,34 +3204,42 @@ function Managers({ onOpen }: { onOpen: (id: string) => void }) {
   }, [period]);
   useEffect(() => { load(); }, [load]);
 
+  const departments = [...new Set(items.flatMap((m) => m.departmentName ? [m.departmentName] : []))].sort();
+  const visible = department ? items.filter((m) => m.departmentName === department) : items;
+
   if (err) return <div className="p-4 bg-red-50 text-red-700 rounded-xl">{err}</div>;
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-xl font-semibold text-[#1b2a4a]">Менеджеры</h2>
+        <Select value={department} onChange={setDepartment} ariaLabel="Отдел" options={[
+          { value: '', label: 'Все отделы' },
+          ...departments.map((name) => ({ value: name, label: name })),
+        ]} />
         <ExportButton period={period} />
       </div>
       {loading ? <LoadingBlock /> : (
         <ScrollX className="bg-white rounded-2xl border border-gray-100">
           <table className="min-w-full text-sm">
             <thead className="bg-[#F6F7F9] text-gray-600">
-              <tr>{['Менеджер', 'Звонков', 'Сделок', '🔥 Горячих', 'Оц. менеджера', 'Оц. сделки'].map((h) => (
+              <tr>{['Менеджер', 'Звонков', 'Сделок', '🔥 Горячих', 'Оценка по звонкам', 'Оц. менеджера по сделкам', 'Оц. сделки'].map((h) => (
                 <th key={h} className="text-left font-medium px-3 py-2 whitespace-nowrap">{h}</th>))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {items.map((m) => (
+              {visible.map((m) => (
                 <tr key={m.bitrixUserId} onClick={() => onOpen(m.bitrixUserId)} className="hover:bg-sky-50/60 cursor-pointer">
                   <td className="px-3 py-2 font-medium text-gray-900">{m.name || `#${m.bitrixUserId}`}</td>
                   <td className="px-3 py-2">{m.calls}<span className="text-gray-400"> ({m.analyzed})</span></td>
                   <td className="px-3 py-2">{m.deals}</td>
                   <td className="px-3 py-2">{m.hotDeals}</td>
+                  <td className="px-3 py-2 font-medium">{m.avgCallScore != null ? `${m.avgCallScore}/10 (${m.scoredCalls})` : '—'}</td>
                   <td className="px-3 py-2 font-medium">{m.avgManagerScore != null ? `${m.avgManagerScore}/10` : '—'}</td>
                   <td className="px-3 py-2">{m.avgDealScore ?? '—'}</td>
                 </tr>
               ))}
-              {items.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-gray-400">Нет данных.</td></tr>}
+              {visible.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">Нет данных.</td></tr>}
             </tbody>
           </table>
         </ScrollX>
@@ -3327,6 +3339,7 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
         <h2 className="text-xl font-semibold text-[#1b2a4a]">{data.name || `#${data.bitrixUserId}`}</h2>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
+        <Kpi label={`Оценка по звонкам (${m.scoredCalls})`} value={m.avgCallScore != null ? `${m.avgCallScore}/10` : '—'} />
         <Kpi label="Оценка (по сделкам)" value={m.avgManagerScore != null ? `${m.avgManagerScore}/10` : '—'} />
         <Kpi label="Звонков" value={m.calls} sub={`Проанализировано: ${m.analyzed}`} />
         <Kpi label="Сделок" value={m.deals} />
