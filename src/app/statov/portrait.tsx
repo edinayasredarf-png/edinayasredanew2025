@@ -5,8 +5,6 @@ const poster = '/statov/portrait-video.jpg';
 const topics = ['Экология', 'Цифровые решения', 'Семейная история'];
 
 export function Portrait() {
-  return () => preference.removeEventListener('change', update);
-  }, []);
 
   return (
     <div className={styles.portraitFrame}>
