@@ -81,22 +81,6 @@
   mask-composite: intersect;
 }
 .portraitMedia img { width: 100%; height: 100%; display: block; object-fit: contain; }
-.portraitTopics { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
-.portraitTopics li {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  min-height: 42px;
-  padding: 9px clamp(12px, 1.6vw, 23px);
-  border-radius: 100vw;
-  background: linear-gradient(100deg, #263549, #0a0c10 87%);
-  color: var(--paper);
-  font: 500 clamp(11px, 1.15vw, 16px) var(--statov-mono), monospace;
-  white-space: nowrap;
-}
-.portraitTopics li:nth-child(1) { top: 23%; right: 1%; }
-.portraitTopics li:nth-child(2) { top: 63%; left: 0; background: linear-gradient(100deg, #0a0c10 13%, #263549); }
-.portraitTopics li:nth-child(3) { top: 19%; left: 0; background: linear-gradient(100deg, #0a0c10 13%, #263549); }
 .heroCopy { text-align: center; display: grid; justify-items: center; }
 .heroCopy h1 { font-size: clamp(60px, 9.6vw, 158px); line-height: .84; white-space: nowrap; }
 .heroCopy p { margin-top: 17px; color: var(--accent); max-width: 100%; line-height: 1.17; font-family: var(--display); font-size: clamp(17px, 2vw, 29px); }
@@ -197,9 +181,6 @@
   .header nav :is(a,button) svg { display: none; }
   .hero { min-height: clamp(590px, 90svh, 780px); padding-bottom: 66px; }
   .portrait { width: 115%; height: 76%; top: 12%; }
-  .portraitTopics li { min-height: 33px; padding: 7px 11px; }
-  .portraitTopics li:nth-child(1) { right: 8%; }
-  .portraitTopics li:nth-child(2), .portraitTopics li:nth-child(3) { left: 8%; }
   .heroCopy h1 { font-size: clamp(49px, 12.9vw, 95px); }
   .heroCopy p { max-width: 29ch; }
   .scrollLink { bottom: 20px; }
