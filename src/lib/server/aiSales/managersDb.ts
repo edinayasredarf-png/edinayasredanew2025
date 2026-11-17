@@ -57,6 +57,9 @@ export async function setManagerAvatar(bitrixUserId: string, avatarUrl: string |
   );
 }
 
+// Старые оценки по продажам не входят в отчёт сотрудника другого отдела.
+const departmentScoreFilter = `(d.name is null or d.name ~* 'продаж' or a.prompt_version ~ '[+]rubric:(production|project|service|legal|general)$')`;
+
 export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
   const pool = getTimewebPool();
 
@@ -64,10 +67,13 @@ export async function listManagers(range?: DateRange): Promise<ManagerRow[]> {
   const callAgg = await pool.query<{ uid: string; calls: string; analyzed: string; scored: string; avg_call: string | null }>(
     `select c.bitrix_user_id uid, count(*)::text calls,
             count(*) filter (where c.status='COMPLETED')::text analyzed,
-            count(a.manager_score)::text scored, avg(a.manager_score)::text avg_call
+            (count(a.manager_score) filter (where ${departmentScoreFilter}))::text scored,
+            (avg(a.manager_score) filter (where ${departmentScoreFilter}))::text avg_call
        from ai_calls c
+       left join ai_managers m on m.bitrix_user_id=c.bitrix_user_id
+       left join ai_departments d on d.id=m.department_id
        left join lateral (
-         select aa.manager_score from ai_call_analysis aa
+         select aa.manager_score, aa.prompt_version from ai_call_analysis aa
           where aa.call_id=c.id order by aa.created_at desc, aa.id desc limit 1
        ) a on true
       where c.bitrix_user_id is not null${callRange(range, callParams)}
@@ -158,11 +164,16 @@ export async function getManagerDetail(bitrixUserId: string, range?: DateRange):
   const critParams: unknown[] = [bitrixUserId];
   const crit = await pool.query<{ key: string; avg: string }>(
     `select cr->>'key' key, round(avg((cr->>'score')::numeric),1)::text avg
-       from ai_call_analysis a
-       join ai_calls c on c.id = a.call_id
+       from ai_calls c
+       left join ai_managers m on m.bitrix_user_id=c.bitrix_user_id
+       left join ai_departments d on d.id=m.department_id
+       join lateral (
+         select aa.data, aa.prompt_version, aa.manager_score from ai_call_analysis aa
+         where aa.call_id=c.id order by aa.created_at desc, aa.id desc limit 1
+       ) a on true
        join lateral jsonb_array_elements(a.data->'managerPerformance'->'criteria') cr on true
       where c.bitrix_user_id = $1
-        and (a.data->>'connected') <> 'false' and (a.data->>'managerScoreApplicable') <> 'false'
+        and a.manager_score is not null and ${departmentScoreFilter}
         and cr->>'score' ~ '^-?[0-9.]+$'${callRange(range, critParams)}
       group by 1 order by avg((cr->>'score')::numeric) asc`,
     critParams
@@ -193,8 +204,12 @@ export async function getManagerDetail(bitrixUserId: string, range?: DateRange):
   const rec = await pool.query<{
     id: string; started_at: Date | null; call_type: string | null; manager_score: string | null; deal_temperature: string | null;
   }>(
-    `select c.id, c.started_at, a.data->>'callType' call_type, a.manager_score, a.deal_temperature
+    `select c.id, c.started_at, a.data->>'callType' call_type,
+            case when ${departmentScoreFilter} then a.manager_score end as manager_score,
+            case when d.name is null or d.name ~* 'продаж' then a.deal_temperature end as deal_temperature
        from ai_calls c
+       left join ai_managers m on m.bitrix_user_id=c.bitrix_user_id
+       left join ai_departments d on d.id=m.department_id
        left join lateral (select * from ai_call_analysis aa where aa.call_id=c.id order by aa.created_at desc limit 1) a on true
       where c.bitrix_user_id = $1${callRange(range, recParams)}
       order by c.started_at desc nulls last limit 15`,

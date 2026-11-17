@@ -1,4 +1,5 @@
 import "server-only";
+import { departmentCallProfile } from "@/lib/ai/prompts/departmentCallRubrics";
 
 import { createHash } from "node:crypto";
 import * as z from "zod/v4";
@@ -20,7 +21,7 @@ import { resolveCallStage } from "@/lib/server/aiSales/callStage";
  * скрипт/модель и пересчитывать. Промт содержит шаги скрипта из БД (не зашит).
  */
 
-export const SCRIPT_SCORE_PROMPT_VERSION = "script-score-v2";
+export const SCRIPT_SCORE_PROMPT_VERSION = "script-score-v3";
 
 const StepResult = z
   .object({
@@ -34,7 +35,7 @@ const ScriptScoreSchema = z.object({
   steps: z.array(StepResult).catch([]),
 });
 
-const SYSTEM = `Ты — методолог отдела продаж. Тебе дают транскрипт телефонного разговора менеджера с клиентом и чек-лист шагов скрипта продаж.
+const SYSTEM = `Ты оцениваешь выполнение обязанностей сотрудника по транскрипту и чек-листу его отдела. Учитывай только заданные шаги.
 Твоя задача — для КАЖДОГО шага скрипта определить, выполнил ли его менеджер в этом разговоре.
 
 ПРАВИЛА:
@@ -73,7 +74,7 @@ export async function runScriptScoring(
 
   // Скрипт отдела менеджера + этапа (или общий, если для этой комбинации своего нет).
   const dept = await getDepartmentPromptForManager(call.bitrix_user_id);
-  const script = await getActiveScript(dept?.departmentId ?? null, stage.key);
+  const script = await getActiveScript(dept?.departmentId ?? null, stage.key, departmentCallProfile(dept?.departmentName, stage.key) === "sales");
   if (!script || script.steps.length === 0) return { skipped: "no active script" };
 
   const transcript = await getTranscript(callId);

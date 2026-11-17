@@ -1,4 +1,6 @@
 import "server-only";
+import { getActiveScript } from "@/lib/server/aiSales/scriptsDb";
+import { departmentCallProfile, departmentCallPrompt } from "@/lib/ai/prompts/departmentCallRubrics";
 
 import { createHash } from "node:crypto";
 import { getAiProvider } from "@/lib/ai";
@@ -163,23 +165,18 @@ export async function runAnalysis(
   const dept = await getDepartmentPromptForManager(call.bitrix_user_id);
   const customPrompt = dept?.analysisPrompt?.trim() || null;
   const stageBlock = (await getStagePromptOverride(stage.key)) || getStagePromptBlock(stage.key);
-  const projectCall = stage.key.startsWith("project_") ||
-    /управлени[ея]\s+проектами/i.test(dept?.departmentName ?? "");
-  const projectRubric = `ОЦЕНКА СОПРОВОЖДЕНИЯ КОНТРАКТА: если разговор касается исполнения действующего контракта, этот блок заменяет критерии продаж и инструкции о баллах за неприменимые критерии.
-Для содержательного разговора с заказчиком выставь managerScoreApplicable=true. Используй только применимые критерии managerPerformance.criteria:
-project_status — ясность статуса работ и сроков;
-project_risks — выявление препятствий, рисков и способа их устранения;
-project_commitments — фиксация следующего шага, ответственного и срока;
-project_feedback — работа с замечаниями заказчика и договорённость об обратной связи.
-Оцени каждый применимый критерий по шкале 0–10 с обоснованием по разговору. Не включай неприменимые критерии в список или среднюю оценку. Overall — среднее применимых баллов. Если контакта не было, разговор был внутренним или сводился к короткому техническому подтверждению, установи managerScoreApplicable=false, overall=null и criteria=[].
-Если разговор по сути про новую продажу, применяй правила оценки продаж.`;
-  const basePrompt = customPrompt || (stageBlock ? `${CALL_ANALYSIS_SYSTEM}\n\n${stageBlock}` : CALL_ANALYSIS_SYSTEM);
-  const systemPrompt = projectCall ? `${basePrompt}\n\n${projectRubric}` : basePrompt;
-  // Версия промта в кэш-ключе: смена промта отдела/этапа инвалидирует кэш и
-  // даёт повторный анализ этого звонка новым промтом.
-  const promptVersion = customPrompt
-    ? `${CALL_ANALYSIS_PROMPT_VERSION}+dept:${dept!.departmentId.slice(0, 8)}`
-    : `${CALL_ANALYSIS_PROMPT_VERSION}+stage:${stage.key}`;
+  const profile = departmentCallProfile(dept?.departmentName, stage.key);
+  const checklist = profile !== "sales" && dept
+    ? await getActiveScript(dept.departmentId, stage.key, false)
+    : null;
+  const checklistBlock = checklist?.steps.length
+    ? `Чек-лист отдела. Оцени применимые пункты в рамках критериев выше, а в комментариях укажи, что выполнено и что упущено:\n${checklist.steps.map((step) => `- ${step.title}`).join("\n")}`
+    : null;
+  const systemPrompt = profile === "sales"
+    ? customPrompt || [CALL_ANALYSIS_SYSTEM, stageBlock].filter(Boolean).join("\n\n")
+    : [customPrompt, departmentCallPrompt(profile), checklistBlock].filter(Boolean).join("\n\n");
+  const scope = customPrompt ? `dept:${dept!.departmentId.slice(0, 8)}` : `stage:${stage.key}`;
+  const promptVersion = `${CALL_ANALYSIS_PROMPT_VERSION}+${scope}+rubric:${profile}`;
   const promptFingerprint = createHash("sha256").update(systemPrompt).digest("hex").slice(0, 12);
 
   const inputHash = createHash("sha256")
@@ -208,6 +205,17 @@ project_feedback — работа с замечаниями заказчика �
     cacheSystem: true,
     maxTokens: 16000,
   });
+
+  if (profile !== "sales") {
+    const performance = data.managerPerformance;
+    performance.criteria = data.connected && data.managerScoreApplicable
+      ? performance.criteria.filter((item) => item.key.startsWith("project_") && item.score >= 0 && item.score <= 10)
+      : [];
+    performance.overall = performance.criteria.length
+      ? Math.round(10 * performance.criteria.reduce((sum, item) => sum + item.score, 0) / performance.criteria.length) / 10
+      : null;
+    data.managerScoreApplicable = performance.overall !== null;
+  }
 
   // dealStage — служебное поле, ставим кодом (не доверяем LLM): источник
   // истины — CRM-стадия лида/сделки на момент анализа этого звонка.

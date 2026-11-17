@@ -3347,7 +3347,13 @@ function ManagerDetail({ id, onBack, onOpenCall }: { id: string; onBack: () => v
         <Kpi label="Ср. оценка сделки" value={m.avgDealScore ?? '—'} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <TopList title="Навыки по критериям (0–10)" max={10} rows={data.criteria.map((c) => ({ label: c.label, count: c.avg }))} />
+        {data.criteria.length ? (
+          <TopList title="Навыки по критериям (0–10)" max={10} rows={data.criteria.map((c) => ({ label: c.label, count: c.avg }))} />
+        ) : (
+          <p className="bg-white rounded-xl border border-gray-100 p-4 text-sm text-gray-500">
+            За выбранный период нет баллов по текущим критериям отдела.
+          </p>
+        )}
         <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
           {data.strengths.length > 0 && (<div><p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">Сильные стороны</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}
           {data.weaknesses.length > 0 && (<div><p className="text-xs font-semibold uppercase tracking-wide text-amber-600 mb-1">Зоны роста</p><ul className="list-disc pl-5 text-sm text-gray-700">{data.weaknesses.map((s, i) => <li key={i}>{s}</li>)}</ul></div>)}

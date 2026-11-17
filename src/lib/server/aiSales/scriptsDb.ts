@@ -76,7 +76,8 @@ export async function listScripts(): Promise<SalesScript[]> {
  */
 export async function getActiveScript(
   departmentId: string | null,
-  stageKey: string
+  stageKey: string,
+  allowGlobal = true
 ): Promise<SalesScript | null> {
   const pool = getTimewebPool();
   try {
@@ -86,11 +87,11 @@ export async function getActiveScript(
       `select id, department_id, stage_key, name, version, steps
          from ai_sales_scripts
         where is_active
-          and (department_id = $1 or department_id is null)
+          and (department_id = $1 or ($3 and department_id is null))
           and (stage_key = $2 or stage_key = '')
         order by (department_id = $1) desc nulls last, (stage_key = $2) desc
         limit 1`,
-      [departmentId, stageKey]
+      [departmentId, stageKey, allowGlobal]
     );
     const r = rows[0];
     if (!r) return null;
