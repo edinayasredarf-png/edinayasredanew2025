@@ -143,7 +143,7 @@ export function RedesignFooter({ variant = 'default' }: { variant?: 'default' | 
 								<p className="text-[#050c26] text-[22px] font-bold font-involve leading-7">Компания</p>
 								<ul className="space-y-3">
 									<li><Link href="/about" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">О нас</Link></li>
-									<li><Link href="/grants" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Гранты</Link></li>
+									<li><Link href="/statov" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Основатель компании</Link></li>
 									<li><Link href="/cases" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Кейсы</Link></li>
 									<li><Link href="/events" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Мероприятия</Link></li>
 									<li><Link href="/blog" className="text-[16px] lg:text-[15px] text-[#646b85] leading-6 hover:text-[#029cda] transition-colors">Блог</Link></li>
