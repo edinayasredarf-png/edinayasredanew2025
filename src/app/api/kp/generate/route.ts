@@ -147,8 +147,8 @@ export async function POST(request: NextRequest) {
     return n;
   };
   docs.forEach((d, i) => {
-    if (format !== "pdf") zip.file(uniq(`${d.filename}.docx`), d.docx);
-    if (wantPdf && pdfs[i]) zip.file(uniq(`${d.filename}.pdf`), pdfs[i] as Buffer);
+    if (format !== "pdf") zip.file(uniq(`${d.folderName ? d.folderName + "/" : ""}${d.filename}.docx`), d.docx);
+    if (wantPdf && pdfs[i]) zip.file(uniq(`${d.folderName ? d.folderName + "/" : ""}${d.filename}.pdf`), pdfs[i] as Buffer);
   });
   const zipBuf = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
   const clientName = body.form.client.orgShort || body.form.client.orgFull || "КП";

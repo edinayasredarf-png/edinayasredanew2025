@@ -65,6 +65,8 @@ export async function POST(request: NextRequest) {
     writeKpNumber: org.writeKpNumber ?? true,
     mailAccountId: org.mailAccountId ?? null,
     mailAccountKey: org.mailAccountKey ?? "",
+    documentNameTemplate: String(org.documentNameTemplate || "").slice(0, 300),
+    folderNameTemplate: String(org.folderNameTemplate || "").slice(0, 300),
     mailSubject: org.mailSubject ?? "",
     mailBody: org.mailBody ?? "",
     fontFamily: org.fontFamily ?? "",

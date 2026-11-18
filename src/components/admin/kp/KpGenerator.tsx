@@ -153,6 +153,7 @@ export default function KpGenerator() {
   const inc = deriveIncludes(serviceType);
 
   const [clientOrgFull, setClientOrgFull] = useState('');
+  const [municipality, setMunicipality] = useState('');
   const [clientFio, setClientFio] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPosition, setClientPosition] = useState('');
@@ -614,6 +615,7 @@ export default function KpGenerator() {
       includes: inc,
       client: {
         orgFull: clientOrgFull,
+        orgShort: municipality.trim() || undefined,
         fioFull: clientFio,
         position: clientPosition || undefined,
         territory: clientTerritory || undefined,
@@ -827,7 +829,7 @@ export default function KpGenerator() {
             orgs, serviceTypes, serviceType, onSelectService, inc,
             selectedOrgs, toggleOrg, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, unitSqm, setUnitSqm, unitHa, setUnitHa, ruralSettlement, setRuralSettlement,
             clientOrgFull, onChangeCompany, beautifyCompany, clientCompanyId, orgFullError, fioError,
-            clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
+            clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, municipality, setMunicipality, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
             positions, posSel, applyPosition,
             onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
             paramsOf, patchParams, notes, setNotes, presetNotes, setPresetNotes, rowsForOrg, setOrgRows, scopeFor, orgTables, setOrgTables,
@@ -889,7 +891,7 @@ function CreateTab(p: CreateProps) {
     orgs, serviceTypes, serviceType, onSelectService, inc,
     selectedOrgs, setSelectedOrgs, tierFor, mode, modeDirect, setModeDirect, modeTender, setModeTender, areaUnit, unitSqm, setUnitSqm, unitHa, setUnitHa, ruralSettlement, setRuralSettlement,
     clientOrgFull, onChangeCompany, beautifyCompany, clientCompanyId, orgFullError, fioError,
-    clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
+    clientFio, setClientFio, clientEmail, setClientEmail, clientPosition, setClientPosition, municipality, setMunicipality, clientTerritory, setClientTerritory, clientAreaTotal, setClientAreaTotal, clientQuantity, setClientQuantity, salutation, setSalutation,
     positions, posSel, applyPosition,
     onPickCompany, deals, dealId, setDealId, uploadToBitrix, setUploadToBitrix, lockBinding, setLockBinding,
     paramsOf, patchParams, notes, setNotes, presetNotes, setPresetNotes, rowsForOrg, setOrgRows, scopeFor, orgTables, setOrgTables,
@@ -907,6 +909,7 @@ function CreateTab(p: CreateProps) {
     ruralSettlement: boolean; setRuralSettlement: (v: boolean) => void;
     clientOrgFull: string; onChangeCompany: (v: string) => void; beautifyCompany: () => void; clientCompanyId: string; orgFullError: boolean; fioError: boolean;
     clientFio: string; setClientFio: (v: string) => void; clientEmail: string; setClientEmail: (v: string) => void; clientPosition: string; setClientPosition: (v: string) => void;
+    municipality: string; setMunicipality: (v: string) => void;
     clientTerritory: string; setClientTerritory: (v: string) => void;
     clientAreaTotal: string; setClientAreaTotal: (v: string) => void;
     clientQuantity: string; setClientQuantity: (v: string) => void; salutation: string; setSalutation: (v: string) => void;
@@ -1120,6 +1123,10 @@ function CreateTab(p: CreateProps) {
 
           {/* Территория / площадь / количество */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <div className={label}>Краткое название муниципалитета для имени файла</div>
+              <input value={municipality} onChange={(e) => setMunicipality(e.target.value)} className={input} placeholder="Красногорск" />
+            </div>
             <div className="lg:col-span-2">
               {fieldLabel('Территория / объект', 'Подставляется в шаблон как {{territory}}.')}
               <input value={clientTerritory} onChange={(e) => setClientTerritory(e.target.value)} className={input} placeholder="города Луганск / Липецкой области" />

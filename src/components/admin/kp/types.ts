@@ -16,6 +16,8 @@ export interface Organization {
   writeKpNumber: boolean;
   mailAccountId: number | null;
   mailAccountKey: string;
+  documentNameTemplate?: string;
+  folderNameTemplate?: string;
   mailSubject: string;
   mailBody: string;
   fontFamily: string;

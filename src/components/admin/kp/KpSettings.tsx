@@ -560,6 +560,35 @@ function OrgEditor({
         <div className="text-[11px] text-gray-400 mt-1">Применяется к шапке, тексту и таблице КП (если включён «Единый шрифт для всего документа») и к телу письма при рассылке «от каждой организации отдельно».</div>
       </div>
 
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: 'Сфера / Экострой', value: '{{number}} от {{date_short}} - {{municipality}}' },
+            { label: 'Лесное дело', value: 'КП Лесное дело' },
+            { label: 'ИП Куш', value: 'КП Кушнарева' },
+          ].map((preset) => (
+            <button key={preset.label} type="button" className="rounded-xl border border-gray-200 px-3 py-1.5 text-xs" onClick={() => set({ documentNameTemplate: preset.value })}>
+              {preset.label}
+            </button>
+          ))}
+        </div>
+        <div>
+          <p className="mb-2 text-xs text-gray-500">Выберите пример выше или введите свой шаблон. Настройка сохраняется для этой компании.</p>
+          <label className={label}>Шаблон названия документа</label>
+          <input value={d.documentNameTemplate || ''} onChange={(e) => set({ documentNameTemplate: e.target.value })} maxLength={300} className={input} placeholder="КП {{client}} {{company}}" />
+          <p className="mt-1 text-xs text-gray-500">Без расширения. Для Сферы и Экостроя — «15 от 15.10 - Красногорск». Для Лесного дела — «КП Лесное дело», для ИП Куш — «КП Кушнарева».</p>
+        </div>
+        <div>
+          <label className={label}>Шаблон названия папки в ZIP</label>
+          <input value={d.folderNameTemplate || ''} onChange={(e) => set({ folderNameTemplate: e.target.value })} maxLength={300} className={input} placeholder="{{company}} — {{client}}" />
+          <p className="mt-1 text-xs text-gray-500">Папка внутри ZIP при скачивании нескольких документов. Например, «Экострой — Красногорск». Оставьте пустым, чтобы сохранять файлы в корне архива.</p>
+        </div>
+        <div className="space-y-1 text-xs text-gray-500">
+          <p>{'{{number}} и {{date_short}} — номер и дата КП выбранной компании. {{municipality}} — поле «Краткое название муниципалитета» в форме КП.'}</p>
+          <p>{'Также доступны {{company}} — компания, {{client}} — заказчик, {{service}} — услуга, {{date}} — полная дата.'}</p>
+          <p>Можно написать постоянное имя без подстановок. Пустой шаблон документа использует стандартное название.</p>
+        </div>
+      </div>
       <div>
         <div className={label}>Тема письма при рассылке (пусто = общая)</div>
         <input value={d.mailSubject || ''} onChange={(e) => set({ mailSubject: e.target.value })} className={input} placeholder="Коммерческое предложение — АИС «Единая среда»" />

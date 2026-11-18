@@ -85,6 +85,7 @@ export interface KpBuiltDoc {
   orgKey: string;
   orgName: string;
   shortName: string;
+  folderName?: string;
   filename: string; // без расширения
   docx: Buffer;
   totalCost: number;
@@ -100,9 +101,11 @@ export interface KpBuildOutput {
 export function safeKpFilename(name: string): string {
   return name
     .replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/[\x00-\x1f\x7f]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 180);
+    .slice(0, 180)
+    .replace(/^[. ]+|[. ]+$/g, "") || "КП";
 }
 
 /**
@@ -209,6 +212,21 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
       };
 
       const ctx = buildKpContext({ payload: form, org, executor, tier });
+      const namingValues: Record<string, string> = {
+        company: org.shortName || org.name,
+        client: form.client.orgShort || form.client.orgFull,
+        service: serviceType,
+        number: ctx.tags.kp_number || "",
+        date: ctx.tags.kp_date || "",
+        date_short: (ctx.tags.kp_date || "").slice(0, 5),
+        municipality: form.client.orgShort?.trim() || form.client.territory?.trim() || "",
+      };
+      const renderName = (template: string) => template.replace(
+        /\{\{\s*(company|client|service|number|date|date_short|municipality)\s*\}\}/g,
+        (_, key: string) => namingValues[key] || "",
+      );
+      const documentName = renderName(org.documentNameTemplate || "").trim().replace(/\.(docx|pdf)$/i, "");
+      const folderName = renderName(org.folderNameTemplate || "").trim();
       // Пользовательские алиасы дополняют теги (встроенные имеют приоритет).
       const mergedTags = { ...customAliases, ...ctx.tags };
 
@@ -242,7 +260,8 @@ export async function buildKpDocuments(req: KpGenerateRequest): Promise<KpBuildO
         orgKey,
         orgName: org.name,
         shortName: org.shortName || org.name,
-        filename: safeKpFilename(ctx.filenameBase),
+        filename: safeKpFilename(documentName || ctx.filenameBase),
+        folderName: folderName ? safeKpFilename(folderName) : undefined,
         docx,
         totalCost: ctx.totalCost,
       });

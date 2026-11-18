@@ -43,6 +43,8 @@ export interface KpOrganization {
   writeKpNumber: boolean; // писать ли номер КП/письма в документе
   mailAccountId: number | null;
   mailAccountKey: string; // id ящика для рассылки (mailAccountsDb), '' = основной
+  documentNameTemplate?: string;
+  folderNameTemplate?: string;
   mailSubject: string; // тема письма при рассылке (пусто = общая)
   mailBody: string; // текст письма при рассылке (пусто = общий)
   fontFamily: string; // шрифт документа КП и письма этой организации, '' = общий (docStyle.fontFamily)
@@ -139,6 +141,8 @@ async function ensureTablesImpl(): Promise<void> {
       add column if not exists header_text text not null default '',
       add column if not exists write_kp_number boolean not null default true,
       add column if not exists mail_account_key text not null default '',
+      add column if not exists document_name_template text not null default '',
+      add column if not exists folder_name_template text not null default '',
       add column if not exists mail_subject text not null default '',
       add column if not exists mail_body text not null default '',
       add column if not exists font_family text not null default ''
@@ -1055,6 +1059,8 @@ function mapOrg(r: Record<string, unknown>): KpOrganization {
     writeKpNumber: r.write_kp_number == null ? true : Boolean(r.write_kp_number),
     mailAccountId: r.mail_account_id == null ? null : Number(r.mail_account_id),
     mailAccountKey: String(r.mail_account_key ?? ""),
+    documentNameTemplate: String(r.document_name_template ?? ""),
+    folderNameTemplate: String(r.folder_name_template ?? ""),
     mailSubject: String(r.mail_subject ?? ""),
     mailBody: String(r.mail_body ?? ""),
     fontFamily: String(r.font_family ?? ""),
@@ -1086,8 +1092,8 @@ export async function dbUpsertOrganization(o: KpOrganization): Promise<void> {
     `insert into kp_organizations
        (key, name, short_name, director_role, director_fio, requisites, phone, email,
         header_image, header_text, stamp_image, signature_image, write_kp_number,
-        mail_account_id, mail_account_key, mail_subject, mail_body, font_family, is_active, sort_order, updated_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20, now())
+        mail_account_id, mail_account_key, mail_subject, mail_body, font_family, is_active, sort_order, document_name_template, folder_name_template, updated_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22, now())
      on conflict (key) do update set
        name=excluded.name, short_name=excluded.short_name, director_role=excluded.director_role,
        director_fio=excluded.director_fio, requisites=excluded.requisites, phone=excluded.phone,
@@ -1095,12 +1101,13 @@ export async function dbUpsertOrganization(o: KpOrganization): Promise<void> {
        stamp_image=excluded.stamp_image, signature_image=excluded.signature_image,
        write_kp_number=excluded.write_kp_number, mail_account_id=excluded.mail_account_id,
        mail_account_key=excluded.mail_account_key, mail_subject=excluded.mail_subject, mail_body=excluded.mail_body,
+       document_name_template=excluded.document_name_template, folder_name_template=excluded.folder_name_template,
        font_family=excluded.font_family,
        is_active=excluded.is_active, sort_order=excluded.sort_order, updated_at=now()`,
     [
       o.key, o.name, o.shortName, o.directorRole, o.directorFio, o.requisites, o.phone, o.email,
       o.headerImage, o.headerText, o.stampImage, o.signatureImage, o.writeKpNumber,
-      o.mailAccountId, o.mailAccountKey || "", o.mailSubject || "", o.mailBody || "", o.fontFamily || "", o.isActive, o.sortOrder,
+      o.mailAccountId, o.mailAccountKey || "", o.mailSubject || "", o.mailBody || "", o.fontFamily || "", o.isActive, o.sortOrder, o.documentNameTemplate || "", o.folderNameTemplate || "",
     ]
   );
 }
