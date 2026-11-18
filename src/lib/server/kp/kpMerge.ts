@@ -163,7 +163,10 @@ export function buildKpContext(input: {
   const { payload, org, executor, tier } = input;
 
   const activePrice = payload.mode === "tender" ? tier.pricePerHaTender : tier.pricePerHaDirect;
-  const ct = computeTable(payload.table?.columns || [], payload.rows || [], {
+  const tableColumns = (payload.table?.columns || []).map((column) =>
+    ["area", "area_sqm", "area_ha"].includes(column.key) ? { ...column, sum: true } : column
+  );
+  const ct = computeTable(tableColumns, payload.rows || [], {
     price: toNum(activePrice),
     price_direct: toNum(tier.pricePerHaDirect),
     price_tender: toNum(tier.pricePerHaTender),
@@ -246,7 +249,7 @@ export function buildKpContext(input: {
     client_io: [first, middle].filter(Boolean).join(" "), // Имя Отчество
     client_greeting: `${salutation} ${[first, middle].filter(Boolean).join(" ")}!`, // «Уважаемый Иван Иванович!»
     territory: payload.client.territory?.trim() || "",
-    area_total: payload.client.areaTotal?.trim() || "",
+    area_total: payload.client.areaTotal?.trim() || (areaHaTotal ? `${formatHa(areaHaTotal)} га` : ""),
     client_position: payload.client.position?.trim() || "",
     client_position_dative: positionDative(payload.client.position || ""),
     client_salutation: salutation,
@@ -339,6 +342,28 @@ export function buildKpContext(input: {
     );
   }
 
+  if (payload.includes.ais && payload.includes.service && payload.serviceType.includes("+") && table.rows.length) {
+    const bodyCount = table.rows.length;
+    const aisCol = table.headers.length;
+    table.headers.push('АИС «Единая среда»');
+    table.align.push("center");
+    table.weights.push(1.6);
+    table.rows.forEach((row, index) => row.push(index === 0 ? formatMoney(aisTotal) : ""));
+    table.footers.forEach((row) => row.push(""));
+    table.merges = [{ row: 0, col: aisCol, rowSpan: bodyCount, colSpan: 1 }];
+    const firstMeasure = tableColumns.findIndex((column) => ["area", "area_sqm", "area_ha"].includes(column.key));
+    if (firstMeasure > 1) {
+      table.footers.forEach((_, index) => table.merges!.push({ row: bodyCount + index, col: 0, rowSpan: 1, colSpan: firstMeasure }));
+    }
+    if (table.footers.length > 1) {
+      tableColumns.forEach((column, col) => {
+        if (["area", "area_sqm", "area_ha"].includes(column.key)) {
+          table.merges!.push({ row: bodyCount, col, rowSpan: table.footers.length, colSpan: 1 });
+        }
+      });
+    }
+  }
+
   const filenameBase = `КП ${payload.client.orgShort?.trim() || deriveShortName(payload.client.orgFull)} ${org.shortName || org.name}`.trim();
 
   return {
@@ -354,15 +379,11 @@ export function buildKpContext(input: {
 /** Суммарная площадь в гектарах из строк таблицы (колонки area_ha или area_sqm). */
 function deriveAreaHa(payload: KpFormPayload): number {
   const cols = payload.table?.columns || [];
-  const hasHa = cols.some((c) => c.key === "area_ha");
-  const hasSqm = cols.some((c) => c.key === "area_sqm");
-  if (!hasHa && !hasSqm) return 0;
+  const areaKey = cols.find((c) => c.key === "area_sqm")?.key ?? cols.find((c) => c.key === "area")?.key;
   let sum = 0;
-  for (const r of payload.rows || []) {
-    const ha = toNum(r.area_ha);
-    if (hasHa && ha) sum += ha;
-    else if (hasSqm) sum += toNum(r.area_sqm) / 10000;
-    else sum += ha;
+  for (const row of payload.rows || []) {
+    const area = areaKey ? String(row[areaKey] ?? "").trim() : "";
+    sum += area ? toNum(area) / (payload.areaUnit === "ha" ? 1 : 10000) : toNum(row.area_ha);
   }
   return sum;
 }

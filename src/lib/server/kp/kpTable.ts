@@ -37,6 +37,7 @@ export interface KpTableData {
   weights: number[]; // относительная ширина колонок (для растяжки на всю страницу)
   rows: string[][];
   footers: string[][]; // строки ИТОГО (жирные), совпадают по числу колонок
+  merges?: Array<{ row: number; col: number; rowSpan: number; colSpan: number }>;
   notes?: string[]; // примечания под таблицей (выводятся как «* текст»)
 }
 
@@ -71,7 +72,7 @@ function fmtMoney(n: number): string {
 }
 function fmtNum(n: number): string {
   if (Number.isInteger(n)) return Math.round(n).toLocaleString("ru-RU").replace(/ /g, " ");
-  return fmtMoney(n);
+  return n.toLocaleString("ru-RU", { maximumFractionDigits: 6 }).replace(/\u00a0/g, " ");
 }
 
 export interface ComputedTable {
@@ -115,7 +116,9 @@ export function computeTable(
     }
     // Единая площадь для формул: area_ha (га). Введённое число — в выбранной единице.
     const enteredArea = "area_sqm" in scope ? scope.area_sqm : ("area" in scope ? scope.area : 0);
-    scope.area_ha = areaUnit === "ha" ? enteredArea : enteredArea / 10000;
+    scope.area_ha = !("area_sqm" in scope) && !("area" in scope) && "area_ha" in scope
+      ? scope.area_ha
+      : areaUnit === "ha" ? enteredArea : enteredArea / 10000;
     // Легаси-формулы кадастровой используют area_sqm/10000 — держим area_sqm в кв.м.
     if (areaUnit === "ha" && "area_sqm" in scope) scope.area_sqm *= 10000;
     const scopeMax: Record<string, number> = { ...scope };
@@ -147,14 +150,15 @@ export function computeTable(
           break;
         case "text":
           text = (row[c.key] || "").toString();
+          num = numMax = toNum(row[c.key]);
           break;
         case "const":
           text = c.constValue || "";
           num = numMax = toNum(c.constValue);
           break;
         case "number":
-          num = numMax = toNum(row[c.key]);
-          text = row[c.key] ? (c.money ? fmtMoney(num) : fmtNum(num)) : "";
+          num = numMax = scope[c.key] ?? toNum(row[c.key]);
+          text = row[c.key] || c.key === "area_ha" ? (c.money ? fmtMoney(num) : fmtNum(num)) : "";
           break;
         case "formula": {
           if (row.__manual === "1" && row[c.key] !== undefined && row[c.key] !== "") {

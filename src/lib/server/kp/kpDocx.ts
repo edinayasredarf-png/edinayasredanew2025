@@ -90,9 +90,9 @@ function tableXml(table: KpTableData): string {
     `</w:tblBorders>`;
   const grid = `<w:tblGrid>${gridW.map((w) => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>`;
 
-  const cell = (text: string, align: ColAlign, bold: boolean, colPct: number) => {
+  const cell = (text: string, align: ColAlign, bold: boolean, colPct: number, span = 1, vertical = "") => {
     const rpr = bold ? "<w:rPr><w:b/></w:rPr>" : "";
-    const tcPr = `<w:tcPr><w:tcW w:w="${colPct}" w:type="pct"/><w:vAlign w:val="center"/></w:tcPr>`;
+    const tcPr = `<w:tcPr><w:tcW w:w="${colPct}" w:type="pct"/>${span > 1 ? `<w:gridSpan w:val="${span}"/>` : ""}${vertical ? `<w:vMerge w:val="${vertical}"/>` : ""}<w:vAlign w:val="center"/></w:tcPr>`;
     return `<w:tc>${tcPr}<w:p><w:pPr><w:jc w:val="${align}"/></w:pPr><w:r>${rpr}${valueToTextRuns(text)}</w:r></w:p></w:tc>`;
   };
   const al = (i: number): ColAlign => table.align[i] || "center";
@@ -100,12 +100,16 @@ function tableXml(table: KpTableData): string {
     `<w:tr><w:trPr><w:tblHeader/></w:trPr>` +
     table.headers.map((h, ci) => cell(h, "center", true, pct[ci])).join("") +
     `</w:tr>`;
-  const bodyRows = table.rows
-    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, al(ci), false, pct[ci])).join("") + `</w:tr>`)
-    .join("");
-  const footerRows = table.footers
-    .map((r) => `<w:tr>` + r.map((c, ci) => cell(c, ci === 0 ? "left" : al(ci), true, pct[ci])).join("") + `</w:tr>`)
-    .join("");
+  const renderRow = (r: string[], row: number, bold: boolean) => "<w:tr>" + r.map((text, col) => {
+    const merge = table.merges?.find((m) => row >= m.row && row < m.row + m.rowSpan && col >= m.col && col < m.col + m.colSpan);
+    if (merge && col !== merge.col) return "";
+    const span = merge?.colSpan ?? 1;
+    const vertical = merge && merge.rowSpan > 1 ? (row === merge.row ? "restart" : "continue") : "";
+    const width = pct.slice(col, col + span).reduce((sum, n) => sum + n, 0);
+    return cell(vertical === "continue" ? "" : text, col === 0 && bold ? "center" : al(col), bold, width, span, vertical);
+  }).join("") + "</w:tr>";
+  const bodyRows = table.rows.map((r, row) => renderRow(r, row, false)).join("");
+  const footerRows = table.footers.map((r, row) => renderRow(r, table.rows.length + row, true)).join("");
   // Примечания под таблицей: каждое отдельным абзацем «* текст» (первое — с небольшим отступом от таблицы).
   const notes = (table.notes || [])
     .filter((n) => n && n.trim())

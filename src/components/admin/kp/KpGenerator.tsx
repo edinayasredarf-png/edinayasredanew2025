@@ -57,7 +57,9 @@ function computeServiceTotal(columns: CalcColumn[], rows: RowData[], scope: Reco
       else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
     }
     const enteredAreaS = 'area_sqm' in s ? s.area_sqm : ('area' in s ? s.area : 0);
-    s.area_ha = areaUnit === 'ha' ? enteredAreaS : enteredAreaS / 10000;
+    s.area_ha = !('area_sqm' in s) && !('area' in s) && 'area_ha' in s
+      ? s.area_ha
+      : areaUnit === 'ha' ? enteredAreaS : enteredAreaS / 10000;
     if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
     if (row.__pd) s.price_direct = toNum(row.__pd);
     if (row.__pt) s.price_tender = toNum(row.__pt);
@@ -93,7 +95,9 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
       else if (c.kind === 'text') s[c.key] = toNum(row[c.key]);
     }
     const enteredArea = 'area_sqm' in s ? s.area_sqm : ('area' in s ? s.area : 0);
-    s.area_ha = areaUnit === 'ha' ? enteredArea : enteredArea / 10000;
+    s.area_ha = !('area_sqm' in s) && !('area' in s) && 'area_ha' in s
+      ? s.area_ha
+      : areaUnit === 'ha' ? enteredArea : enteredArea / 10000;
     if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
     const sMax: Record<string, number> = { ...s };
     if (row.__pd) { s.price_direct = toNum(row.__pd); sMax.price_direct = toNum(row.__pdMax) || toNum(row.__pd); }
@@ -104,7 +108,7 @@ function computePreviewTable(columns: CalcColumn[], rows: RowData[], base: Recor
       if (c.kind === 'index') { n = nMax = ri + 1; text = String(ri + 1); }
       else if (c.kind === 'text') { text = (row[c.key] || '').toString(); }
       else if (c.kind === 'const') { text = c.constValue || ''; n = nMax = toNum(c.constValue); }
-      else if (c.kind === 'number') { n = nMax = toNum(row[c.key]); text = row[c.key] ? (c.money ? fmtMoney(n) : String(n)) : ''; }
+      else if (c.kind === 'number') { n = nMax = s[c.key] ?? toNum(row[c.key]); text = row[c.key] || c.key === 'area_ha' ? (c.money ? fmtMoney(n) : String(n)) : ''; }
       else if (c.kind === 'formula') {
         const manual = row.__manual === '1' && row[c.key];
         n = manual ? toNum(row[c.key]) : evalFormulaSafe(c.formula || '0', s);
@@ -288,12 +292,12 @@ export default function KpGenerator() {
   const deriveColumns = useCallback((cols: CalcColumn[]): CalcColumn[] => {
     const out = cols
       .filter((c) => !(c.key === 'cost_direct' && !modeDirect) && !(c.key === 'cost_tender' && !modeTender))
-      .map((c) => c.key === 'area_sqm'
-        ? { ...c, label: (!unitSqm && unitHa) ? 'Площадь, га' : 'Площадь, кв.м' }
+      .map((c) => ['area_sqm', 'area'].includes(c.key)
+        ? { ...c, kind: 'number' as const, sum: true, label: (!unitSqm && unitHa) ? 'Площадь, га' : 'Площадь, кв.м' }
         : c);
     // Обе единицы: добавляем редактируемый столбец «Площадь, га» рядом с кв.м (значения связаны).
     if (unitSqm && unitHa && !out.some((c) => c.key === 'area_ha')) {
-      const idx = out.findIndex((c) => c.key === 'area_sqm');
+      const idx = out.findIndex((c) => ['area_sqm', 'area'].includes(c.key));
       const haCol: CalcColumn = { key: 'area_ha', label: 'Площадь, га', kind: 'number', align: 'center', sum: true };
       if (idx >= 0) out.splice(idx + 1, 0, haCol); else out.push(haCol);
     }
@@ -309,15 +313,15 @@ export default function KpGenerator() {
   useEffect(() => {
     if (!(unitSqm && unitHa)) return;
     setRows((rs) => rs.map((r) => {
-      const sqmRaw = String(r.area_sqm ?? '').trim();
+      const sqmRaw = String(r.area_sqm ?? r.area ?? '').trim();
       const haRaw = String(r.area_ha ?? '').trim();
       const sqm = parseFloat(sqmRaw.replace(',', '.'));
       const ha = parseFloat(haRaw.replace(',', '.'));
       if (sqmRaw && !isNaN(sqm) && (!haRaw || isNaN(ha))) return { ...r, area_ha: String(+(sqm / 10000).toFixed(4)) };
-      if (haRaw && !isNaN(ha) && (!sqmRaw || isNaN(sqm))) return { ...r, area_sqm: String(Math.round(ha * 10000)) };
+      if (haRaw && !isNaN(ha) && (!sqmRaw || isNaN(sqm))) return { ...r, [selectedTableKey === 'izn' ? 'area' : 'area_sqm']: String(Math.round(ha * 10000)) };
       return r;
     }));
-  }, [unitSqm, unitHa]);
+  }, [unitSqm, unitHa, selectedTableKey]);
 
   const onSelectTable = (key: string) => {
     const t = calcTables.find((x) => x.key === key);
@@ -386,7 +390,8 @@ export default function KpGenerator() {
     setServiceType(name);
     setOrgTables({});
     const svc = services.find((s) => s.name === name);
-    const def = svc?.defaultTable;
+    const def = name.includes('+') && serviceComponents(name).includes('ЕС') && ['izn', 'raschet', 'uslugi'].includes(svc?.defaultTable || '')
+      ? 'raschet' : svc?.defaultTable;
     const orgKey = selectedOrgs[0] || orgs[0]?.key || '';
     if (def && calcTables.some((t) => t.key === def)) {
       const t = calcTables.find((x) => x.key === def)!;

@@ -42,7 +42,9 @@ function cellPreview(col: CalcColumn, row: RowData, rowIndex: number, cols: Calc
     else if (c.kind === 'text') s[c.key] = num(row[c.key]); // «5 Га» → 5
   }
   const enteredArea = 'area_sqm' in s ? s.area_sqm : ('area' in s ? s.area : 0);
-  s.area_ha = areaUnit === 'ha' ? enteredArea : enteredArea / 10000;
+  s.area_ha = !('area_sqm' in s) && !('area' in s) && 'area_ha' in s
+      ? s.area_ha
+      : areaUnit === 'ha' ? enteredArea : enteredArea / 10000;
   if (areaUnit === 'ha' && 'area_sqm' in s) s.area_sqm *= 10000;
   const sMax: Record<string, number> = { ...s };
   // Пер-строчная цена (по первой выбранной компании), с верхней границей «до».
@@ -92,7 +94,8 @@ export default function KpCalcGrid({
   const input = 'w-full px-2 py-1.5 rounded-md border border-gray-200 text-sm outline-none bg-white transition-colors hover:border-[#029cda] focus:border-[#029cda] focus:ring-2 focus:ring-[#029cda]/15';
   const inputCols = columns.filter((c) => c.kind === 'text' || c.kind === 'number');
 
-  const hasSqmCol = columns.some((c) => c.key === 'area_sqm');
+  const sqmKey = columns.find((c) => ['area_sqm', 'area'].includes(c.key))?.key;
+  const hasSqmCol = Boolean(sqmKey);
   const hasHaCol = columns.some((c) => c.key === 'area_ha');
   const setCell = (ri: number, key: string, v: string) =>
     setRows((rs) => rs.map((r, j) => {
@@ -100,10 +103,10 @@ export default function KpCalcGrid({
       const next = { ...r, [key]: v };
       // Двусторонняя связь площади: м² ⇄ га, когда в таблице обе колонки.
       if (hasSqmCol && hasHaCol) {
-        const n = parseFloat(v.replace(',', '.'));
+        const n = parseFloat(v.replace(/\s+/g, '').replace(',', '.'));
         const empty = v.trim() === '' || isNaN(n);
-        if (key === 'area_sqm') next.area_ha = empty ? '' : String(+(n / 10000).toFixed(4));
-        else if (key === 'area_ha') next.area_sqm = empty ? '' : String(Math.round(n * 10000));
+        if (key === sqmKey) next.area_ha = empty ? '' : String(+(n / 10000).toFixed(4));
+        else if (key === 'area_ha') next[sqmKey!] = empty ? '' : String(Math.round(n * 10000));
       }
       return next;
     }));
