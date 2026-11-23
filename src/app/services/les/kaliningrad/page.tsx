@@ -7,6 +7,7 @@ import LesAudienceSection from '../../../../components/services/les/LesAudienceS
 import LesTasksSection from '../../../../components/services/les/LesTasksSection';
 import LesWorkflowSection from '../../../../components/services/les/LesWorkflowSection';
 import LesAdvantagesSection from '../../../../components/services/les/LesAdvantagesSection';
+import DeliverablesSection from "@/components/services/les/DeliverablesSection";
 import LesCTASection from '../../../../components/services/les/LesCTASection';
 import LesFAQSection from '../../../../components/services/les/LesFAQSection';
 
@@ -28,6 +29,7 @@ export default function ForestManagementCityPage() {
         <LesAudienceSection onButtonClick={handleKP} />
         <LesTasksSection onButtonClick={handleKP} />
         <LesWorkflowSection onButtonClick={handleConsult} />
+        <DeliverablesSection />
         <LesAdvantagesSection />
         <LesCTASection onButtonClick={handleKP} />
         <LesFAQSection />
