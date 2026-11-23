@@ -66,6 +66,7 @@ export default function ServicesPage() {
 
   // Карточки услуг (поле icon оставлено, но не используется в UI)
   const services = [
+    { icon: "/icons/Forest.svg", title: "Разработка лесохозяйственных регламентов", desc: "Подготовка и актуализация ЛХР: нормативы лесопользования, расчёты, картографические приложения и сопровождение.", href: "/services/lhr", image: "/img/services/les/hero.avif" },
     {
       icon: "/icons/document_list_outline_28.svg",
       title: "Оцифровка мест захоронений",

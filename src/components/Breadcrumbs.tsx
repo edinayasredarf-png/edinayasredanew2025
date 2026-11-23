@@ -47,6 +47,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'izn': 'Инвентаризация зеленых насаждений',
   'dendrologicheskaya-ekspertiza': 'Дендрологическая экспертиза',
   'les': 'Лесоустройство',
+  'lhr': 'ЛХР',
   'auth': 'Авторизация',
   'callback': 'Callback',
   'test-auth': 'Тест авторизации',
