@@ -43,3 +43,5 @@
   .grid[data-count="7"] .card:nth-child(n+4) { flex-basis:calc((100% - 30px) / 4); }
   .grid[data-count="7"] .card:nth-child(n+4) .title { font-size:20px; }
 }
+
+@media(min-width:1000px) { .grid[data-count="4"] .card { flex-basis:calc((100% - 30px) / 4); } }

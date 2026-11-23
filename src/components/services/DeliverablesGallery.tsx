@@ -9,6 +9,7 @@ export interface DeliverableFolder {
   images: string[];
   labels: string[];
   folder?: boolean;
+  video?: string;
 }
 
 export default function DeliverablesGallery({ root, groups, id, subtitle = 'Примеры материалов, которые входят в результат инвентаризации.' }: {
@@ -66,7 +67,7 @@ export default function DeliverablesGallery({ root, groups, id, subtitle = 'Пр
       <div id={`${id}-panel`} role={groups.length > 1 ? 'tabpanel' : undefined} aria-labelledby={groups.length > 1 ? `${id}-tab-${tab}` : undefined} className={styles.grid} data-count={folders.length}>
         {folders.map((folder, folderIndex) => (
           <button type="button" key={folder.title} className={styles.card}
-            aria-label={`Открыть ${folder.title.toLowerCase()}, ${folder.images.length} изображения`}
+            aria-label={folder.video ? `Смотреть видео: ${folder.title}` : `Открыть ${folder.title.toLowerCase()}, ${folder.images.length} изображения`}
             onClick={(event) => { opener.current = event.currentTarget; setGallery({ folder: folderIndex, image: 0 }); }}>
             <span className={styles.preview} aria-hidden="true">
               <span className={folder.folder === false ? styles.plan : styles.stack}>
@@ -104,17 +105,20 @@ export default function DeliverablesGallery({ root, groups, id, subtitle = 'Пр
                 const dy = event.changedTouches[0].clientY - start.y;
                 if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) move(dx < 0 ? 1 : -1);
               }}>
-              <button className={styles.previous} type="button" aria-label="Предыдущее изображение" onClick={() => move(-1)}>‹</button>
-              <img key={active.images[gallery.image]} src={`${root}${active.images[gallery.image]}.avif`} alt={active.labels[gallery.image]} className={styles.fullImage} />
-              <button className={styles.next} type="button" aria-label="Следующее изображение" onClick={() => move(1)}>›</button>
+              {!active.video && <button className={styles.previous} type="button" aria-label="Предыдущее изображение" onClick={() => move(-1)}>‹</button>}
+              {active.video ? (
+                <video src={active.video} poster={`${root}${active.images[0]}.avif`} className={styles.fullImage}
+                  controls autoPlay playsInline preload="metadata" aria-label={active.title} />
+              ) : <img key={active.images[gallery.image]} src={`${root}${active.images[gallery.image]}.avif`} alt={active.labels[gallery.image]} className={styles.fullImage} />}
+              {!active.video && <button className={styles.next} type="button" aria-label="Следующее изображение" onClick={() => move(1)}>›</button>}
             </div>
-            <p className={styles.caption} aria-live="polite">{active.labels[gallery.image]} · {gallery.image + 1} / {active.images.length}</p>
-            <div className={styles.dots}>
+            <p className={styles.caption} aria-live="polite">{active.labels[gallery.image]}{!active.video && ` · ${gallery.image + 1} / ${active.images.length}`}</p>
+            {!active.video && <div className={styles.dots}>
               {active.images.map((name, index) => (
                 <button type="button" key={name} aria-label={`Изображение ${index + 1}`} aria-current={gallery.image === index ? 'true' : undefined}
                   onClick={() => setGallery({ ...gallery, image: index })} />
               ))}
-            </div>
+            </div>}
           </div>
         </dialog>
       )}
