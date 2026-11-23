@@ -11,6 +11,7 @@ import AdvantagesSection from "../../../../components/services/imz/AdvantagesSec
 import ProcessSection from "../../../../components/services/imz/ProcessSection";
 import ComplianceSection from "../../../../components/services/imz/ComplianceSection";
 import ResultsSection from "../../../../components/services/imz/ResultsSection";
+import DeliverablesSection from "@/components/services/imz/DeliverablesSection";
 import ConsultationCTA from "../../../../components/services/imz/ConsultationCTA";
 import FAQSection from "../../../../components/services/imz/FAQSection";
 
@@ -42,6 +43,7 @@ export default function InventoryBurialsPage() {
         <AdvantagesSection onKP={handleKP} />
         <ProcessSection onConsult={handleConsult} />
         <ComplianceSection />
+        <DeliverablesSection />
         <ResultsSection onConsult={handleConsult} />
         <DemoIframeSection />
         <ConsultationCTA onKP={handleKP} />
