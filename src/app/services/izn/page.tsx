@@ -1,4 +1,5 @@
 "use client";
+import DeliverablesSection from "@/components/services/izn/DeliverablesSection";
 import ServiceHero from '@/components/services/ServiceHero';
 import React from 'react';
 import Layout from '../../../components/Layout';
@@ -45,13 +46,15 @@ export default function GreenInventoryPage() {
 
         <ServiceCardsSection />
 
+        <WorkflowStepsSection />
+
+        <DeliverablesSection />
+
         <DigitalSystemSection />
 
         <DemoIframeSection />
 
         <AdvantagesGridSection />
-
-        <WorkflowStepsSection />
 
         <CTASection onButtonClick={handleKP} />
 
