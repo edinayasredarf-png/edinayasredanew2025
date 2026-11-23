@@ -14,7 +14,7 @@ export interface DeliverableFolder {
 
 export default function DeliverablesGallery({ root, groups, id, subtitle = 'Примеры материалов, которые входят в результат инвентаризации.' }: {
   root: string;
-  groups: Array<{ title: string; folders: DeliverableFolder[] }>;
+  groups: Array<{ title: string; folders: DeliverableFolder[]; collections?: Array<{ title?: string; description?: string; indices: number[] }> }>;
   id: string;
   subtitle?: string;
 }) {
@@ -44,6 +44,24 @@ export default function DeliverablesGallery({ root, groups, id, subtitle = 'Пр
     image: (current.image + direction + folders[current.folder].images.length) % folders[current.folder].images.length,
   }));
 
+  const renderFolder = (folder: DeliverableFolder, folderIndex: number) => (
+
+          <button type="button" key={folder.title} className={styles.card}
+            aria-label={folder.video ? `Смотреть видео: ${folder.title}` : `Открыть ${folder.title.toLowerCase()}, ${folder.images.length} изображения`}
+            onClick={(event) => { opener.current = event.currentTarget; setGallery({ folder: folderIndex, image: 0 }); }}>
+            <span className={styles.preview} aria-hidden="true">
+              <span className={folder.folder === false ? styles.plan : styles.stack} data-images={Math.min(folder.images.length, 3)}>
+                {folder.images.slice(0, 3).map((name, index, previewImages) => (
+                  <Image key={name} src={`${root}${name}-thumb.avif`} alt="" width={110} height={150}
+                    className={styles.sheet} style={{ '--rotation': `${(index - (previewImages.length - 1) / 2) * 16}deg`, '--offset': `${(index - (previewImages.length - 1) / 2) * 43}px` } as CSSProperties} />
+                ))}
+                {folder.folder !== false && <Image src="/img/imz/deliverables/folder.svg" alt="" width={145} height={105} className={styles.folder} />}
+              </span>
+            </span>
+            <span className={styles.title}>{folder.title}</span>
+          </button>
+  );
+
   return (
     <section className={styles.section} aria-labelledby={`${id}-title`}>
       <h2 id={`${id}-title`}>Какие документы вы получаете</h2>
@@ -65,22 +83,12 @@ export default function DeliverablesGallery({ root, groups, id, subtitle = 'Пр
         </div>
       )}
       <div id={`${id}-panel`} role={groups.length > 1 ? 'tabpanel' : undefined} aria-labelledby={groups.length > 1 ? `${id}-tab-${tab}` : undefined} className={styles.grid} data-count={folders.length}>
-        {folders.map((folder, folderIndex) => (
-          <button type="button" key={folder.title} className={styles.card}
-            aria-label={folder.video ? `Смотреть видео: ${folder.title}` : `Открыть ${folder.title.toLowerCase()}, ${folder.images.length} изображения`}
-            onClick={(event) => { opener.current = event.currentTarget; setGallery({ folder: folderIndex, image: 0 }); }}>
-            <span className={styles.preview} aria-hidden="true">
-              <span className={folder.folder === false ? styles.plan : styles.stack}>
-                {folder.images.map((name, index) => (
-                  <Image key={name} src={`${root}${name}-thumb.avif`} alt="" width={110} height={150}
-                    className={styles.sheet} style={{ '--rotation': `${(index - (folder.images.length - 1) / 2) * 16}deg`, '--offset': `${(index - (folder.images.length - 1) / 2) * 43}px` } as CSSProperties} />
-                ))}
-                {folder.folder !== false && <Image src="/img/imz/deliverables/folder.svg" alt="" width={145} height={105} className={styles.folder} />}
-              </span>
-            </span>
-            <span className={styles.title}>{folder.title}</span>
-          </button>
-        ))}
+        {groups[tab].collections ? groups[tab].collections!.map((collection, index) => (
+          <div key={index} className={collection.title ? styles.collection : styles.collectionPlain}>
+            <div className={styles.collectionGrid}>{collection.indices.map((folderIndex) => renderFolder(folders[folderIndex], folderIndex))}</div>
+            {collection.title && <div className={styles.collectionCaption}><h3>{collection.title}</h3>{collection.description && <p>{collection.description}</p>}</div>}
+          </div>
+        )) : folders.map(renderFolder)}
       </div>
       {gallery && active && (
         <dialog ref={dialog} className={styles.dialog} aria-label={active.title}

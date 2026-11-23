@@ -1,4 +1,5 @@
 "use client";
+import DeliverablesSection from "@/components/services/les/DeliverablesSection";
 import ServiceHero from '@/components/services/ServiceHero';
 import Layout from '../../../components/Layout';
 import React from 'react';
@@ -43,6 +44,7 @@ export default function ForestManagementPage() {
         <LesAudienceSection onButtonClick={handleKP} />
         <LesTasksSection onButtonClick={handleKP} />
         <LesWorkflowSection onButtonClick={handleConsult} />
+        <DeliverablesSection />
         <LesAdvantagesSection />
         <LesCTASection onButtonClick={handleKP} />
         <LesFAQSection />

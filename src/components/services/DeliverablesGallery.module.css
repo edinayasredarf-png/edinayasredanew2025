@@ -45,3 +45,23 @@
 }
 
 @media(min-width:1000px) { .grid[data-count="4"] .card { flex-basis:calc((100% - 30px) / 4); } }
+
+.tabs { flex-wrap:wrap; }
+.tabs button { white-space:pre-line; max-width:330px; text-align:center; }
+.collection,.collectionPlain { flex-basis:100%; min-width:0; }
+.collection { background:#f6f7f9; border-radius:24px; padding:8px; }
+.collectionGrid { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+.collectionGrid .card { flex:1 1 0; min-width:0; }
+.collectionGrid .title { font-size:16px; padding:16px 8px; }
+.collectionGrid .preview { height:230px; }
+.collectionCaption { padding:8px 16px 20px; }
+.collectionCaption h3 { font-size:22px; font-weight:500; }
+.collectionCaption p { white-space:pre-line; font-size:15px; line-height:1.7; margin-top:8px; }
+@media(max-width:900px) { .collectionGrid .card {flex:0 0 calc(50% - 5px);} }
+@media(max-width:640px) { .collectionGrid .card {flex-basis:100%;} .tabs {gap:8px 16px;} .tabs button {font-size:15px;} }
+
+.plan[data-images="2"] .sheet,.plan[data-images="3"] .sheet { width:70%; left:15%; transform:translateX(var(--offset)) rotate(var(--rotation)); }
+.card:hover .plan[data-images="2"] .sheet,.card:focus-visible .plan[data-images="2"] .sheet,
+.card:hover .plan[data-images="3"] .sheet,.card:focus-visible .plan[data-images="3"] .sheet { transform:translate(var(--offset),-8px) rotate(var(--rotation)) scale(1.04); }
+
+.collection .collectionGrid .card:first-child .title { visibility:hidden; }
