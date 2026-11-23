@@ -1,4 +1,5 @@
 "use client";
+import DeliverablesSection from "@/components/services/imz/DeliverablesSection";
 import ServiceHero from '@/components/services/ServiceHero';
 
 import Layout from "../../../components/Layout";
@@ -50,6 +51,7 @@ export default function InventoryBurialsPage() {
         <AdvantagesSection onKP={handleKP} />
         <ProcessSection onConsult={handleConsult} />
         <ComplianceSection />
+        <DeliverablesSection />
         <ResultsSection onConsult={handleConsult} />
         <DemoIframeSection />
         <ConsultationCTA onKP={handleKP} />
