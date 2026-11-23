@@ -9,6 +9,7 @@ import TasksSection from '../../../../components/services/izn/TasksSection';
 import TargetAudienceSection from '../../../../components/services/izn/TargetAudienceSection';
 import ServiceCardsSection from '../../../../components/services/izn/ServiceCardsSection';
 import DigitalSystemSection from '../../../../components/services/izn/DigitalSystemSection';
+import DeliverablesSection from "@/components/services/izn/DeliverablesSection";
 import AdvantagesGridSection from '../../../../components/services/izn/AdvantagesGridSection';
 import WorkflowStepsSection from '../../../../components/services/izn/WorkflowStepsSection';
 import CTASection from '../../../../components/services/izn/CTASection';
@@ -46,13 +47,16 @@ export default function GreenInventoryPage() {
 
         <ServiceCardsSection />
 
+        <WorkflowStepsSection />
+
+        <DeliverablesSection />
+
         <DigitalSystemSection />
 
         <DemoIframeSection />
 
         <AdvantagesGridSection />
 
-        <WorkflowStepsSection />
 
         <CTASection onButtonClick={handleKP} />
 
