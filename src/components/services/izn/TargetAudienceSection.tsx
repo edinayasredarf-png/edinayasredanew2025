@@ -34,7 +34,7 @@ const TargetAudienceSection: React.FC<TargetAudienceSectionProps> = ({ onButtonC
   };
 
   return (
-    <section className="py-24 bg-[#f5f7fa]">
+    <section className="py-24">
       <div className="max-w-[1200px] mx-auto px-4">
         <h2
           className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16"
