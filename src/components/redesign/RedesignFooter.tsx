@@ -97,7 +97,7 @@ export function RedesignFooter({ variant = 'default' }: { variant?: 'default' | 
 							<div className="mt-auto pt-8 hidden lg:flex flex-col gap-1 text-[12px] text-[#646b85] leading-5">
 								<span>© 2026 ООО «СФЕРА». Все права защищены.</span>
 								<Link href="/privacy" className="hover:text-[#029cda] transition-colors">Политика ООО «СФЕРА» в отношении обработки персональных данных.</Link>
-								<span>ПО «АИС Единая среда» включена в Единый реестр российских программ. Запись в реестре №15725 от 05.12.2022 г.</span>
+								<a href="https://reestr.digital.gov.ru/reestr/685429/" target="_blank" rel="noopener noreferrer" className="font-semibold hover:text-[#029cda] transition-colors">Запись №13314 от 15.04.2022</a>
 							</div>
 						</div>
 
@@ -167,7 +167,7 @@ export function RedesignFooter({ variant = 'default' }: { variant?: 'default' | 
 				<div className="lg:hidden border-t border-[#e8eaed] py-6 flex flex-col gap-2 text-[12px] text-[#646b85]">
 					<span>© 2026 ООО «СФЕРА». Все права защищены.</span>
 					<Link href="/privacy" className="hover:text-[#029cda] transition-colors">Политика ООО «СФЕРА» в отношении обработки персональных данных.</Link>
-					<span>ПО «АИС Единая среда» включена в Единый реестр российских программ. Запись в реестре №15725 от 05.12.2022 г.</span>
+					<a href="https://reestr.digital.gov.ru/reestr/685429/" target="_blank" rel="noopener noreferrer" className="font-semibold hover:text-[#029cda] transition-colors">Запись №13314 от 15.04.2022</a>
 				</div>
 
 			</div>
