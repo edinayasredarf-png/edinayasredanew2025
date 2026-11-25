@@ -400,6 +400,10 @@ const Header: React.FC<HeaderProps> = ({
 												<ThemedIcon src="/icons/Forest.svg" size={24} className="mr-1" />
 												Разработка ЛХР
 											</Link>
+<Link href="/services/szz" className={`${isLight ? 'hover:bg-black/5' : 'hover:bg-[#F6F7F9]/10'} flex items-center gap-3 py-2 px-3 rounded-xl transition-colors`}>
+												<ThemedIcon src="/icons/Forest.svg" size={24} className="mr-1" />
+												Разработка СЗЗ
+											</Link>
 
 											<div className="mt-3 pt-3 border-t border-white">
 												<Link
@@ -618,6 +622,14 @@ const Header: React.FC<HeaderProps> = ({
 											>
 												<ThemedIcon src="/icons/Forest.svg" size={20} color="#212121" className="mr-1" />
 												Разработка ЛХР
+											</Link>
+<Link
+												href="/services/szz"
+												className="flex items-center gap-3 py-2 px-3 text-[#212121] rounded-lg hover:bg-black/5"
+												onClick={() => setIsMobileNavOpen(false)}
+											>
+												<ThemedIcon src="/icons/Forest.svg" size={20} color="#212121" className="mr-1" />
+												Разработка СЗЗ
 											</Link>
 
 											<Link

@@ -98,6 +98,7 @@ export default function ServicesPage() {
       image: "/img/услуга_лес.png",
     },
     { icon: "/icons/Forest.svg", title: "Разработка лесохозяйственных регламентов", desc: "Подготовка и актуализация ЛХР: нормативы лесопользования, расчёты, картографические приложения и сопровождение.", href: "/services/lhr", image: "/img/услуга_лес.png" },
+    { icon: "/icons/Forest.svg", title: "Санитарно-защитные зоны", desc: "Разработка проекта СЗЗ, организация исследований и сопровождение установления границ. Документы и карта в едином цифровом реестре.", href: "/services/szz", image: "/img/services/szz/catalog.avif" },
   ];
 
   const benefits = [

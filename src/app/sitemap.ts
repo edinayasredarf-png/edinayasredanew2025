@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic'
 const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 
 const staticRoutes: MetadataRoute.Sitemap = [
+  { url: `${baseUrl}/services/szz`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-11-25' },
   { url: `${baseUrl}/services/lhr`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-11-23' },
   { url: `${baseUrl}/`,                      changeFrequency: 'daily',   priority: 1.0, lastModified: new Date() },
   { url: `${baseUrl}/statov`,                changeFrequency: 'weekly',  priority: 0.7, lastModified: '2026-11-16' },
