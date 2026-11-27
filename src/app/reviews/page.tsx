@@ -6,7 +6,7 @@ const YANDEX_URL =
   "https://yandex.ru/maps/org/yedinaya_sreda/80012739748/reviews/";
 
 export const metadata: Metadata = {
-  title: "Отзывы о компании «Единая среда»",
+  title: { absolute: "Отзывы о компании «Единая среда»" },
   description:
     "Отзывы клиентов — муниципалитетов и организаций из 40+ регионов — о работе «Единой среды»: инвентаризация зелёных насаждений, мест захоронений, лесоустройство. Актуальные отзывы с Яндекс.Карт.",
   alternates: { canonical: "/reviews" },

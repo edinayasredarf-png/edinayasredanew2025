@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import PricingPageClient from './PricingPageClient';
 
 export const metadata: Metadata = {
-  title: 'Тарифы — Единая среда',
+  title: { absolute: 'Стоимость платформы и услуг — Единая среда' },
   description: 'Стоимость платформы «Единая среда» и услуг по инвентаризации территорий. Индивидуальные тарифы для муниципалитетов, расчёт под задачи. Запросите КП.',
   alternates: { canonical: '/pricing' },
   openGraph: {

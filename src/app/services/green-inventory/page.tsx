@@ -217,7 +217,7 @@ export default function GreenInventoryPage() {
               <a href="/about" className="group bg-[#F6F7F9] rounded-3xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 outline outline-1 outline-transparent hover:outline-[#029cda]">
                 <div className="relative z-10 flex flex-col flex-grow h-full w-full">
                   <h3 className="text-3xl md:text-4xl lg:text-[40px] font-medium text-black leading-tight">
-                    17 лет<br />помогаем муниципалитетам<br />в управлении зелеными насаждениями
+                    С 2011 года<br />помогаем муниципалитетам<br />в управлении зелеными насаждениями
                   </h3>
                   <div className="flex-grow"></div>
                   <div className="mt-8 inline-flex items-center justify-center self-start px-8 py-3.5 bg-[#029cda] text-white text-lg font-medium rounded-xl group-hover:bg-opacity-80 transition-all duration-300">
@@ -226,7 +226,7 @@ export default function GreenInventoryPage() {
                 </div>
                 {/* Картинка для десктопа */}
                 <div className="hidden md:block absolute right-0 bottom-0 w-1/2 h-auto z-0">
-                  <Image src="/img/17izn.png" alt="17 лет помогаем муниципалитетам в управлении зелёными насаждениями" width={300} height={300} className="w-full h-auto object-contain" />
+                  <Image src="/img/services/izn/7.png" alt="С 2011 года помогаем муниципалитетам в управлении зелёными насаждениями" width={300} height={300} className="w-full h-auto object-contain" />
                 </div>
               </a>
               {/* Right Column */}
@@ -250,7 +250,7 @@ export default function GreenInventoryPage() {
                   {[
                     {
                       icon: <Image src="/icons/actual-blue.svg" alt="Актуальные данные" width={32} height={32} className="w-8 h-8" />,
-                      text: 'Актуальные данные с точностью до 99%',
+                      text: 'Актуальные данные с геопривязкой и фотофиксацией',
                     },
                     {
                       icon: <Image src="/icons/job-like-blue.svg" alt="Качественное исполнение" width={32} height={32} className="w-8 h-8" />,

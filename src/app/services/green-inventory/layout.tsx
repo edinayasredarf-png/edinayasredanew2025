@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Инвентаризация зелёных насаждений — Единая среда',
+  title: { absolute: 'Инвентаризация зелёных насаждений — Единая среда' },
   description: 'Инвентаризация деревьев и зелёных насаждений: ГИС-учёт, аналитика, паспорта объектов. Точные данные и отчёты.',
   alternates: { canonical: '/services/green-inventory' },
   openGraph: {

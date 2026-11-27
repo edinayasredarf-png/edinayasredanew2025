@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import FormPageShell from '@/components/forms/FormPageShell';
 
 export const metadata: Metadata = {
-  title: 'Запросить похожее решение — Единая среда',
+  title: { absolute: 'Запросить похожее решение — Единая среда' },
   description: 'Оставьте заявку — мы подберём подходящее решение на платформе «Единая среда» под ваши задачи.',
   alternates: { canonical: '/form/solution' },
   robots: { index: false },

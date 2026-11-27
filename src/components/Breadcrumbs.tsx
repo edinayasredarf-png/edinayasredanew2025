@@ -70,7 +70,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'lesoustrojstvo': 'Лесоустройство',
   'ocifrovka-territorij': 'Оцифровка территорий',
   'inventarizaciya-kladbishch': 'Инвентаризация кладбищ',
-  'luchshie-sistemy-inventarizacii': 'Лучшие системы инвентаризации',
+  'luchshie-sistemy-inventarizacii': 'Выбор системы инвентаризации',
   'reviews': 'Отзывы',
   'dlya': 'Отрасли',
   'zhk': 'Для ЖК',

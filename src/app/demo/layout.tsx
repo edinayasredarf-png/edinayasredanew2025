@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Демо‑версия системы — Единая среда",
+  title: { absolute: "Демо‑версия системы — Единая среда" },
   description:
     "Демо‑версия АИС «Единая среда»: интерактивная карта, реестры, карточки объектов, поиск и аналитика. Запросите доступ к демонстрации системы.",
   alternates: { canonical: "/demo" },

@@ -557,7 +557,7 @@ export default function ImplementationsPage() {
       {(() => {
         const STEPS = [
           {
-            text: "1. Быстрое внедрение системы, всего за один день",
+            text: "1. Настройка системы, перенос данных и обучение по согласованному плану",
             img: "/icons/how1.svg",
             alt: "Внедрение",
           },

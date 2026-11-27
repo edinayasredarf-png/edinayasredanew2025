@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import RequisitesPageClient from './RequisitesPageClient';
 
 export const metadata: Metadata = {
-  title: 'Реквизиты компании — Единая среда',
+  title: { absolute: 'Реквизиты компании — Единая среда' },
   description: 'Реквизиты ООО «Сфера»: ИНН 6150100608, КПП 615001001, ОГРН 1206100037670, юридический адрес, банковские реквизиты и контакты для документооборота.',
   alternates: { canonical: '/requisites' },
   openGraph: {

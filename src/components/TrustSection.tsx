@@ -12,7 +12,7 @@ type Card = {
 const CARD_REESTR: Card = {
   title: "Входим в реестр\nотечественного ПО",
   description:
-    "Единая среда внесён в реестр отечественного ПО и отвечает требованиям, предъявляемым к нему. Запись №13314 от 15.04.2022",
+    "Платформа «Единая среда» внесена в реестр отечественного ПО и отвечает требованиям, предъявляемым к нему. Запись №13314 от 15.04.2022",
   image: "/img/reestr.webp",
   link: "https://reestr.digital.gov.ru/reestr/685429/",
 };
@@ -28,7 +28,7 @@ const CARD_SKOLKOVO: Card = {
 const CARD_FZ: Card = {
   title: "Добросовестный\nподрядчик по 44 и 223-ФЗ",
   description:
-    "Компании ООО «Сфера» и ООО «Экострой», входящие в состав ГК «Единая среда», более 15 лет успешно выполняют государственные и коммерческие контракты, доказывая свою надёжность и высокое качество работ.",
+    "Компании ООО «Сфера» и ООО «Экострой», входящие в состав ГК «Единая среда», с 2011 года выполняют государственные и коммерческие контракты, доказывая свою надёжность и высокое качество работ.",
   image: "/img/fz.webp",
   link: "https://www.tbank.ru/business/contractor/legal/1106195006378/contracts/1/",
 };
@@ -117,11 +117,11 @@ function Card({ card, tall = false }: { card: Card; tall?: boolean }) {
 
 export default function TrustSection() {
   return (
-    <section className="bg-white w-full py-16 md:py-24" aria-label="Почему нас выбирают уже более 15 лет">
+    <section className="bg-white w-full py-16 md:py-24" aria-label="Почему выбирают «Единую среду»">
       <div className="rd-content-column">
         <div className="flex justify-center">
           <h2 className="max-w-[1120px] text-center font-involve text-[#313131] text-[32px] md:text-[40px] font-medium leading-[1.2] md:leading-[55px]">
-            Почему нас выбирают уже более 15 лет
+            Почему выбирают «Единую среду»
           </h2>
         </div>
 

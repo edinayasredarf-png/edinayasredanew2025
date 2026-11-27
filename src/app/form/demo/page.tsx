@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import FormPageShell from '@/components/forms/FormPageShell';
 
 export const metadata: Metadata = {
-  title: 'Демо-доступ — Единая среда',
+  title: { absolute: 'Демо-доступ — Единая среда' },
   description: 'Получите бесплатный демо-доступ к платформе «Единая среда», чтобы ознакомиться с её возможностями и интерфейсом.',
   alternates: { canonical: '/form/demo' },
   robots: { index: false },

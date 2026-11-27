@@ -1,6 +1,7 @@
 "use client";
 
 import { useModal } from "@/components/ModalProvider";
+import { SITE_CONFIG } from "@/lib/config";
 
 function ArrowUpRight() {
   return (
@@ -48,16 +49,16 @@ export default function ContactChannelsSection() {
             <img src="/img/chanel/1.svg" alt="Личная переписка в мессенджере" className="shrink-0 w-[68px] h-[68px] object-contain" />
           </div>
 
-          {/* Почта Отдела продаж */}
+          {/* Отдел продаж */}
           <div className="bg-[#F6F7F9] rounded-[32px] p-8 lg:p-10 flex items-start justify-between gap-6 min-h-[220px]">
             <div className="flex flex-col h-full">
-              <h3 className="font-involve text-[#050c26] text-2xl font-medium leading-7 tracking-wide">Почта Отдела продаж</h3>
+              <h3 className="font-involve text-[#050c26] text-2xl font-medium leading-7 tracking-wide">Отдел продаж</h3>
               <p className="mt-3 flex-1 font-[Raleway] text-base leading-6 tracking-tight text-[#646b85]">
-                Напишите нам на почту edinayasreda.rf@yandex.ru
+                Обсудим задачу, подберём модули и подготовим коммерческое предложение.
               </p>
-              <a href="mailto:edinayasreda.rf@yandex.ru?subject=Вопрос в Отдел продаж «Единая среда»" className="mt-5 inline-flex items-center gap-2 text-[#029cda] text-base font-medium font-involve hover:opacity-80 transition-opacity">
-                Написать на почту <ArrowUpRight />
-              </a>
+              <button type="button" onClick={consult} className="mt-5 inline-flex items-center gap-2 text-[#029cda] text-base font-medium font-involve hover:opacity-80 transition-opacity">
+                Обсудить проект <ArrowUpRight />
+              </button>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/img/chanel/3.svg" alt="Написать в отдел продаж на почту" className="shrink-0 w-[68px] h-[68px] object-contain" />
@@ -70,7 +71,7 @@ export default function ContactChannelsSection() {
               <p className="mt-3 flex-1 font-[Raleway] text-base leading-6 tracking-tight text-[#646b85]">
                 Напишите нам на почту — и менеджер ответит на все ваши вопросы.
               </p>
-              <a href="mailto:info@единаясреда.рф?subject=Вопрос по системе «Единая среда»" className="mt-5 inline-flex items-center gap-2 text-[#029cda] text-base font-medium font-involve hover:opacity-80 transition-opacity">
+              <a href={`mailto:${SITE_CONFIG.contact.email}?subject=${encodeURIComponent("Вопрос по системе «Единая среда»")}`} className="mt-5 inline-flex items-center gap-2 text-[#029cda] text-base font-medium font-involve hover:opacity-80 transition-opacity">
                 Написать на почту <ArrowUpRight />
               </a>
             </div>
@@ -83,7 +84,7 @@ export default function ContactChannelsSection() {
             <div className="flex flex-col h-full">
               <h3 className="font-involve text-2xl font-medium leading-7 tracking-wide">
                 <span className="text-[#050c26]">По телефону </span>
-                <a href="tel:88005505612" className="text-[#029cda] hover:opacity-80 transition-opacity">8 800 550-56-12</a>
+                <a href="tel:+78005505612" className="text-[#029cda] hover:opacity-80 transition-opacity">+7 (800) 550-56-12</a>
               </h3>
               <p className="mt-3 flex-1 font-[Raleway] text-base leading-6 tracking-tight text-[#646b85]">
                 Звонок бесплатный по всей России. Или закажите обратный звонок — перезвоним сразу или в удобное вам время.

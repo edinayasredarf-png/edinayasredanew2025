@@ -7,7 +7,7 @@ type Item = {
 
 // Иконки из public/img/who (1–6.svg), порядок = порядок категорий.
 const items: Item[] = [
-  { title: 'Органы власти\nи муниципалитетам', icon: '/img/who/1.svg' },
+  { title: 'Органам власти\nи муниципалитетам', icon: '/img/who/1.svg' },
   { title: 'Управляющие\nкомпании ЖКХ', icon: '/img/who/2.svg' },
   { title: 'Ритуальные службы', icon: '/img/who/3.svg' },
   { title: 'Образовательным\nучреждениям', icon: '/img/who/4.svg' },

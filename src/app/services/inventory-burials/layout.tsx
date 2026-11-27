@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Инвентаризация мест захоронений — Единая среда',
+  title: { absolute: 'Инвентаризация мест захоронений — Единая среда' },
   description: 'Профессиональная инвентаризация мест захоронений: сбор, оцифровка и аналитика данных. Соответствие требованиям и высокая точность.',
   alternates: { canonical: '/services/inventory-burials' },
   openGraph: {

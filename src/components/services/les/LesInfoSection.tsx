@@ -6,7 +6,7 @@ export default function LesInfoSection() {
     <section className="py-24">
       <div className="max-w-[1200px] mx-auto px-4">
         <h2 className="text-center text-[#313131] text-4xl md:text-[56px] font-medium leading-tight mb-16">
-          Мы более 17 лет работаем на этом рынке и знаем об лесоустройстве всё
+          Лесоустройство: от обследования до цифровой карты
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           <div className="bg-[#F6F7F9] rounded-3xl p-9 flex flex-col justify-between min-h-[420px]">

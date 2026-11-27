@@ -5,8 +5,8 @@ export const SITE_CONFIG = {
   name: 'Единая среда',
 
   contact: {
-    phone: '+7-800-550-56-12',
-    phoneRaw: '88005505612',
+    phone: '+7 (800) 550-56-12',
+    phoneRaw: '+78005505612',
     email: 'info@единаясреда.рф',
   },
 

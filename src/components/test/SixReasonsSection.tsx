@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PUBLIC_BENEFITS } from '@/lib/publicBenefits';
 
 /**
  * SixReasonsSection — «6 веских причин выбрать АИС «Единая среда»».
@@ -8,44 +9,8 @@ import React from 'react';
  * Заголовок секции — Bebas Neue Cyrillic, тело — Raleway.
  */
 
-type Reason = {
-	icon: string;
-	title: string;
-	text: string;
-};
 
-const REASONS: Reason[] = [
-	{
-		icon: '/img/6prishin/1.svg',
-		title: 'Выгода на содержание',
-		text: 'Система способствует эффективному планированию муниципального бюджета',
-	},
-	{
-		icon: '/img/6prishin/2.svg',
-		title: 'Экономия на оцифровке',
-		text: 'Проведение повторной инвентаризации и ввод данных самостоятельно',
-	},
-	{
-		icon: '/img/6prishin/3.svg',
-		title: 'Адаптация сотрудников',
-		text: 'Вся необходимая документация сосредоточена в единой системе',
-	},
-	{
-		icon: '/img/6prishin/4.svg',
-		title: 'Быстрое внедрение системы',
-		text: 'В течение 1 рабочего дня',
-	},
-	{
-		icon: '/img/6prishin/5.svg',
-		title: 'Снижение рисков срывов государственных контрактов на 99%',
-		text: 'Контроль подрядчиков и актуализация данных в онлайн режиме',
-	},
-	{
-		icon: '/img/6prishin/6.svg',
-		title: 'Все объекты — в одной системе',
-		text: 'Все объекты городской среды и необходимые документы в едином поле',
-	},
-];
+const REASONS = PUBLIC_BENEFITS.map((item, index) => ({ title: item.title, text: item.description, icon: `/img/6prishin/${index + 1}.svg` }));
 
 const SixReasonsSection: React.FC = () => {
 	return (

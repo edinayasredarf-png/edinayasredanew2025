@@ -26,11 +26,11 @@ const SectionExpertise = () => (
         <a
           href="/about"
           className="group rd-block rounded-2xl p-8 flex flex-col relative overflow-hidden h-full transition-all duration-300 hover:ring-1 hover:ring-[#029cda]"
-          aria-label="Узнать больше о компании Единая среда — 15 лет технологической экспертизы"
+          aria-label="Узнать больше о компании Единая среда — команда работает с 2011 года"
         >
           <div className="relative z-10 flex flex-col flex-grow h-full w-full">
             <h2 className="font-involve text-3xl md:text-4xl lg:text-[40px] text-[#313131] leading-[1.1]">
-              15+ лет<br />технологической<br />экспертизы
+              Команда работает<br />с 2011 года
             </h2>
             <div className="flex-grow" />
             <div className="mt-8 inline-flex items-center justify-center self-start px-8 py-3.5 bg-[#029cda] text-white text-lg font-medium rounded-lg group-hover:bg-[#0288bd] transition-all duration-300">
@@ -40,8 +40,8 @@ const SectionExpertise = () => (
 
           <div className="hidden md:block absolute right-0 bottom-[-20px] w-[48%] max-w-[260px] h-auto z-0">
             <Image
-              src="/img/es15.png"
-              alt="Единая среда — 15 лет технологической экспертизы в области цифровизации территорий"
+              src="/img/services/izn/7.png"
+              alt="Единая среда — команда работает с 2011 года в области цифровизации территорий"
               width={260}
               height={260}
               className="w-full h-auto object-contain"

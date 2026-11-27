@@ -55,6 +55,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      { source: '/services/inventory-burials', destination: '/services/imz', statusCode: 301 },
+      { source: '/services/inventory-burials-seo', destination: '/services/imz', statusCode: 301 },
       { source: '/cases2', destination: '/cases', permanent: true },
       { source: '/cases2/:slug', destination: '/cases/:slug', permanent: true },
     ];

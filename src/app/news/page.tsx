@@ -5,7 +5,7 @@ import NewsListClient from './NewsListClient';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Новости | Единая среда',
+  title: { absolute: 'Новости | Единая среда' },
   description: 'Новости платформы «Единая среда». Обновления, анонсы и события.',
   alternates: { canonical: '/news' },
 };

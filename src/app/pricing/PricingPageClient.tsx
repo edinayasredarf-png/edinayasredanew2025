@@ -16,10 +16,10 @@ export default function PricingPage() {
           <div className="relative flex flex-col lg:flex-row items-center lg:items-stretch gap-16">
             <div className="flex-1 lg:basis-3/5 text-left flex flex-col justify-center z-20">
               <h1 className="text-[clamp(2rem,5.5vw,3.4rem)] leading-[1.14] tracking-[0.6px] font-involve font-medium">
-                Выгодные тарифы<br />и услуги
+                Стоимость платформы<br />и услуг
               </h1>
               <p className="mt-8 text-lg md:text-[22.7px] leading-[1.37] text-[#667085] max-w-2xl font-raleway">
-                Простые решения для эффективного управления территориями и объектами. Прозрачные цены и поддержка на каждом этапе.
+                Стоимость рассчитываем под состав модулей, объём данных и задачи внедрения. В коммерческом предложении фиксируем срок лицензии, число пользователей и состав поддержки.
               </p>
               <div className="mt-10">
                 <button
@@ -60,7 +60,7 @@ export default function PricingPage() {
               Тарифы и услуги
             </h2>
             <div className="text-black text-xl max-w-xl">
-              Все цены актуальны и прозрачны — для консультации или индивидуального расчёта воспользуйтесь кнопками ниже.
+              Подготовим индивидуальный расчёт. Для платформы укажем срок использования, число пользователей, внедрение и поддержку; для полевых услуг — объём обследования и состав документации.
             </div>
           </div>
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -76,8 +76,8 @@ export default function PricingPage() {
                   Платформа для цифрового управления территориями, автоматизации процессов и аналитики для организаций любого масштаба.
                 </p>
                 <div className="flex flex-col gap-2 w-full mt-auto">
-                  <div className="text-2xl font-regular text-black text-center">400 000 ₽</div>
-                  <div className="text-base text-gray-500 text-center">за пользователя</div>
+                  <div className="text-2xl font-regular text-black text-center">По запросу</div>
+                  <div className="text-base text-gray-500 text-center">Срок лицензии и пользователи — в КП</div>
                   <button
                     onClick={openKP}
                     className="w-full inline-flex items-center justify-center bg-[#029cda] text-white font-bold py-2 rounded-xl text-base hover:bg-[#029cda]/90 transition-colors duration-200 focus:outline-none"
@@ -104,7 +104,7 @@ export default function PricingPage() {
                 </p>
                 <div className="flex flex-col gap-2 w-full mt-auto">
                   <Link
-                    href="/services/inventory-burials"
+                    href="/services/imz"
                     className="w-full bg-gray-100 text-gray-700 font-medium py-2 rounded-xl text-base hover:bg-gray-200 transition-colors text-center"
                   >
                     Подробнее об услуге

@@ -1,42 +1,10 @@
 'use client';
 
 import React from 'react';
+import { PUBLIC_BENEFITS } from '@/lib/publicBenefits';
 import { useModal } from './ModalProvider';
 
-type Benefit = { title: string; desc: string; icon: string };
-
-const ITEMS: Benefit[] = [
-	{
-		title: 'Выгода на содержание',
-		desc: 'система способствует эффективному планированию муниципального бюджета',
-		icon: '/img/benefits/1.svg',
-	},
-	{
-		title: 'Экономия на оцифровке',
-		desc: 'проведение повторной инвентаризации и ввод данных самостоятельно',
-		icon: '/img/benefits/2.svg',
-	},
-	{
-		title: 'Адаптация сотрудников',
-		desc: 'Вся необходимая документация сосредоточена в единой системе',
-		icon: '/img/benefits/3.svg',
-	},
-	{
-		title: 'Быстрое внедрение системы',
-		desc: 'в течение 1 рабочего дня',
-		icon: '/img/benefits/4.svg',
-	},
-	{
-		title: 'Снижение рисков срывов государственных контрактов на 99%',
-		desc: 'контроль подрядчиков и актуализация данных в онлайн режиме',
-		icon: '/img/benefits/5.svg',
-	},
-	{
-		title: 'Облачные базы данных',
-		desc: 'Одна программа для всех решений',
-		icon: '/img/benefits/6.svg',
-	},
-];
+const ITEMS = PUBLIC_BENEFITS.map((item, index) => ({ title: item.title, desc: item.description, icon: `/img/benefits/${index + 1}.svg` }));
 
 export default function BenefitsSection({
 	onRegisterClick,

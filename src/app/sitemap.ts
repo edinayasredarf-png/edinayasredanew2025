@@ -9,54 +9,52 @@ export const dynamic = 'force-dynamic'
 const baseUrl = 'https://xn--80aakbcct4b2aj7m.xn--p1ai'
 
 const staticRoutes: MetadataRoute.Sitemap = [
-  { url: `${baseUrl}/services/szz`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-11-25' },
-  { url: `${baseUrl}/services/lhr`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-11-23' },
-  { url: `${baseUrl}/`,                      changeFrequency: 'daily',   priority: 1.0, lastModified: new Date() },
-  { url: `${baseUrl}/statov`,                changeFrequency: 'weekly',  priority: 0.7, lastModified: '2026-11-16' },
-  { url: `${baseUrl}/about`,                 changeFrequency: 'monthly', priority: 0.9, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/services`,              changeFrequency: 'weekly',  priority: 0.9, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/services/imz`,          changeFrequency: 'monthly', priority: 0.9, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/services/izn`,          changeFrequency: 'monthly', priority: 0.9, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/services/dendrologicheskaya-ekspertiza`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-11-09' },
-  { url: `${baseUrl}/services/les`,          changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/services/green-inventory`,      changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/services/inventory-burials`,    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/services/inventory-burials-seo`, changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-04-06' },
+  { url: `${baseUrl}/services/szz`, changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/services/lhr`, changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/`,                      changeFrequency: 'daily',   priority: 1.0 },
+  { url: `${baseUrl}/statov`,                changeFrequency: 'weekly',  priority: 0.7 },
+  { url: `${baseUrl}/about`,                 changeFrequency: 'monthly', priority: 0.9 },
+  { url: `${baseUrl}/services`,              changeFrequency: 'weekly',  priority: 0.9 },
+  { url: `${baseUrl}/services/imz`,          changeFrequency: 'monthly', priority: 0.9 },
+  { url: `${baseUrl}/services/izn`,          changeFrequency: 'monthly', priority: 0.9 },
+  { url: `${baseUrl}/services/dendrologicheskaya-ekspertiza`, changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/services/les`,          changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/services/green-inventory`,      changeFrequency: 'monthly', priority: 0.8 },
   // Раздел «Решения» (информационные/GEO-страницы под ответы ИИ)
-  { url: `${baseUrl}/resheniya`,                                    changeFrequency: 'weekly',  priority: 0.9, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/municipalnye-sistemy-ucheta`,        changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/blagoustroystvo`,                    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/uchet-zelenyh-nasazhdeniy`,          changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/uchet-mest-zahoroneniy`,             changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/programma-dlya-inventarizacii`,      changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/sravnenie-sistem-inventarizacii`,    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/preimushchestva`,                    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/lesoustrojstvo`,                     changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/ocifrovka-territorij`,               changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/inventarizaciya-kladbishch`,         changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-20' },
-  { url: `${baseUrl}/resheniya/luchshie-sistemy-inventarizacii`,    changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-21' },
-  { url: `${baseUrl}/reviews`,                                      changeFrequency: 'weekly',  priority: 0.7, lastModified: '2026-07-21' },
+  { url: `${baseUrl}/resheniya`,                                    changeFrequency: 'weekly',  priority: 0.9 },
+  { url: `${baseUrl}/resheniya/municipalnye-sistemy-ucheta`,        changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/blagoustroystvo`,                    changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/uchet-zelenyh-nasazhdeniy`,          changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/uchet-mest-zahoroneniy`,             changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/programma-dlya-inventarizacii`,      changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/sravnenie-sistem-inventarizacii`,    changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/preimushchestva`,                    changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/lesoustrojstvo`,                     changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/ocifrovka-territorij`,               changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/inventarizaciya-kladbishch`,         changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/resheniya/luchshie-sistemy-inventarizacii`,    changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/reviews`,                                      changeFrequency: 'weekly',  priority: 0.7 },
   // Решения по отраслям (сегменты ЦА)
-  { url: `${baseUrl}/dlya/zhk`,                                     changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-22' },
-  { url: `${baseUrl}/dlya/sanatorii`,                               changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-22' },
-  { url: `${baseUrl}/dlya/oteli`,                                   changeFrequency: 'monthly', priority: 0.8, lastModified: '2026-07-22' },
-  { url: `${baseUrl}/blog`,                  changeFrequency: 'weekly',  priority: 0.9, lastModified: new Date() },
-  { url: `${baseUrl}/cases`,                 changeFrequency: 'weekly',  priority: 0.8, lastModified: new Date() },
-  { url: `${baseUrl}/news`,                  changeFrequency: 'daily',   priority: 0.7, lastModified: new Date() },
-  { url: `${baseUrl}/pricing`,               changeFrequency: 'monthly', priority: 0.7, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/partnership`,           changeFrequency: 'monthly', priority: 0.6, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/contacts`,              changeFrequency: 'yearly',  priority: 0.6, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/career`,                changeFrequency: 'weekly',  priority: 0.5, lastModified: new Date() },
-  { url: `${baseUrl}/documents`,             changeFrequency: 'monthly', priority: 0.5, lastModified: '2026-04-06' },
-  { url: `${baseUrl}/requisites`,            changeFrequency: 'yearly',  priority: 0.4, lastModified: '2026-07-03' },
-  { url: `${baseUrl}/implementations`,       changeFrequency: 'monthly', priority: 0.6, lastModified: new Date() },
-  { url: `${baseUrl}/welcome-bonus`,         changeFrequency: 'monthly', priority: 0.5, lastModified: '2026-04-06' },
+  { url: `${baseUrl}/dlya/zhk`,                                     changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/dlya/sanatorii`,                               changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/dlya/oteli`,                                   changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${baseUrl}/blog`,                  changeFrequency: 'weekly',  priority: 0.9 },
+  { url: `${baseUrl}/cases`,                 changeFrequency: 'weekly',  priority: 0.8 },
+  { url: `${baseUrl}/news`,                  changeFrequency: 'daily',   priority: 0.7 },
+  { url: `${baseUrl}/pricing`,               changeFrequency: 'monthly', priority: 0.7 },
+  { url: `${baseUrl}/partnership`,           changeFrequency: 'monthly', priority: 0.6 },
+  { url: `${baseUrl}/contacts`,              changeFrequency: 'yearly',  priority: 0.6 },
+  { url: `${baseUrl}/career`,                changeFrequency: 'weekly',  priority: 0.5 },
+  { url: `${baseUrl}/documents`,             changeFrequency: 'monthly', priority: 0.5 },
+  { url: `${baseUrl}/requisites`,            changeFrequency: 'yearly',  priority: 0.4 },
+  { url: `${baseUrl}/implementations`,       changeFrequency: 'monthly', priority: 0.6 },
+  { url: `${baseUrl}/welcome-bonus`,         changeFrequency: 'monthly', priority: 0.5 },
 ]
 
 // createdat/updatedat в БД — bigint (epoch, мс), node-postgres отдаёт их строкой.
-function epochToDate(value: unknown): Date {
+function epochToDate(value: unknown): Date | undefined {
   const n = Number(value)
-  return Number.isFinite(n) && n > 0 ? new Date(n) : new Date()
+  return Number.isFinite(n) && n > 0 && n <= Date.now() ? new Date(n) : undefined
 }
 
 type ContentRow = { slug: string; createdat?: string | number; updatedat?: string | number }
@@ -81,21 +79,21 @@ async function getDynamicRoutes(): Promise<MetadataRoute.Sitemap> {
 
     const posts: MetadataRoute.Sitemap = postsRes.rows.map(r => ({
       url: `${baseUrl}/blog/${r.slug}`,
-      lastModified: epochToDate(r.updatedat ?? r.createdat),
+      lastModified: epochToDate(r.updatedat) ?? epochToDate(r.createdat),
       changeFrequency: 'monthly',
       priority: 0.7,
     }))
 
     const newsItems: MetadataRoute.Sitemap = newsRes.rows.map(r => ({
       url: `${baseUrl}/news/${r.slug}`,
-      lastModified: epochToDate(r.updatedat ?? r.createdat),
+      lastModified: epochToDate(r.updatedat) ?? epochToDate(r.createdat),
       changeFrequency: 'monthly',
       priority: 0.6,
     }))
 
     const cases: MetadataRoute.Sitemap = casesRes.rows.map(r => ({
       url: `${baseUrl}/cases/${r.slug}`,
-      lastModified: epochToDate(r.updatedat ?? r.createdat),
+      lastModified: epochToDate(r.updatedat) ?? epochToDate(r.createdat),
       changeFrequency: 'monthly',
       priority: 0.7,
     }))
@@ -115,20 +113,17 @@ const cityRoutes: MetadataRoute.Sitemap = [
   ...IZN_CITY_SLUGS.map(slug => ({
     url: `${baseUrl}/services/izn/${slug}`,
     changeFrequency: 'monthly' as const,
-    priority: 0.6,
-    lastModified: '2026-04-06',
+    priority: 0.6
   })),
   ...IMZ_CITY_SLUGS.map(slug => ({
     url: `${baseUrl}/services/imz/${slug}`,
     changeFrequency: 'monthly' as const,
-    priority: 0.6,
-    lastModified: '2026-04-06',
+    priority: 0.6
   })),
   ...LES_CITY_SLUGS.map(slug => ({
     url: `${baseUrl}/services/les/${slug}`,
     changeFrequency: 'monthly' as const,
-    priority: 0.6,
-    lastModified: '2026-04-06',
+    priority: 0.6
   })),
 ]
 

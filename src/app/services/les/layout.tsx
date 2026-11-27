@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Лесоустройство — Единая среда',
+  title: { absolute: 'Лесоустройство — Единая среда' },
   description: 'Комплекс работ по лесоустройству: таксация, проектирование, карты и документация. Работа по требованиям законодательства.',
   alternates: { canonical: '/services/les' },
   openGraph: {

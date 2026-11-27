@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SITE_CONFIG } from '@/lib/config';
 
 const SOCIALS = [
 	{ href: 'https://max.ru/id6150100608_biz', src: '/icons/max.svg', alt: 'MAX' },
@@ -35,7 +36,7 @@ export function RedesignFooter({ variant = 'default' }: { variant?: 'default' | 
 							))}
 						</div>
 						<span className={`text-sm hidden sm:block ml-1 ${isTest ? 'text-white' : 'text-[#646b85]'}`}>Мы в социальных сетях</span>
-						<a href="mailto:info@edinayasreda.ru"
+						<a href={`mailto:${SITE_CONFIG.contact.email}`}
 							className={`ml-auto flex items-center gap-3 h-11 px-5 rounded-xl text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
 								isTest
 									? 'bg-white text-[#0b63e0] hover:bg-white/90'
@@ -61,9 +62,9 @@ export function RedesignFooter({ variant = 'default' }: { variant?: 'default' | 
 						</Link>
 
 						<div className="flex flex-col gap-2.5 text-[15px] text-[#050c26]">
-							<a href="tel:88005505612" className="flex items-center gap-2 hover:text-[#029cda] transition-colors">
+							<a href="tel:+78005505612" className="flex items-center gap-2 hover:text-[#029cda] transition-colors">
 								<Image src="/icons/phone.svg" alt="" width={18} height={18} className="shrink-0 opacity-50" />
-								8 (800) 550-56-12
+								+7 (800) 550-56-12
 							</a>
 						</div>
 
