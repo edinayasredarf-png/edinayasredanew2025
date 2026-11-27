@@ -70,18 +70,28 @@ export default function AboutPage() {
         <section className="py-20 w-full">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-5xl md:text-6xl lg:text-7xl font-medium text-[#313131] text-left">
-              О компании и платформе
+              Цифры говорят за нас
             </h2>
           </div>
         </section>
 
+        {/* Statistics Row */}
         <section className="bg-gray-100 w-full py-2 px-4 md:px-0">
-          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-6">
-            {[
-              ['2011', 'год создания команды специалистов'],
-              ['ГИС', 'карта, паспорта объектов и история работ'],
-              ['ПО РФ', 'запись №13314 от 15.04.2022 в реестре российского ПО'],
-            ].map(([value, label]) => <div key={value} className="py-10"><div className="text-5xl font-bold text-[#313131] mb-3">{value}</div><p className="text-xl text-gray-700">{label}</p></div>)}
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pl-0">
+              <div className="py-10 text-left border-b md:border-b-0 md:border-r border-gray-300">
+                <div className="text-6xl md:text-7xl font-bold text-[#313131] mb-3">40+</div>
+                <div className="text-xl text-gray-700">регионов РФ уже пользуются сервисом</div>
+              </div>
+              <div className="py-10 text-left border-b md:border-b-0 md:border-r border-gray-300">
+                <div className="text-6xl md:text-7xl font-bold text-[#313131] mb-3">500+</div>
+                <div className="text-xl text-gray-700">реализованных проектов</div>
+              </div>
+              <div className="py-10 text-left">
+                <div className="text-6xl md:text-7xl font-bold text-[#313131] mb-3">100M+</div>
+                <div className="text-xl text-gray-700">инвентаризированных деревьев</div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -111,16 +121,149 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="text-4xl md:text-5xl text-[#313131] mb-10">Направления работы</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {[
-              ['/services/izn', 'Зелёные насаждения', 'Полевое обследование, цифровые паспорта деревьев и кустарников, карта и планирование ухода.'],
-              ['/services/imz', 'Места захоронений', 'Инвентаризация, геопривязка и цифровой реестр с поиском и связанными документами.'],
-              ['/services/les', 'Лесные территории', 'Таксация, картографирование и подготовка лесоустроительных материалов.'],
-            ].map(([href, title, text]) => <Link key={href} href={href} className="bg-[#F6F7F9] rounded-3xl p-7 hover:ring-1 hover:ring-[#029cda]"><h3 className="text-2xl text-[#313131] mb-4">{title}</h3><p className="text-[#7c8a9a] text-lg leading-relaxed">{text}</p></Link>)}
+        {/* Projects Statistics */}
+        <section className="pt-4 pb-20 bg-white">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 border-t border-gray-200">
+              {/* Единая Среда */}
+              <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
+                <Link href="https://edinayasreda.ru/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
+                  <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#029cda] transition-colors">Единая Среда</h3>
+                  <Image src="/icons/es-blue.svg" alt="Единая Среда" width={42} height={42} className="object-contain" />
+                </Link>
+                <div className="space-y-6 px-6">
+                  <div>
+                    <div className="text-[64px] font-medium text-[#313131] leading-[71.68px]">{">"}200</div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">компаний ежемесячно пользуются платформой</p>
+                  </div>
+                  <div>
+                    <div className="text-[64px] font-medium text-[#313131] leading-[71.68px]">2000</div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">паспортов создано пользователями</p>
+                  </div>
+                  <div>
+                    <div className="flex items-baseline">
+                      <span className="text-[64px] font-medium text-[#313131] leading-[71.68px]">10</span>
+                      <span className="text-[38px] font-medium text-[#313131] leading-[42.56px] ml-2">млн</span>
+                    </div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">просмотров в сутки</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* MyRoots */}
+              <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
+                <Link href="https://myroots.pro/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
+                  <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#029cda] transition-colors">MyRoots</h3>
+                  <Image src="/icons/myroots.svg" alt="MyRoots" width={42} height={42} className="object-contain" />
+                </Link>
+                <div className="space-y-6 px-6">
+                  <div>
+                    <div className="flex items-baseline">
+                      <span className="text-[64px] font-medium text-[#313131] leading-[71.68px]">20</span>
+                      <span className="text-[38px] font-medium text-[#313131] leading-[42.56px] ml-2">тыс</span>
+                    </div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">генеалогических деревьев создано пользователями</p>
+                  </div>
+                  <div>
+                    <div className="text-[64px] font-medium text-[#313131] leading-[71.68px]">{">"}1300</div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">услуг по уходу за могилами оказано</p>
+                  </div>
+                  <div>
+                    <div className="text-[64px] font-medium text-[#313131] leading-[71.68px]">12 семей</div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">нашли своих родственников</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Область Развития */}
+              <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
+                <Link href="https://oblastrazvitia.ru/" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center mb-6 px-6 group">
+                  <h3 className="text-xl font-medium text-[#313131] leading-loose group-hover:text-[#029cda] transition-colors">Область Развития</h3>
+                  <Image src="/icons/oblastrazvitia.svg" alt="Область Развития" width={64} height={42} className="object-contain" />
+                </Link>
+                <div className="space-y-6 px-6">
+                  <div>
+                    <div className="text-[64px] font-medium text-[#313131] leading-[71.68px]">12</div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">субботников организовано и проведено</p>
+                  </div>
+                  <div>
+                    <div className="text-[64px] font-medium text-[#313131] leading-[71.68px]">2</div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">детских площадки построено</p>
+                  </div>
+                  <div>
+                    <div className="text-[64px] font-medium text-[#313131] leading-[71.68px]">2</div>
+                    <p className="text-base font-medium text-[#313131] leading-normal mt-1">инвестора привлечено</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Блок с фото команды */}
+              <div className="relative bg-[#029cda] p-2 overflow-hidden">
+                <div className="relative h-full min-h-[300px] flex flex-col">
+                  <div className="relative flex-1 overflow-hidden rounded-lg">
+                    <Image
+                      src={statsImages[statsImageIndex]}
+                      alt="Наша команда"
+                      fill
+                      className="object-cover transition-all duration-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Нижняя секция с услугами */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 border-b border-gray-200 border-t border-gray-200">
+              <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
+                <div className="mb-4 px-6">
+                  <h3 className="text-xl font-medium text-[#313131] leading-loose">Инвентаризация зеленых насаждений</h3>
+                </div>
+                <div className="px-6">
+                  <div className="flex items-baseline">
+                    <span className="text-[64px] font-medium text-[#313131] leading-[71.68px]">7</span>
+                    <span className="text-[38px] font-medium text-[#313131] leading-[42.56px] ml-2">млн</span>
+                  </div>
+                  <p className="text-base font-medium text-[#313131] leading-normal mt-1">деревьев за 2025 год</p>
+                </div>
+              </div>
+
+              <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
+                <div className="mb-4 px-6">
+                  <h3 className="text-xl font-medium text-[#313131] leading-loose">Инвентаризация мест захоронений</h3>
+                </div>
+                <div className="px-6">
+                  <div className="flex items-baseline">
+                    <span className="text-[64px] font-medium text-[#313131] leading-[71.68px]">5</span>
+                    <span className="text-[38px] font-medium text-[#313131] leading-[42.56px] ml-2">млн</span>
+                  </div>
+                  <p className="text-base font-medium text-[#313131] leading-normal mt-1">мест захоронений за 2025 год</p>
+                </div>
+              </div>
+
+              <div className="relative py-8 border-b lg:border-b-0 lg:border-r border-gray-200">
+                <div className="mb-4 px-6">
+                  <h3 className="text-xl font-medium text-[#313131] leading-loose">Лесоустройство</h3>
+                </div>
+                <div className="px-6">
+                  <div className="flex items-baseline">
+                    <span className="text-[64px] font-medium text-[#313131] leading-[71.68px]">2,7</span>
+                    <span className="text-[38px] font-medium text-[#313131] leading-[42.56px] ml-2">млн</span>
+                  </div>
+                  <p className="text-base font-medium text-[#313131] leading-normal mt-1">га лесов проинвентаризировано</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center py-8">
+                <button className="px-6 py-3 border border-[#050b15] text-[#313131] rounded-lg hover:bg-[#029cda] hover:text-white transition-all duration-300 flex items-center gap-2">
+                  <span className="text-base">Заказать услуги</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="mt-6 rounded-3xl overflow-hidden"><Image src={statsImages[statsImageIndex]} alt="Команда «Единой среды»" width={1200} height={480} className="w-full max-h-[400px] object-cover" /></div>
         </section>
 
         {/* History */}
